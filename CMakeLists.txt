@@ -11,8 +11,10 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 include_directories("${PROJECT_SOURCE_DIR}")
 
 # Headers
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/minkowski/minkowski_es_2d.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 
 # Executables
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/minkowski/minkowski_es_2d.cpp)
+add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)
+add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp)

@@ -2,31 +2,23 @@
 #include <math.h>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+#include <vector>
 
-#include <src/geometry/minkowski/minkowski_es_2d.h>
+#include <src/geometry/superellipse.h>
 
 using namespace Eigen;
 using namespace std;
 
 #define pi 3.1415926
-#define w 100
 
 int main(){
-  MatrixXd matX_eb;
-  double *X_eb;
+    MatrixXd X, X_eb;
+    int num = 50, K = 1;
+    SuperEllipse SE = {{5,3,0,0.5,0,0},num}, E = {{2,1,pi/6,1,0,0},num};
 
-  double a[6] = {5,3,0,0.5,0,0};
-  double b[3] = {2,1,pi/6};
-  int num = 50, K = 1;
+    X = SE.originShape(SE.a, SE.num);
+    X_eb = SE.minkSum2D(SE.a, E.a, SE.num, K);
+    cout << X_eb << endl;
 
-  matX_eb = minkSum2D(a, b, num, K);
-
-  X_eb = matX_eb.data();
-
-  //Map<MatrixXd>(X_eb, matX_eb.rows(), matX_eb.cols()) = matX_eb;
-
-  for(int i = 0; i < num; i++)
-  cout << X_eb[i] << ',';
-
-  return 0;
+    return 0;
 }
