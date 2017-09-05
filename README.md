@@ -2,7 +2,7 @@
 A paradigm for robot motion planning based on parameterizations of the free space
 
 ## Description
-We develop a motion planning algorithm based on the closed-form Minkowski sum and difference between ellipsoids. Full algorithm is developed in Matlab and is now transfering to C++ for fair and convenient comparisons with other algorithms.
+We develop a motion planning algorithm based on the closed-form Minkowski sum and difference between ellipsoids. Full algorithm is developed in Matlab and is now transfering to C++ for fair and convenient comparisons with other algorithms. The algorithm is in 2D single rigid boday case, and is currently being expanded to 3D single body case.
 
 ## Related Papers
 "Yan, Y. and Chirikjian, G.S., 2015. Closed-form characterization of the Minkowski sum and difference of two ellipsoids. Geometriae Dedicata, 177(1), pp.103-128."
