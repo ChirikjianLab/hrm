@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+
 #include <math.h>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
@@ -19,6 +21,14 @@ int main(){
     X = SE.originShape(SE.a, SE.num);
     X_eb = SE.minkSum2D(SE.a, E.a, SE.num, K);
     cout << X_eb << endl;
+
+    // write to .csv file
+    ofstream file;
+    file.open("bd.csv");
+    file << X << "\n";
+    file << X_eb << "\n";
+    file.close();
+
 
     return 0;
 }
