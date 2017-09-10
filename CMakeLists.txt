@@ -1,4 +1,5 @@
 # Specify the minimum version for CMake
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 cmake_minimum_required(VERSION 0.1)
 
 # Project's name
@@ -18,7 +19,8 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 
 # Executables
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+#add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp)
 
