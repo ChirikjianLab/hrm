@@ -5,7 +5,12 @@
 
 class SuperEllipse{
 public:
-    // Parameters of superellipse
+    /* Parameters of superellipse
+        a[0], a[1]: semi-axes length;
+        a[2]      : rotational angle;
+        a[3], a[4]: position of the center;
+        a[5]      : epsilon
+    */
     double a[6];
     // Number of points on boundary
     int num;
