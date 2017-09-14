@@ -3,6 +3,8 @@
 
 #include <eigen3/Eigen/Dense>
 
+using namespace Eigen;
+
 class SuperEllipse{
 public:
     /* Parameters of superellipse
@@ -16,8 +18,8 @@ public:
     int num;
 
     // Functions
-    Eigen::MatrixXd originShape(double a[6], int num);
-    Eigen::MatrixXd minkSum2D(double a[6], double b[6], int num, int K);
+    MatrixXd originShape(double a[6], int num);
+    MatrixXd minkSum2D(double a[6], double b[6], int num, int K);
     double expFun(double th, double p, bool func);
 };
 
