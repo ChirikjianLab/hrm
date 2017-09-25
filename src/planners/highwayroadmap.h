@@ -10,7 +10,7 @@ using namespace std;
 using namespace boost;
 
 typedef adjacency_list<listS, vecS, undirectedS, no_property, property < edge_weight_t, int > > AdjGraph;
-typedef vector<pair<int, int>> Edge;
+typedef vector< pair<int, int> > Edge;
 
 // cf_cell: collision-free points
 struct cf_cell{
@@ -45,7 +45,7 @@ private:
     // graph: vector of vertices, vector of connectable edges
     struct graph{
     public:
-        vector<vector<double>> vertex;
+        vector< vector<double> > vertex;
         Edge edge;
     } vtxEdge;
 

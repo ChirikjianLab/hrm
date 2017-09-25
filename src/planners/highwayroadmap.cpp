@@ -17,6 +17,8 @@ highwayRoadmap::highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperElli
     this->Lim = opt.Lim;
     this->isplot = opt.isplot;
     this->layerDist = opt.layerDist;
+
+    this->Cost = 0;
 }
 
 void highwayRoadmap::multiLayers(){
