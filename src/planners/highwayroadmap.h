@@ -24,22 +24,21 @@ public:
 // boundary: Minkowski boundary points for obstacles and arenas
 struct boundary{
 public:
-    MatrixXd *bd_s, *bd_o;
+    vector<MatrixXd> bd_s, bd_o;
 };
 
 struct option{
     double infla;
-    int N_layers, N_dy, sampleNum, layerDist, Lim[2];
-    bool isplot;
+    int N_layers, N_dy, sampleNum, N_o, N_s;
 };
 
 class highwayRoadmap
 {
     // variables
 private:
+    int N_o, N_s;
     double infla;
-    int N_layers, N_dy, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal, *Lim;
-    bool isplot;
+    int N_layers, N_dy, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal;
     double ang_r, polyVtx;
 
     // graph: vector of vertices, vector of connectable edges

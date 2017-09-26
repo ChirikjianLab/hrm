@@ -18,6 +18,7 @@ public:
     int num;
 
     // Functions
+    //SuperEllipse(double a[6], int num);
     MatrixXd originShape(double a[6], int num);
     MatrixXd minkSum2D(double a[6], double b[6], int num, int K);
     double expFun(double th, double p, bool func);

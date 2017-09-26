@@ -15,25 +15,36 @@ using namespace std;
 #define pi 3.1415926
 
 int main(){
-    MatrixXd X, X_eb;
-    int num = 50, K = 1;
-    SuperEllipse arena = {{50,30,0,0.5,0,0},num}, robot = {{2,1,pi/6,1,0,0},num};
-    SuperEllipse obs[] = {{5,3,pi/4,0.8,10,0}, {10,2,0,0.3,-10,0}};
+    // Environment
+    int num = 50;
+    SuperEllipse robot = {{2,1,pi/6,1,0,0}, num};
+    SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
+    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,2,0,0.3,-10,0}, num} };
     double endPts[2][2] = {{-30,-20},{30,20}};
 
+    // Options
     option opt;
-    cout << X_eb << endl;
+    opt.infla = 0.1;
+    opt.N_layers = 17;
+    opt.N_dy = 20;
+    opt.sampleNum = 100;
 
-    highwayRoadmap high = highwayRoadmap(robot, endPts, arena, obs, opt);
-/*
+    opt.N_o = sizeof(obs)/sizeof(obs[0]);
+    opt.N_s = sizeof(arena)/sizeof(arena[0]);
+
+    // Main Algorithm
+    highwayRoadmap high(robot, endPts, arena, obs, opt);
+    boundary bd = high.boundaryGen();
+
     // write to .csv file
     ofstream file;
     file.open("bd.csv");
-    file << X << "\n";
-    file << X_eb << "\n";
+    file << bd.bd_o[0] << "\n";
+    file << bd.bd_o[1] << "\n";
+    file << bd.bd_s[0] << "\n";
     file.close();
 
-    */
+/*
     enum nodes{A,B,C,D};
     vector< vector<double> > name = {{1,2,5},{3,3,6},{1,2,3}};
     name.push_back({4,6,2});
@@ -43,6 +54,8 @@ int main(){
 
     int num_edge = sizeof(edgeVector)/sizeof(Edge);
     cout << name[0][2] << endl;
+
+    */
 
     /*
     AdjGraph G(edgeVector, edgeVector+sizeof(edgeVector)/sizeof(Edge),name.size());

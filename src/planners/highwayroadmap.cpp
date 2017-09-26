@@ -8,15 +8,13 @@ highwayRoadmap::highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperElli
     this->Endpt = *endpt;
     this->Arena = arena;
     this->Obs = obs;
+    this->N_o = opt.N_o;
+    this->N_s = opt.N_s;
 
     this->infla = opt.infla;
     this->N_layers = opt.N_layers;
     this->N_dy = opt.N_dy;
     this->N_KCsample = opt.sampleNum;
-
-    this->Lim = opt.Lim;
-    this->isplot = opt.isplot;
-    this->layerDist = opt.layerDist;
 
     this->Cost = 0;
 }
@@ -48,11 +46,11 @@ boundary highwayRoadmap::boundaryGen(){
     robot_infla.a[1] *= 1+this->infla;
 
     // calculate Minkowski boundary points
-    for(int i=0; i<sizeof(this->Arena); i++){
-        bd.bd_s[i] = this->Arena[i].minkSum2D(this->Arena[i].a, robot_infla.a, this->Arena[i].num, -1);
+    for(int i=0; i<this->N_s; i++){
+        bd.bd_s.push_back( this->Arena[i].minkSum2D(this->Arena[i].a, robot_infla.a, this->Arena[i].num, -1) );
     }
-    for(int i=0; i<sizeof(this->Obs); i++){
-        bd.bd_o[i] = this->Obs[i].minkSum2D(this->Obs[i].a, robot_infla.a, this->Obs[i].num, +1);
+    for(int i=0; i<this->N_o; i++){
+        bd.bd_o.push_back( this->Obs[i].minkSum2D(this->Obs[i].a, robot_infla.a, this->Obs[i].num, +1) );
     }
 
     return bd;

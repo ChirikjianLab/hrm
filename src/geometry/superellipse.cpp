@@ -11,6 +11,11 @@ using namespace std;
 #define pi 3.1415926
 #define sgn(v) ( ( (v) < 0 ) ? -1 : ( (v) > 0 ) )
 
+/*SuperEllipse::SuperEllipse(double a[6], int num){
+  this->a = a;
+  this->num = num;
+}*/
+
 // Get the points on the boundary of original shape
 MatrixXd SuperEllipse::originShape(double a[6], int num){
     double th;
