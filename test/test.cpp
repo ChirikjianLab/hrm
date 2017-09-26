@@ -35,6 +35,7 @@ int main(){
     // Main Algorithm
     highwayRoadmap high(robot, endPts, arena, obs, opt);
     boundary bd = high.boundaryGen();
+    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
 
     // write to .csv file
     ofstream file;

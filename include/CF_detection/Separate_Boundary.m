@@ -15,7 +15,7 @@ P_bd_R = zeros(2, N_pt/2, N_bd);
 
 % divide every curve into two parts, splited by I_StartY
 for j = 1:N_bd
-    P_bd_L(:,:,j) = P_bd(:, I_StartY(j)+1:I_StartY(j)+N_pt/2, j);
+    P_bd_L(:,:,j) = P_bd(:, I_StartY(j)+1:I_StartY(Rj)+N_pt/2, j);
     P_bd_R(:,:,j) = P_bd(:, [1:I_StartY(j), I_StartY(j)+N_pt/2+1:N_pt], j);
 end
 

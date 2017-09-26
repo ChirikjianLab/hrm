@@ -1,6 +1,8 @@
 #include <iostream>
 #include <src/planners/highwayroadmap.h>
 
+#include <fstream>
+
 #define pi 3.1415926
 
 highwayRoadmap::highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt){
@@ -30,7 +32,7 @@ void highwayRoadmap::multiLayers(){
         boundary bd = this->boundaryGen();
 
         // collision-free cells, stored by ty, xL, xU, xM
-        cf_cell CFcell = this->rasterScan(bd);
+        cf_cell CFcell = this->rasterScan(bd.bd_s, bd.bd_o);
 
         // construct adjacency matrix for one layer
         this->oneLayer(CFcell);
@@ -56,7 +58,21 @@ boundary highwayRoadmap::boundaryGen(){
     return bd;
 }
 
-cf_cell highwayRoadmap::rasterScan(boundary bd){
+cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
+    boundary::sepBd P_bd_s[this->N_s], P_bd_o[this->N_o];
+
+    // Separate boundaries of Arenas and Obstacles into two parts
+    for(int i=0; i< this->N_s; i++){
+        P_bd_s[i] = this->separateBoundary(bd_s[i]);
+    }
+    for(i=0; i< this->N_o; i++){
+        P_bd_o[i] = this->separateBoundary(bd_o[i]);
+    }
+
+    // Find closest points for each raster scan line
+    for(i=0; i< this->N_dy; i++){
+
+    }
 
 }
 
@@ -68,4 +84,33 @@ this->vtxEdge.vertex.push_back({});
 this->vtxEdge.edge.push_back(make_pair());
 
 this->N_v_layers.pushback(sizeof(this->vtxEdge.vertex)/sizeof(this->vtxEdge.vertex[0]));*/
+}
+
+// For a given curve, separate its boundary into two parts
+boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
+    const int half_num = this->Arena[0].num/2;
+
+    MatrixXd::Index I_max_y, I_min_y;
+    int I_start_y;
+    MatrixXd P_bd_L, P_bd_R;
+    double max_y, min_y;
+
+    boundary::sepBd P_bd;
+
+    max_y = bd.row(1).maxCoeff(&I_max_y);
+    min_y = bd.row(1).minCoeff(&I_min_y);
+    I_start_y = min(I_max_y, I_min_y);
+    I_start_y = min(I_start_y, half_num);
+
+    P_bd_L.setZero(2,half_num);
+    P_bd_L = bd.block(0, I_start_y, 2, half_num);
+
+    P_bd_R.setZero(2,half_num);
+    P_bd_R.topLeftCorner(2, I_start_y) = bd.topLeftCorner(2, I_start_y);
+    P_bd_R.bottomRightCorner(2, half_num-I_start_y) = bd.bottomRightCorner(2, half_num-I_start_y);
+
+    P_bd.P_bd_L = P_bd_L;
+    P_bd.P_bd_R = P_bd_R;
+
+    return P_bd;
 }

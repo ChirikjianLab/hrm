@@ -25,6 +25,12 @@ public:
 struct boundary{
 public:
     vector<MatrixXd> bd_s, bd_o;
+
+    // Seperated boundary points
+    struct sepBd{
+    public:
+        MatrixXd P_bd_L, P_bd_R;
+    } P_bd;
 };
 
 struct option{
@@ -55,11 +61,14 @@ public:
     int Paths;
 
     // functions
+private:
+    boundary::sepBd separateBoundary(MatrixXd bd);
+
 public:
     highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);
     void multiLayers();
     boundary boundaryGen();
-    cf_cell rasterScan(boundary bd);
+    cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     void oneLayer(cf_cell cell);
 };
 
