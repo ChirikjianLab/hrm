@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 #include <src/planners/highwayroadmap.h>
 
 #include <fstream>
@@ -60,18 +61,31 @@ boundary highwayRoadmap::boundaryGen(){
 
 cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
     boundary::sepBd P_bd_s[this->N_s], P_bd_o[this->N_o];
+    boundary::sepBd x_bd_s[this->N_s], x_bd_o[this->N_o];
 
     // Separate boundaries of Arenas and Obstacles into two parts
     for(int i=0; i< this->N_s; i++){
         P_bd_s[i] = this->separateBoundary(bd_s[i]);
     }
-    for(i=0; i< this->N_o; i++){
+    for(int i=0; i< this->N_o; i++){
         P_bd_o[i] = this->separateBoundary(bd_o[i]);
     }
 
     // Find closest points for each raster scan line
-    for(i=0; i< this->N_dy; i++){
+    double ty, dy = (P_bd_s[0].max_y-P_bd_s[0].min_y)/this->N_dy;
+    for(int i=0; i< this->N_dy; i++){
+        // y-coordinate of each sweep line
+        ty = P_bd_s[0].min_y + (i-1) * dy;
+        cout << ty << endl;
 
+        for(int j=0; j< this->N_s; j++){
+            x_bd_s[j] = this->closestPt(P_bd_s[j], ty);
+            cout << x_bd_s[j].x_L << ' ' << x_bd_s[j].x_R << endl;
+        }
+        for(int j=0; j< this->N_o; j++){
+            x_bd_o[j] = this->closestPt(P_bd_o[j], ty);
+            cout << x_bd_o[j].x_L << ' ' << x_bd_o[j].x_R << endl;
+        }
     }
 
 }
@@ -111,6 +125,28 @@ boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
 
     P_bd.P_bd_L = P_bd_L;
     P_bd.P_bd_R = P_bd_R;
+    P_bd.max_y = max_y;
+    P_bd.min_y = min_y;
 
     return P_bd;
+}
+
+boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
+    boundary::sepBd x_bd;
+    MatrixXd::Index I_L, I_R;
+    VectorXd y(1);
+
+    if( (ty > P_bd.max_y) || (ty < P_bd.min_y) ){
+        x_bd.x_L = numeric_limits<double>::quiet_NaN();
+        x_bd.x_R = numeric_limits<double>::quiet_NaN();
+        return x_bd;
+    }
+
+    y << ty;
+    (P_bd.P_bd_L.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_L);
+    (P_bd.P_bd_R.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_R);
+
+    x_bd.x_L = P_bd.P_bd_L(0,I_L);
+    x_bd.x_R = P_bd.P_bd_R(0,I_R);
+    return x_bd;
 }

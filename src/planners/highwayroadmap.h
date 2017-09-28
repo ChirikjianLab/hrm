@@ -1,6 +1,9 @@
 #ifndef HIGHWAYROADMAP_H
 #define HIGHWAYROADMAP_H
 
+#include <vector>
+#include <algorithm>
+#include <limits>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 
@@ -30,6 +33,8 @@ public:
     struct sepBd{
     public:
         MatrixXd P_bd_L, P_bd_R;
+        double max_y, min_y;
+        double x_L, x_R;
     } P_bd;
 };
 
@@ -63,6 +68,7 @@ public:
     // functions
 private:
     boundary::sepBd separateBoundary(MatrixXd bd);
+    boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
 
 public:
     highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);

@@ -37,13 +37,13 @@ int main(){
     boundary bd = high.boundaryGen();
     cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
 
-    // write to .csv file
+/*    // write to .csv file
     ofstream file;
     file.open("bd.csv");
     file << bd.bd_o[0] << "\n";
     file << bd.bd_o[1] << "\n";
     file << bd.bd_s[0] << "\n";
-    file.close();
+    file.close();*/
 
 /*
     enum nodes{A,B,C,D};
