@@ -2,8 +2,7 @@
 function [] = initAddpath()
 % Source files
 addpath ../src/planners/
-addpath ../src/geometry/minkowski/
-addpath ../src/geometry/superquadrics/
+addpath ../src/geometry/matlab/
 
 % Additional supporting functions
 addpath ../include/

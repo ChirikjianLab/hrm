@@ -37,7 +37,7 @@ title('Highway Roadmap')
 fprintf('Planning Time: %s seconds \n', num2str(Highway_time))
 
 % tic
-% [bd_s, bd_o] = highway.Boundary();
+[bd_s, bd_o] = Boundary(highway);
 % 
 % for i=1:size(bd_s,3)
 %     plot(bd_s(1,:,i),bd_s(2,:,i),'k')
