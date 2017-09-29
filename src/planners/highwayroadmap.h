@@ -47,9 +47,9 @@ class highwayRoadmap
 {
     // variables
 private:
-    int N_o, N_s;
+    int N_o, N_s, N_dy;
     double infla;
-    int N_layers, N_dy, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal;
+    int N_layers, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal;
     double ang_r, polyVtx;
 
     // graph: vector of vertices, vector of connectable edges
@@ -69,6 +69,7 @@ public:
 private:
     boundary::sepBd separateBoundary(MatrixXd bd);
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
+    MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
 
 public:
     highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);

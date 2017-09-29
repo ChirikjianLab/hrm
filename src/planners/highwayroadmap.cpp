@@ -61,33 +61,49 @@ boundary highwayRoadmap::boundaryGen(){
 
 cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
     boundary::sepBd P_bd_s[this->N_s], P_bd_o[this->N_o];
-    boundary::sepBd x_bd_s[this->N_s], x_bd_o[this->N_o];
+    boundary::sepBd x_bd_s[this->N_dy][this->N_s], x_bd_o[this->N_dy][this->N_o];
+
+    MatrixXd bd_s_L[this->N_s], bd_s_R[this->N_s], bd_o_L[this->N_o], bd_o_R[this->N_o];
+    MatrixXd x_s_L(this->N_dy, this->N_s), x_s_R(this->N_dy, this->N_s);
+    MatrixXd x_o_L(this->N_dy, this->N_o), x_o_R(this->N_dy, this->N_o);
 
     // Separate boundaries of Arenas and Obstacles into two parts
-    for(int i=0; i< this->N_s; i++){
+    for(int i=0; i< this->N_s; i++) {
         P_bd_s[i] = this->separateBoundary(bd_s[i]);
+        bd_s_L[i] = P_bd_s[i].P_bd_L;
+        bd_s_R[i] = P_bd_s[i].P_bd_R;
     }
-    for(int i=0; i< this->N_o; i++){
+    for(int i=0; i< this->N_o; i++) {
         P_bd_o[i] = this->separateBoundary(bd_o[i]);
+        bd_o_L[i] = P_bd_o[i].P_bd_L;
+        bd_o_R[i] = P_bd_o[i].P_bd_R;
     }
 
     // Find closest points for each raster scan line
-    double ty, dy = (P_bd_s[0].max_y-P_bd_s[0].min_y)/this->N_dy;
+    double ty[this->N_dy], dy = (P_bd_s[0].max_y-P_bd_s[0].min_y)/this->N_dy;
     for(int i=0; i< this->N_dy; i++){
         // y-coordinate of each sweep line
-        ty = P_bd_s[0].min_y + (i-1) * dy;
-        cout << ty << endl;
-
-        for(int j=0; j< this->N_s; j++){
-            x_bd_s[j] = this->closestPt(P_bd_s[j], ty);
-            cout << x_bd_s[j].x_L << ' ' << x_bd_s[j].x_R << endl;
+        ty[i] = P_bd_s[0].min_y + (i-1) * dy;
+        // x-coordinate of the intersection btw sweep line and arenas
+        for(int j=0; j< this->N_s; j++) {
+            x_bd_s[i][j] = this->closestPt(P_bd_s[j], ty[i]);
+            x_s_L(i,j) = x_bd_s[i][j].x_L;
+            x_s_R(i,j) = x_bd_s[i][j].x_R;
         }
-        for(int j=0; j< this->N_o; j++){
-            x_bd_o[j] = this->closestPt(P_bd_o[j], ty);
-            cout << x_bd_o[j].x_L << ' ' << x_bd_o[j].x_R << endl;
+        // x-coordinate of the intersection btw sweep line and obstacles
+        for(int j=0; j< this->N_o; j++) {
+            x_bd_o[i][j] = this->closestPt(P_bd_o[j], ty[i]);
+            x_o_L(i,j) = x_bd_o[i][j].x_L;
+            x_o_R(i,j) = x_bd_o[i][j].x_R;
         }
     }
 
+    cout << x_o_L << ' xxx ' << x_o_R << endl;
+
+    // Enlarge the obstacle to form convex CF cells
+    x_o_L = this->boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
+    x_o_R = this->boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
+    cout << x_o_L << ' xxx ' << x_o_R << endl;
 }
 
 void highwayRoadmap::oneLayer(cf_cell CFcell){
@@ -103,22 +119,22 @@ this->N_v_layers.pushback(sizeof(this->vtxEdge.vertex)/sizeof(this->vtxEdge.vert
 // For a given curve, separate its boundary into two parts
 boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
     const int half_num = this->Arena[0].num/2;
-
     MatrixXd::Index I_max_y, I_min_y;
     int I_start_y;
     MatrixXd P_bd_L, P_bd_R;
     double max_y, min_y;
-
     boundary::sepBd P_bd;
 
+    // Find separating point
     max_y = bd.row(1).maxCoeff(&I_max_y);
     min_y = bd.row(1).minCoeff(&I_min_y);
     I_start_y = min(I_max_y, I_min_y);
     I_start_y = min(I_start_y, half_num);
 
+    // Left part
     P_bd_L.setZero(2,half_num);
     P_bd_L = bd.block(0, I_start_y, 2, half_num);
-
+    // Right part
     P_bd_R.setZero(2,half_num);
     P_bd_R.topLeftCorner(2, I_start_y) = bd.topLeftCorner(2, I_start_y);
     P_bd_R.bottomRightCorner(2, half_num-I_start_y) = bd.bottomRightCorner(2, half_num-I_start_y);
@@ -136,12 +152,13 @@ boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
     MatrixXd::Index I_L, I_R;
     VectorXd y(1);
 
+    // check if ty in the range of each arena/obstacle
     if( (ty > P_bd.max_y) || (ty < P_bd.min_y) ){
         x_bd.x_L = numeric_limits<double>::quiet_NaN();
         x_bd.x_R = numeric_limits<double>::quiet_NaN();
         return x_bd;
     }
-
+    // For each ty, find closes point, ie the intersection btw sweep line and arena/obstacle
     y << ty;
     (P_bd.P_bd_L.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_L);
     (P_bd.P_bd_R.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_R);
@@ -149,4 +166,46 @@ boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
     x_bd.x_L = P_bd.P_bd_L(0,I_L);
     x_bd.x_R = P_bd.P_bd_R(0,I_R);
     return x_bd;
+}
+
+MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K){
+    MatrixXd x_o_Ex(this->N_dy, this->N_o);
+    double x_Ex;
+    double d;
+
+    for(int j=0; j< this->N_o; j++){
+        int count = 0;
+
+        for(int i=0; i< this->N_dy-1; i++){
+            double dist = 0, phi;
+            x_o_Ex(i,j) = numeric_limits<double>::quiet_NaN();
+
+            if( isnan(x_o(i,j)) || isnan(x_o(i+1,j)) ) continue;
+            count += 1;
+            double p1[2] = {x_o(i,j), ty[i]};
+            double p2[2] = {x_o(i+1,j), ty[i+1]};
+
+            // Search for farthest point to the line segment def by two intersecting points
+            for(int k=0; k< sizeof(bd_o[j].rows()); k++){
+                double p[2] = {bd_o[j](0,k), bd_o[j](1,k)};
+
+                if( (p[1] > ty[i]) && (p[1] < ty[i+1]) ){
+                    d = abs( (p2[1]-p1[1])*p[0] - (p2[0]-p1[0])*p[1] + p2[0]*p1[1] - p2[1]*p1[0] )
+                            / sqrt( pow((p2[1]-p2[1]),2) + pow((p2[0]-p1[0]),2) );
+                    if(d > dist) dist = d;
+                }
+            }
+            phi = atan2( p2[1]-p1[2], p2[0]-p1[0] );
+            x_Ex = x_o(i,j) + K * dist/sin(phi);
+
+            // Update the boundary point to be farthest to the previous one
+            if(K == -1) {if(x_Ex <= x_o_Ex(i,j)) x_o_Ex(i,j) = x_Ex;}
+            else if(K == +1) {if(x_Ex >= x_o_Ex(i,j)) x_o_Ex(i,j) = x_Ex;}
+
+            if(count == 1) x_o_Ex(i,j) = x_o(i,j) + K * dist/sin(phi);
+            x_o_Ex(i+1,j) = x_o(i+1,j) + K * dist/sin(phi);
+        }
+    }
+
+    return x_o_Ex;
 }
