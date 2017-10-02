@@ -104,13 +104,13 @@ Solving for $\phi$ gives,
 Figures \ref{diff-alpha} and \ref{diff-epi} show the numerical experiments to verify the result, with different $\alpha$ and $\epsilon$ values respectively.
 
 \begin{figure}
-\includegraphics[scale = 0.17]{closed-form_maxAngle-test_alpha.png}
+\includegraphics[scale = 0.17]{fig/closed-form_maxAngle-test_alpha.png}
 \caption{Test with different values of aspect ratio $\alpha$, fixed $\epsilon = 0.1$}
 \label{diff-alpha}
 \end{figure}
 
 \begin{figure}
-\includegraphics[scale = 0.17]{closed-form_maxAngle-test_epsilon.png}
+\includegraphics[scale = 0.17]{fig/closed-form_maxAngle-test_epsilon.png}
 \caption{Test with different values of explode factor $\epsilon$, fixed $\alpha = 2$}
 \label{diff-epi}
 \end{figure}
@@ -120,7 +120,7 @@ It is observed that the convex hull of the sample-based c-space of KC is twisted
 
 At first, figure \ref{comp_cspace} is a comparison of twisted and untwisted C-Space.
 \begin{figure}
-\includegraphics[scale=0.25]{comparison_twist-untwist_c-space.png}
+\includegraphics[scale=0.25]{fig/comparison_twist-untwist_c-space.png}
 \caption{Comparison of twisted and untwisted c-space}
 \label{comp_cspace}
 \end{figure}
@@ -130,14 +130,14 @@ For the current experiment, I fit an ellipsoid into the untwisted c-space, with 
 
 Figure \ref{twist_fit} is one example of the heuristic fit.
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit.png}
 \caption{heuristic fit, with parameters: $a_2 = 2.5$, $\alpha = 2$, $\epsilon = 0.1$, $\beta = 0.6x$}
 \label{twist_fit}
 \end{figure}
 The fitted ellipsoid exceeds the range of the convex hull, which is infeasible. To solve this, we could define a scale factor to the ellipsoid parameters, factor can be different for each parameter, but this still needs manually observation. Figure \ref{fit_scaled} shows the scaled heuristic fit, with $\theta$ scaled only.
 
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled.png}
 \caption{heuristic fit, with parameters: $a_2 = 2.5$, $\alpha = 2$, $\epsilon = 0.1$, $\beta = 0.6x$, scale factor: 0.6}
 \label{fit_scaled}
 \end{figure}
@@ -159,27 +159,27 @@ Each time we change the aspect ratio $\alpha$, we need to manually change the fa
 Figures \ref{fit_scaled1.5}, \ref{fit_scaled1.8}, \ref{fit_scaled2.2}, \ref{fit_scaled2.5} and \ref{fit_scaled3} show the heuristic fit with different aspect ratios.
 
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled_ratio1_5.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled_ratio1_5.png}
 \caption{heuristic fit, with parameters: $a_2 = 2.5$, $\alpha = 1.5$, $\epsilon = 0.1$, $\beta = 0.75x$, scale factor: 0.6}
 \label{fit_scaled1.5}
 \end{figure}
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled_ratio1_8.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled_ratio1_8.png}
 \caption{heuristic fit, with parameters: $a_2 = 2.5$, $\alpha = 1.8$, $\epsilon = 0.1$, $\beta = x$, scale factor: 0.6}
 \label{fit_scaled1.8}
 \end{figure}
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled_ratio2_2.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled_ratio2_2.png}
 \caption{heuristic fit, with parameters: $a_2 = 1.5$, $\alpha = 2.2$, $\epsilon = 0.1$, $\beta = 0.5x$, scale factor: 0.6}
 \label{fit_scaled2.2}
 \end{figure}
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled_ratio2_5.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled_ratio2_5.png}
 \caption{heuristic fit, with parameters: $a_2 = 1.5$, $\alpha = 2.5$, $\epsilon = 0.1$, $\beta = 0.35x$, scale factor: 0.6}
 \label{fit_scaled2.5}
 \end{figure}
 \begin{figure}
-\includegraphics[scale = 0.25]{twist-untwist_c-space_fit_scaled_ratio3.png}
+\includegraphics[scale = 0.25]{fig/twist-untwist_c-space_fit_scaled_ratio3.png}
 \caption{heuristic fit, with parameters: $a_2 = 1.5$, $\alpha = 3$, $\epsilon = 0.1$, $\beta = 0.25x$, scale factor: 0.6}
 \label{fit_scaled3}
 \end{figure}
@@ -223,13 +223,13 @@ where, $n$ is the number of discretized points on the boundary of the unit circl
 \begin{figure}[!b]
 \centering
 \begin{minipage}[b]{0.4\textwidth}
-	\includegraphics[scale = 0.2]{c-space-polyhedron-fit.png}
+	\includegraphics[scale = 0.2]{fig/c-space-polyhedron-fit.png}
 	\caption{Heuristic fit as polyhedron represented by 10 extreme vertices, C-space}
 	\label{polyfit_cspace}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.4\textwidth}
-	\includegraphics[scale = 0.25]{ellipses-polyhedron-fit.png}
+	\includegraphics[scale = 0.25]{fig/ellipses-polyhedron-fit.png}
 	\caption{Heuristic fit as polyhedron represented by 10 extreme vertices}
 	\label{polyfit}
 \end{minipage}
@@ -300,13 +300,13 @@ Figs \ref{polyfit_cspace_10000samples} and \ref{polyfit_10000samples} show the n
 \begin{figure}[t]
 \centering
 \begin{minipage}[b]{0.4\textwidth}
-	\includegraphics[scale = 0.2]{c-space-polyhedron-fit-with-testPnts10000.png}
+	\includegraphics[scale = 0.2]{fig/c-space-polyhedron-fit-with-testPnts10000.png}
 	\caption{C-space polyhedron fit with samples. Red: outside the convex hull; green: inside the convex hull}
 	\label{polyfit_cspace_10000samples}
 \end{minipage}
 \hfill
 \begin{minipage}[b]{0.4\textwidth}
-	\includegraphics[scale = 0.25]{ellipses-polyhedron-fit-with-testPnts10000.png}
+	\includegraphics[scale = 0.25]{fig/ellipses-polyhedron-fit-with-testPnts10000.png}
 	\caption{Smaller ellipses that lies safely inside the larger ellipse.}
 	\label{polyfit_10000samples}
 	\end{minipage}
