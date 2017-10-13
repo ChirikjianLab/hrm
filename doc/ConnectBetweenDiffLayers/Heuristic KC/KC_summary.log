@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.9.29)  2 OCT 2017 14:55
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.9.29)  13 OCT 2017 11:44
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -664,107 +664,106 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 19.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
-<fig/closed-form_maxAngle-test_alpha.png, id=24, 2890.8pt x 1460.45625pt>
-File: fig/closed-form_maxAngle-test_alpha.png Graphic file (type png)
-
-<use fig/closed-form_maxAngle-test_alpha.png>
-Package pdftex.def Info: fig/closed-form_maxAngle-test_alpha.png used on input 
-line 231.
-(pdftex.def)             Requested size: 491.4295pt x 248.27428pt.
-
-Overfull \hbox (21.67448pt too wide) in paragraph at lines 231--232
-[][] 
- []
-
-<fig/closed-form_maxAngle-test_epsilon.png, id=25, 2890.8pt x 1460.45625pt>
-File: fig/closed-form_maxAngle-test_epsilon.png Graphic file (type png)
-
-<use fig/closed-form_maxAngle-test_epsilon.png>
-Package pdftex.def Info: fig/closed-form_maxAngle-test_epsilon.png used on inpu
-t line 237.
-(pdftex.def)             Requested size: 491.4295pt x 248.27428pt.
-
-Overfull \hbox (21.67448pt too wide) in paragraph at lines 237--238
-[][] 
- []
-
-<fig/c-space-polyhedron-fit.png, id=26, 974.13937pt x 861.9703pt>
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
+<fig/c-space-polyhedron-fit.png, id=18, 974.13937pt x 861.9703pt>
 File: fig/c-space-polyhedron-fit.png Graphic file (type png)
 
 <use fig/c-space-polyhedron-fit.png>
-Package pdftex.def Info: fig/c-space-polyhedron-fit.png used on input line 249.
+Package pdftex.def Info: fig/c-space-polyhedron-fit.png used on input line 152.
 
 (pdftex.def)             Requested size: 194.82442pt x 172.391pt.
 
-Overfull \hbox (6.92528pt too wide) in paragraph at lines 249--250
+Overfull \hbox (6.92528pt too wide) in paragraph at lines 152--153
 [][] 
  []
 
-<fig/ellipses-polyhedron-fit.png, id=27, 843.15pt x 632.3625pt>
+<fig/ellipses-polyhedron-fit.png, id=19, 843.15pt x 632.3625pt>
 File: fig/ellipses-polyhedron-fit.png Graphic file (type png)
 
 <use fig/ellipses-polyhedron-fit.png>
-Package pdftex.def Info: fig/ellipses-polyhedron-fit.png used on input line 255
+Package pdftex.def Info: fig/ellipses-polyhedron-fit.png used on input line 158
 .
 (pdftex.def)             Requested size: 210.78697pt x 158.09024pt.
 
-Overfull \hbox (22.88783pt too wide) in paragraph at lines 255--256
+Overfull \hbox (22.88783pt too wide) in paragraph at lines 158--159
 [][] 
  []
 
 
-<fig/c-space-polyhedron-fit-with-testPnts10000.png, id=28, 843.15pt x 632.3625p
+<fig/c-space-polyhedron-fit-with-testPnts10000.png, id=20, 843.15pt x 632.3625p
 t>
 File: fig/c-space-polyhedron-fit-with-testPnts10000.png Graphic file (type png)
 
  <use fig/c-space-polyhedron-fit-with-testPnts10000.png>
 Package pdftex.def Info: fig/c-space-polyhedron-fit-with-testPnts10000.png used
- on input line 264.
+ on input line 167.
 (pdftex.def)             Requested size: 168.627pt x 126.47026pt.
 
-<fig/ellipses-polyhedron-fit-with-testPnts10000.png, id=29, 843.15pt x 632.3625
+<fig/ellipses-polyhedron-fit-with-testPnts10000.png, id=21, 843.15pt x 632.3625
 pt>
 File: fig/ellipses-polyhedron-fit-with-testPnts10000.png Graphic file (type png
 )
  <use fig/ellipses-polyhedron-fit-with-testPnts10000.png>
 Package pdftex.def Info: fig/ellipses-polyhedron-fit-with-testPnts10000.png use
-d on input line 270.
+d on input line 173.
 (pdftex.def)             Requested size: 210.78697pt x 158.09024pt.
 
-Overfull \hbox (22.88783pt too wide) in paragraph at lines 270--271
+Overfull \hbox (22.88783pt too wide) in paragraph at lines 173--174
 [][] 
  []
 
-[4] [5 <./fig/closed-form_maxAngle-test_alpha.png (PNG copy)> <./fig/closed-for
-m_maxAngle-test_epsilon.png (PNG copy)>] [6 <./fig/c-space-polyhedron-fit.png> 
-<./fig/ellipses-polyhedron-fit.png (PNG copy)> <./fig/c-space-polyhedron-fit-wi
-th-testPnts10000.png (PNG copy)> <./fig/ellipses-polyhedron-fit-with-testPnts10
-000.png (PNG copy)>] (./KC_summary.aux) ) 
+[3] [4 <./fig/c-space-polyhedron-fit.png> <./fig/ellipses-polyhedron-fit.png (P
+NG copy)> <./fig/c-space-polyhedron-fit-with-testPnts10000.png (PNG copy)> <./f
+ig/ellipses-polyhedron-fit-with-testPnts10000.png (PNG copy)>] [5]
+<fig/closed-form_maxAngle-test_alpha.png, id=32, 2890.8pt x 1460.45625pt>
+File: fig/closed-form_maxAngle-test_alpha.png Graphic file (type png)
+
+<use fig/closed-form_maxAngle-test_alpha.png>
+Package pdftex.def Info: fig/closed-form_maxAngle-test_alpha.png used on input 
+line 288.
+(pdftex.def)             Requested size: 491.4295pt x 248.27428pt.
+
+Overfull \hbox (21.67448pt too wide) in paragraph at lines 288--289
+[][] 
+ []
+
+<fig/closed-form_maxAngle-test_epsilon.png, id=33, 2890.8pt x 1460.45625pt>
+File: fig/closed-form_maxAngle-test_epsilon.png Graphic file (type png)
+
+<use fig/closed-form_maxAngle-test_epsilon.png>
+Package pdftex.def Info: fig/closed-form_maxAngle-test_epsilon.png used on inpu
+t line 294.
+(pdftex.def)             Requested size: 491.4295pt x 248.27428pt.
+
+Overfull \hbox (21.67448pt too wide) in paragraph at lines 294--295
+[][] 
+ []
+
+[6 <./fig/closed-form_maxAngle-test_alpha.png (PNG copy)>] [7 <./fig/closed-for
+m_maxAngle-test_epsilon.png (PNG copy)>] (./KC_summary.aux) ) 
 Here is how much of TeX's memory you used:
- 3440 strings out of 494953
- 45382 string characters out of 6180977
- 114839 words of memory out of 5000000
- 6628 multiletter control sequences out of 15000+600000
- 43292 words of font info for 98 fonts, out of 8000000 for 9000
+ 3464 strings out of 494953
+ 45842 string characters out of 6180977
+ 115823 words of memory out of 5000000
+ 6654 multiletter control sequences out of 15000+600000
+ 51938 words of font info for 119 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 38i,14n,32p,696b,277s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texlive/texmf-dist/fonts/e
-nc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-mi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/euler/eufm10.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/sh
-are/texlive/texmf-dist/fonts/type1/public/rsfs/rsfs10.pfb></usr/share/texlive/t
-exmf-dist/fonts/type1/urw/symbol/usyr.pfb></usr/share/texlive/texmf-dist/fonts/
-type1/urw/symbol/usyr.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/
-utmb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on KC_summary.pdf (6 pages, 599377 bytes).
+ 38i,14n,32p,790b,277s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/share/texliv
+e/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symb
+ols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/symbol/usyr.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/urw/symbol/usyr.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/
+times/utmri8a.pfb>
+Output written on KC_summary.pdf (7 pages, 598394 bytes).
 PDF statistics:
- 78 PDF objects out of 1000 (max. 8388607)
- 51 compressed objects within 1 object stream
+ 75 PDF objects out of 1000 (max. 8388607)
+ 49 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  31 words of extra memory for PDF output out of 10000 (max. 10000000)
 
