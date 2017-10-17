@@ -185,10 +185,10 @@ In this section, we investigate the examples of the allowable motion c-space in 
 \subsubsection{Mathematical settings}
 The configuration space is now 6 dimensional, i.e $\xi = [\theta_1,\theta_2,\theta_3,x,y,z]^T$. The extreme points in translational axes are, similar to 2D, $x_{extreme} = \pm \epsilon a_1$, $y_{extreme} = \pm \epsilon a_2$ and $z_{extreme} = \pm \epsilon a_3$ respectively. To find the extreme points in rotational axes, we project the 3D space onto the three mutually perpendicular 2D planes, i.e. $x,y-$, $x,z-$, $y,z-$ plane. So the problem shrinks to the 2D case of finding the extreme rotational points at each plane, i.e. $\theta_i = \arctan(\pm \epsilon \sqrt{\frac{\alpha_i}{(\alpha_i(1+\epsilon)-1) (\alpha_i - \epsilon - 1)}}), i = 1,2,3$, where $\alpha_i$ is the aspect ratio of the projected ellipse at each plane. The number of extreme points is 12.
 
-The extreme points with farthest distance to the origin can be obtained by the constraint convex optimization with the configuration variable defined above. In this case, we get 64 possible solutions and only ?? are valid. Combined with the extreme points at each axis, in total, we get ?? extreme points to create the 6D polyhedron.
+The extreme points with farthest distance to the origin can be obtained by the constraint convex optimization with the configuration variable defined above. In this case, we get 64 possible solutions and only 32 are valid. Combined with the extreme points at each axis, in total, we get 44 extreme points to create the 6D polyhedron.
 
 \subsubsection{Numerical results}
-Since it is not possible to visualize a 6D space, we divide the rotational and translational parts to split the whole space into two 3D spaces for visualization.
+Since it is not possible to visualize a 6D space, we divide the rotational and translational parts to split the whole space into two 3D spaces for visualization. Note that not all combinations of the extreme points in those two 3D spaces are valid, we still keep the 44 extreme configurations for the original 6D c-space. 
 
 
 
