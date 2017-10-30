@@ -13,7 +13,7 @@ for k = 1:length(alpha)
     figure(1);
     subplot(3,5,k);
     maxAngle(alpha(k), a, b, epi(2));
-    title(['\alpha = ', num2str(alpha(k))])
+    title(['\epsilon = ', num2str(epi(2)), ', \alpha = ', num2str(alpha(k))])
 end
 
 %% Test for different \epsilon
@@ -24,7 +24,7 @@ for k = 1:length(epi)
     figure(2);
     subplot(3,3,k);
     maxAngle(alpha(2), a, b, epi(k));
-    title(['\epsilon = ', num2str(epi(k))])
+    title(['\alpha = ', num2str(alpha(2)), ', \epsilon = ', num2str(epi(k))])
 end
 
 
