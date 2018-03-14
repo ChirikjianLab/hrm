@@ -17,9 +17,9 @@ using namespace std;
 int main(){
     // Environment
     int num = 50;
-    SuperEllipse robot = {{2,1,pi/6,1,0,0}, num};
+    SuperEllipse robot = {{2,1,pi/4,1,0,0}, num};
     SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
-    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,2,0,0.3,-10,0}, num} };
+    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,5}, num} };
     double endPts[2][2] = {{-30,-20},{30,20}};
 
     // Options
@@ -32,18 +32,34 @@ int main(){
     opt.N_o = sizeof(obs)/sizeof(obs[0]);
     opt.N_s = sizeof(arena)/sizeof(arena[0]);
 
+    // calculate original boundary points
+    boundary bd_ori;
+    for(int i=0; i<opt.N_s; i++){
+        bd_ori.bd_s.push_back( arena[i].originShape(arena[i].a, arena[i].num) );
+    }
+    for(int i=0; i<opt.N_o; i++){
+        bd_ori.bd_o.push_back( obs[i].originShape(obs[i].a, obs[i].num) );
+    }
+
     // Main Algorithm
     highwayRoadmap high(robot, endPts, arena, obs, opt);
     boundary bd = high.boundaryGen();
     cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
 
-/*    // write to .csv file
-    ofstream file;
-    file.open("bd.csv");
-    file << bd.bd_o[0] << "\n";
-    file << bd.bd_o[1] << "\n";
-    file << bd.bd_s[0] << "\n";
-    file.close();*/
+    // write to .csv file
+    ofstream file_ori_bd;
+    file_ori_bd.open("bd_ori.csv");
+    file_ori_bd << bd_ori.bd_o[0] << "\n";
+    file_ori_bd << bd_ori.bd_o[1] << "\n";
+    file_ori_bd << bd_ori.bd_s[0] << "\n";
+    file_ori_bd.close();
+
+    ofstream file_bd;
+    file_bd.open("bd.csv");
+    file_bd << bd.bd_o[0] << "\n";
+    file_bd << bd.bd_o[1] << "\n";
+    file_bd << bd.bd_s[0] << "\n";
+    file_bd.close();
 
 /*
     enum nodes{A,B,C,D};

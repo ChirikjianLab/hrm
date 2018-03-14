@@ -10,8 +10,8 @@ public:
     /* Parameters of superellipse
         a[0], a[1]: semi-axes length;
         a[2]      : rotational angle;
-        a[3], a[4]: position of the center;
-        a[5]      : epsilon
+        a[3]      : epsilon;
+        a[4], a[5]: position of the center.
     */
     double a[6];
     // Number of points on boundary
