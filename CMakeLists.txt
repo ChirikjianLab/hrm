@@ -12,16 +12,17 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 include_directories("${PROJECT_SOURCE_DIR}")
 
 # Packages
-find_package(OpenCV REQUIRED)
+# find_package(OpenCV REQUIRED)
 
 # Headers
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 
 # Executables
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+# add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/interval.cpp)
 #add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp)
 
-TARGET_LINK_LIBRARIES(HighwayRoadMap ${OpenCV_LIBS})
+# TARGET_LINK_LIBRARIES(HighwayRoadMap ${OpenCV_LIBS})

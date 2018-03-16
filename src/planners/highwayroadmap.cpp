@@ -128,7 +128,9 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
 //    file_arena.close();
 
     // CF line segment for each ty
+    for(int i=0; i<N_dy; i++){
 
+    }
 
     return cell;
 }
