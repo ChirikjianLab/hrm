@@ -1,14 +1,10 @@
 #include<vector>
 #include<bits/stdc++.h>
+#include<limits>
 
-using namespace std;
+#include<src/planners/interval.h>
 
-struct Interval{
-    double s;
-    double e;
-};
-
-vector<Interval> Union(vector<Interval>& ins){
+vector<Interval> interval::Union(vector<Interval>& ins){
     // Union of several intervals
     if(ins.empty()) return vector<Interval>{};
     vector<Interval> res;
@@ -23,7 +19,7 @@ vector<Interval> Union(vector<Interval>& ins){
     return res;
 }
 
-vector<Interval> Intersect(vector<Interval>& ins){
+vector<Interval> interval::Intersect(vector<Interval>& ins){
     // Intersection of several intervals
     if(ins.empty()) return vector<Interval> {};
     vector<Interval> res;
@@ -39,58 +35,64 @@ vector<Interval> Intersect(vector<Interval>& ins){
     return res;
 }
 
-vector<Interval> Complement(vector<Interval>& outer, vector<Interval>& inner){
+vector<Interval> interval::Complement(vector<Interval>& outer, vector<Interval>& inner){
     // Complement between one outer interval and several inner intervals
     if(outer.empty()) return vector<Interval>{};
     if(inner.empty()) return outer;
 
-    vector<Interval> res;
+    vector<Interval> res, comp, int_buff, intsect;
     sort(inner.begin(), inner.end(), [](Interval a, Interval b){return a.s < b.s;});
 
-    for(int i=0; i<inner.size(); i++){
-        if(outer[0].s <= inner.front().s) res.push_back({outer[0].s,inner.front().s});
-    res.push_back({inner.back().e,outer[0].e});
-    }
-
+    // Compliment of the inner intervals
+    comp.push_back({numeric_limits<double>::min(), inner[0].s});
     for(int i=0; i<inner.size()-1; i++){
-        res.push_back({inner[i].e,inner[i+1].s});
+        comp.push_back({inner[i].e,inner[i+1].s});
+    }
+    comp.push_back({inner.back().e, numeric_limits<double>::max()});
+
+    // Intersection with outer interval
+    for(int i=0; i<comp.size(); i++){
+        int_buff.push_back(comp[i]);
+        int_buff.push_back(outer[0]);
+
+        intsect = Intersect(int_buff);
+        if(!intsect.empty()) res.push_back(intsect[0]);
+
+        int_buff.clear();
     }
 
-    return Union(res);
+    return res;
 }
 
-int main(){
-    cout << "max" << endl;
-    vector<Interval> arr = {{2,3},{1,1.3},{2.5,7},{5,7},{8.9,10}}, arr2 = {{0,15},{0.3,13},{1,12}};
-    cout << 'k' << endl;
-    vector<Interval> arr_merge, arr_inter, arr_comp;
+//int main(){
+//    vector<Interval> arr = {{2,3},{1,1.3},{2.5,7},{5,7},{8.9,10}}, arr2 = {{0,15},{0.3,13},{6,12}};
+//    vector<Interval> arr_merge, arr_inter, arr_comp;
 
-    cout << 'k' << endl;
+//    interval op_interval;
+//    arr_merge = op_interval.Union(arr);
+//    arr_inter = op_interval.Intersect(arr2);
+//    arr_comp = op_interval.Complement(arr_inter,arr_merge);
 
-    arr_merge = Union(arr);
-    arr_inter = Intersect(arr2);
-    arr_comp = Complement(arr_inter,arr_merge);
+//    if(!arr_merge.empty()){
+//        cout << "Merged Interval: ";
+//        for(int i=0; i<arr_merge.size(); i++){
+//            cout << '[' << arr_merge[i].s << ',' << arr_merge[i].e << ']';
+//        }
+//    }
 
-    if(!arr_merge.empty()){
-        cout << "Merged Interval: ";
-        for(int i=0; i<arr_merge.size(); i++){
-            cout << '[' << arr_merge[i].s << ',' << arr_merge[i].e << ']';
-        }
-    }
+//    if(!arr_inter.empty()){
+//        cout << "Intersect Interval: ";
+//        for(int i=0; i<arr_inter.size(); i++){
+//            cout << '[' << arr_inter[i].s << ',' << arr_inter[i].e << ']';
+//        }
+//    }
 
-    if(!arr_inter.empty()){
-        cout << "Intersect Interval: ";
-        for(int i=0; i<arr_inter.size(); i++){
-            cout << '[' << arr_inter[i].s << ',' << arr_inter[i].e << ']';
-        }
-    }
+//    if(!arr_comp.empty()){
+//        cout << "Complement Interval: ";
+//        for(int i=0; i<arr_comp.size(); i++){
+//        cout << '[' << arr_comp[i].s << ',' << arr_comp[i].e << ']';
+//        }
+//    }
 
-    if(!arr_comp.empty()){
-        cout << "Complement Interval: ";
-        for(int i=0; i<arr_comp.size(); i++){
-        cout << '[' << arr_comp[i].s << ',' << arr_comp[i].e << ']';
-        }
-    }
-
-    return 0;
-}
+//    return 0;
+//}

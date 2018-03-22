@@ -1,6 +1,7 @@
 #include <iostream>
 #include <list>
 #include <src/planners/highwayroadmap.h>
+#include<src/planners/interval.h>
 
 #include <fstream>
 
@@ -69,6 +70,10 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
     MatrixXd x_s_L(N_dy, N_s), x_s_R(N_dy, N_s);
     MatrixXd x_o_L(N_dy, N_o), x_o_R(N_dy, N_o);
 
+    interval op;
+    vector<Interval> cf_seg[N_dy], obs_seg, arena_seg, obs_merge, arena_inter;
+    vector<double> xL, xU, xM;
+
     // Separate boundaries of Arenas and Obstacles into two parts
     for(int i=0; i<N_s; i++) {
         P_bd_s[i] = separateBoundary(bd_s[i]);
@@ -129,7 +134,34 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
 
     // CF line segment for each ty
     for(int i=0; i<N_dy; i++){
+        // Construct intervals at each sweep line
+        for(int j=0; j<N_s; j++) if(!isnan(x_s_L(i,j)) && !isnan(x_s_R(i,j))) arena_seg.push_back({x_s_L(i,j), x_s_R(i,j)});
+        for(int j=0; j<N_o; j++) if(!isnan(x_o_L(i,j)) && !isnan(x_o_R(i,j))) obs_seg.push_back({x_o_L(i,j), x_o_R(i,j)});
 
+        // y-coord
+        cell.ty.push_back(ty[i]);
+
+        // cf-intervals at each line
+        obs_merge = op.Union(obs_seg);
+        arena_inter = op.Intersect(arena_seg);
+        cf_seg[i] = op.Complement(arena_inter,obs_merge);
+
+        // x-coords
+        for(int j=0; j<cf_seg[i].size(); j++){
+            xL.push_back(cf_seg[i][j].s);
+            xU.push_back(cf_seg[i][j].e);
+            xM.push_back( (cf_seg[i][j].s+cf_seg[i][j].e)/2.0 );
+        }
+        cell.xL.push_back(xL);
+        cell.xU.push_back(xU);
+        cell.xM.push_back(xM);
+
+        // Clear memory
+        arena_seg.clear();
+        obs_seg.clear();
+        xL.clear();
+        xU.clear();
+        xM.clear();
     }
 
     return cell;

@@ -17,9 +17,10 @@ include_directories("${PROJECT_SOURCE_DIR}")
 # Headers
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 
 # Executables
-# add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/interval.cpp)
 #add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)

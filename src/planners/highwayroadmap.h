@@ -18,10 +18,10 @@ typedef vector< pair<int, int> > Edge;
 // cf_cell: collision-free points
 struct cf_cell{
 public:
-    double ty;
-    vector<double> xL;
-    vector<double> xU;
-    vector<double> xM;
+    vector<double> ty;
+    vector< vector<double> > xL;
+    vector< vector<double> > xU;
+    vector< vector<double> > xM;
 };
 
 // boundary: Minkowski boundary points for obstacles and arenas
