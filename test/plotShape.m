@@ -9,6 +9,8 @@ Y = load([loadPath, 'bd_ty.csv']);
 
 X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
 
+cf_seg = load([loadPath, 'cell.csv']);
+
 figure; hold on; axis equal;
 %% environment
 % original
@@ -40,3 +42,9 @@ plot(X_obs_ex(N_dy+1:N_dy*2,2),Y,'b*')
 % arena
 plot(X_arena(1:N_dy,1),Y,'.')
 plot(X_arena(N_dy+1:N_dy*2,1),Y,'.')
+
+% cells
+for i = 1:size(cf_seg,1)
+    plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
+    plot(cf_seg(i,3), cf_seg(i,1),'k.')
+end

@@ -70,6 +70,7 @@ private:
     boundary::sepBd separateBoundary(MatrixXd bd);
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
+    cf_cell enhanceDecomp(cf_cell cell);
 
 public:
     highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);

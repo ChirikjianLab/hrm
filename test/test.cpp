@@ -61,6 +61,17 @@ int main(){
     file_bd << bd.bd_s[0] << "\n";
     file_bd.close();
 
+    ofstream file_cell;
+    file_cell.open("cell.csv");
+    for(int i=0; i<cell.ty.size(); i++){
+        for(int j=0; j<cell.xL[i].size(); j++)
+            file_cell << cell.ty[i] << ' ' <<
+                         cell.xL[i][j] << ' ' <<
+                         cell.xM[i][j] << ' ' <<
+                         cell.xU[i][j] << "\n";
+    }
+    file_cell.close();
+
 /*
     enum nodes{A,B,C,D};
     vector< vector<double> > name = {{1,2,5},{3,3,6},{1,2,3}};

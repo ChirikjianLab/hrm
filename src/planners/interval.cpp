@@ -44,7 +44,7 @@ vector<Interval> interval::Complement(vector<Interval>& outer, vector<Interval>&
     sort(inner.begin(), inner.end(), [](Interval a, Interval b){return a.s < b.s;});
 
     // Compliment of the inner intervals
-    comp.push_back({numeric_limits<double>::min(), inner[0].s});
+    comp.push_back({-numeric_limits<double>::max(), inner[0].s});
     for(int i=0; i<inner.size()-1; i++){
         comp.push_back({inner[i].e,inner[i+1].s});
     }

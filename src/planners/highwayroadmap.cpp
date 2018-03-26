@@ -61,7 +61,7 @@ boundary highwayRoadmap::boundaryGen(){
 }
 
 cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
-    cf_cell cell;
+    cf_cell cell, cell_new;
 
     boundary::sepBd P_bd_s[N_s], P_bd_o[N_o];
     boundary::sepBd x_bd_s[N_dy][N_s], x_bd_o[N_dy][N_o];
@@ -164,7 +164,10 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
         xM.clear();
     }
 
-    return cell;
+    // Enhanced cell decomposition
+    cell_new = enhanceDecomp(cell);
+
+    return cell_new;
 }
 
 void highwayRoadmap::oneLayer(cf_cell CFcell){
@@ -278,4 +281,39 @@ MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double t
     }
 
     return x_o_Ex;
+}
+
+cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
+    cf_cell cell_new = cell;
+    double ep = 0;
+
+    for(int i=0; i<cell.ty.size()-1; i++){
+        for(int j1=0; j1<cell.xM[i].size(); j1++){
+            for(int j2=0; j2<cell.xM[i+1].size(); j2++){
+                if(cell_new.xM[i][j1] < cell_new.xL[i+1][j2] && cell_new.xU[i][j1] >= cell_new.xL[i+1][j2]){
+                    cell_new.xU[i].push_back(cell_new.xL[i+1][j2]+ep);
+                    cell_new.xL[i].push_back(cell_new.xL[i+1][j2]-ep);
+                    cell_new.xM[i].push_back(cell_new.xL[i+1][j2]);
+                }
+                else if(cell_new.xM[i][j1] > cell_new.xU[i+1][j2] && cell_new.xL[i][j1] <= cell_new.xU[i+1][j2]){
+                    cell_new.xU[i].push_back(cell_new.xU[i+1][j2]+ep);
+                    cell_new.xL[i].push_back(cell_new.xU[i+1][j2]-ep);
+                    cell_new.xM[i].push_back(cell_new.xU[i+1][j2]);
+                }
+
+                if(cell_new.xM[i+1][j2] < cell_new.xL[i][j1] && cell_new.xU[i+1][j2] >= cell_new.xL[i][j1]){
+                    cell_new.xU[i+1].push_back(cell_new.xL[i][j1]+ep);
+                    cell_new.xL[i+1].push_back(cell_new.xL[i][j1]-ep);
+                    cell_new.xM[i+1].push_back(cell_new.xL[i][j1]);
+                }
+                else if(cell_new.xM[i+1][j2] > cell_new.xU[i][j1] && cell_new.xL[i+1][j2] <= cell_new.xU[i][j1]){
+                    cell_new.xU[i+1].push_back(cell_new.xU[i][j1]+ep);
+                    cell_new.xL[i+1].push_back(cell_new.xU[i][j1]-ep);
+                    cell_new.xM[i+1].push_back(cell_new.xU[i][j1]);
+                }
+            }
+        }
+    }
+
+    return cell_new;
 }
