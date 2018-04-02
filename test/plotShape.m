@@ -11,6 +11,9 @@ X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
 
 cf_seg = load([loadPath, 'cell.csv']);
 
+vtx = load([loadPath, 'vertex.csv']);
+edge = load([loadPath, 'edge.csv']);
+
 figure; hold on; axis equal;
 %% environment
 % original
@@ -46,5 +49,12 @@ plot(X_arena(N_dy+1:N_dy*2,1),Y,'.')
 % cells
 for i = 1:size(cf_seg,1)
     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-    plot(cf_seg(i,3), cf_seg(i,1),'k.')
+%     plot(cf_seg(i,3), cf_seg(i,1),'k.')
+end
+
+% vertex and connections
+plot(vtx(:,1), vtx(:,2),'k.');
+edge = edge+1;
+for i = 1:size(edge,1)
+    plot([vtx(edge(i,1),1) vtx(edge(i,2),1)], [vtx(edge(i,1),2) vtx(edge(i,2),2)],'k')
 end

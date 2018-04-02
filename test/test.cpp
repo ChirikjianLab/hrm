@@ -17,9 +17,9 @@ using namespace std;
 int main(){
     // Environment
     int num = 50;
-    SuperEllipse robot = {{2,1,pi/4,1,0,0}, num};
+    SuperEllipse robot = {{2,1,pi/6,1,0,0}, num};
     SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
-    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,5}, num} };
+    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,10}, num} };
     double endPts[2][2] = {{-30,-20},{30,20}};
 
     // Options
@@ -45,6 +45,7 @@ int main(){
     highwayRoadmap high(robot, endPts, arena, obs, opt);
     boundary bd = high.boundaryGen();
     cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
+    high.oneLayer(cell);
 
     // write to .csv file
     ofstream file_ori_bd;
@@ -71,6 +72,18 @@ int main(){
                          cell.xU[i][j] << "\n";
     }
     file_cell.close();
+
+    ofstream file_vtx;
+    file_vtx.open("vertex.csv");
+    vector<vector<double>> vtx = high.vtxEdge.vertex;
+    for(int i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << "\n";
+    file_vtx.close();
+
+    ofstream file_edge;
+    file_edge.open("edge.csv");
+    vector<pair<int, int>> edge = high.vtxEdge.edge;
+    for(int i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+    file_edge.close();
 
 /*
     enum nodes{A,B,C,D};

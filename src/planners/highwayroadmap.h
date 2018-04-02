@@ -51,7 +51,7 @@ private:
     double infla;
     int N_layers, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal;
     double ang_r, polyVtx;
-
+public:
     // graph: vector of vertices, vector of connectable edges
     struct graph{
     public:
@@ -59,7 +59,7 @@ private:
         Edge edge;
     } vtxEdge;
 
-public:
+
     AdjGraph Graph;
     SuperEllipse Robot, *Arena, *Obs;
     double Cost, *Endpt;
@@ -78,6 +78,7 @@ public:
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     void oneLayer(cf_cell cell);
+    void multiLayer();
 };
 
 #endif // HIGHWAYROADMAP_H

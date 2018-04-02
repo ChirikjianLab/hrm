@@ -105,32 +105,32 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
         }
     }
 
-//    ofstream file_obs;
-//    file_obs.open("bd_obs.csv");
-//    file_obs << x_o_L << "\n";
-//    file_obs << x_o_R << "\n";
-//    file_obs.close();
+    ofstream file_obs;
+    file_obs.open("bd_obs.csv");
+    file_obs << x_o_L << "\n";
+    file_obs << x_o_R << "\n";
+    file_obs.close();
 
     // Enlarge the obstacle to form convex CF cells
     x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
     x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
 
     // write to .csv file
-//    ofstream file_ty;
-//    file_ty.open("bd_ty.csv");
-//    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
-//    file_ty.close();
+    ofstream file_ty;
+    file_ty.open("bd_ty.csv");
+    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
+    file_ty.close();
 
-//    file_obs.open("bd_obs_ex.csv");
-//    file_obs << x_o_L << "\n";
-//    file_obs << x_o_R << "\n";
-//    file_obs.close();
+    file_obs.open("bd_obs_ex.csv");
+    file_obs << x_o_L << "\n";
+    file_obs << x_o_R << "\n";
+    file_obs.close();
 
-//    ofstream file_arena;
-//    file_arena.open("bd_arena.csv");
-//    file_arena << x_s_L << "\n";
-//    file_arena << x_s_R << "\n";
-//    file_arena.close();
+    ofstream file_arena;
+    file_arena.open("bd_arena.csv");
+    file_arena << x_s_L << "\n";
+    file_arena << x_s_R << "\n";
+    file_arena.close();
 
     // CF line segment for each ty
     for(int i=0; i<N_dy; i++){
@@ -171,13 +171,38 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
 }
 
 void highwayRoadmap::oneLayer(cf_cell CFcell){
+    // Construct a vector of vertex
+    for(int i=0; i<CFcell.ty.size(); i++){
+        int N_0 = vtxEdge.vertex.size();
+        for(int j=0; j<CFcell.xM[i].size(); j++){
+            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot.a[2]});
 
-    /*
+            // Connect vertex within one sweep line
+            if(j != CFcell.xM[i].size()-1)
+                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5)
+                    vtxEdge.edge.push_back(make_pair(N_0+j, N_0+j+1));
+        }
+        int N_1 = vtxEdge.vertex.size();
 
-vtxEdge.vertex.push_back({});
-vtxEdge.edge.push_back(make_pair());
+        if(i != CFcell.ty.size()-1){
+        // Connect vertex btw adjacent cells
+            for(int j1=0; j1<CFcell.xM[i].size(); j1++){
+                for(int j2=0; j2<CFcell.xM[i+1].size(); j2++){
+                    if( ( (CFcell.xM[i][j1] >= CFcell.xL[i+1][j2] && CFcell.xM[i][j1] <= CFcell.xU[i+1][j2]) ||
+                        (CFcell.xM[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xM[i+1][j2] <= CFcell.xU[i][j1]) ) &&
+                        ( (CFcell.xU[i][j1] >= CFcell.xL[i+1][j2] && CFcell.xU[i][j1] <= CFcell.xU[i+1][j2]) ||
+                        (CFcell.xL[i][j1] >= CFcell.xL[i+1][j2] && CFcell.xL[i][j1] <= CFcell.xU[i+1][j2]) ||
+                        (CFcell.xU[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xU[i+1][j2] <= CFcell.xU[i][j1]) ||
+                        (CFcell.xL[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xL[i+1][j2] <= CFcell.xU[i][j1]) ) )
+                            vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
+                }
+            }
+        }
+    }
+}
 
-N_v_layers.pushback(sizeof(this->vtxEdge.vertex)/sizeof(this->vtxEdge.vertex[0]));*/
+void highwayRoadmap::multiLayer(){
+
 }
 
 
@@ -291,28 +316,32 @@ cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
         for(int j1=0; j1<cell.xM[i].size(); j1++){
             for(int j2=0; j2<cell.xM[i+1].size(); j2++){
                 if(cell_new.xM[i][j1] < cell_new.xL[i+1][j2] && cell_new.xU[i][j1] >= cell_new.xL[i+1][j2]){
-                    cell_new.xU[i].push_back(cell_new.xL[i+1][j2]+ep);
-                    cell_new.xL[i].push_back(cell_new.xL[i+1][j2]-ep);
+                    cell_new.xU[i].push_back(cell_new.xL[i+1][j2]);
+                    cell_new.xL[i].push_back(cell_new.xL[i+1][j2]);
                     cell_new.xM[i].push_back(cell_new.xL[i+1][j2]);
                 }
                 else if(cell_new.xM[i][j1] > cell_new.xU[i+1][j2] && cell_new.xL[i][j1] <= cell_new.xU[i+1][j2]){
-                    cell_new.xU[i].push_back(cell_new.xU[i+1][j2]+ep);
-                    cell_new.xL[i].push_back(cell_new.xU[i+1][j2]-ep);
+                    cell_new.xU[i].push_back(cell_new.xU[i+1][j2]);
+                    cell_new.xL[i].push_back(cell_new.xU[i+1][j2]);
                     cell_new.xM[i].push_back(cell_new.xU[i+1][j2]);
                 }
 
                 if(cell_new.xM[i+1][j2] < cell_new.xL[i][j1] && cell_new.xU[i+1][j2] >= cell_new.xL[i][j1]){
-                    cell_new.xU[i+1].push_back(cell_new.xL[i][j1]+ep);
-                    cell_new.xL[i+1].push_back(cell_new.xL[i][j1]-ep);
+                    cell_new.xU[i+1].push_back(cell_new.xL[i][j1]);
+                    cell_new.xL[i+1].push_back(cell_new.xL[i][j1]);
                     cell_new.xM[i+1].push_back(cell_new.xL[i][j1]);
                 }
                 else if(cell_new.xM[i+1][j2] > cell_new.xU[i][j1] && cell_new.xL[i+1][j2] <= cell_new.xU[i][j1]){
-                    cell_new.xU[i+1].push_back(cell_new.xU[i][j1]+ep);
-                    cell_new.xL[i+1].push_back(cell_new.xU[i][j1]-ep);
+                    cell_new.xU[i+1].push_back(cell_new.xU[i][j1]);
+                    cell_new.xL[i+1].push_back(cell_new.xU[i][j1]);
                     cell_new.xM[i+1].push_back(cell_new.xU[i][j1]);
                 }
             }
         }
+
+        sort(cell_new.xL[i].begin(), cell_new.xL[i].end(), [](double a, double b){return a < b;});
+        sort(cell_new.xU[i].begin(), cell_new.xU[i].end(), [](double a, double b){return a < b;});
+        sort(cell_new.xM[i].begin(), cell_new.xM[i].end(), [](double a, double b){return a < b;});
     }
 
     return cell_new;
