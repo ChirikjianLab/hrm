@@ -37,8 +37,12 @@ void highwayRoadmap::multiLayers(){
         cf_cell CFcell = rasterScan(bd.bd_s, bd.bd_o);
 
         // construct adjacency matrix for one layer
-        oneLayer(CFcell);
+        connectOneLayer(CFcell);
+
+        // Store the number of vertex before the current layer
+        N_v_layer.push_back(vtxEdge.vertex.size());
     }
+    connectMultiLayer();
 }
 
 boundary highwayRoadmap::boundaryGen(){
@@ -170,7 +174,7 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
     return cell_new;
 }
 
-void highwayRoadmap::oneLayer(cf_cell CFcell){
+void highwayRoadmap::connectOneLayer(cf_cell CFcell){
     // Construct a vector of vertex
     for(int i=0; i<CFcell.ty.size(); i++){
         int N_0 = vtxEdge.vertex.size();
@@ -201,8 +205,25 @@ void highwayRoadmap::oneLayer(cf_cell CFcell){
     }
 }
 
-void highwayRoadmap::multiLayer(){
+void highwayRoadmap::connectMultiLayer(){
+    int n_1, n_2, d;
+    int start = 0;
 
+    for(int i=0; i<N_layers; i++){
+        // Find vertex only in adjecent layers
+        n_1 = N_v_layer[i];
+        if(i==N_layers) n_2 = N_v_layer[1];
+            else n_2 = N_v_layer[i+1];
+
+        for(int m=start; m<n_1; m++){
+            for(int m2=n_1; m2<n_2; m2++){
+                d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
+                        pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
+                if(d < 1.0) vtxEdge.edge.push_back(make_pair(m, m2));
+            }
+        }
+        start = n_1;
+    }
 }
 
 

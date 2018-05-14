@@ -53,8 +53,11 @@ for i = 1:size(cf_seg,1)
 end
 
 % vertex and connections
-plot(vtx(:,1), vtx(:,2),'k.');
+sc = 10;
+plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
 edge = edge+1;
 for i = 1:size(edge,1)
-    plot([vtx(edge(i,1),1) vtx(edge(i,2),1)], [vtx(edge(i,1),2) vtx(edge(i,2),2)],'k')
+    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
 end

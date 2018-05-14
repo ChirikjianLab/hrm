@@ -125,7 +125,7 @@ classdef HighwayRoadmap < handle
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if Obj.PlotSingleLayer
-                    CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
+               m     CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
                     
                     for j=1:size(bd_s,3)
                         plot3(bd_s(1,:,j),bd_s(2,:,j),...

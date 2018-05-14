@@ -43,35 +43,36 @@ int main(){
 
     // Main Algorithm
     highwayRoadmap high(robot, endPts, arena, obs, opt);
-    boundary bd = high.boundaryGen();
-    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
-    high.oneLayer(cell);
+    high.multiLayers();
+//    boundary bd = high.boundaryGen();
+//    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
+//    high.connectOneLayer(cell);
 
-    // write to .csv file
-    ofstream file_ori_bd;
-    file_ori_bd.open("bd_ori.csv");
-    file_ori_bd << bd_ori.bd_o[0] << "\n";
-    file_ori_bd << bd_ori.bd_o[1] << "\n";
-    file_ori_bd << bd_ori.bd_s[0] << "\n";
-    file_ori_bd.close();
+//    // write to .csv file
+//    ofstream file_ori_bd;
+//    file_ori_bd.open("bd_ori.csv");
+//    file_ori_bd << bd_ori.bd_o[0] << "\n";
+//    file_ori_bd << bd_ori.bd_o[1] << "\n";
+//    file_ori_bd << bd_ori.bd_s[0] << "\n";
+//    file_ori_bd.close();
 
-    ofstream file_bd;
-    file_bd.open("bd.csv");
-    file_bd << bd.bd_o[0] << "\n";
-    file_bd << bd.bd_o[1] << "\n";
-    file_bd << bd.bd_s[0] << "\n";
-    file_bd.close();
+//    ofstream file_bd;
+//    file_bd.open("bd.csv");
+//    file_bd << bd.bd_o[0] << "\n";
+//    file_bd << bd.bd_o[1] << "\n";
+//    file_bd << bd.bd_s[0] << "\n";
+//    file_bd.close();
 
-    ofstream file_cell;
-    file_cell.open("cell.csv");
-    for(int i=0; i<cell.ty.size(); i++){
-        for(int j=0; j<cell.xL[i].size(); j++)
-            file_cell << cell.ty[i] << ' ' <<
-                         cell.xL[i][j] << ' ' <<
-                         cell.xM[i][j] << ' ' <<
-                         cell.xU[i][j] << "\n";
-    }
-    file_cell.close();
+//    ofstream file_cell;
+//    file_cell.open("cell.csv");
+//    for(int i=0; i<cell.ty.size(); i++){
+//        for(int j=0; j<cell.xL[i].size(); j++)
+//            file_cell << cell.ty[i] << ' ' <<
+//                         cell.xL[i][j] << ' ' <<
+//                         cell.xM[i][j] << ' ' <<
+//                         cell.xU[i][j] << "\n";
+//    }
+//    file_cell.close();
 
     ofstream file_vtx;
     file_vtx.open("vertex.csv");

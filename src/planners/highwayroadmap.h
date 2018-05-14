@@ -49,8 +49,10 @@ class highwayRoadmap
 private:
     int N_o, N_s, N_dy;
     double infla;
-    int N_layers, N_v_layer, N_KCsample, layerDist, d12, I_start, I_goal;
+    int N_layers, N_KCsample, layerDist, d12, I_start, I_goal;
     double ang_r, polyVtx;
+    vector<int> N_v_layer;
+
 public:
     // graph: vector of vertices, vector of connectable edges
     struct graph{
@@ -77,8 +79,8 @@ public:
     void multiLayers();
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
-    void oneLayer(cf_cell cell);
-    void multiLayer();
+    void connectOneLayer(cf_cell cell);
+    void connectMultiLayer();
 };
 
 #endif // HIGHWAYROADMAP_H
