@@ -6,13 +6,17 @@
 #include <limits>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
+#include <boost/graph/random.hpp>
 
 #include <src/geometry/superellipse.h>
 
 using namespace std;
 using namespace boost;
 
-typedef adjacency_list<listS, vecS, undirectedS, no_property, property < edge_weight_t, int > > AdjGraph;
+typedef adjacency_list<vecS, vecS, undirectedS, no_property, property < edge_weight_t, int > > AdjGraph;
+typedef AdjGraph::vertex_descriptor vertex_descriptor;
+typedef AdjGraph::edge_descriptor edge_descriptor;
+typedef AdjGraph::vertex_iterator vertex_iterator;
 typedef vector< pair<int, int> > Edge;
 
 // cf_cell: collision-free points
@@ -59,6 +63,7 @@ public:
     public:
         vector< vector<double> > vertex;
         Edge edge;
+        vector<double> weight;
     } vtxEdge;
 
 
@@ -76,11 +81,12 @@ private:
 
 public:
     highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);
-    void multiLayers();
+    void buildRoadmap();
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     void connectOneLayer(cf_cell cell);
     void connectMultiLayer();
+    void search();
 };
 
 #endif // HIGHWAYROADMAP_H

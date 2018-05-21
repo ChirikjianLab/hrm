@@ -23,7 +23,7 @@ highwayRoadmap::highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperElli
     Cost = 0;
 }
 
-void highwayRoadmap::multiLayers(){
+void highwayRoadmap::buildRoadmap(){
     // angle steps
     double dr = pi/(N_layers-1);
     graph multiGraph;
@@ -54,12 +54,10 @@ boundary highwayRoadmap::boundaryGen(){
     robot_infla.a[1] *= 1+infla;
 
     // calculate Minkowski boundary points
-    for(int i=0; i<N_s; i++){
+    for(int i=0; i<N_s; i++)
         bd.bd_s.push_back( Arena[i].minkSum2D(Arena[i].a, robot_infla.a, Arena[i].num, -1) );
-    }
-    for(int i=0; i<N_o; i++){
+    for(int i=0; i<N_o; i++)
         bd.bd_o.push_back( Obs[i].minkSum2D(Obs[i].a, robot_infla.a, Obs[i].num, +1) );
-    }
 
     return bd;
 }
@@ -109,38 +107,40 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
         }
     }
 
-    ofstream file_obs;
-    file_obs.open("bd_obs.csv");
-    file_obs << x_o_L << "\n";
-    file_obs << x_o_R << "\n";
-    file_obs.close();
+//    ofstream file_obs;
+//    file_obs.open("bd_obs.csv");
+//    file_obs << x_o_L << "\n";
+//    file_obs << x_o_R << "\n";
+//    file_obs.close();
 
-    // Enlarge the obstacle to form convex CF cells
-    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
-    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
+//    // Enlarge the obstacle to form convex CF cells
+//    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
+//    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
 
-    // write to .csv file
-    ofstream file_ty;
-    file_ty.open("bd_ty.csv");
-    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
-    file_ty.close();
+//    // write to .csv file
+//    ofstream file_ty;
+//    file_ty.open("bd_ty.csv");
+//    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
+//    file_ty.close();
 
-    file_obs.open("bd_obs_ex.csv");
-    file_obs << x_o_L << "\n";
-    file_obs << x_o_R << "\n";
-    file_obs.close();
+//    file_obs.open("bd_obs_ex.csv");
+//    file_obs << x_o_L << "\n";
+//    file_obs << x_o_R << "\n";
+//    file_obs.close();
 
-    ofstream file_arena;
-    file_arena.open("bd_arena.csv");
-    file_arena << x_s_L << "\n";
-    file_arena << x_s_R << "\n";
-    file_arena.close();
+//    ofstream file_arena;
+//    file_arena.open("bd_arena.csv");
+//    file_arena << x_s_L << "\n";
+//    file_arena << x_s_R << "\n";
+//    file_arena.close();
 
     // CF line segment for each ty
     for(int i=0; i<N_dy; i++){
         // Construct intervals at each sweep line
-        for(int j=0; j<N_s; j++) if(!isnan(x_s_L(i,j)) && !isnan(x_s_R(i,j))) arena_seg.push_back({x_s_L(i,j), x_s_R(i,j)});
-        for(int j=0; j<N_o; j++) if(!isnan(x_o_L(i,j)) && !isnan(x_o_R(i,j))) obs_seg.push_back({x_o_L(i,j), x_o_R(i,j)});
+        for(int j=0; j<N_s; j++) if(!isnan(x_s_L(i,j)) && !isnan(x_s_R(i,j)))
+            arena_seg.push_back({x_s_L(i,j), x_s_R(i,j)});
+        for(int j=0; j<N_o; j++) if(!isnan(x_o_L(i,j)) && !isnan(x_o_R(i,j)))
+            obs_seg.push_back({x_o_L(i,j), x_o_R(i,j)});
 
         // y-coord
         cell.ty.push_back(ty[i]);
@@ -182,9 +182,12 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
             vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot.a[2]});
 
             // Connect vertex within one sweep line
-            if(j != CFcell.xM[i].size()-1)
-                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5)
+            if(j != CFcell.xM[i].size()-1){
+                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5){
                     vtxEdge.edge.push_back(make_pair(N_0+j, N_0+j+1));
+                    vtxEdge.weight.push_back(1.0);
+                }
+            }
         }
         int N_1 = vtxEdge.vertex.size();
 
@@ -197,8 +200,10 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
                         ( (CFcell.xU[i][j1] >= CFcell.xL[i+1][j2] && CFcell.xU[i][j1] <= CFcell.xU[i+1][j2]) ||
                         (CFcell.xL[i][j1] >= CFcell.xL[i+1][j2] && CFcell.xL[i][j1] <= CFcell.xU[i+1][j2]) ||
                         (CFcell.xU[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xU[i+1][j2] <= CFcell.xU[i][j1]) ||
-                        (CFcell.xL[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xL[i+1][j2] <= CFcell.xU[i][j1]) ) )
+                        (CFcell.xL[i+1][j2] >= CFcell.xL[i][j1] && CFcell.xL[i+1][j2] <= CFcell.xU[i][j1]) ) ){
                             vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
+                            vtxEdge.weight.push_back(2.0);
+                    }
                 }
             }
         }
@@ -209,25 +214,50 @@ void highwayRoadmap::connectMultiLayer(){
     int n_1, n_2, d;
     int start = 0;
 
-    for(int i=0; i<N_layers; i++){
+    for(int i=0; i<N_layers-1; i++){
         // Find vertex only in adjecent layers
         n_1 = N_v_layer[i];
-        if(i==N_layers) n_2 = N_v_layer[1];
+        if(i==N_layers) n_2 = N_v_layer[0];
             else n_2 = N_v_layer[i+1];
 
+        // Nearest vertex btw layers
         for(int m=start; m<n_1; m++){
             for(int m2=n_1; m2<n_2; m2++){
                 d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
                         pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
-                if(d < 1.0) vtxEdge.edge.push_back(make_pair(m, m2));
+                if(d < 1.0){
+                    vtxEdge.edge.push_back(make_pair(m, m2));
+                    vtxEdge.weight.push_back(3.0);
+                    break;
+                }
             }
         }
         start = n_1;
     }
 }
 
+void highwayRoadmap::search(){
+    // Construct the roadmap
+    int num_vtx = vtxEdge.vertex.size();
+    AdjGraph g(num_vtx);
 
-/***** Private Functions *****/
+    for(int i=0; i<vtxEdge.edge.size(); i++)
+        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
+
+    // Define start and goal
+    mt19937 gen(time(0));
+    vertex_descriptor start = random_vertex(g, gen);
+    vertex_descriptor goal = random_vertex(g, gen);
+
+    // Search for shortest path
+    astar_search(g, start,
+       AStarHeuristic h, const bgl_named_params<P, T, R>& params);
+}
+
+
+/************************************************************************************************/
+/*********************************** Private Functions ******************************************/
+/************************************************************************************************/
 // For a given curve, separate its boundary into two parts
 boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
     const int half_num = Arena[0].num/2;

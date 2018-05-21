@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 #include <math.h>
 #include <eigen3/Eigen/Dense>
@@ -43,7 +44,15 @@ int main(){
 
     // Main Algorithm
     highwayRoadmap high(robot, endPts, arena, obs, opt);
-    high.multiLayers();
+
+    auto tic = chrono::high_resolution_clock::now();
+    high.buildRoadmap();
+    auto toc = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed = toc-tic;
+
+    high.search();
+
+    cout << "Elapsed time is: " << elapsed.count() << "s" << endl;
 //    boundary bd = high.boundaryGen();
 //    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
 //    high.connectOneLayer(cell);
