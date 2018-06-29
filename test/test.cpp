@@ -15,17 +15,75 @@ using namespace std;
 
 #define pi 3.1415926
 
+vector<vector<double>> parse2DCsvFile(string inputFileName) {
+    vector<vector<double> > data;
+    ifstream inputFile(inputFileName);
+    int l = 0;
+
+    while (inputFile) {
+        l++;
+        string s;
+        if (!getline(inputFile, s)) break;
+        if (s[0] != '#') {
+            istringstream ss(s);
+            vector<double> record;
+
+            while (ss) {
+                string line;
+                if (!getline(ss, line, ','))
+                    break;
+                try {
+                    record.push_back(stof(line));
+                }
+                catch (const std::invalid_argument e) {
+                    cout << "NaN found in file " << inputFileName << " line " << l
+                         << endl;
+                    e.what();
+                }
+            }
+
+            data.push_back(record);
+        }
+    }
+
+    if (!inputFile.eof()) {
+        cerr << "Could not read file " << inputFileName << "\n";
+        __throw_invalid_argument("File not found.");
+    }
+
+    return data;
+}
+
 int main(){
+    // Read robot config file
+    string file_robConfig = "../robot_config/robotConfig.csv";
+    vector<vector<double> > rob_config = parse2DCsvFile(file_robConfig);
+
+    string file_robVtx = "../robot_config/robotVtx.csv";
+    vector<vector<double> > rob_vtx = parse2DCsvFile(file_robVtx);
+
+    string file_robInvMat = "../robot_config/robotInvMat.csv";
+    vector<vector<double> > rob_InvMat = parse2DCsvFile(file_robInvMat);
+
+    polyCSpace polyVtx;
+    polyVtx.vertex = rob_vtx;
+    polyVtx.invMat = rob_InvMat;
+    polyVtx.max_num = 5;
+
     // Environment
     int num = 50;
-    SuperEllipse robot = {{2,1,pi/6,1,0,0}, num};
+
+    SuperEllipse robot;
+    for(int i=0; i<6; i++) robot.a[i] = rob_config[0][i];
+    robot.num = num;
+
     SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
     SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,10}, num} };
     double endPts[2][2] = {{-30,-20},{30,20}};
 
     // Options
     option opt;
-    opt.infla = 0.1;
+    opt.infla = rob_config[0][6];
     opt.N_layers = 17;
     opt.N_dy = 20;
     opt.sampleNum = 100;
@@ -43,14 +101,14 @@ int main(){
     }
 
     // Main Algorithm
-    highwayRoadmap high(robot, endPts, arena, obs, opt);
+    highwayRoadmap high(robot, polyVtx, endPts, arena, obs, opt);
 
     auto tic = chrono::high_resolution_clock::now();
     high.buildRoadmap();
     auto toc = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = toc-tic;
 
-    high.search();
+//    high.search();
 
     cout << "Elapsed time is: " << elapsed.count() << "s" << endl;
 //    boundary bd = high.boundaryGen();

@@ -42,6 +42,14 @@ public:
     } P_bd;
 };
 
+// Parameters for the polyhedron local c-space
+struct polyCSpace{
+public:
+    vector<vector<double>> vertex;
+    vector<vector<double>> invMat;
+    int max_num = 10;
+};
+
 struct option{
     double infla;
     int N_layers, N_dy, sampleNum, N_o, N_s;
@@ -54,7 +62,7 @@ private:
     int N_o, N_s, N_dy;
     double infla;
     int N_layers, N_KCsample, layerDist, d12, I_start, I_goal;
-    double ang_r, polyVtx;
+    double ang_r;
     vector<int> N_v_layer;
 
 public:
@@ -71,6 +79,7 @@ public:
     SuperEllipse Robot, *Arena, *Obs;
     double Cost, *Endpt;
     int Paths;
+    polyCSpace polyVtx;
 
     // functions
 private:
@@ -78,9 +87,10 @@ private:
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
+    vector<double> addMidVtx(polyCSpace polyVtx, vector<double> vtx1, vector<double> vtx2);
 
 public:
-    highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);
+    highwayRoadmap(SuperEllipse robot, polyCSpace polyVtx, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);
     void buildRoadmap();
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);

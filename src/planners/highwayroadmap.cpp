@@ -1,19 +1,23 @@
 #include <iostream>
 #include <list>
+#include <random>
 #include <src/planners/highwayroadmap.h>
-#include<src/planners/interval.h>
+#include <src/planners/interval.h>
+#include <src/geometry/ptinpoly.h>
 
 #include <fstream>
 
 #define pi 3.1415926
 
-highwayRoadmap::highwayRoadmap(SuperEllipse robot, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt){
+highwayRoadmap::highwayRoadmap(SuperEllipse robot, polyCSpace vtxMat, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt){
     Robot = robot;
     Endpt = *endpt;
     Arena = arena;
     Obs = obs;
     N_o = opt.N_o;
     N_s = opt.N_s;
+
+    polyVtx = vtxMat;
 
     infla = opt.infla;
     N_layers = opt.N_layers;
@@ -211,8 +215,10 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
 }
 
 void highwayRoadmap::connectMultiLayer(){
-    int n_1, n_2, d;
+    int n, n_1, n_2, d;
     int start = 0;
+    vector<double> midVtx;
+    n = vtxEdge.vertex.size();
 
     for(int i=0; i<N_layers-1; i++){
         // Find vertex only in adjecent layers
@@ -223,36 +229,44 @@ void highwayRoadmap::connectMultiLayer(){
         // Nearest vertex btw layers
         for(int m=start; m<n_1; m++){
             for(int m2=n_1; m2<n_2; m2++){
-                d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
-                        pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
-                if(d < 1.0){
-                    vtxEdge.edge.push_back(make_pair(m, m2));
+                midVtx = addMidVtx(polyVtx, vtxEdge.vertex[m], vtxEdge.vertex[m2]);
+//                d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
+//                        pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
+                if(!midVtx.empty()){
+                    cout << midVtx.empty() << endl;
+                    n++;
+                    vtxEdge.vertex.push_back(midVtx);
+
+                    vtxEdge.edge.push_back(make_pair(m, n));
+                    vtxEdge.weight.push_back(3.0);
+                    vtxEdge.edge.push_back(make_pair(m2, n));
                     vtxEdge.weight.push_back(3.0);
                     break;
                 }
+                midVtx.clear();
             }
         }
         start = n_1;
     }
 }
 
-void highwayRoadmap::search(){
-    // Construct the roadmap
-    int num_vtx = vtxEdge.vertex.size();
-    AdjGraph g(num_vtx);
+//void highwayRoadmap::search(){
+//    // Construct the roadmap
+//    int num_vtx = vtxEdge.vertex.size();
+//    AdjGraph g(num_vtx);
 
-    for(int i=0; i<vtxEdge.edge.size(); i++)
-        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
+//    for(int i=0; i<vtxEdge.edge.size(); i++)
+//        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
 
-    // Define start and goal
-    mt19937 gen(time(0));
-    vertex_descriptor start = random_vertex(g, gen);
-    vertex_descriptor goal = random_vertex(g, gen);
+//    // Define start and goal
+//    mt19937 gen(time(0));
+//    vertex_descriptor start = random_vertex(g, gen);
+//    vertex_descriptor goal = random_vertex(g, gen);
 
-    // Search for shortest path
-    astar_search(g, start,
-       AStarHeuristic h, const bgl_named_params<P, T, R>& params);
-}
+//    // Search for shortest path
+//    astar_search(g, start,
+//       AStarHeuristic h, const bgl_named_params<P, T, R>& params);
+//}
 
 
 /************************************************************************************************/
@@ -396,4 +410,29 @@ cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
     }
 
     return cell_new;
+}
+
+vector<double> highwayRoadmap::addMidVtx(polyCSpace polyVtx, vector<double> vtx1, vector<double> vtx2){
+    vector<double> midVtx, pt, pt1, pt2;
+    ptInPoly polyTest;
+    bool flag;
+    midVtx.clear();
+
+    for(int iter = 0; iter<polyVtx.max_num; iter++){
+        for(int i=0; i<vtx1.size(); i++){
+            pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
+            pt1.push_back(pt[i] - vtx1[i]);
+            pt2.push_back(pt[i] - vtx2[i]);
+        }
+        flag = polyTest.isPtInPoly(polyVtx, pt1);
+        if(flag){
+            flag = polyTest.isPtInPoly(polyVtx, pt2);
+            if(flag){
+                midVtx = pt;
+                return midVtx;
+            }
+        }
+    }
+
+    return midVtx;
 }
