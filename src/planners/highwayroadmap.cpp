@@ -111,32 +111,32 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
         }
     }
 
-//    ofstream file_obs;
-//    file_obs.open("bd_obs.csv");
-//    file_obs << x_o_L << "\n";
-//    file_obs << x_o_R << "\n";
-//    file_obs.close();
+    ofstream file_obs;
+    file_obs.open("bd_obs.csv");
+    file_obs << x_o_L << "\n";
+    file_obs << x_o_R << "\n";
+    file_obs.close();
 
-//    // Enlarge the obstacle to form convex CF cells
-//    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
-//    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
+    // Enlarge the obstacle to form convex CF cells
+    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
+    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
 
-//    // write to .csv file
-//    ofstream file_ty;
-//    file_ty.open("bd_ty.csv");
-//    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
-//    file_ty.close();
+    // write to .csv file
+    ofstream file_ty;
+    file_ty.open("bd_ty.csv");
+    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
+    file_ty.close();
 
-//    file_obs.open("bd_obs_ex.csv");
-//    file_obs << x_o_L << "\n";
-//    file_obs << x_o_R << "\n";
-//    file_obs.close();
+    file_obs.open("bd_obs_ex.csv");
+    file_obs << x_o_L << "\n";
+    file_obs << x_o_R << "\n";
+    file_obs.close();
 
-//    ofstream file_arena;
-//    file_arena.open("bd_arena.csv");
-//    file_arena << x_s_L << "\n";
-//    file_arena << x_s_R << "\n";
-//    file_arena.close();
+    ofstream file_arena;
+    file_arena.open("bd_arena.csv");
+    file_arena << x_s_L << "\n";
+    file_arena << x_s_R << "\n";
+    file_arena.close();
 
     // CF line segment for each ty
     for(int i=0; i<N_dy; i++){
@@ -229,22 +229,21 @@ void highwayRoadmap::connectMultiLayer(){
         // Nearest vertex btw layers
         for(int m=start; m<n_1; m++){
             for(int m2=n_1; m2<n_2; m2++){
-                midVtx = addMidVtx(polyVtx, vtxEdge.vertex[m], vtxEdge.vertex[m2]);
-//                d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
-//                        pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
+                d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
+                        pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
+                if(d<=1.0) midVtx = addMidVtx(polyVtx, vtxEdge.vertex[m], vtxEdge.vertex[m2]);
                 if(!midVtx.empty()){
-                    cout << midVtx.empty() << endl;
-                    n++;
                     vtxEdge.vertex.push_back(midVtx);
 
                     vtxEdge.edge.push_back(make_pair(m, n));
                     vtxEdge.weight.push_back(3.0);
                     vtxEdge.edge.push_back(make_pair(m2, n));
                     vtxEdge.weight.push_back(3.0);
+                    n++;
                     break;
                 }
-                midVtx.clear();
             }
+            midVtx.clear();
         }
         start = n_1;
     }
@@ -419,6 +418,7 @@ vector<double> highwayRoadmap::addMidVtx(polyCSpace polyVtx, vector<double> vtx1
     midVtx.clear();
 
     for(int iter = 0; iter<polyVtx.max_num; iter++){
+        pt.clear(); pt1.clear(); pt2.clear();
         for(int i=0; i<vtx1.size(); i++){
             pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
             pt1.push_back(pt[i] - vtx1[i]);

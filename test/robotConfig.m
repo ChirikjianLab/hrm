@@ -19,4 +19,4 @@ rob_vtx = face.polyVtx.vertex;
 csvwrite("robotVtx.csv", rob_vtx);
 
 rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
-csvwrite("robotInvMat.csv", rob_invMat);
+csvwrite("robotInvMat.csv", rob_invMat');
