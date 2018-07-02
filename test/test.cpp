@@ -79,7 +79,9 @@ int main(){
 
     SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
     SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,10}, num} };
-    double endPts[2][2] = {{-30,-20},{30,20}};
+    vector< vector<double> > endPts;
+    endPts.push_back({-30,-20,0});
+    endPts.push_back({30,20,pi/4});
 
     // Options
     option opt;
@@ -106,11 +108,16 @@ int main(){
     auto tic = chrono::high_resolution_clock::now();
     high.buildRoadmap();
     auto toc = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed = toc-tic;
+    chrono::duration<double> elapsed_build = toc-tic;
 
-//    high.search();
+    tic = chrono::high_resolution_clock::now();
+    high.search();
+    toc = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed_search = toc-tic;
 
-    cout << "Elapsed time is: " << elapsed.count() << "s" << endl;
+    cout << "Roadmap building, Elapsed time is: " << elapsed_build.count() << "s" << endl;
+    cout << "Path searching, Elapsed time is: " << elapsed_search.count() << "s" << endl;
+
 //    boundary bd = high.boundaryGen();
 //    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
 //    high.connectOneLayer(cell);
@@ -152,6 +159,13 @@ int main(){
     vector<pair<int, int>> edge = high.vtxEdge.edge;
     for(int i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
     file_edge.close();
+
+    ofstream file_paths;
+    file_paths.open("paths.csv");
+    vector<int> paths = high.Paths;
+    for(int i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
+    file_paths.close();
+
 
 /*
     enum nodes{A,B,C,D};

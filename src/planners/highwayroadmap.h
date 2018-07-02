@@ -7,6 +7,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/random.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 
 #include <src/geometry/superellipse.h>
 
@@ -77,8 +78,9 @@ public:
 
     AdjGraph Graph;
     SuperEllipse Robot, *Arena, *Obs;
-    double Cost, *Endpt;
-    int Paths;
+    double Cost;
+    vector< vector<double> > Endpt;
+    vector<int> Paths;
     polyCSpace polyVtx;
 
     // functions
@@ -88,9 +90,10 @@ private:
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
     vector<double> addMidVtx(polyCSpace polyVtx, vector<double> vtx1, vector<double> vtx2);
+    double vector_dist(vector<double> v1, vector<double> v2);
 
 public:
-    highwayRoadmap(SuperEllipse robot, polyCSpace polyVtx, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt);
+    highwayRoadmap(SuperEllipse robot, polyCSpace polyVtx, vector< vector<double> > endpt, SuperEllipse* arena, SuperEllipse* obs, option opt);
     void buildRoadmap();
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);

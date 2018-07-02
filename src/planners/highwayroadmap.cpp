@@ -9,9 +9,9 @@
 
 #define pi 3.1415926
 
-highwayRoadmap::highwayRoadmap(SuperEllipse robot, polyCSpace vtxMat, double endpt[2][2], SuperEllipse* arena, SuperEllipse* obs, option opt){
+highwayRoadmap::highwayRoadmap(SuperEllipse robot, polyCSpace vtxMat, vector< vector<double> > endpt, SuperEllipse* arena, SuperEllipse* obs, option opt){
     Robot = robot;
-    Endpt = *endpt;
+    Endpt = endpt;
     Arena = arena;
     Obs = obs;
     N_o = opt.N_o;
@@ -249,23 +249,49 @@ void highwayRoadmap::connectMultiLayer(){
     }
 }
 
-//void highwayRoadmap::search(){
-//    // Construct the roadmap
-//    int num_vtx = vtxEdge.vertex.size();
-//    AdjGraph g(num_vtx);
+void highwayRoadmap::search(){
+    double d_smin, d_gmin, d_vs, d_vg;
+    int idx_s, idx_g, num;
 
-//    for(int i=0; i<vtxEdge.edge.size(); i++)
-//        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
+    // Construct the roadmap
+    int num_vtx = vtxEdge.vertex.size();
+    AdjGraph g(num_vtx);
 
-//    // Define start and goal
-//    mt19937 gen(time(0));
-//    vertex_descriptor start = random_vertex(g, gen);
-//    vertex_descriptor goal = random_vertex(g, gen);
+    for(int i=0; i<vtxEdge.edge.size(); i++)
+        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
 
-//    // Search for shortest path
-//    astar_search(g, start,
-//       AStarHeuristic h, const bgl_named_params<P, T, R>& params);
-//}
+    // Locate the nearest vertex for start and goal in the roadmap
+    d_smin = vector_dist(Endpt[0], Endpt[1]);
+    d_gmin = vector_dist(Endpt[0], Endpt[1]);
+    for(int i=0; i<num_vtx; i++){
+        d_vs = vector_dist(Endpt[0], vtxEdge.vertex[i]);
+        d_vg = vector_dist(Endpt[1], vtxEdge.vertex[i]);
+        if(d_vs <= d_smin){
+            d_smin = d_vs;
+            idx_s = i;
+        }
+        if(d_vg <= d_gmin){
+            d_gmin = d_vg;
+            idx_g = i;
+        }
+    }
+
+    // Search for shortest path
+    std::vector<vertex_descriptor> p(num_vertices(g));
+    std::vector<double> d(num_vertices(g));
+
+    dijkstra_shortest_paths(g, idx_g,
+                            predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
+                            distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))));
+
+    // Record path and cost
+    num = 0;
+    Paths.push_back(idx_s);
+    while(Paths[num] != idx_g && num <= num_vtx){
+        Paths.push_back(p[Paths[num]]);
+        num++;
+    }
+}
 
 
 /************************************************************************************************/
@@ -435,4 +461,10 @@ vector<double> highwayRoadmap::addMidVtx(polyCSpace polyVtx, vector<double> vtx1
     }
 
     return midVtx;
+}
+
+double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
+    vector<double> diff;
+    for(int i=0; i<v1.size(); i++) diff.push_back(v1[i]-v2[i]);
+    return sqrt( inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) );
 }
