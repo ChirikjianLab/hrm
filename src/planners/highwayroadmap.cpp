@@ -231,7 +231,7 @@ void highwayRoadmap::connectMultiLayer(){
             for(int m2=n_1; m2<n_2; m2++){
                 d = pow((vtxEdge.vertex[m][0]-vtxEdge.vertex[m2][0]),2.0)+
                         pow((vtxEdge.vertex[m][1]-vtxEdge.vertex[m2][1]),2.0);
-                if(d<=1.0) midVtx = addMidVtx(polyVtx, vtxEdge.vertex[m], vtxEdge.vertex[m2]);
+                if(d<=1.0) midVtx = addMidVtx(vtxEdge.vertex[m], vtxEdge.vertex[m2]);
                 if(!midVtx.empty()){
                     vtxEdge.vertex.push_back(midVtx);
 
@@ -250,7 +250,6 @@ void highwayRoadmap::connectMultiLayer(){
 }
 
 void highwayRoadmap::search(){
-    double d_smin, d_gmin, d_vs, d_vg;
     int idx_s, idx_g, num;
 
     // Construct the roadmap
@@ -261,20 +260,8 @@ void highwayRoadmap::search(){
         add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
 
     // Locate the nearest vertex for start and goal in the roadmap
-    d_smin = vector_dist(Endpt[0], Endpt[1]);
-    d_gmin = vector_dist(Endpt[0], Endpt[1]);
-    for(int i=0; i<num_vtx; i++){
-        d_vs = vector_dist(Endpt[0], vtxEdge.vertex[i]);
-        d_vg = vector_dist(Endpt[1], vtxEdge.vertex[i]);
-        if(d_vs <= d_smin){
-            d_smin = d_vs;
-            idx_s = i;
-        }
-        if(d_vg <= d_gmin){
-            d_gmin = d_vg;
-            idx_g = i;
-        }
-    }
+    idx_s = find_cell(Endpt[0]);
+    idx_g = find_cell(Endpt[1]);
 
     // Search for shortest path
     std::vector<vertex_descriptor> p(num_vertices(g));
@@ -350,6 +337,7 @@ boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
 }
 
 MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K){
+    // Enclose the curved boundaries of c-obstacles by polyhedrons
     MatrixXd x_o_Ex(N_dy, N_o);
     double x_Ex;
     double d;
@@ -399,8 +387,8 @@ MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double t
 }
 
 cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
+    // Make sure all connections between vertexes are within one convex cell
     cf_cell cell_new = cell;
-    double ep = 0;
 
     for(int i=0; i<cell.ty.size()-1; i++){
         for(int j1=0; j1<cell.xM[i].size(); j1++){
@@ -437,13 +425,14 @@ cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
     return cell_new;
 }
 
-vector<double> highwayRoadmap::addMidVtx(polyCSpace polyVtx, vector<double> vtx1, vector<double> vtx2){
+vector<double> highwayRoadmap::addMidVtx(vector<double> vtx1, vector<double> vtx2){
+    // Connect vertexes among different layers, and add a middle vertex to the roadmap
     vector<double> midVtx, pt, pt1, pt2;
     ptInPoly polyTest;
     bool flag;
     midVtx.clear();
 
-    for(int iter = 0; iter<polyVtx.max_num; iter++){
+    for(int iter = 0; iter<N_KCsample; iter++){
         pt.clear(); pt1.clear(); pt2.clear();
         for(int i=0; i<vtx1.size(); i++){
             pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
@@ -467,4 +456,30 @@ double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
     vector<double> diff;
     for(int i=0; i<v1.size(); i++) diff.push_back(v1[i]-v2[i]);
     return sqrt( inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) );
+}
+
+int highwayRoadmap::find_cell(vector<double> v){
+    // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex
+    double dy_min, dx_min, dy, dx;
+    int idx=0;
+
+    dy_min = fabs(v[1]-vtxEdge.vertex[0][1]);
+    dx_min = fabs(v[0]-vtxEdge.vertex[0][0]);
+
+    for(int i=1; i<vtxEdge.vertex.size(); i++){
+        // search for the closest y-coordinate
+        dy = fabs(v[1]-vtxEdge.vertex[i][1]);
+        if(dy <= dy_min){
+            dy_min = dy;
+            idx = i;
+            // search for the closest x-coordinate
+            dx = fabs(v[0]-vtxEdge.vertex[i][0]);
+            if(dx <= dx_min){
+                dx_min = dx;
+                idx = i;
+            }
+        }
+    }
+
+    return idx;
 }

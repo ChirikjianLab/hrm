@@ -48,7 +48,6 @@ struct polyCSpace{
 public:
     vector<vector<double>> vertex;
     vector<vector<double>> invMat;
-    int max_num = 10;
 };
 
 struct option{
@@ -58,11 +57,27 @@ struct option{
 
 class highwayRoadmap
 {
-    // variables
+// variables
+/*
+N_o       : number of obstacles;
+N_s       : number of arenas;
+N_dy      : number of sweep lines in each C-layer;
+infla     : inflation factor for the robot;
+N_layers  : number of C-layers;
+N_KCsample: number of samples for searching in the intersection between two local c-space;
+ang_r     : sampled orientations of the robot;
+N_v_layer : number of vertex in each layer;
+
+graph     : a structure consisting of vertex and edges;
+Cost      : cost of the searched path;
+Endpt     : start and goal configurations;
+Path      : valid path of motions;
+polyVtx   : descriptions of polyhedron local c-space
+*/
 private:
-    int N_o, N_s, N_dy;
+    int N_o, N_s, N_dy, N_layers;
     double infla;
-    int N_layers, N_KCsample, layerDist, d12, I_start, I_goal;
+    int N_KCsample;
     double ang_r;
     vector<int> N_v_layer;
 
@@ -89,8 +104,9 @@ private:
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
-    vector<double> addMidVtx(polyCSpace polyVtx, vector<double> vtx1, vector<double> vtx2);
+    vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
     double vector_dist(vector<double> v1, vector<double> v2);
+    int find_cell(vector<double> v);
 
 public:
     highwayRoadmap(SuperEllipse robot, polyCSpace polyVtx, vector< vector<double> > endpt, SuperEllipse* arena, SuperEllipse* obs, option opt);

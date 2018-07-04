@@ -68,7 +68,6 @@ int main(){
     polyCSpace polyVtx;
     polyVtx.vertex = rob_vtx;
     polyVtx.invMat = rob_InvMat;
-    polyVtx.max_num = 5;
 
     // Environment
     int num = 50;
@@ -86,8 +85,8 @@ int main(){
     // Options
     option opt;
     opt.infla = rob_config[0][6];
-    opt.N_layers = 17;
-    opt.N_dy = 20;
+    opt.N_layers = 15;
+    opt.N_dy = 10;
     opt.sampleNum = 100;
 
     opt.N_o = sizeof(obs)/sizeof(obs[0]);
@@ -118,35 +117,35 @@ int main(){
     cout << "Roadmap building, Elapsed time is: " << elapsed_build.count() << "s" << endl;
     cout << "Path searching, Elapsed time is: " << elapsed_search.count() << "s" << endl;
 
-//    boundary bd = high.boundaryGen();
-//    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
-//    high.connectOneLayer(cell);
+    boundary bd = high.boundaryGen();
+    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
+    high.connectOneLayer(cell);
 
-//    // write to .csv file
-//    ofstream file_ori_bd;
-//    file_ori_bd.open("bd_ori.csv");
-//    file_ori_bd << bd_ori.bd_o[0] << "\n";
-//    file_ori_bd << bd_ori.bd_o[1] << "\n";
-//    file_ori_bd << bd_ori.bd_s[0] << "\n";
-//    file_ori_bd.close();
+    // write to .csv file
+    ofstream file_ori_bd;
+    file_ori_bd.open("bd_ori.csv");
+    file_ori_bd << bd_ori.bd_o[0] << "\n";
+    file_ori_bd << bd_ori.bd_o[1] << "\n";
+    file_ori_bd << bd_ori.bd_s[0] << "\n";
+    file_ori_bd.close();
 
-//    ofstream file_bd;
-//    file_bd.open("bd.csv");
-//    file_bd << bd.bd_o[0] << "\n";
-//    file_bd << bd.bd_o[1] << "\n";
-//    file_bd << bd.bd_s[0] << "\n";
-//    file_bd.close();
+    ofstream file_bd;
+    file_bd.open("bd.csv");
+    file_bd << bd.bd_o[0] << "\n";
+    file_bd << bd.bd_o[1] << "\n";
+    file_bd << bd.bd_s[0] << "\n";
+    file_bd.close();
 
-//    ofstream file_cell;
-//    file_cell.open("cell.csv");
-//    for(int i=0; i<cell.ty.size(); i++){
-//        for(int j=0; j<cell.xL[i].size(); j++)
-//            file_cell << cell.ty[i] << ' ' <<
-//                         cell.xL[i][j] << ' ' <<
-//                         cell.xM[i][j] << ' ' <<
-//                         cell.xU[i][j] << "\n";
-//    }
-//    file_cell.close();
+    ofstream file_cell;
+    file_cell.open("cell.csv");
+    for(int i=0; i<cell.ty.size(); i++){
+        for(int j=0; j<cell.xL[i].size(); j++)
+            file_cell << cell.ty[i] << ' ' <<
+                         cell.xL[i][j] << ' ' <<
+                         cell.xM[i][j] << ' ' <<
+                         cell.xU[i][j] << "\n";
+    }
+    file_cell.close();
 
     ofstream file_vtx;
     file_vtx.open("vertex.csv");

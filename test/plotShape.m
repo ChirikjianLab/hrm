@@ -36,7 +36,7 @@ plot(X(3,:),X(4,:));
 plot(X(5,:),X(6,:));
 
 %% raster scan
-N_dy = 20;
+N_dy = 10;
 % obs
 plot(X_obs(1:N_dy,1),Y,'r.')
 plot(X_obs(N_dy+1:N_dy*2,1),Y,'b.')
@@ -73,10 +73,10 @@ end
 % shortest path
 plot3([start(1) vtx(path(1)+1,1)],...
     [start(2) vtx(path(1)+1,2)],...
-    sc*[start(3) vtx(path(1)+1,3)], 'c', 'LineWidth', 2)
+    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
 plot3([goal(1) vtx(path(end)+1,1)],...
     [goal(2) vtx(path(end)+1,2)],...
-    sc*[goal(3) vtx(path(end)+1,3)], 'c', 'LineWidth', 2)
+    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
 
 for i = 1:size(path,2)-1
     plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
