@@ -77,7 +77,7 @@ int main(){
     robot.num = num;
 
     SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
-    SuperEllipse obs[] = { {{5,3,pi/4,0.8,10,0}, num}, {{10,8,0,1.2,-20,10}, num} };
+    SuperEllipse obs[] = { {{10,5,pi/4,0.5,20,0}, num}, {{5,3,0,0.8,-20,10}, num} };
     vector< vector<double> > endPts;
     endPts.push_back({-30,-20,0});
     endPts.push_back({30,20,pi/4});
@@ -116,6 +116,7 @@ int main(){
 
     cout << "Roadmap building, Elapsed time is: " << elapsed_build.count() << "s" << endl;
     cout << "Path searching, Elapsed time is: " << elapsed_search.count() << "s" << endl;
+    cout << "Cost: " << high.Cost << endl;
 
     boundary bd = high.boundaryGen();
     cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
@@ -164,30 +165,6 @@ int main(){
     vector<int> paths = high.Paths;
     for(int i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
     file_paths.close();
-
-
-/*
-    enum nodes{A,B,C,D};
-    vector< vector<double> > name = {{1,2,5},{3,3,6},{1,2,3}};
-    name.push_back({4,6,2});
-   // AdjGraph G(4)
-    Edge edgeVector = {make_pair(A,B), make_pair(D,C), make_pair(A,C)};
-    edgeVector.push_back(make_pair(B,C));
-
-    int num_edge = sizeof(edgeVector)/sizeof(Edge);
-    cout << name[0][2] << endl;
-
-    */
-
-    /*
-    AdjGraph G(edgeVector, edgeVector+sizeof(edgeVector)/sizeof(Edge),name.size());
-
-    std::cout << "edges(g) = ";
-    graph_traits<AdjGraph>::edge_iterator ei, ei_end;
-    for (tie(ei, ei_end) = edges(G); ei != ei_end; ++ei)
-        std::cout << "(" << source(*ei, G)
-                  << "," << target(*ei, G) << ") ";
-    std::cout << std::endl;*/
 
     return 0;
 }

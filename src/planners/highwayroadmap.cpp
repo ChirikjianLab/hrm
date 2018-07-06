@@ -257,7 +257,9 @@ void highwayRoadmap::search(){
     AdjGraph g(num_vtx);
 
     for(int i=0; i<vtxEdge.edge.size(); i++)
-        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, g);
+        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, Weight(vtxEdge.weight[i]) ,g);
+
+    property_map<AdjGraph, edge_weight_t>::type weightmap = get(edge_weight, g);
 
     // Locate the nearest vertex for start and goal in the roadmap
     idx_s = find_cell(Endpt[0]);
@@ -276,6 +278,7 @@ void highwayRoadmap::search(){
     Paths.push_back(idx_s);
     while(Paths[num] != idx_g && num <= num_vtx){
         Paths.push_back(p[Paths[num]]);
+        Cost += d[Paths[num]];
         num++;
     }
 }

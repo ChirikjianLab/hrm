@@ -19,6 +19,7 @@ typedef AdjGraph::vertex_descriptor vertex_descriptor;
 typedef AdjGraph::edge_descriptor edge_descriptor;
 typedef AdjGraph::vertex_iterator vertex_iterator;
 typedef vector< pair<int, int> > Edge;
+typedef AdjGraph::edge_property_type Weight;
 
 // cf_cell: collision-free points
 struct cf_cell{
@@ -93,7 +94,7 @@ public:
 
     AdjGraph Graph;
     SuperEllipse Robot, *Arena, *Obs;
-    double Cost;
+    double Cost=0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
     polyCSpace polyVtx;
