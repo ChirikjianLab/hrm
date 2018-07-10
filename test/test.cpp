@@ -56,13 +56,13 @@ vector<vector<double>> parse2DCsvFile(string inputFileName) {
 
 int main(){
     // Read robot config file
-    string file_robConfig = "../robot_config/robotConfig.csv";
+    string file_robConfig = "../config/robotConfig.csv";
     vector<vector<double> > rob_config = parse2DCsvFile(file_robConfig);
 
-    string file_robVtx = "../robot_config/robotVtx.csv";
+    string file_robVtx = "../config/robotVtx.csv";
     vector<vector<double> > rob_vtx = parse2DCsvFile(file_robVtx);
 
-    string file_robInvMat = "../robot_config/robotInvMat.csv";
+    string file_robInvMat = "../config/robotInvMat.csv";
     vector<vector<double> > rob_InvMat = parse2DCsvFile(file_robInvMat);
 
     polyCSpace polyVtx;
@@ -76,18 +76,18 @@ int main(){
     for(int i=0; i<6; i++) robot.a[i] = rob_config[0][i];
     robot.num = num;
 
-    SuperEllipse arena[] = { {{50,30,0,0.5,0,0}, num} };
-    SuperEllipse obs[] = { {{10,5,pi/4,0.5,20,0}, num}, {{5,3,0,0.8,-20,10}, num} };
+    SuperEllipse arena[] = { {{50,30,0,1.0,0,0}, num} };
+    SuperEllipse obs[] = { {{20,10,pi/4,1.0,20,0}, num}, {{10,8,0,1.0,-20,10}, num} };
     vector< vector<double> > endPts;
-    endPts.push_back({-30,-20,0});
-    endPts.push_back({30,20,pi/4});
+    endPts.push_back({-20,-10,0});
+    endPts.push_back({20,20,pi/4});
 
     // Options
     option opt;
     opt.infla = rob_config[0][6];
     opt.N_layers = 15;
     opt.N_dy = 10;
-    opt.sampleNum = 100;
+    opt.sampleNum = 10;
 
     opt.N_o = sizeof(obs)/sizeof(obs[0]);
     opt.N_s = sizeof(arena)/sizeof(arena[0]);

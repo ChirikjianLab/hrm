@@ -12,7 +12,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 include_directories("${PROJECT_SOURCE_DIR}")
 
 # Packages
-# find_package(OpenCV REQUIRED)
+# find_package(Eigen3)
 
 # Headers
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
@@ -22,6 +22,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
 
 # Executables
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+#add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/PRM_test.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/interval.cpp)
 add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp)
 #add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)

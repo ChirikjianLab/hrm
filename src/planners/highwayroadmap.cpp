@@ -463,24 +463,15 @@ double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
 
 int highwayRoadmap::find_cell(vector<double> v){
     // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex
-    double dy_min, dx_min, dy, dx;
-    int idx=0;
+    double d_min, d;
+    int idx = 0;
 
-    dy_min = fabs(v[1]-vtxEdge.vertex[0][1]);
-    dx_min = fabs(v[0]-vtxEdge.vertex[0][0]);
-
-    for(int i=1; i<vtxEdge.vertex.size(); i++){
-        // search for the closest y-coordinate
-        dy = fabs(v[1]-vtxEdge.vertex[i][1]);
-        if(dy <= dy_min){
-            dy_min = dy;
+    d_min = vector_dist(v,vtxEdge.vertex[0]);
+    for(int i=0; i<vtxEdge.vertex.size(); i++){
+        d = vector_dist(v,vtxEdge.vertex[i]);
+        if(d < d_min){
+            d_min = d;
             idx = i;
-            // search for the closest x-coordinate
-            dx = fabs(v[0]-vtxEdge.vertex[i][0]);
-            if(dx <= dx_min){
-                dx_min = dx;
-                idx = i;
-            }
         }
     }
 

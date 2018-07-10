@@ -1,6 +1,6 @@
 close all; clear; clc;
 
-loadPath = '../bin/';
+loadPath = '../../bin/';
 X_ori = load([loadPath, 'bd_ori.csv']);
 X = load([loadPath, 'bd.csv']);
 X_obs = load([loadPath, 'bd_obs.csv']);
@@ -20,8 +20,8 @@ figure; hold on; axis equal;
 %% environment
 sc = 10;
 % start and goal
-start = [-30;-20;0];
-goal = [30;20;pi/4];
+start = [-20;-10;0];
+goal = [20;20;pi/4];
 plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
 plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
 

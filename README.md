@@ -11,5 +11,7 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 
 "Chirikjian, G.S. and Yan, Y., 2014. The Kinematics of Containment. In Advances in Robot Kinematics (pp. 355-364). Springer International Publishing."
 
-"Ma, Q. and Chirikjian, G.S., 2015, August. A Closed-Form Lower Bound on the Allowable Motion for an Ellipsoidal Body and Environment. In ASME 2015 International Design Engineering Technical Conferences and Computers and Information in Engineering Conference (pp. V05CT08A055-V05CT08A055). American Society of Mechanical Engineers."
+"Ma, Q. and Chirikjian, G.S., 2015, August. A Closed-Form Lower Bound on the Allowable Motion for an Ellipsoidal Body and Environment. ASME IDETC 2015."
+
+"Ruan, S., Ding, J. and Chirikjian, G.S., 2018. Lower Bounds of the Allowable Motions of One N-Dimensional Ellipsoid Contained in Another. ASME IDETC 2018."
 

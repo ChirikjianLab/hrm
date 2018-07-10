@@ -1,6 +1,6 @@
 close all; clear; clc;
 
-loadPath = '../bin/';
+loadPath = '../../bin/';
 X_ori = load([loadPath, 'bd_ori.csv']);
 vtx = load([loadPath, 'vertex.csv']);
 edge = load([loadPath, 'edge.csv']);
@@ -13,8 +13,8 @@ figure; hold on; axis equal;
 %% environment
 sc = 10;
 % start and goal
-start = [-30;-20;0];
-goal = [30;20;pi/4];
+start = [-20;-10;0];
+goal = [20;20;pi/4];
 plot(start(1), start(2), 'ro', 'LineWidth', 3);
 plot(goal(1), goal(2), 'gd', 'LineWidth', 3);
 
