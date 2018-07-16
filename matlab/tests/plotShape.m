@@ -16,44 +16,46 @@ edge = load([loadPath, 'edge.csv']);
 
 path = load([loadPath, 'paths.csv']);
 
+endPts = load(['../../config/', 'endPts.csv']);
+
 figure; hold on; axis equal;
 %% environment
-sc = 10;
+sc = 20;
 % start and goal
-start = [-20;-10;0];
-goal = [20;20;pi/4];
+start = endPts(1,:)';
+goal = endPts(2,:)';
 plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
 plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
 
 % original
-plot(X_ori(1,:),X_ori(2,:),'k');
-plot(X_ori(3,:),X_ori(4,:),'k');
-plot(X_ori(5,:),X_ori(6,:),'k');
+for i = 1:2:size(X_ori,1)-1
+    plot(X_ori(i,:),X_ori(i+1,:),'k');
+end
 
-% Mink
-plot(X(1,:),X(2,:));
-plot(X(3,:),X(4,:));
-plot(X(5,:),X(6,:));
+% % Mink
+% for i = 1:2:size(X,1)-1
+%     plot(X(i,:),X(i+1,:),'k');
+% end
 
 %% raster scan
-N_dy = 10;
+N_dy = size(X_obs)/2;
 % obs
-plot(X_obs(1:N_dy,1),Y,'r.')
-plot(X_obs(N_dy+1:N_dy*2,1),Y,'b.')
-
-plot(X_obs(1:N_dy,2),Y,'r.')
-plot(X_obs(N_dy+1:N_dy*2,2),Y,'b.')
+for i = 1:size(X_obs,2)
+    plot(X_obs(1:N_dy,i),Y,'r.')
+    plot(X_obs(N_dy+1:N_dy*2,i),Y,'b.')
+end
 
 % exploded obs
-plot(X_obs_ex(1:N_dy,1),Y,'r*')
-plot(X_obs_ex(N_dy+1:N_dy*2,1),Y,'b*')
-
-plot(X_obs_ex(1:N_dy,2),Y,'r*')
-plot(X_obs_ex(N_dy+1:N_dy*2,2),Y,'b*')
+for i = 1:size(X_obs_ex,2)
+    plot(X_obs_ex(1:N_dy,i),Y,'r*')
+    plot(X_obs_ex(N_dy+1:N_dy*2,i),Y,'b*')
+end
 
 % arena
-plot(X_arena(1:N_dy,1),Y,'.')
-plot(X_arena(N_dy+1:N_dy*2,1),Y,'.')
+for i = 1:size(X_arena,2)
+    plot(X_arena(1:N_dy,i),Y,'.')
+    plot(X_arena(N_dy+1:N_dy*2,i),Y,'.')
+end
 
 % cells
 for i = 1:size(cf_seg,1)

@@ -54,7 +54,11 @@ vector<vector<double>> parse2DCsvFile(string inputFileName) {
     return data;
 }
 
-int main(){
+highwayRoadmap plan(){
+    // Number of points on the boundary
+    int num = 50;
+
+    // Robot
     // Read robot config file
     string file_robConfig = "../config/robotConfig.csv";
     vector<vector<double> > rob_config = parse2DCsvFile(file_robConfig);
@@ -69,41 +73,51 @@ int main(){
     polyVtx.vertex = rob_vtx;
     polyVtx.invMat = rob_InvMat;
 
-    // Environment
-    int num = 50;
-
+    // Robot as a class of SuperEllipse
     SuperEllipse robot;
     for(int i=0; i<6; i++) robot.a[i] = rob_config[0][i];
     robot.num = num;
 
-    SuperEllipse arena[] = { {{50,30,0,1.0,0,0}, num} };
-    SuperEllipse obs[] = { {{20,10,pi/4,1.0,20,0}, num}, {{10,8,0,1.0,-20,10}, num} };
-    vector< vector<double> > endPts;
-    endPts.push_back({-20,-10,0});
-    endPts.push_back({20,20,pi/4});
+    // Environment
+    // Read environment config file
+    string file_arenaConfig = "../config/arenaConfig.csv";
+    vector<vector<double> > arena_config = parse2DCsvFile(file_arenaConfig);
+
+    string file_obsConfig = "../config/obsConfig.csv";
+    vector<vector<double> > obs_config = parse2DCsvFile(file_obsConfig);
+
+    string file_endpt = "../config/endPts.csv";
+    vector<vector<double> > endPts = parse2DCsvFile(file_endpt);
+
+    // Arena and Obstacles as class of SuperEllipse
+    SuperEllipse arena[arena_config.size()], obs[obs_config.size()];
+
+    for(int j=0; j<arena_config.size(); j++){
+        for(int i=0; i<6; i++) arena[j].a[i] = arena_config[j][i];
+        arena[j].num = num;
+    }
+
+    for(int j=0; j<obs_config.size(); j++){
+        for(int i=0; i<6; i++) obs[j].a[i] = obs_config[j][i];
+        obs[j].num = num;
+    }
 
     // Options
     option opt;
     opt.infla = rob_config[0][6];
-    opt.N_layers = 15;
-    opt.N_dy = 10;
+    opt.N_layers = 25;
+    opt.N_dy = 30;
     opt.sampleNum = 10;
 
     opt.N_o = sizeof(obs)/sizeof(obs[0]);
     opt.N_s = sizeof(arena)/sizeof(arena[0]);
 
-    // calculate original boundary points
-    boundary bd_ori;
-    for(int i=0; i<opt.N_s; i++){
-        bd_ori.bd_s.push_back( arena[i].originShape(arena[i].a, arena[i].num) );
-    }
-    for(int i=0; i<opt.N_o; i++){
-        bd_ori.bd_o.push_back( obs[i].originShape(obs[i].a, obs[i].num) );
-    }
-
-    // Main Algorithm
+    //****************//
+    // Main Algorithm //
+    //****************//
     highwayRoadmap high(robot, polyVtx, endPts, arena, obs, opt);
 
+    // Planning Time and Path Cost
     auto tic = chrono::high_resolution_clock::now();
     high.buildRoadmap();
     auto toc = chrono::high_resolution_clock::now();
@@ -114,27 +128,40 @@ int main(){
     toc = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed_search = toc-tic;
 
-    cout << "Roadmap building, Elapsed time is: " << elapsed_build.count() << "s" << endl;
-    cout << "Path searching, Elapsed time is: " << elapsed_search.count() << "s" << endl;
+    cout << "Roadmap construction time: " << elapsed_build.count() << "s" << endl;
+    cout << "Path searching time: " << elapsed_search.count() << "s" << endl;
+
+    cout << "Number of valid configurations: " << high.vtxEdge.vertex.size() << endl;
+    cout << "Number of configurations in Path: " << high.Paths.size() <<  endl;
     cout << "Cost: " << high.Cost << endl;
 
+
+    // calculate original boundary points
+    boundary bd_ori;
+    for(int i=0; i<opt.N_s; i++){
+        bd_ori.bd_s.push_back( high.Arena[i].originShape(high.Arena[i].a, high.Arena[i].num) );
+    }
+    for(int i=0; i<opt.N_o; i++){
+        bd_ori.bd_o.push_back( high.Obs[i].originShape(high.Obs[i].a, high.Obs[i].num) );
+    }
+
+    // Output boundary and cell info
     boundary bd = high.boundaryGen();
     cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
     high.connectOneLayer(cell);
 
+
     // write to .csv file
     ofstream file_ori_bd;
     file_ori_bd.open("bd_ori.csv");
-    file_ori_bd << bd_ori.bd_o[0] << "\n";
-    file_ori_bd << bd_ori.bd_o[1] << "\n";
-    file_ori_bd << bd_ori.bd_s[0] << "\n";
+    for(int i=0; i<bd_ori.bd_o.size(); i++) file_ori_bd << bd_ori.bd_o[i] << "\n";
+    for(int i=0; i<bd_ori.bd_s.size(); i++) file_ori_bd << bd_ori.bd_s[i] << "\n";
     file_ori_bd.close();
 
     ofstream file_bd;
     file_bd.open("bd.csv");
-    file_bd << bd.bd_o[0] << "\n";
-    file_bd << bd.bd_o[1] << "\n";
-    file_bd << bd.bd_s[0] << "\n";
+    for(int i=0; i<bd.bd_o.size(); i++) file_bd << bd.bd_o[i] << "\n";
+    for(int i=0; i<bd.bd_s.size(); i++) file_bd << bd.bd_s[i] << "\n";
     file_bd.close();
 
     ofstream file_cell;
@@ -148,6 +175,13 @@ int main(){
     }
     file_cell.close();
 
+    return high;
+}
+
+int main(){
+    highwayRoadmap high = plan();
+
+    // Write the output to .csv files
     ofstream file_vtx;
     file_vtx.open("vertex.csv");
     vector<vector<double>> vtx = high.vtxEdge.vertex;

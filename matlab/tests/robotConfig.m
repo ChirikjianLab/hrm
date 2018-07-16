@@ -4,7 +4,40 @@ clear; close all; clc;
 initAddpath();
 outPath = '../../config';
 
-disp('Robot Configurations');
+%% Environment Initialization
+disp('Environment Initialization...')
+
+opt = 22;
+[ar, obs, pts] = environment(opt);
+
+%% Store Arena and Obstacles as .csv files
+arena = zeros(size(ar,2),6); obstacle = zeros(size(obs,2),6);
+vol_arena = 0; vol_obs = 0;
+for i = 1:size(ar,2)
+    arena(i,:) = [ar.ra,ar.rb,ar.ang,ar.eps,ar.tx,ar.ty];
+    vol_arena = vol_arena + vol_sq(ar.ra, ar.rb, ar.eps);
+end
+
+for i = 1:size(obs,2)
+    obstacle(i,:) = [obs(i).ra,obs(i).rb,obs(i).ang,...
+        obs(i).eps,obs(i).tx,obs(i).ty];
+    vol_obs = vol_obs + vol_sq(obs(i).ra, obs(i).rb, obs(i).eps);
+end
+
+% Relative volume
+rel_vol = 1-vol_obs/vol_arena
+
+% End points
+endPts = pts';
+
+% Store obstacle and arena configuations
+csvwrite(fullfile(outPath,'obsConfig.csv'), obstacle);
+csvwrite(fullfile(outPath,'arenaConfig.csv'), arena);
+csvwrite(fullfile(outPath,'endPts.csv'), endPts);
+
+
+%% Robot Initialization
+disp('Robot Configurations...');
 % Robot: Only plan face
 face = robotInit(1);
 

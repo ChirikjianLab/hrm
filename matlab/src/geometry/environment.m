@@ -1,147 +1,113 @@
-function [arena, obs, EndPts] = superquadric_env(opt)
-%%
-if opt == 0 % Random
-    % set up the parameters of the environment
-    ra_s = 50*rand(5,1)+50; rb_s = 50*rand(5,1)+50; ang_s = 2*pi*rand(5,1); 
-    tx_s = rand(5,1); ty_s = rand(5,1);
-    eps_s = rand(5,1);
-    
-    % superquadric obstacles
-    ra_o  = 15+5*rand(7,1); % "a" semi-axis length(s)
-    rb_o  = 15+5*rand(7,1); % "b" semi-axis length(s)
-    ang_o = 2*pi*rand(7,1); % tilted angle(s)
-    
-    tx_o  = 25*rand(7,1)-50; % x coords of the centers of superquadric obstacles
-    ty_o  = 25*rand(7,1)-50; % y coords of the centers of superquadric obstacles
-    eps_o = rand(7,1);
-    
-    P_start = [-40;  0; 0; 0; 0];
-    P_goal  = [ 35; 20; 0; 0; 0];
-    
-elseif opt == 1 % Sparse
+function [arena, obs, EndPts] = environment(opt)
+%% Arena, Obstacles and start and goal points
+if opt == 11 % Ellipse Sparse
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0; % superquadric arena(s)
     tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
+    eps_s = 1;
     
     % superquadric obstacles
-    ra_o  = [15 10 ]; % "a" semi-axis length(s)
-    rb_o  = [35 20 ]; % "b" semi-axis length(s)
-    ang_o = [pi/3  0 ]; % tilted angle(s)
+    ra_o  = [15 12 ]; % "a" semi-axis length(s)
+    rb_o  = [10 15 ]; % "b" semi-axis length(s)
+    ang_o = [-pi/3  0 ]; % tilted angle(s)
     
-    tx_o     = [-5  15 ]; % x coords of the centers of superquadric obstacles
-    ty_o     = [10  20 ]; % y coords of the centers of superquadric obstacles
-    eps_o    = [0.2 0.3 ];
+    tx_o     = [-15  15 ]; % x coords of the centers of superquadric obstacles
+    ty_o     = [-10  20 ]; % y coords of the centers of superquadric obstacles
+    eps_o    = [  1   1 ];
     
     P_start = [-40;  0; 0; 0; 0];
     P_goal  = [ 35; 20; 0; 0; 0];
      
-elseif opt == 2 % Narrow 1
+elseif opt == 12 % Ellipse Narrow
     % set up the parameters of the environment
-    ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
+    ra_s = 50; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
+    eps_s = 1;
     
     % superquadric obstacles
-    ra_o  = [ 5  5  5  5 25  5 10]; % "a" semi-axis length(s)
-    rb_o  = [25 20 25 20  5 30  5]; % "b" semi-axis length(s)
-    ang_o = [ 0  0  0  0  0  0  0]; % tilted angle(s)
+    ra_o  = [20 20  5 20 18 18  5];
+    rb_o  = [ 5  8 18  5  5  8 10];
+    ang_o = [-pi/4 pi/6 0 0 -pi/10 pi/4 0];
     
-    tx_o     = [-60 -30  0  30  20  60 -30]; % x coordinates of the centers of superquadric obstacles
-    ty_o     = [-10  20 -15  5  30  -10  -5]; % y coordinates of the centers of superquadric obstacles
-    eps_o    = [0.9 0.4 0.5 0.4 0.2 0.8 0.3];
+    tx_o     = [-32 -25   5 10 20  35 -15];
+    ty_o     = [-18  25 -20  8 28 -15   0];
+    eps_o    = [  1   1   1  1  1   1   1];
     
-    P_start = [-63; 30; 0; 0; 0];
-    P_goal  = [ 60; 30; 0; 0; 0];
+    P_start = [-40; 5; 0; 0; 0];
+    P_goal  = [ 35; 0; 0; 0; 0];
    
-elseif opt == 3 % Narrow 2
+elseif opt == 13 % Ellipse Cluttered
+    % set up the parameters of the environment
+    ra_s = 50; rb_s = 40; ang_s = 0;
+    tx_s = 0; ty_s = 0;
+    eps_s = 1;
+    
+    % superquadric obstacles
+    ra_o  = [15 20 15 20 15 20 10];
+    rb_o  = [ 5  5  5  5  5  5  5];
+    ang_o = [-pi/4 pi/5 pi/2.5 -pi/6 -pi/5.5 pi/4 pi/10];
+    
+    tx_o     = [-32 -25   5 10 25  35 -18];
+    ty_o     = [-20  25 -25  8 28 -15   0];
+    eps_o    = [  1   1   1   1   1   1   1];
+    
+    P_start = [-40; 5; 0; 0; 0];
+    P_goal  = [ 35; 0; 0; 0; 0];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif opt == 21 % Superellipse Sparse
     % set up the parameters of the environment
     ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
     tx_s = 0; ty_s = 0;
     eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [ 7  7  7  7 25  7 10]; % "a" semi-axis length(s)
-    rb_o  = [25 20 25 20  7 30  7]; % "b" semi-axis length(s)
-    ang_o = [ 0  0  0  0  0  0  0]; % tilted angle(s)
+    ra_o  = [25 20];
+    rb_o  = [10 10];
+    ang_o = [pi/3 -pi/4];
     
-    tx_o     = [-60 -30  0  30  20  60 -30]; % x coordinates of the centers of superquadric obstacles
-    ty_o     = [-10  20 -15  5  30  -10  -5]; % y coordinates of the centers of superquadric obstacles
-    eps_o    = [0.9 0.4 0.5 0.4 0.2 0.8 0.3];
+    tx_o     = [ 20 -30];
+    ty_o     = [-10  20];
+    eps_o    = [1.5 0.4];
     
     P_start = [-63; 30; 0; 0; 0];
-    P_goal  = [ 60; 30; 0; 0; 0];
+    P_goal  = [ 60;-30; 0; 0; 0];
     
-elseif opt == 4 % Narrow 3
-    % set up the parameters of the environment
-    ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
+elseif opt == 22 % Superellipse Narrow
+    ra_s = 70; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
-    eps_s = 0.25;
+    eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [10 10 10 10 25 10 10]; % "a" semi-axis length(s)
-    rb_o  = [25 20 25 20 10 30 10]; % "b" semi-axis length(s)
-    ang_o = [ 0  0  0  0  0  0  0]; % tilted angle(s)
+    ra_o  = [10 12 10  8 40  6 22];
+    rb_o  = [30 25 30 30  5 30 10];
+    ang_o = [ 0  0  0  0  0  0  0];
     
-    tx_o     = [-60 -30  0  30  20  60 -30]; % x coordinates of the centers of superquadric obstacles
-    ty_o     = [-10  20 -15  5  30  -10  -5]; % y coordinates of the centers of superquadric obstacles
-    eps_o    = [0.9 0.4 0.5 0.4 0.2 0.8 0.3];
+    tx_o     = [-60 -30   5  32  22  55 -28];
+    ty_o     = [-10  15 -10   0  35 -10 -30];
+    eps_o    = [0.8 0.2 0.4 0.2 0.2 0.8 0.3];
     
     P_start = [-63; 30; 0; 0; 0];
-    P_goal  = [ 60; 30; 0; 0; 0];
+    P_goal  = [ 65;-30; pi/2; 0; 0];
     
-elseif opt == 5 % Corridor 1
-    ra_s = 30; rb_s = 30; ang_s = 0; 
+elseif opt == 23 % Superellipse Cluttered
+    ra_s = 70; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
     eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [10 10];
-    rb_o  = [10 10];
-    ang_o = [0   0];
+    ra_o  = [ 5  5  5  5 25  5 10];
+    rb_o  = [25 20 25 20  5 30  5];
+    ang_o = [pi/6  0  0  0  0  0  0];
     
-    tx_o     = [20 -20];
-    ty_o     = [ 0   0];
-    eps_o    = [0.2 0.2];
+    tx_o     = [-60 -30  0  30  20  60 -30];
+    ty_o     = [-10  20 -15  5  30  -10  -5];
+    eps_o    = [1.5 0.4 0.5 1.4 0.2 0.8 0.1];
     
-    P_start = [-20;  20; 0; 0; 0];
-    P_goal  = [ 20; -20; 0; 0; 0];
-    
-elseif opt == 6 % Corridor 2
-    ra_s = 30; rb_s = 30; ang_s = 0; 
-    tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
-    
-    % superquadric obstacles
-    ra_o  = [10 10];
-    rb_o  = [10 10];
-    ang_o = [0   0];
-    
-    tx_o     = [17 -17];
-    ty_o     = [ 0   0];
-    eps_o    = [0.2 0.2];
-    
-    P_start = [-20;  20; 0; 0; 0];
-    P_goal  = [ 20; -20; 0; 0; 0];
-    
-elseif opt == 7 % Corridor 3
-    ra_s = 30; rb_s = 30; ang_s = 0; 
-    tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
-    
-    % superquadric obstacles
-    ra_o  = [10 10];
-    rb_o  = [10 10];
-    ang_o = [0   0];
-    
-    tx_o     = [15 -15];
-    ty_o     = [ 0   0];
-    eps_o    = [0.2 0.2];
-    
-    P_start = [-20;  20; 0; 0; 0];
-    P_goal  = [ 20; -20; 0; 0; 0];
-   
+    P_start = [-63; 30; 0; 0; 0];
+    P_goal  = [ 63;-30; 0; 0; 0];
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
@@ -179,6 +145,11 @@ for i = 1:N_o
     text(tx_o(i),ty_o(i), is, 'Color', [1 1 1]);
     axis equal
 end
+
+% plot the start and end configurations
+plot(P_start(1), P_start(2), 'ro', 'LineWidth', 2)
+plot(P_goal(1), P_goal(2), 'gd', 'LineWidth', 2)
+
 axis off
 
 end

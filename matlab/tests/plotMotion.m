@@ -6,22 +6,24 @@ vtx = load([loadPath, 'vertex.csv']);
 edge = load([loadPath, 'edge.csv']);
 path = load([loadPath, 'paths.csv']);
 
-configPath = '../robot_config/';
+configPath = '../../config/';
 robot = load([configPath, 'robotConfig.csv']);
+
+endPts = load(['../../config/', 'endPts.csv']);
 
 figure; hold on; axis equal;
 %% environment
 sc = 10;
 % start and goal
-start = [-20;-10;0];
-goal = [20;20;pi/4];
+start = endPts(1,:)';
+goal = endPts(2,:)';
 plot(start(1), start(2), 'ro', 'LineWidth', 3);
 plot(goal(1), goal(2), 'gd', 'LineWidth', 3);
 
 % original
-plot(X_ori(1,:),X_ori(2,:),'k');
-plot(X_ori(3,:),X_ori(4,:),'k');
-plot(X_ori(5,:),X_ori(6,:),'k');
+for i = 1:2:size(X_ori,1)-1
+    plot(X_ori(i,:),X_ori(i+1,:),'k');
+end
 
 %% Paths
 % shortest path

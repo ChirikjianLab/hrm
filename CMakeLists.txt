@@ -3,7 +3,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 cmake_minimum_required(VERSION 0.1)
 
 # Project's name
-project(HighwayRoadMap)
+project(highwayRoadMap)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
@@ -21,12 +21,12 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
 
 # Executables
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
-#add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/PRM_test.cpp)
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/interval.cpp)
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp)
-#add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)
-add_executable(HighwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp)
+add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp)
+#add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/PRM_test.cpp)
+add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/interval.cpp)
+add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp)
+#add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/prm.cpp)
+add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp)
+add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp)
 
-# TARGET_LINK_LIBRARIES(HighwayRoadMap ${OpenCV_LIBS})
+# TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})

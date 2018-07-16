@@ -356,7 +356,7 @@ MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double t
     for(int j=0; j<N_o; j++){
         int count = 0;
 
-        for(int i=0; i<N_dy; i++){
+        for(int i=0; i<N_dy-1; i++){
             double dist = 0, phi;
 
             if( isnan(x_o(i,j)) || isnan(x_o(i+1,j)) ) continue;

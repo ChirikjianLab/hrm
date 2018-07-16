@@ -47,8 +47,8 @@ public:
 // Parameters for the polyhedron local c-space
 struct polyCSpace{
 public:
-    vector<vector<double>> vertex;
-    vector<vector<double>> invMat;
+    vector< vector<double> > vertex;
+    vector< vector<double> > invMat;
 };
 
 struct option{
