@@ -8,11 +8,13 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/random.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <ompl/util/Time.h>
 
 #include <src/geometry/superellipse.h>
 
 using namespace std;
 using namespace boost;
+using namespace ompl;
 
 typedef adjacency_list<vecS, vecS, undirectedS, no_property, property < edge_weight_t, int > > AdjGraph;
 typedef AdjGraph::vertex_descriptor vertex_descriptor;
@@ -74,6 +76,7 @@ Cost      : cost of the searched path;
 Endpt     : start and goal configurations;
 Path      : valid path of motions;
 polyVtx   : descriptions of polyhedron local c-space
+planTime  : planning time: roadmap building time and path search time
 */
 private:
     int N_o, N_s, N_dy, N_layers;
@@ -93,11 +96,16 @@ public:
 
 
     AdjGraph Graph;
-    SuperEllipse Robot, *Arena, *Obs;
+    vector<SuperEllipse> Robot, Arena, Obs;
     double Cost=0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
     polyCSpace polyVtx;
+
+    struct Time{
+    public:
+        double buildTime, searchTime;
+    } planTime;
 
     // functions
 private:
@@ -110,7 +118,8 @@ private:
     int find_cell(vector<double> v);
 
 public:
-    highwayRoadmap(SuperEllipse robot, polyCSpace polyVtx, vector< vector<double> > endpt, SuperEllipse* arena, SuperEllipse* obs, option opt);
+    highwayRoadmap(vector<SuperEllipse> robot, polyCSpace polyVtx, vector< vector<double> > endpt, vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt);
+    void plan();
     void buildRoadmap();
     boundary boundaryGen();
     cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);

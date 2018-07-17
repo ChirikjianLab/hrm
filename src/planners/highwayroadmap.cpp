@@ -9,7 +9,7 @@
 
 #define pi 3.1415926
 
-highwayRoadmap::highwayRoadmap(SuperEllipse robot, polyCSpace vtxMat, vector< vector<double> > endpt, SuperEllipse* arena, SuperEllipse* obs, option opt){
+highwayRoadmap::highwayRoadmap(vector<SuperEllipse> robot, polyCSpace vtxMat, vector< vector<double> > endpt, vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt){
     Robot = robot;
     Endpt = endpt;
     Arena = arena;
@@ -27,13 +27,23 @@ highwayRoadmap::highwayRoadmap(SuperEllipse robot, polyCSpace vtxMat, vector< ve
     Cost = 0;
 }
 
+void highwayRoadmap::plan(){
+    time::point start = time::now();
+    buildRoadmap();
+    planTime.buildTime = time::seconds(time::now() - start);
+
+    start = time::now();
+    search();
+    planTime.searchTime = time::seconds(time::now() - start);
+}
+
 void highwayRoadmap::buildRoadmap(){
     // angle steps
     double dr = pi/(N_layers-1);
     graph multiGraph;
 
     for(int i=0; i<N_layers; i++){
-        Robot.a[2] = dr*i;
+        Robot[0].a[2] = dr*i;
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -50,7 +60,7 @@ void highwayRoadmap::buildRoadmap(){
 }
 
 boundary highwayRoadmap::boundaryGen(){
-    SuperEllipse robot_infla = Robot;
+    SuperEllipse robot_infla = Robot[0];
     boundary bd;
 
     // Enlarge the robot
@@ -183,7 +193,7 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
     for(int i=0; i<CFcell.ty.size(); i++){
         int N_0 = vtxEdge.vertex.size();
         for(int j=0; j<CFcell.xM[i].size(); j++){
-            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot.a[2]});
+            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].a[2]});
 
             // Connect vertex within one sweep line
             if(j != CFcell.xM[i].size()-1){

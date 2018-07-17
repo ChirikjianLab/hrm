@@ -69,14 +69,16 @@ highwayRoadmap plan(){
     string file_robInvMat = "../config/robotInvMat.csv";
     vector<vector<double> > rob_InvMat = parse2DCsvFile(file_robInvMat);
 
+    // Robot as a class of SuperEllipse
+    vector<SuperEllipse> robot(rob_config.size());
+    for(int j=0; j<rob_config.size(); j++){
+        for(int i=0; i<6; i++) robot[j].a[i] = rob_config[0][i];
+        robot[j].num = num;
+    }
+
     polyCSpace polyVtx;
     polyVtx.vertex = rob_vtx;
     polyVtx.invMat = rob_InvMat;
-
-    // Robot as a class of SuperEllipse
-    SuperEllipse robot;
-    for(int i=0; i<6; i++) robot.a[i] = rob_config[0][i];
-    robot.num = num;
 
     // Environment
     // Read environment config file
@@ -90,13 +92,11 @@ highwayRoadmap plan(){
     vector<vector<double> > endPts = parse2DCsvFile(file_endpt);
 
     // Arena and Obstacles as class of SuperEllipse
-    SuperEllipse arena[arena_config.size()], obs[obs_config.size()];
-
+    vector<SuperEllipse> arena(arena_config.size()), obs(obs_config.size());
     for(int j=0; j<arena_config.size(); j++){
         for(int i=0; i<6; i++) arena[j].a[i] = arena_config[j][i];
         arena[j].num = num;
     }
-
     for(int j=0; j<obs_config.size(); j++){
         for(int i=0; i<6; i++) obs[j].a[i] = obs_config[j][i];
         obs[j].num = num;
@@ -116,20 +116,11 @@ highwayRoadmap plan(){
     // Main Algorithm //
     //****************//
     highwayRoadmap high(robot, polyVtx, endPts, arena, obs, opt);
+    high.plan();
 
     // Planning Time and Path Cost
-    auto tic = chrono::high_resolution_clock::now();
-    high.buildRoadmap();
-    auto toc = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed_build = toc-tic;
-
-    tic = chrono::high_resolution_clock::now();
-    high.search();
-    toc = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed_search = toc-tic;
-
-    cout << "Roadmap construction time: " << elapsed_build.count() << "s" << endl;
-    cout << "Path searching time: " << elapsed_search.count() << "s" << endl;
+    cout << "Roadmap construction time: " << high.planTime.buildTime << "s" << endl;
+    cout << "Path searching time: " << high.planTime.searchTime << "s" << endl;
 
     cout << "Number of valid configurations: " << high.vtxEdge.vertex.size() << endl;
     cout << "Number of configurations in Path: " << high.Paths.size() <<  endl;
@@ -179,8 +170,17 @@ highwayRoadmap plan(){
 }
 
 int main(){
-    highwayRoadmap high = plan();
+    // Record planning time for N trials
+    int N = 50;
+    vector<double> time_stat[N];
 
+    for(int i=0; i<N; i++){
+        highwayRoadmap high = plan();
+        time_stat[i].push_back(high.planTime.buildTime);
+        time_stat[i].push_back(high.planTime.searchTime);
+    }
+
+    highwayRoadmap high = plan();
     // Write the output to .csv files
     ofstream file_vtx;
     file_vtx.open("vertex.csv");
@@ -199,6 +199,11 @@ int main(){
     vector<int> paths = high.Paths;
     for(int i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
     file_paths.close();
+
+    ofstream file_time;
+    file_time.open("planTime.csv");
+    for(int i=0; i<N; i++) file_time << time_stat[i][0] << ' ' << time_stat[i][1] << "\n";
+    file_time.close();
 
     return 0;
 }
