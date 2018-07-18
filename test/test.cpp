@@ -109,8 +109,8 @@ highwayRoadmap plan(){
     opt.N_dy = 30;
     opt.sampleNum = 10;
 
-    opt.N_o = sizeof(obs)/sizeof(obs[0]);
-    opt.N_s = sizeof(arena)/sizeof(arena[0]);
+    opt.N_o = obs.size();
+    opt.N_s = arena.size();
 
     //****************//
     // Main Algorithm //

@@ -32,7 +32,7 @@ class PRMtester{
     PRMtester(double lowBound, double highBound, std::vector<SuperEllipse> arena_, std::vector<SuperEllipse> robot_, std::vector<SuperEllipse> obs_){
       arena = arena_;
       robot = robot_;
-      obstacles = obs_;      
+      obstacles = obs_;
 
       auto space(std::make_shared<ob::SE2StateSpace>());
       ob::RealVectorBounds bounds(2);
