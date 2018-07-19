@@ -68,6 +68,9 @@ class PRMtester{
       std::cout << "Planning..."<< std::endl;
       ob::PlannerStatus solved = ss_->solve();
 
+      planTime = ss_->getLastPlanComputationTime();
+      flag = double(solved.operator bool());
+
       if(solved){
         std::cout << "Found solution:" << std::endl;
         // print the path to screen
@@ -76,7 +79,7 @@ class PRMtester{
         const std::vector<ob::State*> &states = ss_->getSolutionPath().getStates();
         ob::State *state;
         ofstream file_traj;
-        file_traj.open("trajectory.csv");
+        file_traj.open("prm_path.csv");
         for( size_t i = 0 ; i < states.size( ) ; ++i ){
           state = states[i]->as<ob::State >( );
           file_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << "," 
@@ -88,6 +91,10 @@ class PRMtester{
       }
       return false;
     }
+
+    og::SimpleSetupPtr ss_;
+    double planTime,flag;
+    int N_v_sample, N_v, N_p;
 
 private:
 
@@ -166,7 +173,6 @@ private:
       return res;
     }
 
-    og::SimpleSetupPtr ss_;
     std::vector<SuperEllipse> arena;
     std::vector<SuperEllipse> robot;
     std::vector<SuperEllipse> obstacles;
@@ -212,6 +218,8 @@ vector<vector<double>> parse2DCsvFile(string inputFileName) {
 }
 
 int main(){
+    std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
+
     // Number of points on the boundary
     int num = 50;
 
@@ -250,8 +258,7 @@ int main(){
     }
 
 	//Getting bounderies
-    double b1=-70.0,b2=70.0;
-    PRMtester tester(b1,b2,arena, robot, obs);
+    double b1=-65.0,b2=65.0;
 
     //Getting start configuration
     std::vector<double> start;
@@ -267,8 +274,27 @@ int main(){
     goal[1] = endPts[1][1];
     goal[2] = endPts[1][2];
 
-    // Main algorithm
-    tester.plan(start, goal);
+
+    // Record planning time for N trials
+    int N = 50;
+    vector<double> time_stat[N];
+
+    for(int i=0; i<N; i++){
+        // Main algorithm
+        PRMtester tester(b1,b2,arena, robot, obs);
+        tester.plan(start, goal);
+
+        // Planning Time and Path Cost
+        cout << "Total Planning Time: " << tester.planTime << 's' << endl;
+
+        time_stat[i].push_back(tester.planTime);
+        time_stat[i].push_back(tester.flag);
+    }
+
+    ofstream file_time;
+    file_time.open("planTime_prm.csv");
+    for(int i=0; i<N; i++) file_time << time_stat[i][0] << ' ' << time_stat[i][1] << "\n";
+    file_time.close();
 
     return 0;
 }

@@ -105,8 +105,8 @@ highwayRoadmap plan(){
     // Options
     option opt;
     opt.infla = rob_config[0][6];
-    opt.N_layers = 25;
-    opt.N_dy = 30;
+    opt.N_layers = 20;
+    opt.N_dy = 20;
     opt.sampleNum = 10;
 
     opt.N_o = obs.size();
@@ -117,15 +117,6 @@ highwayRoadmap plan(){
     //****************//
     highwayRoadmap high(robot, polyVtx, endPts, arena, obs, opt);
     high.plan();
-
-    // Planning Time and Path Cost
-    cout << "Roadmap construction time: " << high.planTime.buildTime << "s" << endl;
-    cout << "Path searching time: " << high.planTime.searchTime << "s" << endl;
-
-    cout << "Number of valid configurations: " << high.vtxEdge.vertex.size() << endl;
-    cout << "Number of configurations in Path: " << high.Paths.size() <<  endl;
-    cout << "Cost: " << high.Cost << endl;
-
 
     // calculate original boundary points
     boundary bd_ori;
@@ -178,6 +169,15 @@ int main(){
         highwayRoadmap high = plan();
         time_stat[i].push_back(high.planTime.buildTime);
         time_stat[i].push_back(high.planTime.searchTime);
+
+        // Planning Time and Path Cost
+        cout << "Roadmap build time: " << high.planTime.buildTime << "s" << endl;
+        cout << "Path search time: " << high.planTime.searchTime << "s" << endl;
+        cout << "Total Planning Time: " << high.planTime.buildTime + high.planTime.searchTime << 's' << endl;
+
+        cout << "Number of valid configurations: " << high.vtxEdge.vertex.size() << endl;
+        cout << "Number of configurations in Path: " << high.Paths.size() <<  endl;
+        cout << "Cost: " << high.Cost << endl;
     }
 
     highwayRoadmap high = plan();

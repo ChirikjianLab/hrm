@@ -121,32 +121,32 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
         }
     }
 
-    ofstream file_obs;
-    file_obs.open("bd_obs.csv");
-    file_obs << x_o_L << "\n";
-    file_obs << x_o_R << "\n";
-    file_obs.close();
+//    ofstream file_obs;
+//    file_obs.open("bd_obs.csv");
+//    file_obs << x_o_L << "\n";
+//    file_obs << x_o_R << "\n";
+//    file_obs.close();
 
-    // Enlarge the obstacle to form convex CF cells
-    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
-    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
+//    // Enlarge the obstacle to form convex CF cells
+//    x_o_L = boundaryEnlarge(bd_o_L, x_o_L, ty, -1);
+//    x_o_R = boundaryEnlarge(bd_o_R, x_o_R, ty, +1);
 
-    // write to .csv file
-    ofstream file_ty;
-    file_ty.open("bd_ty.csv");
-    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
-    file_ty.close();
+//    // write to .csv file
+//    ofstream file_ty;
+//    file_ty.open("bd_ty.csv");
+//    for(int i=0; i<N_dy; i++) file_ty << ty[i] << "\n";
+//    file_ty.close();
 
-    file_obs.open("bd_obs_ex.csv");
-    file_obs << x_o_L << "\n";
-    file_obs << x_o_R << "\n";
-    file_obs.close();
+//    file_obs.open("bd_obs_ex.csv");
+//    file_obs << x_o_L << "\n";
+//    file_obs << x_o_R << "\n";
+//    file_obs.close();
 
-    ofstream file_arena;
-    file_arena.open("bd_arena.csv");
-    file_arena << x_s_L << "\n";
-    file_arena << x_s_R << "\n";
-    file_arena.close();
+//    ofstream file_arena;
+//    file_arena.open("bd_arena.csv");
+//    file_arena << x_s_L << "\n";
+//    file_arena << x_s_R << "\n";
+//    file_arena.close();
 
     // CF line segment for each ty
     for(int i=0; i<N_dy; i++){
