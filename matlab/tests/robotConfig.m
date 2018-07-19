@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 13;
+opt = 11;
 [ar, obs, pts] = environment(opt);
 
 %% Store Arena and Obstacles as .csv files

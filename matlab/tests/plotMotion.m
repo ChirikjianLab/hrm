@@ -13,20 +13,23 @@ endPts = load(['../../config/', 'endPts.csv']);
 
 figure; hold on; axis equal;
 %% environment
-sc = 10;
+disp('Environment Initialization...')
+opt = 11;
+[ar, obs, pts] = environment(opt);
+
 % start and goal
 start = endPts(1,:)';
 goal = endPts(2,:)';
 plot(start(1), start(2), 'ro', 'LineWidth', 3);
 plot(goal(1), goal(2), 'gd', 'LineWidth', 3);
 
-% original
-for i = 1:2:size(X_ori,1)-1
-    plot(X_ori(i,:),X_ori(i+1,:),'k');
-end
+% % original
+% for i = 1:2:size(X_ori,1)-1
+%     plot(X_ori(i,:),X_ori(i+1,:),'k');
+% end
 
 %% Paths
-% shortest path
+% Highway
 plot([start(1) vtx(path(1)+1,1)],...
     [start(2) vtx(path(1)+1,2)], 'r', 'LineWidth', 2)
 plot([goal(1) vtx(path(end)+1,1)],...
@@ -37,14 +40,50 @@ for i = 1:size(path,2)-1
         [vtx(path(i)+1,2) vtx(path(i+1)+1,2)], 'c', 'LineWidth', 2)
 end
 
-%% Robot motions
-plotEllipse(robot(1:2), start);
-for i = 1:size(path,2)-1 
-    plotEllipse(robot(1:2), vtx(path(i)+1,:)')
-end
-plotEllipse(robot(1:2), goal);
+% PRM
+path_prm = load([loadPath, 'prm_path.csv']);
+state_prm = load([loadPath, 'prm_state.csv']);
+edge_prm = load([loadPath, 'prm_edge.csv']);
+smooth_path_prm = load([loadPath, 'prm_smooth_path.csv']);
 
-function plotEllipse(a, config)
+plot([start(1) path_prm(1,1)],...
+    [start(2) path_prm(1,2)], 'r', 'LineWidth', 2)
+plot([goal(1) path_prm(end,1)],...
+    [goal(2) path_prm(end,2)], 'g', 'LineWidth', 2)
+for i = 1:size(path_prm,1)-1
+    plot([path_prm(i,1) path_prm(i+1,1)],...
+        [path_prm(i,2) path_prm(i+1,2)], 'b-', 'LineWidth', 2)
+end
+
+for i = 1:size(state_prm,1)-1
+    plot(state_prm(i,1),state_prm(i,2),'b+', 'LineWidth', 2)
+end
+
+% for i = 1:size(edge_prm,1)-1
+%     plot([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
+%         [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
+%         'b--', 'LineWidth', 1)
+% end
+
+%% Robot motions
+% Highway
+plotEllipse(robot(1:2), start, 'k');
+for i = 1:size(path,2)-1 
+    plotEllipse(robot(1:2), vtx(path(i)+1,:)', 'b')
+end
+plotEllipse(robot(1:2), goal, 'k');
+
+% PRM
+for i = 1:size(path_prm,1)-1 
+    plotEllipse(robot(1:2), path_prm(i+1,:)', 'r')
+end
+
+for i = 1:size(smooth_path_prm,1)-1 
+    plotEllipse(robot(1:2), smooth_path_prm(i+1,:)', 'r')
+end
+
+
+function plotEllipse(a, config, c)
 N = 50;
 A = diag(a);
 R = rot2(config(3));
@@ -52,5 +91,5 @@ R = rot2(config(3));
 th = 0:2*pi/(N-1):2*pi;
 u = [cos(th); sin(th)];
 x = R*A*u + config(1:2);
-plot(x(1,:), x(2,:))
+plot(x(1,:), x(2,:), c)
 end

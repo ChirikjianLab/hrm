@@ -5,6 +5,11 @@
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE2StateSpace.h>
 
+#include <fcl/fcl.h>
+#include "fcl/geometry/shape/ellipsoid.h"
+#include <fcl/narrowphase/collision_object.h>
+#include <fcl/narrowphase/collision.h>
+
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include <vector>
@@ -12,8 +17,6 @@
 #include <ompl/config.h>
 #include <iostream>
 #include <fstream>
-
-#include <src/geometry/superellipse.h>
 
 #include <unsupported/Eigen/Polynomials>
 
@@ -26,13 +29,88 @@ using namespace std;
 #define pi 3.1415926
 #define sgn(v) ( ( (v) < 0 ) ? -1 : ( (v) > 0 ) )
 
+typedef Matrix<double,4,1> Vector4d;
+using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
+
+class SuperEllipse{
+public:
+    /* Parameters of superellipse
+        a[0], a[1]: semi-axes length;
+        a[2]      : rotational angle;
+        a[3]      : epsilon;
+        a[4], a[5]: position of the center.
+    */
+    double a[6];
+    // Number of points on boundary
+    int num;
+
+    // Functions
+    //SuperEllipse(double a[6], int num);
+    MatrixXd originShape(double a[6], int num){
+      //Fix this function later
+      double th;
+      Vector2d x;
+      MatrixXd trans(2,num), X(2,num);
+
+      for(int i=0; i<num; i++){
+        th = 2*i*pi/(num-1);
+
+        x(0,0) = a[0] * expFun(th,a[3],0);
+        x(1,0) = a[1] * expFun(th,a[3],1);
+
+        trans(0,i) = a[4]; trans(1,i) = a[5];
+        X(0,i) = x(0,0); X(1,i) = x(1,0);
+      }
+      X = Rotation2Dd(a[2]).matrix() * X + trans;
+      return X;
+    }
+    
+    double expFun(double th, double p, bool func){
+      return (func == 0) ? sgn(cos(th)) * pow(abs(cos(th)), p) : sgn(sin(th)) * pow(abs(sin(th)), p) ;
+    }
+
+    bool fcl_separation(Vector2d coeff_canon_i_, Vector2d coeff_canon_j_, Vector2d r_i_, Vector2d r_j_, double theta_i_, double theta_j_){
+      bool res = false;
+      GeometryPtr_t i_geometry(new fcl::Ellipsoid<double>(coeff_canon_i_(0,0), coeff_canon_i_(1,0), 0.0));
+      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitX())); 
+      fcl::Vector3<double> T_i_(r_i_(0,0), r_i_(1,0), 0.0);
+      fcl::Transform3<double> i_transform = fcl::Transform3<double>::Identity();
+      i_transform.translation() = (T_i_);
+      i_transform.linear() = rotation_i_;
+      fcl::CollisionObject<double> i_ellipsoid(i_geometry, i_transform);
+
+      GeometryPtr_t j_geometry(new fcl::Ellipsoid<double>(coeff_canon_j_(0,0), coeff_canon_j_(1,0), 0.0));
+      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitX()));
+      fcl::Vector3<double> T_j_(r_j_(0,0), r_j_(1,0), 0.0);
+      fcl::Transform3<double> j_transform = fcl::Transform3<double>::Identity();
+      j_transform.translation() = (T_j_);
+      j_transform.linear() = rotation_j_;
+      fcl::CollisionObject<double> j_ellipsoid(j_geometry, j_transform);
+
+      fcl::CollisionRequest<double> request;
+      fcl::CollisionResult<double> result;
+      
+      fcl::collide(&i_ellipsoid, &j_ellipsoid, request, result);
+      if (result.numContacts() > 0){
+        //std::cout << "In collision" << std::endl;
+        res = false;
+      }else{
+        //std::cout << "Not in collision" << std::endl;
+        res = true;
+      }
+
+      return res;
+    }
+
+};
+
 
 class PRMtester{
   public:
-    PRMtester(double lowBound, double highBound, std::vector<SuperEllipse> arena_, std::vector<SuperEllipse> robot_, std::vector<SuperEllipse> obs_){
+    PRMtester(double lowBound, double highBound, std::vector<SuperEllipse> arena_, std::vector<SuperEllipse> robot_, std::vector<SuperEllipse> obs_){        
       arena = arena_;
       robot = robot_;
-      obstacles = obs_;
+      obstacles = obs_;      
 
       auto space(std::make_shared<ob::SE2StateSpace>());
       ob::RealVectorBounds bounds(2);
@@ -66,72 +144,27 @@ class PRMtester{
       ss_->print();
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(100.0);
+      ob::PlannerStatus solved = ss_->solve();
 
       planTime = ss_->getLastPlanComputationTime();
       flag = double(solved.operator bool());
 
-      ob::PlannerData pd(ss_->getSpaceInformation());
-      ss_->getPlannerData(pd);
-
-      // Store all the valid states
-      ofstream file_state;
-      cout << pd.numVertices() << ' ' << pd.numEdges() << endl;
-      const ob::State *state;
-      file_state.open("prm_state.csv");
-      for(size_t i=0; i<pd.numVertices(); i++){
-          state = pd.getVertex(i).getState()->as<ob::State>();
-          file_state << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
-                     << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
-                     << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
-      }
-      file_state.close();
-
-      // Store all the valid edges
-      ofstream file_edge;
-      file_edge.open("prm_edge.csv");
-      vector< vector<unsigned int> > edge(pd.numVertices());
-      for(size_t i=0; i<pd.numVertices(); i++){
-          pd.getEdges(i,edge[i]);
-          for(int j=0; j<edge[i].size(); j++) file_edge << int(i) << ' ' << int(edge[i][j]) << '\n';
-      }
-
       if(solved){
         std::cout << "Found solution:" << std::endl;
         // print the path to screen
-        ss_->getSolutionPath().printAsMatrix(std::cout);
+        ss_->getSolutionPath().print(std::cout);
         //Storing solution in a file 
         const std::vector<ob::State*> &states = ss_->getSolutionPath().getStates();
-
         ob::State *state;
         ofstream file_traj;
-        file_traj.open("prm_path.csv");
+        file_traj.open("trajectory.csv");
         for( size_t i = 0 ; i < states.size( ) ; ++i ){
-          state = states[i]->as<ob::State >( );
+          state = states[i]->as<ob::State >( ); 
           file_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << "," 
                    << state->as<ob::SE2StateSpace::StateType>()->getY() << "," 
                    << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
         }
         file_traj.close();
-
-        // Smooth path
-        ss_->getSolutionPath().interpolate(50);
-        std::cout << "Found solution:" << std::endl;
-        // print the path to screen
-        ss_->getSolutionPath().printAsMatrix(std::cout);
-        //Storing solution in a file
-        const std::vector<ob::State*> &s_states = ss_->getSolutionPath().getStates();
-
-        ofstream file_smooth_traj;
-        file_smooth_traj.open("prm_smooth_path.csv");
-        for( size_t i = 0 ; i < s_states.size( ) ; ++i ){
-          state = s_states[i]->as<ob::State >( );
-          file_smooth_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
-                   << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
-                   << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
-        }
-        file_smooth_traj.close();
-
         return true;
       }
       return false;
@@ -149,11 +182,11 @@ private:
         double y = state->as<ob::SE2StateSpace::StateType>()->getY();
         double yaw = state->as<ob::SE2StateSpace::StateType>()->getYaw();
 
-        for(unsigned int j=0; j<robot.size();j++){
+		for(unsigned int j=0; j<robot.size();j++){
 			SuperEllipse robot_config = {{robot[j].a[0],robot[j].a[1],yaw,robot[j].a[3],x,y}, robot[j].num};
 			//Checking collision against obstacles
-            for(unsigned int i=0; i<obstacles.size(); i++){
-          		bool aux = checkASC(robot_config, obstacles[i]);
+        	for(unsigned int i=0; i<obstacles.size(); i++){
+          		bool aux = checkSeparation(robot_config, obstacles[i]);
           		if(aux == false){
             		res = false;
           		}
@@ -161,8 +194,8 @@ private:
         	if(res == false){
           		return res;
         	}
-            for(int k=0;k<arena.size();k++){
-				res = checkASCArena(robot_config, arena[k]);
+			for(int k=0;k<arena.size();k++){
+				res = checkSeparationArena(robot_config, arena[k]);
 				if(res == false){
 					return res;
 				}
@@ -172,7 +205,7 @@ private:
     }
 
     //Returns true when separated and false when overlapping 
-    bool checkASC(SuperEllipse robot_, SuperEllipse obs_) const{      
+    bool checkSeparation(SuperEllipse robot_, SuperEllipse obs_) const{      
       Vector2d coeff_canon_i_;
       coeff_canon_i_ << robot_.a[0], robot_.a[1];
       Vector2d coeff_canon_j_;
@@ -181,9 +214,7 @@ private:
       r_i_ << robot_.a[4], robot_.a[5];
       Vector2d r_j_;
       r_j_ << obs_.a[4], obs_.a[5];
-      Matrix2d A_i_ = robot_.rot2(robot_.a[2]);
-      Matrix2d A_j_ = obs_.rot2(obs_.a[2]);
-      bool res = robot_.algebraic_separation_condition(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
+      bool res = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], obs_.a[2]);
       /*if(res){
         std::cout<<"True"<<std::endl;
       }else{
@@ -193,10 +224,10 @@ private:
     }
 
     //Returns true when separated and false when overlapping
-    bool checkASCArena(SuperEllipse robot_, SuperEllipse arena_) const{
+    bool checkSeparationArena(SuperEllipse robot_, SuperEllipse arena_) const{
       bool res = true; 
       double max = 0;
-      for(int i=0;i<2;i++){
+      for(int i=0;i<3;i++){
         if(robot_.a[i]>max){
           max = robot_.a[i];
         }
@@ -209,9 +240,7 @@ private:
       r_i_ << robot_.a[4], robot_.a[5];
       Vector2d r_j_;
       r_j_ << arena_.a[4], arena_.a[5];
-      Matrix2d A_i_ = robot_.rot2(robot_.a[2]);
-      Matrix2d A_j_ = arena_.rot2(arena_.a[2]);
-      bool aux = robot_.algebraic_separation_condition(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
+      bool aux = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], arena_.a[2]);
       if(aux == true){
         res = false;
       }       
@@ -302,8 +331,8 @@ int main(){
         obs[j].num = num;
     }
 
-	//Getting bounderies
-    double b1=-65.0,b2=65.0;
+    //Getting bounderies
+    double b1=-70.0,b2=70.0;
 
     //Getting start configuration
     std::vector<double> start;
@@ -343,4 +372,3 @@ int main(){
 
     return 0;
 }
-

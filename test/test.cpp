@@ -162,7 +162,7 @@ highwayRoadmap plan(){
 
 int main(){
     // Record planning time for N trials
-    int N = 50;
+    int N = 1;
     vector<double> time_stat[N];
 
     for(int i=0; i<N; i++){
