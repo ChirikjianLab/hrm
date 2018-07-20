@@ -14,7 +14,7 @@ endPts = load(['../../config/', 'endPts.csv']);
 figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
-opt = 11;
+opt = 13;
 [ar, obs, pts] = environment(opt);
 
 % start and goal
@@ -59,11 +59,11 @@ for i = 1:size(state_prm,1)-1
     plot(state_prm(i,1),state_prm(i,2),'b+', 'LineWidth', 2)
 end
 
-% for i = 1:size(edge_prm,1)-1
-%     plot([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
-%         [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
-%         'b--', 'LineWidth', 1)
-% end
+for i = 1:size(edge_prm,1)-1
+    plot([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
+        [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
+        'b--', 'LineWidth', 1)
+end
 
 %% Robot motions
 % Highway

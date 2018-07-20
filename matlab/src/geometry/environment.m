@@ -4,7 +4,7 @@ if opt == 11 % Ellipse Sparse
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0; % superquadric arena(s)
     tx_s = 0; ty_s = 0;
-    eps_s = 1;
+    eps_s = .1;
     
     % superquadric obstacles
     ra_o  = [15 12 ]; % "a" semi-axis length(s)
@@ -12,17 +12,17 @@ if opt == 11 % Ellipse Sparse
     ang_o = [-pi/3  0 ]; % tilted angle(s)
     
     tx_o     = [-15  15 ]; % x coords of the centers of superquadric obstacles
-    ty_o     = [-10  20 ]; % y coords of the centers of superquadric obstacles
+    ty_o     = [-20  20 ]; % y coords of the centers of superquadric obstacles
     eps_o    = [  1   1 ];
     
     P_start = [-40;  0; 0; 0; 0];
-    P_goal  = [ 35; 20; 0; 0; 0];
+    P_goal  = [ 40; 20; 0; 0; 0];
      
 elseif opt == 12 % Ellipse Narrow
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
-    eps_s = 1;
+    eps_s = .1;
     
     % superquadric obstacles
     ra_o  = [20 20  5 20 18 18  5];
@@ -40,7 +40,7 @@ elseif opt == 13 % Ellipse Cluttered
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
-    eps_s = 1;
+    eps_s = .1;
     
     % superquadric obstacles
     ra_o  = [15 20 15 20 15 20 10];
