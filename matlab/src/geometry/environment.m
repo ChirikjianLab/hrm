@@ -16,8 +16,8 @@ if opt == 11 % Ellipse Sparse
     eps_o    = [  1   1 ];
     
     P_start = [-40;  0; 0; 0; 0];
-    P_goal  = [ 40; 20; 0; 0; 0];
-     
+    P_goal  = [ 40; 20; pi/6; 0; 0];
+    
 elseif opt == 12 % Ellipse Narrow
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0;
@@ -35,31 +35,33 @@ elseif opt == 12 % Ellipse Narrow
     
     P_start = [-40; 5; 0; 0; 0];
     P_goal  = [ 35; 0; 0; 0; 0];
-   
-elseif opt == 13 % Ellipse Cluttered
+    
+elseif opt == 13 % Ellipse Maze
     % set up the parameters of the environment
     ra_s = 50; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
     eps_s = .1;
     
     % superquadric obstacles
-    ra_o  = [15 20 15 20 15 20 10];
-    rb_o  = [ 5  5  5  5  5  5  5];
-    ang_o = [-pi/4 pi/5 pi/2.5 -pi/6 -pi/5.5 pi/4 pi/10];
+    rb_b = 5;
+    rb_a = 5;
+    ra_o  = [ 5   20 rb_b   25 rb_b   28 rb_b   20 rb_b 4.8];
+    rb_o  = [30 rb_a   25 rb_a   25 rb_a   25 rb_a   25  25];
+    ang_o = [ 0    0    0    0    0    0    0    0    0   0];
     
-    tx_o     = [-32 -25   5 10 25  35 -18];
-    ty_o     = [-20  25 -25  8 28 -15   0];
-    eps_o    = [  1   1   1   1   1   1   1];
+    tx_o     = [-44 -28  -26 -16  -8  20   10 29  28 45];
+    ty_o     = [  9 -34 -3.5  34 3.5 -34 -3.5 34 3.5 -6];
+    eps_o    = [  1   1    1   1   1   1    1  1   1  1];
     
-    P_start = [-40; 5; 0; 0; 0];
-    P_goal  = [ 35; 0; 0; 0; 0];
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    P_start = [-42;-26; 0; 0; 0];
+    P_goal  = [ 42; 26; 0; 0; 0];
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif opt == 21 % Superellipse Sparse
     % set up the parameters of the environment
     ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
     tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
+    eps_s = 0.01;
     
     % superquadric obstacles
     ra_o  = [25 20];
@@ -73,7 +75,7 @@ elseif opt == 21 % Superellipse Sparse
     P_start = [-63; 30; 0; 0; 0];
     P_goal  = [ 60;-30; 0; 0; 0];
     
-elseif opt == 22 % Superellipse Narrow
+elseif opt == 22 % Superellipse Maze
     ra_s = 70; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
     eps_s = 0.1;
@@ -83,29 +85,48 @@ elseif opt == 22 % Superellipse Narrow
     rb_o  = [30 25 30 30  5 30 10];
     ang_o = [ 0  0  0  0  0  0  0];
     
-    tx_o     = [-60 -30   5  32  22  55 -28];
+    tx_o     = [-60 -31   5  32  22  54 -28];
     ty_o     = [-10  15 -10   0  35 -10 -30];
     eps_o    = [0.8 0.2 0.4 0.2 0.2 0.8 0.3];
     
     P_start = [-63; 30; 0; 0; 0];
     P_goal  = [ 65;-30; pi/2; 0; 0];
     
-elseif opt == 23 % Superellipse Cluttered
+elseif opt == 23 % Superellipse Maze2
     ra_s = 70; rb_s = 40; ang_s = 0;
     tx_s = 0; ty_s = 0;
     eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [ 5  5  5  5 25  5 10];
-    rb_o  = [25 20 25 20  5 30  5];
-    ang_o = [pi/6  0  0  0  0  0  0];
+    rb_b = 5;
+    rb_a = 5;
+    ra_o  = [ 5   20 rb_b   25 rb_b   28 rb_b   20 rb_b  4.9];
+    rb_o  = [30 rb_a   25 rb_a   25 rb_a   25 rb_a   25  26];
+    ang_o = [ 0    0    0    0    0    0    0    0    0   0];
     
-    tx_o     = [-60 -30  0  30  20  60 -30];
-    ty_o     = [-10  20 -15  5  30  -10  -5];
-    eps_o    = [1.5 0.4 0.5 1.4 0.2 0.8 0.1];
+    tx_o     = [-47 -28 -27 -16 -8  20 10 29 28 46];
+    ty_o     = [  9 -35  -5  35  5 -35 -5 35  5 -4];
+    eps_o    = [ .4  .1  .6  .1  .6  .1  .6 .1  .6  1.4];
     
-    P_start = [-63; 30; 0; 0; 0];
-    P_goal  = [ 63;-30; 0; 0; 0];
+    P_start = [-45;-25; 0; 0; 0];
+    P_goal  = [ 45; 26; 0; 0; 0];
+    
+elseif opt == 24 % Superellipse cluttered
+    ra_s = 70; rb_s = 40; ang_s = 0;
+    tx_s = 0; ty_s = 0;
+    eps_s = 0.1;
+    
+    % superquadric obstacles
+    ra_o  = [20 25  5 20 18 18  5];
+    rb_o  = [ 5  5 15  5  5  8 10];
+    ang_o = [-pi/4 pi/6 0 0 -pi/8 pi/4 0];
+    
+    tx_o     = [-32 -40   5 10 30  45 -15];
+    ty_o     = [-18  20 -25  8 25 -15   3];
+    eps_o    = [1.1  .8  .4 .1 .1  1.4  .1];
+    
+    P_start = [-55;-25; 0; 0; 0];
+    P_goal  = [ 60; 26; pi/3; 0; 0];
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -118,12 +139,12 @@ Ns = 300;  % # of pnts on the superelliptical obs(tacles)
 %% == construct SuperEllipse objects for the arena and obstacles
 for i = 1:N_s
     arena(i) = SuperEllipse([ra_s(i), rb_s(i), ang_s(i), tx_s(i), ...
-                             ty_s(i), eps_s(i), Ns], 'y', 0);
+        ty_s(i), eps_s(i), Ns], 'y', 0);
 end
 
 for i = 1:N_o
     obs(i) = SuperEllipse([ra_o(i), rb_o(i), ang_o(i), tx_o(i), ...
-                           ty_o(i), eps_o(i), Nb], 'k', 0);
+        ty_o(i), eps_o(i), Nb], 'k', 0);
 end
 
 %% == Start and ending points ==

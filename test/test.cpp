@@ -71,8 +71,8 @@ highwayRoadmap plan(){
 
     // Robot as a class of SuperEllipse
     vector<SuperEllipse> robot(rob_config.size());
-    for(int j=0; j<rob_config.size(); j++){
-        for(int i=0; i<6; i++) robot[j].a[i] = rob_config[0][i];
+    for(size_t j=0; j<rob_config.size(); j++){
+        for(size_t i=0; i<6; i++) robot[j].a[i] = rob_config[0][i];
         robot[j].num = num;
     }
 
@@ -93,20 +93,20 @@ highwayRoadmap plan(){
 
     // Arena and Obstacles as class of SuperEllipse
     vector<SuperEllipse> arena(arena_config.size()), obs(obs_config.size());
-    for(int j=0; j<arena_config.size(); j++){
-        for(int i=0; i<6; i++) arena[j].a[i] = arena_config[j][i];
+    for(size_t j=0; j<arena_config.size(); j++){
+        for(size_t i=0; i<6; i++) arena[j].a[i] = arena_config[j][i];
         arena[j].num = num;
     }
-    for(int j=0; j<obs_config.size(); j++){
-        for(int i=0; i<6; i++) obs[j].a[i] = obs_config[j][i];
+    for(size_t j=0; j<obs_config.size(); j++){
+        for(size_t i=0; i<6; i++) obs[j].a[i] = obs_config[j][i];
         obs[j].num = num;
     }
 
     // Options
     option opt;
     opt.infla = rob_config[0][6];
-    opt.N_layers = 20;
-    opt.N_dy = 20;
+    opt.N_layers = 40;
+    opt.N_dy = 60;
     opt.sampleNum = 10;
 
     opt.N_o = obs.size();
@@ -120,10 +120,10 @@ highwayRoadmap plan(){
 
     // calculate original boundary points
     boundary bd_ori;
-    for(int i=0; i<opt.N_s; i++){
+    for(size_t i=0; i<opt.N_s; i++){
         bd_ori.bd_s.push_back( high.Arena[i].originShape(high.Arena[i].a, high.Arena[i].num) );
     }
-    for(int i=0; i<opt.N_o; i++){
+    for(size_t i=0; i<opt.N_o; i++){
         bd_ori.bd_o.push_back( high.Obs[i].originShape(high.Obs[i].a, high.Obs[i].num) );
     }
 
@@ -136,20 +136,20 @@ highwayRoadmap plan(){
     // write to .csv file
     ofstream file_ori_bd;
     file_ori_bd.open("bd_ori.csv");
-    for(int i=0; i<bd_ori.bd_o.size(); i++) file_ori_bd << bd_ori.bd_o[i] << "\n";
-    for(int i=0; i<bd_ori.bd_s.size(); i++) file_ori_bd << bd_ori.bd_s[i] << "\n";
+    for(size_t i=0; i<bd_ori.bd_o.size(); i++) file_ori_bd << bd_ori.bd_o[i] << "\n";
+    for(size_t i=0; i<bd_ori.bd_s.size(); i++) file_ori_bd << bd_ori.bd_s[i] << "\n";
     file_ori_bd.close();
 
     ofstream file_bd;
     file_bd.open("bd.csv");
-    for(int i=0; i<bd.bd_o.size(); i++) file_bd << bd.bd_o[i] << "\n";
-    for(int i=0; i<bd.bd_s.size(); i++) file_bd << bd.bd_s[i] << "\n";
+    for(size_t i=0; i<bd.bd_o.size(); i++) file_bd << bd.bd_o[i] << "\n";
+    for(size_t i=0; i<bd.bd_s.size(); i++) file_bd << bd.bd_s[i] << "\n";
     file_bd.close();
 
     ofstream file_cell;
     file_cell.open("cell.csv");
-    for(int i=0; i<cell.ty.size(); i++){
-        for(int j=0; j<cell.xL[i].size(); j++)
+    for(size_t i=0; i<cell.ty.size(); i++){
+        for(size_t j=0; j<cell.xL[i].size(); j++)
             file_cell << cell.ty[i] << ' ' <<
                          cell.xL[i][j] << ' ' <<
                          cell.xM[i][j] << ' ' <<
@@ -162,8 +162,9 @@ highwayRoadmap plan(){
 
 int main(){
     // Record planning time for N trials
-    int N = 1;
+    int N = 50;
     vector<double> time_stat[N];
+    highwayRoadmap high = plan();
 
     for(int i=0; i<N; i++){
         highwayRoadmap high = plan();
@@ -180,29 +181,28 @@ int main(){
         cout << "Cost: " << high.Cost << endl;
     }
 
-    highwayRoadmap high = plan();
     // Write the output to .csv files
     ofstream file_vtx;
     file_vtx.open("vertex.csv");
     vector<vector<double>> vtx = high.vtxEdge.vertex;
-    for(int i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << "\n";
+    for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << "\n";
     file_vtx.close();
 
     ofstream file_edge;
     file_edge.open("edge.csv");
     vector<pair<int, int>> edge = high.vtxEdge.edge;
-    for(int i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+    for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
     file_edge.close();
 
     ofstream file_paths;
     file_paths.open("paths.csv");
     vector<int> paths = high.Paths;
-    for(int i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
+    for(size_t i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
     file_paths.close();
 
     ofstream file_time;
     file_time.open("planTime.csv");
-    for(int i=0; i<N; i++) file_time << time_stat[i][0] << ' ' << time_stat[i][1] << "\n";
+    for(size_t i=0; i<N; i++) file_time << time_stat[i][0] << ' ' << time_stat[i][1] << "\n";
     file_time.close();
 
     return 0;

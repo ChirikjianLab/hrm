@@ -108,7 +108,7 @@ public:
       model_i_->addSubModel(se_i_.vertices, se_i_.triangles);
       model_i_->endModel();
 
-      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitX())); 
+      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitZ()));
       fcl::Vector3<double> T_i_(r_i_(0,0), r_i_(1,0), 0.0);
       fcl::Transform3<double> i_transform = fcl::Transform3<double>::Identity();
       i_transform.translation() = (T_i_);
@@ -120,7 +120,7 @@ public:
       model_j_->beginModel();
       model_j_->addSubModel(se_j_.vertices, se_j_.triangles);
       model_j_->endModel();
-      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitX()));
+      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitZ()));
       fcl::Vector3<double> T_j_(r_j_(0,0), r_j_(1,0), 0.0);
       fcl::Transform3<double> j_transform = fcl::Transform3<double>::Identity();
       j_transform.translation() = (T_j_);

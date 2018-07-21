@@ -160,7 +160,7 @@ bool SuperEllipse::algebraic_separation_condition(Vector2d coeff_canon_i_, Vecto
 
 Matrix2d SuperEllipse::rot2(double theta){
   Matrix2d S;
-  S << 0, 1, -1,0;
+  S << 0, -1, 1,0;
   Matrix2d R;
   MatrixXd id = MatrixXd::Identity(2,2);
   R = id + ((sin(theta)) * S) + ((1 - cos(theta))*(S * S));

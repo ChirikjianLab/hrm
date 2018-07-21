@@ -22,7 +22,7 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 13;
+opt = 24;
 [ar, obs, pts] = environment(opt);
 
 sc = 20;
@@ -94,34 +94,34 @@ for i = 1:size(path,2)-1
 end
 
 %% Path for PRM
-path_prm = load([loadPath, 'prm_path.csv']);
-state_prm = load([loadPath, 'prm_state.csv']);
-edge_prm = load([loadPath, 'prm_edge.csv']);
-
-path_prm(:,3) = path_prm(:,3)+pi;
-state_prm(:,3) = state_prm(:,3)+pi;
-
-plot3([start(1) path_prm(1,1)],...
-    [start(2) path_prm(1,2)],...
-    sc*[start(3) path_prm(1,3)], 'r', 'LineWidth', 2)
-plot3([goal(1) path_prm(end,1)],...
-    [goal(2) path_prm(end,2)],...
-    sc*[goal(3) path_prm(end,3)], 'g', 'LineWidth', 2)
-
-for i = 1:size(path_prm,1)-1
-    plot3([path_prm(i,1) path_prm(i+1,1)],...
-        [path_prm(i,2) path_prm(i+1,2)],...
-        sc*[path_prm(i,3) path_prm(i+1,3)], 'b-', 'LineWidth', 2)
-end
-
-for i = 1:size(state_prm,1)-1
-    plot3(state_prm(i,1),state_prm(i,2),sc*state_prm(i,3),...
-        'b+', 'LineWidth', 2)
-end
-
-for i = 1:size(edge_prm,1)-1
-    plot3([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
-        [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
-        sc*[state_prm(edge_prm(i,1)+1,3) state_prm(edge_prm(i,2)+1,3)],...
-        'b--', 'LineWidth', 2)
-end
+% path_prm = load([loadPath, 'prm_path.csv']);
+% state_prm = load([loadPath, 'prm_state.csv']);
+% edge_prm = load([loadPath, 'prm_edge.csv']);
+% 
+% path_prm(:,3) = path_prm(:,3)+pi;
+% state_prm(:,3) = state_prm(:,3)+pi;
+% 
+% plot3([start(1) path_prm(1,1)],...
+%     [start(2) path_prm(1,2)],...
+%     sc*[start(3) path_prm(1,3)], 'r', 'LineWidth', 2)
+% plot3([goal(1) path_prm(end,1)],...
+%     [goal(2) path_prm(end,2)],...
+%     sc*[goal(3) path_prm(end,3)], 'g', 'LineWidth', 2)
+% 
+% for i = 1:size(path_prm,1)-1
+%     plot3([path_prm(i,1) path_prm(i+1,1)],...
+%         [path_prm(i,2) path_prm(i+1,2)],...
+%         sc*[path_prm(i,3) path_prm(i+1,3)], 'b-', 'LineWidth', 2)
+% end
+% 
+% for i = 1:size(state_prm,1)-1
+%     plot3(state_prm(i,1),state_prm(i,2),sc*state_prm(i,3),...
+%         'b+', 'LineWidth', 2)
+% end
+% 
+% for i = 1:size(edge_prm,1)-1
+%     plot3([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
+%         [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
+%         sc*[state_prm(edge_prm(i,1)+1,3) state_prm(edge_prm(i,2)+1,3)],...
+%         'b--', 'LineWidth', 2)
+% end

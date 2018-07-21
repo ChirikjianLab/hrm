@@ -55,7 +55,7 @@ public:
 
 struct option{
     double infla;
-    int N_layers, N_dy, sampleNum, N_o, N_s;
+    size_t N_layers, N_dy, sampleNum, N_o, N_s;
 };
 
 class highwayRoadmap
@@ -79,11 +79,11 @@ polyVtx   : descriptions of polyhedron local c-space
 planTime  : planning time: roadmap building time and path search time
 */
 private:
-    int N_o, N_s, N_dy, N_layers;
+    size_t N_o, N_s, N_dy, N_layers;
     double infla;
-    int N_KCsample;
+    size_t N_KCsample;
     double ang_r;
-    vector<int> N_v_layer;
+    vector<size_t> N_v_layer;
 
 public:
     // graph: vector of vertices, vector of connectable edges

@@ -72,7 +72,7 @@ public:
     bool fcl_separation(Vector2d coeff_canon_i_, Vector2d coeff_canon_j_, Vector2d r_i_, Vector2d r_j_, double theta_i_, double theta_j_){
       bool res = false;
       GeometryPtr_t i_geometry(new fcl::Ellipsoid<double>(coeff_canon_i_(0,0), coeff_canon_i_(1,0), 0.0));
-      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitX())); 
+      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitZ()));
       fcl::Vector3<double> T_i_(r_i_(0,0), r_i_(1,0), 0.0);
       fcl::Transform3<double> i_transform = fcl::Transform3<double>::Identity();
       i_transform.translation() = (T_i_);
@@ -80,7 +80,7 @@ public:
       fcl::CollisionObject<double> i_ellipsoid(i_geometry, i_transform);
 
       GeometryPtr_t j_geometry(new fcl::Ellipsoid<double>(coeff_canon_j_(0,0), coeff_canon_j_(1,0), 0.0));
-      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitX()));
+      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitZ()));
       fcl::Vector3<double> T_j_(r_j_(0,0), r_j_(1,0), 0.0);
       fcl::Transform3<double> j_transform = fcl::Transform3<double>::Identity();
       j_transform.translation() = (T_j_);
@@ -144,10 +144,35 @@ class PRMtester{
       ss_->print();
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve();
+      ob::PlannerStatus solved = ss_->solve(20.0);
 
       planTime = ss_->getLastPlanComputationTime();
       flag = double(solved.operator bool());
+
+      ob::PlannerData pd(ss_->getSpaceInformation());
+      ss_->getPlannerData(pd);
+
+      // Store all the valid states
+      ofstream file_state;
+      cout << pd.numVertices() << ' ' << pd.numEdges() << endl;
+      const ob::State *state;
+      file_state.open("prm_state.csv");
+      for(size_t i=0; i<pd.numVertices(); i++){
+          state = pd.getVertex(i).getState()->as<ob::State>();
+          file_state << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
+                     << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
+                     << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+      }
+      file_state.close();
+
+      // Store all the valid edges
+      ofstream file_edge;
+      file_edge.open("prm_edge.csv");
+      vector< vector<unsigned int> > edge(pd.numVertices());
+      for(size_t i=0; i<pd.numVertices(); i++){
+          pd.getEdges(i,edge[i]);
+          for(int j=0; j<edge[i].size(); j++) file_edge << int(i) << ' ' << int(edge[i][j]) << '\n';
+      }
 
       if(solved){
         std::cout << "Found solution:" << std::endl;
@@ -157,7 +182,7 @@ class PRMtester{
         const std::vector<ob::State*> &states = ss_->getSolutionPath().getStates();
         ob::State *state;
         ofstream file_traj;
-        file_traj.open("trajectory.csv");
+        file_traj.open("prm_path.csv");
         for( size_t i = 0 ; i < states.size( ) ; ++i ){
           state = states[i]->as<ob::State >( ); 
           file_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << "," 
@@ -165,6 +190,25 @@ class PRMtester{
                    << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
         }
         file_traj.close();
+
+        // Smooth path
+        ss_->getSolutionPath().interpolate(50);
+        std::cout << "Found solution:" << std::endl;
+        // print the path to screen
+        ss_->getSolutionPath().printAsMatrix(std::cout);
+        //Storing solution in a file
+        const std::vector<ob::State*> &s_states = ss_->getSolutionPath().getStates();
+
+        ofstream file_smooth_traj;
+        file_smooth_traj.open("prm_smooth_path.csv");
+        for( size_t i = 0 ; i < s_states.size( ) ; ++i ){
+          state = s_states[i]->as<ob::State >( );
+          file_smooth_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
+                   << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
+                   << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+        }
+        file_smooth_traj.close();
+
         return true;
       }
       return false;
@@ -194,12 +238,12 @@ private:
         	if(res == false){
           		return res;
         	}
-			for(int k=0;k<arena.size();k++){
-				res = checkSeparationArena(robot_config, arena[k]);
-				if(res == false){
-					return res;
-				}
-			}		
+//			for(int k=0;k<arena.size();k++){
+//				res = checkSeparationArena(robot_config, arena[k]);
+//				if(res == false){
+//					return res;
+//				}
+//			}
 		}
         return res; 
     }
@@ -332,7 +376,7 @@ int main(){
     }
 
     //Getting bounderies
-    double b1=-70.0,b2=70.0;
+    double b1=-45.0,b2=45.0;
 
     //Getting start configuration
     std::vector<double> start;

@@ -66,7 +66,7 @@ class PRMtester{
       ss_->print();
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(100.0);
+      ob::PlannerStatus solved = ss_->solve(20);
 
       planTime = ss_->getLastPlanComputationTime();
       flag = double(solved.operator bool());
@@ -161,12 +161,12 @@ private:
         	if(res == false){
           		return res;
         	}
-            for(int k=0;k<arena.size();k++){
-				res = checkASCArena(robot_config, arena[k]);
-				if(res == false){
-					return res;
-				}
-			}		
+//            for(int k=0;k<arena.size();k++){
+//				res = checkASCArena(robot_config, arena[k]);
+//				if(res == false){
+//					return res;
+//				}
+//			}
 		}
         return res; 
     }
@@ -303,7 +303,7 @@ int main(){
     }
 
 	//Getting bounderies
-    double b1=-65.0,b2=65.0;
+    double b1=-60.0,b2=60.0;
 
     //Getting start configuration
     std::vector<double> start;
