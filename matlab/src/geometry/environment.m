@@ -72,8 +72,8 @@ elseif opt == 21 % Superellipse Sparse
     ty_o     = [-10  20];
     eps_o    = [1.5 0.4];
     
-    P_start = [-63; 30; 0; 0; 0];
-    P_goal  = [ 60;-30; 0; 0; 0];
+    P_start = [-53; 20; 0; 0; 0];
+    P_goal  = [ 50;-20; 0; 0; 0];
     
 elseif opt == 22 % Superellipse Maze
     ra_s = 70; rb_s = 40; ang_s = 0;

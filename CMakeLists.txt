@@ -53,12 +53,24 @@ set(SOURCE
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
 
-add_executable(test_prm ${PROJECT_SOURCE_DIR}/test/PRM_test.cpp ${SOURCE})
-target_link_libraries(test_prm "${OMPL_TEST}")
-add_executable(test_FCL_Ellipsoid_2D ${PROJECT_SOURCE_DIR}/test/PRM_test_FCL_Ellipsoid_2D.cpp)
-target_link_libraries(test_FCL_Ellipsoid_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
-add_executable(test_FCL_SuperEllipsoid_2D ${PROJECT_SOURCE_DIR}/test/PRM_test_FCL_SuperEllipsoid_2D.cpp)
-target_link_libraries(test_FCL_SuperEllipsoid_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(test_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/test/PRM_test_ACS_2D.cpp)
+#target_link_libraries(test_PRM_ACS_2D "${OMPL_TEST}")
+
+add_executable(test_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
+target_link_libraries(test_PRM_ACS_2D "${OMPL_TEST}")
+
+add_executable(test_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_2D.cpp)
+target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+
+add_executable(test_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_TGL_2D.cpp)
+target_link_libraries(test_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+
+#add_executable(test_prm ${PROJECT_SOURCE_DIR}/test/PRM_test.cpp ${SOURCE})
+#target_link_libraries(test_prm "${OMPL_TEST}")
+#add_executable(test_FCL_Ellipsoid_2D ${PROJECT_SOURCE_DIR}/test/PRM_test_FCL_Ellipsoid_2D.cpp)
+#target_link_libraries(test_FCL_Ellipsoid_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(test_FCL_SuperEllipsoid_2D ${PROJECT_SOURCE_DIR}/test/PRM_test_FCL_SuperEllipsoid_2D.cpp)
+#target_link_libraries(test_FCL_SuperEllipsoid_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 
 # TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})

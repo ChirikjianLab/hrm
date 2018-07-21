@@ -79,7 +79,7 @@ polyVtx   : descriptions of polyhedron local c-space
 planTime  : planning time: roadmap building time and path search time
 */
 private:
-    size_t N_o, N_s, N_dy, N_layers;
+    unsigned int N_o, N_s, N_dy, N_layers;
     double infla;
     size_t N_KCsample;
     double ang_r;

@@ -54,7 +54,7 @@ vector<vector<double>> parse2DCsvFile(string inputFileName) {
     return data;
 }
 
-highwayRoadmap plan(){
+highwayRoadmap plan(unsigned int N_l, unsigned int N_y){
     // Number of points on the boundary
     int num = 50;
 
@@ -90,6 +90,10 @@ highwayRoadmap plan(){
 
     string file_endpt = "../config/endPts.csv";
     vector<vector<double> > endPts = parse2DCsvFile(file_endpt);
+    vector< vector<double> > EndPts;
+
+    EndPts.push_back(endPts[1]);
+    EndPts.push_back(endPts[2]);
 
     // Arena and Obstacles as class of SuperEllipse
     vector<SuperEllipse> arena(arena_config.size()), obs(obs_config.size());
@@ -105,8 +109,8 @@ highwayRoadmap plan(){
     // Options
     option opt;
     opt.infla = rob_config[0][6];
-    opt.N_layers = 40;
-    opt.N_dy = 60;
+    opt.N_layers = N_l;
+    opt.N_dy = N_y;
     opt.sampleNum = 10;
 
     opt.N_o = obs.size();
@@ -115,7 +119,7 @@ highwayRoadmap plan(){
     //****************//
     // Main Algorithm //
     //****************//
-    highwayRoadmap high(robot, polyVtx, endPts, arena, obs, opt);
+    highwayRoadmap high(robot, polyVtx, EndPts, arena, obs, opt);
     high.plan();
 
     // calculate original boundary points
@@ -160,16 +164,25 @@ highwayRoadmap plan(){
     return high;
 }
 
-int main(){
+int main(int argc, char ** argv){
+    if (argc != 4) {
+        cerr<< "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of sweep lines" << endl;
+        return 1;
+    }
+
     // Record planning time for N trials
-    int N = 50;
+    int N = atoi(argv[1]), N_l = atoi(argv[2]), N_y = atoi(argv[3]);
     vector<double> time_stat[N];
-    highwayRoadmap high = plan();
+    highwayRoadmap high = plan(N_l, N_y);
 
     for(int i=0; i<N; i++){
-        highwayRoadmap high = plan();
+        highwayRoadmap high = plan(N_l, N_y);
         time_stat[i].push_back(high.planTime.buildTime);
         time_stat[i].push_back(high.planTime.searchTime);
+        time_stat[i].push_back(high.planTime.buildTime + high.planTime.searchTime);
+        time_stat[i].push_back(high.vtxEdge.vertex.size());
+        time_stat[i].push_back(high.vtxEdge.edge.size());
+        time_stat[i].push_back(high.Paths.size());
 
         // Planning Time and Path Cost
         cout << "Roadmap build time: " << high.planTime.buildTime << "s" << endl;
@@ -200,9 +213,12 @@ int main(){
     for(size_t i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
     file_paths.close();
 
+    // Store results
     ofstream file_time;
-    file_time.open("planTime.csv");
-    for(size_t i=0; i<N; i++) file_time << time_stat[i][0] << ' ' << time_stat[i][1] << "\n";
+    file_time.open("time_high.csv");
+    file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
+    for(size_t i=0; i<N; i++) file_time << time_stat[i][0] << ',' << time_stat[i][1] << ',' << time_stat[i][2] << ','
+              << time_stat[i][3] << ',' << time_stat[i][4] << ',' << time_stat[i][5] << "\n";
     file_time.close();
 
     return 0;

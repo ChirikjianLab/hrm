@@ -196,12 +196,12 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
             vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].a[2]});
 
             // Connect vertex within one sweep line
-            if(j != CFcell.xM[i].size()-1){
-                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5){
-                    vtxEdge.edge.push_back(make_pair(N_0+j, N_0+j+1));
-                    vtxEdge.weight.push_back(1.0);
-                }
-            }
+//            if(j != CFcell.xM[i].size()-1){
+//                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5){
+//                    vtxEdge.edge.push_back(make_pair(N_0+j, N_0+j+1));
+//                    vtxEdge.weight.push_back(1.0);
+//                }
+//            }
         }
         size_t N_1 = vtxEdge.vertex.size();
 
