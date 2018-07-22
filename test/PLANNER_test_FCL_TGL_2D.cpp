@@ -310,7 +310,7 @@ class PRMtester{
       // ss_->print();
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(100);
+      ob::PlannerStatus solved = ss_->solve(20);
 
       /*Getting times*/
       //flag = int(solved.operator bool());
@@ -673,6 +673,7 @@ int main(int argc, char ** argv){
     int N = atoi(argv[6]);  
     int planner_used =atoi(argv[5]);
     for(int i = 0; i < N; i++){
+        cout << i <<  endl;
         PRMtester tester(b1,b2,arena_parts, robot_parts, obstacles, planner_used);
         tester.plan(start, goal, i);
     }

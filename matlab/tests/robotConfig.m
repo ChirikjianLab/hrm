@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 21;
+opt = 22;
 [ar, obs, pts] = environment(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -70,47 +70,47 @@ rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
 csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
 
 %% Triangulations
-disp('Triangulation...');
-
-for i = 1:size(obs,2)
-    [vtx_obs, tri_obs] = triGen(obs(i).GetPoints()');
-    
-    fileID = fopen(fullfile([outPath,'/mesh/obsTri',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',tri_obs);
-    fclose(fileID);
-    fileID = fopen(fullfile([outPath,'/mesh/obsVtx',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',vtx_obs);
-    fclose(fileID);
-    
-%     csvwrite(fullfile([outPath,'/mesh/obsTri',num2str(i),'.csv']), tri_obs);
-%     csvwrite(fullfile([outPath,'/mesh/obsVtx',num2str(i),'.csv']), vtx_obs);
-end
-for i = 1:size(ar,2)
-    [vtx_ar, tri_ar] = triGen(ar(i).GetPoints()');
-    
-    fileID = fopen(fullfile([outPath,'/mesh/arenaTri',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',tri_ar);
-    fclose(fileID);
-    fileID = fopen(fullfile([outPath,'/mesh/arenaVtx',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',vtx_ar);
-    fclose(fileID);
-    
-%     csvwrite(fullfile([outPath,'/mesh/arenaTri',num2str(i),'.csv']), tri_ar);
-%     csvwrite(fullfile([outPath,'/mesh/arenaVtx',num2str(i),'.csv']), vtx_ar);
-end
-for i = 1:size(face,2)
-    [vtx_rob, tri_rob] = triGen(face(i).GetPoints()');
-    
-    fileID = fopen(fullfile([outPath,'/mesh/robotTri',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',tri_rob);
-    fclose(fileID);
-    fileID = fopen(fullfile([outPath,'/mesh/robotVtx',num2str(i),'.txt']),'w');
-    fprintf(fileID,'%d %d %d\n','x',vtx_rob);
-    fclose(fileID);
-    
-%     csvwrite(fullfile([outPath,'/mesh/robotTri',num2str(i),'.csv']), tri_rob);
-%     csvwrite(fullfile([outPath,'/mesh/robotVtx',num2str(i),'.csv']), vtx_rob);
-end
+% disp('Triangulation...');
+% 
+% for i = 1:size(obs,2)
+%     [vtx_obs, tri_obs] = triGen(obs(i).GetPoints()');
+%     
+%     fileID = fopen(fullfile([outPath,'/mesh/obsTri',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',tri_obs);
+%     fclose(fileID);
+%     fileID = fopen(fullfile([outPath,'/mesh/obsVtx',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',vtx_obs);
+%     fclose(fileID);
+%     
+% %     csvwrite(fullfile([outPath,'/mesh/obsTri',num2str(i),'.csv']), tri_obs);
+% %     csvwrite(fullfile([outPath,'/mesh/obsVtx',num2str(i),'.csv']), vtx_obs);
+% end
+% for i = 1:size(ar,2)
+%     [vtx_ar, tri_ar] = triGen(ar(i).GetPoints()');
+%     
+%     fileID = fopen(fullfile([outPath,'/mesh/arenaTri',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',tri_ar);
+%     fclose(fileID);
+%     fileID = fopen(fullfile([outPath,'/mesh/arenaVtx',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',vtx_ar);
+%     fclose(fileID);
+%     
+% %     csvwrite(fullfile([outPath,'/mesh/arenaTri',num2str(i),'.csv']), tri_ar);
+% %     csvwrite(fullfile([outPath,'/mesh/arenaVtx',num2str(i),'.csv']), vtx_ar);
+% end
+% for i = 1:size(face,2)
+%     [vtx_rob, tri_rob] = triGen(face(i).GetPoints()');
+%     
+%     fileID = fopen(fullfile([outPath,'/mesh/robotTri',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',tri_rob);
+%     fclose(fileID);
+%     fileID = fopen(fullfile([outPath,'/mesh/robotVtx',num2str(i),'.txt']),'w');
+%     fprintf(fileID,'%d %d %d\n','x',vtx_rob);
+%     fclose(fileID);
+%     
+% %     csvwrite(fullfile([outPath,'/mesh/robotTri',num2str(i),'.csv']), tri_rob);
+% %     csvwrite(fullfile([outPath,'/mesh/robotVtx',num2str(i),'.csv']), vtx_rob);
+% end
 
 
 %% Function for triangulations
