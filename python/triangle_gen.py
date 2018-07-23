@@ -81,6 +81,6 @@ configurations = [[10,30,0.8,num], [12,25,0.2,num], [10,30,0.4,num],[8,30,0.2,nu
 for i in range(len(configurations)):
     main(configurations[i][0],configurations[i][1],configurations[i][2],configurations[i][3],"obs"+str(i))
 
-main(5,3,1,num,"robot")
+main(5.5,3.5,1,num,"robot")
 main(70,40,0.01,num,"arena")
 

@@ -22,15 +22,15 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 24;
+opt = 21;
 [ar, obs, pts] = environment(opt);
 
 sc = 20;
-% start and goal
-start = endPts(1,:)';
-goal = endPts(2,:)';
-plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
-plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
+% % start and goal
+% start = endPts(1,:)';
+% goal = endPts(2,:)';
+% plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
+% plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
 
 
 
@@ -79,19 +79,19 @@ for i = 1:size(edge,1)
         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
 end
 
-% shortest path
-plot3([start(1) vtx(path(1)+1,1)],...
-    [start(2) vtx(path(1)+1,2)],...
-    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
-plot3([goal(1) vtx(path(end)+1,1)],...
-    [goal(2) vtx(path(end)+1,2)],...
-    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
-
-for i = 1:size(path,2)-1
-    plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'c', 'LineWidth', 2)
-end
+% % shortest path
+% plot3([start(1) vtx(path(1)+1,1)],...
+%     [start(2) vtx(path(1)+1,2)],...
+%     sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
+% plot3([goal(1) vtx(path(end)+1,1)],...
+%     [goal(2) vtx(path(end)+1,2)],...
+%     sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
+% 
+% for i = 1:size(path,2)-1
+%     plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
+%         [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
+%         sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'c', 'LineWidth', 2)
+% end
 
 %% Path for PRM
 % path_prm = load([loadPath, 'prm_path.csv']);

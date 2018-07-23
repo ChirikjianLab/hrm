@@ -139,7 +139,7 @@ Ns = 300;  % # of pnts on the superelliptical obs(tacles)
 %% == construct SuperEllipse objects for the arena and obstacles
 for i = 1:N_s
     arena(i) = SuperEllipse([ra_s(i), rb_s(i), ang_s(i), tx_s(i), ...
-        ty_s(i), eps_s(i), Ns], 'y', 0);
+        ty_s(i), eps_s(i), Ns], 'w', 0);
 end
 
 for i = 1:N_o

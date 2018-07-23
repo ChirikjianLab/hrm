@@ -46,7 +46,7 @@ face = robotInit(1);
 %% Store robot info as .csv files
 % Robot configuration
 robot = [face.ra,face.rb,face.ang,face.eps,face.tx,face.ty,face.infla];
-csvwrite(fullfile(outPath,'robotConfig.csv'), robot);
+% csvwrite(fullfile(outPath,'robotConfig.csv'), robot);
 
 face.tx = pts(1,1);
 face.ty = pts(2,1);
@@ -60,14 +60,14 @@ face.ang = pts(3,2);
 face.color = 'g';
 face.PlotShape();
 
-% Vertex and matrix for local c-space
-[m,n,p] = size(face.polyVtx.invMat);
-
-rob_vtx = face.polyVtx.vertex;
-csvwrite(fullfile(outPath,'robotVtx.csv'), rob_vtx);
-
-rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
-csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
+% % Vertex and matrix for local c-space
+% [m,n,p] = size(face.polyVtx.invMat);
+% 
+% rob_vtx = face.polyVtx.vertex;
+% csvwrite(fullfile(outPath,'robotVtx.csv'), rob_vtx);
+% 
+% rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
+% csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
 
 %% Triangulations
 % disp('Triangulation...');

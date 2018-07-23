@@ -5,15 +5,15 @@ initAddpath();
 
 disp('Initialization');
 % Environment
-[arena, obs, EndPts] = environment(4);
+[arena, obs, EndPts] = environment(22);
 % Robot: Only plan face
 face = robotInit(1);
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 20;
-option.N_dy = 15;
-option.sampleNum = 100;
+option.N_layers = 50;
+option.N_dy = 50;
+option.sampleNum = 10;
 
 % plot options
 option.plots.Lim = [80 50];
@@ -23,6 +23,7 @@ option.plots.D_layers = 20;
 %% Highway Roadmap
 disp('Highway Roadmap');
 tic
+face.color = 'g';
 highway = HighwayRoadmap(face, EndPts, arena, obs, option);
 highway.Plan();
 if ~isnan(highway.Paths)
@@ -37,7 +38,7 @@ title('Highway Roadmap')
 fprintf('Planning Time: %s seconds \n', num2str(Highway_time))
 
 % tic
-[bd_s, bd_o] = Boundary(highway);
+% [bd_s, bd_o] = Boundary(highway);
 % 
 % for i=1:size(bd_s,3)
 %     plot(bd_s(1,:,i),bd_s(2,:,i),'k')

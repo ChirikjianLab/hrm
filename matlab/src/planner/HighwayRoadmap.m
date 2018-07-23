@@ -16,7 +16,7 @@ classdef HighwayRoadmap < handle
         LayerDist            % Distance btw layers for visualization
         infla                % Inflation Factor of the robot
         sampleNum            % # of samples inside KC c-space
-
+        
         N_layers             % Number of Layers
         ang_r                % Angles of the Robot Link
         N_v_layer            % Number of vertices in each layer
@@ -28,7 +28,7 @@ classdef HighwayRoadmap < handle
     end
     properties
         Graph        % Customized graph which contains an array of vertices
-                     % and an adjacency matrix
+        % and an adjacency matrix
         Robot        % Robot Object of class RabbitRobot2D (SuperEllipse)
         EndPts       % Start and Goal points of the robot
         Arena        % Arena Obj. of class SuperEllipse
@@ -39,7 +39,7 @@ classdef HighwayRoadmap < handle
     
     methods
         %% Constructor
-        function Obj = HighwayRoadmap(Robot, EndPts, Arena, Obs, option)            
+        function Obj = HighwayRoadmap(Robot, EndPts, Arena, Obs, option)
             % Robot: a union of ellipsoids, class: SuperEllipse
             % Arena: a union of superquadrics, class: SuperEllipse
             % Obs: a union of superquadrics, class: SuperEllipse
@@ -54,7 +54,7 @@ classdef HighwayRoadmap < handle
             Obj.N_layers = option.N_layers;
             Obj.N_dy = option.N_dy;
             Obj.sampleNum = option.sampleNum;
-
+            
             % plot options
             Obj.Lim = option.plots.Lim;
             Obj.PlotSingleLayer = option.plots.isplot;
@@ -125,7 +125,7 @@ classdef HighwayRoadmap < handle
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if Obj.PlotSingleLayer
-               m     CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
+                    m     CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
                     
                     for j=1:size(bd_s,3)
                         plot3(bd_s(1,:,j),bd_s(2,:,j),...
@@ -320,10 +320,10 @@ classdef HighwayRoadmap < handle
                     N_V_l2 = Obj.N_v_layer(2,l+1);
                     V2 = Obj.Graph.V(1:2,N_V_l1+1:N_V_l2);
                 end
-                              
+                
                 % Keep track of index number in vertex 2
                 m2 = 1;
-
+                
                 % Determine whether two vertices can be connected
                 for m = 1:size(V1,2)
                     % Search to find closest point
@@ -452,8 +452,17 @@ classdef HighwayRoadmap < handle
                 Obj.Arena(i).PlotShape;
                 axis equal
             end
+%             for i = 1:size(Obj.Obs,2)
+%                 Obj.Obs(i).PlotShape;
+%                 axis equal
+%             end
+            
             for i = 1:size(Obj.Obs,2)
                 Obj.Obs(i).PlotShape;
+                hold on
+                is = num2str(i);
+                box on;
+                text(Obj.Obs(i).tx,Obj.Obs(i).ty, is, 'Color', [1 1 1]);
                 axis equal
             end
             
@@ -481,6 +490,13 @@ classdef HighwayRoadmap < handle
             plot3(V(1,Obj.I_start), V(2,Obj.I_start),Obj.LayerDist*V(3,Obj.I_start),'-og','Linewidth',2);
             plot3(V(1,Obj.I_goal), V(2,Obj.I_goal),Obj.LayerDist*V(3,Obj.I_goal),'-oc','Linewidth',2);
             plot3(V(1,Obj.Paths),V(2,Obj.Paths),Obj.LayerDist*V(3,Obj.Paths),'m','Linewidth',2);
+%             plot([Obj.EndPts(1,1) V(1,Obj.I_start)], [Obj.EndPts(2,1) V(2,Obj.I_start)], 's','MarkerFaceColor','r','MarkerSize',5);
+%             plot([Obj.EndPts(1,2) V(1,Obj.I_goal)], [Obj.EndPts(2,2) V(2,Obj.I_goal)], 's','MarkerFaceColor','g','MarkerSize',5);
+%             plot([Obj.EndPts(1,1) V(1,Obj.I_start)], [Obj.EndPts(2,1) V(2,Obj.I_start)], 'r', 'LineWidth', 2);
+%             plot([Obj.EndPts(1,2) V(1,Obj.I_goal)], [Obj.EndPts(2,2) V(2,Obj.I_goal)], 'r', 'LineWidth', 2);
+%             plot(V(1,Obj.I_start), V(2,Obj.I_start),'-or','Linewidth',2);
+%             plot(V(1,Obj.I_goal), V(2,Obj.I_goal),'-og','Linewidth',2);
+%             plot(V(1,Obj.Paths),V(2,Obj.Paths),'m','Linewidth',2);
             axis off
             xlim([-Obj.Lim(1),Obj.Lim(1)]);
             ylim([-Obj.Lim(2),Obj.Lim(2)]);
@@ -753,7 +769,7 @@ classdef HighwayRoadmap < handle
         end
         
         %% Vertex connection between adjacent layers
-        % Polyhedron c-space       
+        % Polyhedron c-space
         function [judge, vtx] = IsConnectPoly(Obj, V1, V2)
             judge = 0;
             vtx = [];
@@ -762,24 +778,24 @@ classdef HighwayRoadmap < handle
             bb = Obj.polyVtx.lim(2);
             cc = Obj.polyVtx.lim(3);
             
-%             x = Obj.polyVtx.vertex(:,1);
-%             y = Obj.polyVtx.vertex(:,2);
-%             z = Obj.polyVtx.vertex(:,3);
-%             
-%             enum = delaunay(x, y, z);
-%             simpMat = zeros(4,4,size(enum,1));
-%             for j = 1:size(enum,1)
-%                 simpMat(:,:,j) = [x(enum(j,:))'; y(enum(j,:))'; z(enum(j,:))';...
-%                     ones(1,4)];
-%             end
+            %             x = Obj.polyVtx.vertex(:,1);
+            %             y = Obj.polyVtx.vertex(:,2);
+            %             z = Obj.polyVtx.vertex(:,3);
+            %
+            %             enum = delaunay(x, y, z);
+            %             simpMat = zeros(4,4,size(enum,1));
+            %             for j = 1:size(enum,1)
+            %                 simpMat(:,:,j) = [x(enum(j,:))'; y(enum(j,:))'; z(enum(j,:))';...
+            %                     ones(1,4)];
+            %             end
             
             % Efficient point-in-polyhedron-intersection check
             % initial samples
             pnt = ones(4,Obj.sampleNum);
             
             pnt(1:3,:) = [aa*(2*rand(1,Obj.sampleNum)-1);...
-                          bb*(2*rand(1,Obj.sampleNum)-1);...
-                          cc*(2*rand(1,Obj.sampleNum)-1)];
+                bb*(2*rand(1,Obj.sampleNum)-1);...
+                cc*(2*rand(1,Obj.sampleNum)-1)];
             
             % find points inside polyhedron 1
             in1 = zeros(1,Obj.sampleNum);
@@ -815,7 +831,7 @@ classdef HighwayRoadmap < handle
                 vtx = validVtx(:,1);
             end
         end
-              
+        
     end
 end
 

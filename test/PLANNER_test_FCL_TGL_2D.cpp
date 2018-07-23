@@ -310,7 +310,7 @@ class PRMtester{
       // ss_->print();
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(20);
+      ob::PlannerStatus solved = ss_->solve(100);
 
       /*Getting times*/
       //flag = int(solved.operator bool());
