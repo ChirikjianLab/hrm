@@ -1,7 +1,40 @@
-% Class of Superellipse operations
+% ********************************************************************
+% Software License Agreement (BSD License)
 %
-% Author: Qianli Ma, qianli.ma622@gmail.com
-% Maintainer: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2018
+% Copyright (c) 2016, Johns Hopkins University
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions
+% are met:
+%
+% * Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above
+% copyright notice, this list of conditions and the following
+% disclaimer in the documentation and/or other materials provided
+% with the distribution.
+% * Neither the name of the Johns Hopkins University nor the names of its
+% contributors may be used to endorse or promote products derived
+% from this software without specific prior written permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+% "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+% LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+% FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+% COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+% INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+% BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+% LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+% CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+% LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+% ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
+% *********************************************************************/
+
+%
+% Author: Qianli Ma, qianli.ma622@gmail.com, Johns Hopkins University
+% Maintainer: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, Aug 2017
 %
 
 % DEPENDENCIES: rvctools/robot by Peter Corkes
@@ -86,7 +119,60 @@ classdef SuperEllipse
                 fprintf('function is aborted. \n')
                 return
             end
-                  
+            
+            % ------ Step 1: shrinking --------
+            r = min([objEllip.ra, objEllip.rb]);
+            T = rot2(objEllip.ang)*diag([r/objEllip.ra,r/objEllip.rb])*...
+                rot2(objEllip.ang)'*rot2(obj.ang);
+            
+            % the shrunk version of Superquadrics#1 -----------
+            % Avoid potential undefined point at 0 ??
+            % (TODO): uniform sampling on superellipse
+            the = linspace(2*pi/(obj.N + 1), 2*pi+2*pi/(obj.N + 1), obj.N);
+            
+            % epsilon exponentiation for 2D superquadrics
+            x1 = obj.ra*obj.sc_eps(the, obj.eps, 'cos');
+            y1 = obj.rb*obj.sc_eps(the, obj.eps, 'sin');
+            
+            x1_shrk = T(1,1)*x1 + T(1,2)*y1;
+            y1_shrk = T(2,1)*x1 + T(2,2)*y1;
+            
+            x_ofs = zeros(1,obj.N);
+            y_ofs = zeros(1,obj.N);
+            idx = [];
+            
+            % ------ Step 2: Normal Vector -------
+            % the expressions for the normal vectors for ellipse and
+            % superellipse are different. though the former is a speical
+            % case of the latter in terms of the explict and implict
+            % equations. Reason: the sign() can mess up the directions of
+            % the normal vectors when applied to ellipse
+            if obj.eps == 1 % to test superelliptical version of normal
+                N_x = 1/obj.ra*cos(the);
+                N_y = 1/obj.rb*sin(the);
+            else
+                N_x = 1/(obj.ra*obj.eps)*obj.sc_eps(the, 2 - obj.eps, 'cos');
+                N_y = 1/(obj.rb*obj.eps)*obj.sc_eps(the, 2 - obj.eps, 'sin');
+            end
+            
+            % ----- Step 3: the offset curve of the shrunk version of
+            % Superellipse #1 ------
+            for i = 1:obj.N
+                N_shrk = inv(T)'*[N_x(i); N_y(i)];
+                Len_Normal = norm(N_shrk);
+                
+                x_ofs(i)   = x1_shrk(i) + K*r*N_shrk(1)/Len_Normal;
+                y_ofs(i)   = y1_shrk(i) + K*r*N_shrk(2)/Len_Normal;
+            end
+            x_ofs(idx) = [];
+            y_ofs(idx) = [];
+            
+            % ------ Step 4: streching ---------
+            X_eb = rot2(objEllip.ang)*diag([objEllip.ra/r,objEllip.rb/r])*...
+                rot2(objEllip.ang)'*[x_ofs; y_ofs] + ...
+                repmat([obj.tx; obj.ty],1,size(x_ofs,2));
+            
+            
             % Parameters
             the = 0:2*pi/(obj.N-1):2*pi;
             a1 = obj.ra; b1 = obj.rb; th1 = obj.ang; eps1 = obj.eps;
@@ -147,6 +233,47 @@ classdef SuperEllipse
                 end
             end
         end
+        
+        %% Curvature check
+        %         function CurvatureCheck(obj1, obj2)
+        %             th = 0:pi/(obj1.N-1):2*pi;
+        %             x1 = obj1.ra*cos(th); y1 = obj1.rb*sin(th);
+        %             x2 = obj2.ra*cos(th); y2 = obj2.rb*sin(th);
+        %
+        %             for i = 1:obj1.N
+        %
+        %
+        %                 gF1 = [((2-obj1.eps)/obj1.eps^2) *...
+        %                     (1/obj1.ra^2*obj1.sc_eps(th(i),2-2*obj1.eps,'cos'));...
+        %                     ((2-obj1.eps)/obj1.eps^2) *...
+        %                     (1/obj1.rb^2*obj1.sc_eps(th(i),2-2*obj1.eps,'sin'))];
+        %                 gF2 = [((2-obj2.eps)/obj2.eps^2) *...
+        %                     (1/obj2.ra^2*obj2.sc_eps(th(i),2-2*obj2.eps,'cos'));...
+        %                     ((2-obj2.eps)/obj2.eps^2) *...
+        %                     (1/obj2.rb^2*obj2.sc_eps(th(i),2-2*obj2.eps,'sin'))];
+        %
+        %                 ggF1 = diag(gF1);
+        %                 ggf2 = diag(gF2);
+        %
+        %             if K == -1
+        %                     gN_x = ((2-obj.eps)/obj.eps^2) *...
+        %                         (1/obj.ra^2*obj.sc_eps(the(i),2-2*obj.eps,'cos'));
+        %                     gN_y = ((2-obj.eps)/obj.eps^2) *...
+        %                         (1/obj.rb^2*obj.sc_eps(the(i),2-2*obj.eps,'sin'));
+        %
+        %                     ggN = inv(T)'*[gN_x 0; 0 gN_y];
+        %
+        %                     meanC_shrk = (Len_Normal^2*trace(ggN) - ...
+        %                         N_shrk' * ggN * N_shrk) / ...
+        %                         (2 * Len_Normal^3);
+        %                     if (meanC_shrk > 1/r)
+        %                         idx(num) = i;
+        %                         num = num+1;
+        %                         continue;
+        %                     end
+        %                 end
+        %
+        %         end
         
         %% Generate Local C-Space using KC
         function polyVtx = LocalCSpace(obj)

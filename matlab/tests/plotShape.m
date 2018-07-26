@@ -22,7 +22,7 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 21;
+opt = 22;
 [ar, obs, pts] = environment(opt);
 
 sc = 20;
@@ -34,15 +34,15 @@ sc = 20;
 
 
 
-% % original
-% for i = 1:2:size(X_ori,1)-1
-%     plot(X_ori(i,:),X_ori(i+1,:),'k');
-% end
+% original
+for i = 1:2:size(X_ori,1)-1
+    plot(X_ori(i,:),X_ori(i+1,:),'k');
+end
 
-% % Mink
-% for i = 1:2:size(X,1)-1
-%     plot(X(i,:),X(i+1,:),'k');
-% end
+% Mink
+for i = 1:2:size(X,1)-1
+    plot(X(i,:),X(i+1,:),'k');
+end
 
 %% raster scan
 % N_dy = size(X_obs)/2;

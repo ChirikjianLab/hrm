@@ -56,16 +56,3 @@ X_eb = rot2(ang2)*diag([a2/r,b2/r])*rot2(ang2)'*[x_ofs;y_ofs] + [tx;ty];
 %% Original curve
 X = rot2(ang1)*[x1;y1]+[tx;ty];
 end
-
-%% Exponentiation function
-function val = sc_eps(angle, eps, name)
-%SuperEllipse.sc_eps: a sin/cos exponentiation function
-
-if strcmp(name, 'sin')
-    val = sign(sin(angle)).*abs(sin(angle)).^eps;
-elseif strcmp(name, 'cos')
-    val = sign(cos(angle)).*abs(cos(angle)).^eps;
-else
-    printf('The third input has to be either "cos" or "sin".\n')
-end
-end

@@ -43,7 +43,7 @@ void highwayRoadmap::buildRoadmap(){
     graph multiGraph;
 
     for(size_t i=0; i<N_layers; i++){
-        Robot[0].a[2] = dr*i;
+        Robot[0].Shape.ang = dr*i;
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -64,14 +64,14 @@ boundary highwayRoadmap::boundaryGen(){
     boundary bd;
 
     // Enlarge the robot
-    robot_infla.a[0] *= 1+infla;
-    robot_infla.a[1] *= 1+infla;
+    robot_infla.Shape.a[0] *= 1+infla;
+    robot_infla.Shape.a[1] *= 1+infla;
 
     // calculate Minkowski boundary points
     for(size_t i=0; i<N_s; i++)
-        bd.bd_s.push_back( Arena[i].minkSum2D(Arena[i].a, robot_infla.a, Arena[i].num, -1) );
+        bd.bd_s.push_back( Arena[i].minkSum2D(Arena[i].Shape, robot_infla.Shape, Arena[i].num, -1) );
     for(size_t i=0; i<N_o; i++)
-        bd.bd_o.push_back( Obs[i].minkSum2D(Obs[i].a, robot_infla.a, Obs[i].num, +1) );
+        bd.bd_o.push_back( Obs[i].minkSum2D(Obs[i].Shape, robot_infla.Shape, Obs[i].num, +1) );
 
     return bd;
 }
@@ -193,7 +193,7 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
     for(size_t i=0; i<CFcell.ty.size(); i++){
         size_t N_0 = vtxEdge.vertex.size();
         for(size_t j=0; j<CFcell.xM[i].size(); j++){
-            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].a[2]});
+            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].Shape.ang});
 
             // Connect vertex within one sweep line
             if(j != CFcell.xM[i].size()-1){
