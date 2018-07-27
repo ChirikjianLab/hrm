@@ -1,10 +1,6 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
+#include<include/parse2dcsvfile.h>
 
-using namespace std;
-
-vector<vector<double>> parse2DCsvFile(string inputFileName) {
+vector<vector<double>> inputFile::parse2DCsvFile(string inputFileName) {
     vector<vector<double> > data;
     ifstream inputFile(inputFileName);
     int l = 0;

@@ -43,7 +43,7 @@ void highwayRoadmap::buildRoadmap(){
     graph multiGraph;
 
     for(size_t i=0; i<N_layers; i++){
-        Robot[0].Shape.ang = dr*i;
+        Robot[0].Shape.ang = dr*i + rand()*0.01/RAND_MAX;
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -69,9 +69,9 @@ boundary highwayRoadmap::boundaryGen(){
 
     // calculate Minkowski boundary points
     for(size_t i=0; i<N_s; i++)
-        bd.bd_s.push_back( Arena[i].minkSum2D(Arena[i].Shape, robot_infla.Shape, Arena[i].num, -1) );
+        bd.bd_s.push_back( Arena[i].minkSum2D(robot_infla.Shape,  -1) );
     for(size_t i=0; i<N_o; i++)
-        bd.bd_o.push_back( Obs[i].minkSum2D(Obs[i].Shape, robot_infla.Shape, Obs[i].num, +1) );
+        bd.bd_o.push_back( Obs[i].minkSum2D(robot_infla.Shape, +1) );
 
     return bd;
 }

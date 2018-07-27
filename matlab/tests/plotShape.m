@@ -1,4 +1,5 @@
 close all; clear; clc;
+initAddpath;
 
 loadPath = '../../bin/';
 X_ori = load([loadPath, 'bd_ori.csv']);
@@ -36,12 +37,12 @@ sc = 20;
 
 % original
 for i = 1:2:size(X_ori,1)-1
-    plot(X_ori(i,:),X_ori(i+1,:),'k');
+    plot(X_ori(i,:),X_ori(i+1,:),'b');
 end
 
 % Mink
 for i = 1:2:size(X,1)-1
-    plot(X(i,:),X(i+1,:),'k');
+    plot(X(i,:),X(i+1,:),'k.');
 end
 
 %% raster scan
@@ -67,7 +68,7 @@ end
 % % cells
 % for i = 1:size(cf_seg,1)
 %     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-%     %     plot(cf_seg(i,3), cf_seg(i,1),'k.')
+%         plot(cf_seg(i,3), cf_seg(i,1),'k.')
 % end
 
 % vertex and connections

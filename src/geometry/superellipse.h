@@ -27,8 +27,8 @@ public:
 
     // Functions
     //SuperEllipse(double a[6], int num);
-    MatrixXd originShape(shape Shape, int num);
-    MatrixXd minkSum2D(shape Shape_a, shape Shape_b, int num, int K);
+    MatrixXd originShape();
+    MatrixXd minkSum2D(shape Shape_b, int K);
     double expFun(double th, double p, bool func);
 };
 

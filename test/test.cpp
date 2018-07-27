@@ -9,6 +9,7 @@
 
 #include <src/geometry/superellipse.h>
 #include <src/planners/highwayroadmap.h>
+#include <include/parse2dcsvfile.h>
 
 using namespace Eigen;
 using namespace std;
@@ -18,17 +19,18 @@ using namespace std;
 highwayRoadmap plan(unsigned int N_l, unsigned int N_y){
     // Number of points on the boundary
     int num = 50;
+    inputFile file;
 
     // Robot
     // Read robot config file
     string file_robConfig = "../config/robotConfig.csv";
-    vector<vector<double> > rob_config = parse2DCsvFile(file_robConfig);
+    vector<vector<double> > rob_config = file.parse2DCsvFile(file_robConfig);
 
     string file_robVtx = "../config/robotVtx.csv";
-    vector<vector<double> > rob_vtx = parse2DCsvFile(file_robVtx);
+    vector<vector<double> > rob_vtx = file.parse2DCsvFile(file_robVtx);
 
     string file_robInvMat = "../config/robotInvMat.csv";
-    vector<vector<double> > rob_InvMat = parse2DCsvFile(file_robInvMat);
+    vector<vector<double> > rob_InvMat = file.parse2DCsvFile(file_robInvMat);
 
     // Robot as a class of SuperEllipse
     vector<SuperEllipse> robot(rob_config.size());
@@ -49,13 +51,13 @@ highwayRoadmap plan(unsigned int N_l, unsigned int N_y){
     // Environment
     // Read environment config file
     string file_arenaConfig = "../config/arenaConfig.csv";
-    vector<vector<double> > arena_config = parse2DCsvFile(file_arenaConfig);
+    vector<vector<double> > arena_config = file.parse2DCsvFile(file_arenaConfig);
 
     string file_obsConfig = "../config/obsConfig.csv";
-    vector<vector<double> > obs_config = parse2DCsvFile(file_obsConfig);
+    vector<vector<double> > obs_config = file.parse2DCsvFile(file_obsConfig);
 
     string file_endpt = "../config/endPts.csv";
-    vector<vector<double> > endPts = parse2DCsvFile(file_endpt);
+    vector<vector<double> > endPts = file.parse2DCsvFile(file_endpt);
     vector< vector<double> > EndPts;
 
     EndPts.push_back(endPts[1]);
@@ -101,10 +103,10 @@ highwayRoadmap plan(unsigned int N_l, unsigned int N_y){
     // calculate original boundary points
     boundary bd_ori;
     for(size_t i=0; i<opt.N_s; i++){
-        bd_ori.bd_s.push_back( high.Arena[i].originShape(high.Arena[i].Shape, high.Arena[i].num) );
+        bd_ori.bd_s.push_back( high.Arena[i].originShape() );
     }
     for(size_t i=0; i<opt.N_o; i++){
-        bd_ori.bd_o.push_back( high.Obs[i].originShape(high.Obs[i].Shape, high.Obs[i].num) );
+        bd_ori.bd_o.push_back( high.Obs[i].originShape() );
     }
 
     // Output boundary and cell info
@@ -152,7 +154,7 @@ int main(int argc, char ** argv){
     highwayRoadmap high = plan(N_l, N_y);
 
     for(int i=0; i<N; i++){
-        highwayRoadmap high = plan(N_l, N_y);
+        high = plan(N_l, N_y);
         time_stat[i].push_back(high.planTime.buildTime);
         time_stat[i].push_back(high.planTime.searchTime);
         time_stat[i].push_back(high.planTime.buildTime + high.planTime.searchTime);

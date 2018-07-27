@@ -7,7 +7,7 @@ b1 = [4, 8, 6, 50];
 tx1 = [30, 30, -20, 0];
 ty1 = [-25, 10, 5, 0];
 ang1 = [pi/3, 0, pi/3, 0];
-eps1 = [0.5, 1, 1.2, 0.8];
+eps1 = [0.5, 1, 1.2, 0.1];
 K = [1, 1, 1, -1];
 
 a2 = 4;
@@ -24,8 +24,8 @@ for i = 1: length(a1)
     C = [tx1(i); ty1(i)];
     [X,X_eb] = minkSumES( Vec1, eps1(i), C, Vec2, Nb, K(i) );
 
-    plot(X(1,:), X(2,:),'k');
-    plot(X_eb(1,:), X_eb(2,:));
+    plot(X(1,:), X(2,:),'b');
+    plot(X_eb(1,:), X_eb(2,:), 'k.');
     
     for j = 1:size(X_eb,2)
         if mod(j,10) == 0

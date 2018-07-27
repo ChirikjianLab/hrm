@@ -11,7 +11,7 @@ function robot = robotInit(opt)
 infla = 0.1;
 
 % Initialize body parts
-face = SuperEllipse([5,3,0,0,0,1,20], 'b', infla);
+face = SuperEllipse([5,3,0,0,0,1,50], 'b', infla);
 earL = SuperEllipse([2,1,0,0,0,1,20], 'b', infla);
 earR = SuperEllipse([2,1,0,0,0,1,20], 'b', infla);
 theta_range  = [-pi/2, pi/2];

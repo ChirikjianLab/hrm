@@ -42,6 +42,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
 
 # Sources
 set(SOURCE

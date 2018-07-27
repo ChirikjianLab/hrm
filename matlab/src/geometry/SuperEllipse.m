@@ -93,10 +93,11 @@ classdef SuperEllipse
             a2 = objEllip.ra; b2 = objEllip.rb; th2 = objEllip.ang;
             C = [obj.tx;obj.ty];
             
+            R1 = rot2(th1);
             R2 = rot2(th2);
             
             r = min([a1,b1]);
-            Tinv = R2*diag([a2/r,b2/r])*R2';
+            Tinv = R2*diag([a2/r,b2/r])*R2'*R1';
             
             gradPhi = 2/eps1 * [sc_eps(the, 2-eps1, 'cos')/a1;
                 sc_eps(the, 2-eps1, 'sin')/b1];
