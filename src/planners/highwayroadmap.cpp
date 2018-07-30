@@ -60,18 +60,21 @@ void highwayRoadmap::buildRoadmap(){
 }
 
 boundary highwayRoadmap::boundaryGen(){
-    SuperEllipse robot_infla = Robot[0];
+    vector<SuperEllipse> robot_infla(Robot.size());
     boundary bd;
 
-    // Enlarge the robot
-    robot_infla.Shape.a[0] *= 1+infla;
-    robot_infla.Shape.a[1] *= 1+infla;
+    for(size_t num_r = 0; num_r < Robot.size(); num_r++){
+        robot_infla[num_r] = Robot[num_r];
+        // Enlarge the robot
+        robot_infla[num_r].Shape.a[0] *= 1+infla;
+        robot_infla[num_r].Shape.a[1] *= 1+infla;
 
-    // calculate Minkowski boundary points
-    for(size_t i=0; i<N_s; i++)
-        bd.bd_s.push_back( Arena[i].minkSum2D(robot_infla.Shape,  -1) );
-    for(size_t i=0; i<N_o; i++)
-        bd.bd_o.push_back( Obs[i].minkSum2D(robot_infla.Shape, +1) );
+        // calculate Minkowski boundary points
+        for(size_t i=0; i<N_s; i++)
+            bd.bd_s.push_back( Arena[i].minkSum2D(robot_infla[num_r].Shape,  -1) );
+        for(size_t i=0; i<N_o; i++)
+            bd.bd_o.push_back( Obs[i].minkSum2D(robot_infla[num_r].Shape, +1) );
+    }
 
     return bd;
 }
@@ -189,34 +192,38 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
 }
 
 void highwayRoadmap::connectOneLayer(cf_cell CFcell){
-    // Construct a vector of vertex
-    for(size_t i=0; i<CFcell.ty.size(); i++){
-        size_t N_0 = vtxEdge.vertex.size();
-        for(size_t j=0; j<CFcell.xM[i].size(); j++){
-            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].Shape.ang});
+    vector<unsigned int> N_v_line;
+    unsigned int N_0=0, N_1=0;
 
+    for(size_t i=0; i<CFcell.ty.size(); i++){
+        N_v_line.push_back(vtxEdge.vertex.size());
+
+        for(size_t j=0; j<CFcell.xM[i].size(); j++){
+            // Construct a vector of vertex
+            vtxEdge.vertex.push_back({CFcell.xM[i][j], CFcell.ty[i], Robot[0].Shape.ang});
+        }
+    }
+    for(size_t i=0; i<CFcell.ty.size(); i++){
+        N_0 = N_v_line[i]; N_1 = N_v_line[i+1];
+        for(size_t j1=0; j1<CFcell.xM[i].size(); j1++){
             // Connect vertex within one sweep line
-            if(j != CFcell.xM[i].size()-1){
-                if(abs(CFcell.xU[i][j] - CFcell.xL[i][j+1]) < 1e-5){
-                    vtxEdge.edge.push_back(make_pair(N_0+j, N_0+j+1));
-                    vtxEdge.weight.push_back(1.0);
+            if(j1 != CFcell.xM[i].size()-1){
+                if(abs(CFcell.xU[i][j1] - CFcell.xL[i][j1+1]) < 1e-5){
+                    vtxEdge.edge.push_back(make_pair(N_0+j1, N_0+j1+1));
+                    vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[N_0+j1],vtxEdge.vertex[N_0+j1+1]) );
                 }
             }
-        }
-        size_t N_1 = vtxEdge.vertex.size();
-
-        if(i != CFcell.ty.size()-1){
-        // Connect vertex btw adjacent cells
-            for(size_t j1=0; j1<CFcell.xM[i].size(); j1++){
+            // Connect vertex btw adjacent cells
+            if(i != CFcell.ty.size()-1){
                 for(size_t j2=0; j2<CFcell.xM[i+1].size(); j2++){
                     if( ( (CFcell.xM[i][j1] > CFcell.xL[i+1][j2] && CFcell.xM[i][j1] < CFcell.xU[i+1][j2]) ||
-                        (CFcell.xM[i+1][j2] > CFcell.xL[i][j1] && CFcell.xM[i+1][j2] < CFcell.xU[i][j1]) ) &&
-                        ( (CFcell.xU[i][j1] > CFcell.xL[i+1][j2] && CFcell.xU[i][j1] < CFcell.xU[i+1][j2]) ||
-                        (CFcell.xL[i][j1] > CFcell.xL[i+1][j2] && CFcell.xL[i][j1] < CFcell.xU[i+1][j2]) ||
-                        (CFcell.xU[i+1][j2] > CFcell.xL[i][j1] && CFcell.xU[i+1][j2] < CFcell.xU[i][j1]) ||
-                        (CFcell.xL[i+1][j2] > CFcell.xL[i][j1] && CFcell.xL[i+1][j2] < CFcell.xU[i][j1]) ) ){
-                            vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
-                            vtxEdge.weight.push_back(1.0);
+                          (CFcell.xM[i+1][j2] > CFcell.xL[i][j1] && CFcell.xM[i+1][j2] < CFcell.xU[i][j1]) ) &&
+                            ( (CFcell.xU[i][j1] > CFcell.xL[i+1][j2] && CFcell.xU[i][j1] < CFcell.xU[i+1][j2]) ||
+                              (CFcell.xL[i][j1] > CFcell.xL[i+1][j2] && CFcell.xL[i][j1] < CFcell.xU[i+1][j2]) ||
+                              (CFcell.xU[i+1][j2] > CFcell.xL[i][j1] && CFcell.xU[i+1][j2] < CFcell.xU[i][j1]) ||
+                              (CFcell.xL[i+1][j2] > CFcell.xL[i][j1] && CFcell.xL[i+1][j2] < CFcell.xU[i][j1]) ) ){
+                        vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
+                        vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[N_0+j1],vtxEdge.vertex[N_1+j2]) );
                     }
                 }
             }
@@ -255,9 +262,9 @@ void highwayRoadmap::connectMultiLayer(){
                     vtxEdge.vertex.push_back(midVtx);
 
                     vtxEdge.edge.push_back(make_pair(m, n));
-                    vtxEdge.weight.push_back(1.0);
+                    vtxEdge.weight.push_back( vector_dist(v1,midVtx) );
                     vtxEdge.edge.push_back(make_pair(m2, n));
-                    vtxEdge.weight.push_back(1.0);
+                    vtxEdge.weight.push_back( vector_dist(v2,midVtx) );
                     n++;
                     break;
                 }
@@ -269,7 +276,7 @@ void highwayRoadmap::connectMultiLayer(){
 }
 
 void highwayRoadmap::search(){
-    int idx_s, idx_g, num;
+    unsigned int idx_s, idx_g, num;
 
     // Construct the roadmap
     int num_vtx = vtxEdge.vertex.size();
@@ -278,19 +285,20 @@ void highwayRoadmap::search(){
     for(size_t i=0; i<vtxEdge.edge.size(); i++)
         add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, Weight(vtxEdge.weight[i]) ,g);
 
-//    property_map<AdjGraph, edge_weight_t>::type weightmap = get(edge_weight, g);
-
     // Locate the nearest vertex for start and goal in the roadmap
     idx_s = find_cell(Endpt[0]);
     idx_g = find_cell(Endpt[1]);
 
     // Search for shortest path
-    std::vector<vertex_descriptor> p(num_vertices(g));
+    std::vector<Vertex> p(num_vertices(g));
     std::vector<double> d(num_vertices(g));
 
     dijkstra_shortest_paths(g, idx_g,
                             predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
                             distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))));
+//    astar_search( g, idx_g, distance_heuristic<AdjGraph, int>(idx_g, g),
+//                  predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
+//                  distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))) );
 
     // Record path and cost
     num = 0;
@@ -474,19 +482,13 @@ vector<double> highwayRoadmap::addMidVtx(vector<double> vtx1, vector<double> vtx
     return midVtx;
 }
 
-double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
-    vector<double> diff;
-    for(size_t i=0; i<v1.size(); i++) diff.push_back(v1[i]-v2[i]);
-    return sqrt( inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) );
-}
-
-int highwayRoadmap::find_cell(vector<double> v){
+unsigned int highwayRoadmap::find_cell(vector<double> v){
     // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex
     double d_min, d;
-    int idx = 0;
+    unsigned int idx = 0;
 
     d_min = vector_dist(v,vtxEdge.vertex[0]);
-    for(int i=0; i<vtxEdge.vertex.size(); i++){
+    for(unsigned int i=0; i<vtxEdge.vertex.size(); i++){
         d = vector_dist(v,vtxEdge.vertex[i]);
         if(d < d_min){
             d_min = d;
@@ -496,3 +498,10 @@ int highwayRoadmap::find_cell(vector<double> v){
 
     return idx;
 }
+
+double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
+    vector<double> diff;
+    for(size_t i=0; i<v1.size(); i++) diff.push_back(v1[i]-v2[i]);
+    return sqrt( inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) );
+}
+
