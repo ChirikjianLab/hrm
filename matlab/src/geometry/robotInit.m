@@ -1,5 +1,4 @@
 function robot = robotInit(opt)
-
 %% == Construct Robot and Plot Start and Goal Poses ==
 
 % Construct object of robot using SuperEllipse objects
@@ -11,7 +10,7 @@ function robot = robotInit(opt)
 infla = 0.1;
 
 % Initialize body parts
-face = SuperEllipse([5,3,0,0,0,1,50], 'b', infla);
+face = SuperEllipse([5,3,0,0,0,1,50], 'g', infla);
 earL = SuperEllipse([2,1,0,0,0,1,20], 'b', infla);
 earR = SuperEllipse([2,1,0,0,0,1,20], 'b', infla);
 theta_range  = [-pi/2, pi/2];
@@ -22,8 +21,13 @@ theta2_range = [-pi/2, 0];
 if opt == 1
     robot = face;
     
-% Rabbit-shaped robot
+% Two body robot
 elseif opt == 2
+    robot(1) = face;
+    robot(2) = earL;
+    
+% Rabbit-shaped robot    
+elseif opt == 3
     robot = RabbitRobot2D(face, earL, earR, P_start(1), P_start(2), ...
         0, 0, 0, theta_range, theta1_range, theta2_range);
     
@@ -33,5 +37,4 @@ elseif opt == 2
     % Plot robot at goal in red
     robot.MoveRobot(P_goal(1), P_goal(2), 0, 0, 0);
     robot.PlotRobot('r');
-end
 end

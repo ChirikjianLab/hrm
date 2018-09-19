@@ -97,15 +97,15 @@ classdef SuperEllipse
             R2 = rot2(th2);
             
             r = min([a1,b1]);
-            Tinv = R2*diag([a2/r,b2/r])*R2'*R1';
+            Tinv = R2*diag([a2/r,b2/r])*R2';
             
             gradPhi = 2/eps1 * [sc_eps(the, 2-eps1, 'cos')/a1;
                 sc_eps(the, 2-eps1, 'sin')/b1];
             
-            X = [a1*sc_eps(the, eps1, 'cos'); b1*sc_eps(the, eps1, 'sin')] + C;
+            X = R1*[a1*sc_eps(the, eps1, 'cos'); b1*sc_eps(the, eps1, 'sin')] + C;
             
             % Closed-Form Minkowski Sum/Difference
-            X_eb = X + K * r * Tinv^2 * gradPhi ./ sqrt(sum( (Tinv * gradPhi).^2, 1 ));
+            X_eb = X + K*r*Tinv^2*R1*gradPhi ./ sqrt(sum( (Tinv*R1*gradPhi).^2, 1 ));
             
         end
         

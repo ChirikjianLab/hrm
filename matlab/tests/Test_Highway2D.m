@@ -5,14 +5,14 @@ initAddpath();
 
 disp('Initialization');
 % Environment
-[arena, obs, EndPts] = environment(21);
+[arena, obs, EndPts] = environment(22);
 % Robot: Only plan face
 face = robotInit(1);
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 20;
-option.N_dy = 20;
+option.N_layers = 50;
+option.N_dy = 40;
 option.sampleNum = 10;
 
 % plot options

@@ -61,7 +61,7 @@ elseif opt == 21 % Superellipse Sparse
     % set up the parameters of the environment
     ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
     tx_s = 0; ty_s = 0;
-    eps_s = 0.01;
+    eps_s = 0.1;
     
     % superquadric obstacles
     ra_o  = [25 20];
