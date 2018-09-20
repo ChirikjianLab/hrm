@@ -1,4 +1,4 @@
-function robot = robotInit3D()
+function [robot, EndPts] = robotInit3D()
 %% == Construct Robot and Plot Start and Goal Poses ==
 
 % Construct object of robot using SuperQuadrics objects
@@ -6,8 +6,7 @@ function robot = robotInit3D()
 
 %% Initialization
 % Boundary inflation factor
-infla = 0.1;
-N_r = 50;
+N_r = 100;
 
 % Initialize robot parameters
 a_r = [5;3;2];
@@ -23,6 +22,8 @@ tc_goal  = [ 50;-20; 10];
 q_goal = [-pi/10; -0.16;0.17;0.24];
 
 robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b');
+
+EndPts = [[tc_start; q_start],[tc_goal; q_goal]];
 
 %% Plot
 % plot the robot at start and goal configs

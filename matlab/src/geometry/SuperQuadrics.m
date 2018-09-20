@@ -16,6 +16,9 @@ classdef SuperQuadrics
 
         N       % No. of interpolated points on the perimeter 
         color   % fill color of the superellipse
+        
+        infla   % inflation factor for Kinematics of Containment
+        polyVtx % Vertices for polyhedron local c-space
     end
     properties (Access = private)
         omega   % parameter for point cloud
@@ -67,6 +70,12 @@ classdef SuperQuadrics
             
             if (objE.eps(1) ~= 1) || (objE.eps(2) ~= 1)
                 error('Second object is not an ellipsoid. \n')
+            end
+            
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            elseif (size(objE.q,1) == 4) && (size(objE.q,2) ~= 4)
+                objE.q = objE.q';
             end
             
             % Parameters
