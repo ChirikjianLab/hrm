@@ -1,17 +1,17 @@
 classdef HighwayRoadmap3D < handle
-%HIGHWAYROADMAP3D builds a roadmap based on closed-form characterization
-% of the configuration space. Robots are modeled as an ellipsoid
-% while obstacles and arenas are modeled as unions of superquadrics.
-%  Inputs:
-%     Robot  : class of SuperQuadrics, ellipsoid (epsilon = 1)
-%     Engpts : start and goal configurations
-%     Arena  : arena, union of SuperQuadrics
-%     Obs    : obstacles, union of SuperQuadrics
-%     options: options for the roadmap
-%
-%  Author:
-%     Sipu Ruan, ruansp@jhu.edu, 2018
-
+    %HIGHWAYROADMAP3D builds a roadmap based on closed-form characterization
+    % of the configuration space. Robots are modeled as an ellipsoid
+    % while obstacles and arenas are modeled as unions of superquadrics.
+    %  Inputs:
+    %     Robot  : class of SuperQuadrics, ellipsoid (epsilon = 1)
+    %     Engpts : start and goal configurations
+    %     Arena  : arena, union of SuperQuadrics
+    %     Obs    : obstacles, union of SuperQuadrics
+    %     options: options for the roadmap
+    %
+    %  Author:
+    %     Sipu Ruan, ruansp@jhu.edu, 2018
+    
     properties (Access = private)
         N_dx                 % # of Sweep Planes within One Layer
         N_dy                 % # of Sweep Lines within One Sweep Plane
@@ -32,7 +32,7 @@ classdef HighwayRoadmap3D < handle
     end
     properties
         Graph        % Customized graph which contains an array of vertices
-                     % and an adjacency matrix
+        % and an adjacency matrix
         Robot        % Robot Object of class SuperQuadrics
         EndPts       % Start and Goal points of the robot
         Arena        % Arena Obj. of class SuperQuadrics
@@ -102,19 +102,15 @@ classdef HighwayRoadmap3D < handle
             Obj.q_r = rand(4,Obj.N_layers);
             
             % CF_Cell: Cell structure to store vertices
-            CF_Cell = cell(1,Obj.N_layers);
+            CF_Cell = cell(Obj.N_layers,1);
             
             for i = 1:Obj.N_layers
-                if Obj.PlotSingleLayer
-                    figure();
-                    hold on;
-                end
                 % Initialize angle of robot
                 Obj.Robot.q = Obj.q_r(:,i);
                 
                 % Generate Adjacency Matrix for one layer
                 [bd_s, bd_o] = Obj.Boundary();
-                CF_Cell{i} = Obj.SweepPlaneX(bd_s, bd_o);
+                CF_Cell{i} = Obj.SweepPlaneXY(bd_s, bd_o);
                 
                 % Connect Verices within One Layer
                 [A_connect_new, V_new] = Obj.OneLayer(CF_Cell{i});
@@ -124,25 +120,6 @@ classdef HighwayRoadmap3D < handle
                 Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, A_connect_new);
                 % concatenate mid pnts set in different layers
                 Obj.Graph.V = [Obj.Graph.V V_new];
-                
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                if Obj.PlotSingleLayer
-                    CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
-                    
-                    for j=1:size(bd_s,3)
-                        plot3(bd_s(1,:,j),bd_s(2,:,j),...
-                            Obj.LayerDist*Obj.Graph.V(3,end)*ones(1,length(bd_s(1,:,j))),'k')
-                    end
-                    for j=1:size(bd_o,3)
-                        plot3(bd_o(1,:,j),bd_o(2,:,j),...
-                            Obj.LayerDist*Obj.Graph.V(3,end)*ones(1,length(bd_o(1,:,j))),'b')
-                    end
-                    
-                    for j = 1:size(CF_Cell_2,1)
-                        plot3(CF_Cell_2{j,4}, CF_Cell_2{j,1}, Obj.LayerDist*Obj.Graph.V(3,end), 'r.')
-                    end
-                end
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 % Parameters for connections btw layers
                 % Number of nodes before the current layer, use for nodes
@@ -175,68 +152,153 @@ classdef HighwayRoadmap3D < handle
         end
         
         %% ------------- Operations within one Layer ----------------------
-        %% Construct Adjacency Matrix within one Layer
+        %% Construct Adjacency Matrix within one C-Layer
         function [A_connect_new, V_new] = OneLayer(Obj, CF_cell)
-            CF_cell = Obj.EnhancedCellDecomp(CF_cell);
-            
-            % to store the middle points, with x, y and theta-coords
             V_new = [];
-            for i = 1:size(CF_cell,1)
-                for j = 1:size(CF_cell{i,4},1)
-                    % concatenate (x,y) coord of the mid pnts
-                    V_new = [V_new [CF_cell{i,4}(j); CF_cell{i,1}; Obj.Robot.ang]];
+            A_connect_new = [];
+            
+            N_V_Plane = zeros(1,Obj.N_dx);
+            % Connect each sweep plane in x-direction
+            for i = 1:Obj.N_dx
+                N_V_Plane(i) = size(V_new,2);
+                
+                [A_connect_XY, V_XY] = OnePlane(Obj,...
+                    CF_cell{i,1}, CF_cell{i,2});
+                V_new = [V_new V_XY];
+                A_connect_new = blkdiag(A_connect_new, A_connect_XY);
+            end
+            
+            % Connect between adjacent sweep plane in y-direction
+            for i = 1:Obj.N_dx-1
+                CF_cellXY = CF_cell{i,2};
+                CF_cellXY2 = CF_cell{i+1,2};
+                for j = 1:Obj.N_dy
+                    y    = CF_cellXY{j,1};
+                    L_CF = CF_cellXY{j,2};
+                    U_CF = CF_cellXY{j,3};
+                    M_CF = CF_cellXY{j,4};
+                    
+                    y2     = CF_cellXY2{j,1};
+                    L_CF_2 = CF_cellXY2{j,2};
+                    U_CF_2 = CF_cellXY2{j,3};
+                    M_CF_2 = CF_cellXY2{j,4};
+                    
+                    m  = size(M_CF,1);     % # of pnts on sweep line y_i
+                    m2 = size(M_CF_2,1);   % # of pnts on sweep line y_i+1
+                    
+                    % connect between different sweep lines
+                    for l = 1:m
+                        for l2 = 1:m2
+                            % ------------ Connection conditions --------------
+                            % two mid pnts can be connected as long as there's at
+                            % least one point (upper, lower, or even mid) that
+                            % falls into the range of the other neighbour sweep
+                            % line. 3 pnts for each line and 2 lines, so there are
+                            % 6 conditions in total.
+                            %
+                            % Mid-points should always within the range of the
+                            % neighbor sweep line.
+                            if (((M_CF(l) >= L_CF_2(l2)) && (M_CF(l) <= U_CF_2(l2)))...
+                                    || ((M_CF_2(l2) >= L_CF(l)) && (M_CF_2(l2) <= U_CF(l))))...
+                                    && (((U_CF(l) >= L_CF_2(l2)) && (U_CF(l) <= U_CF_2(l2)))...
+                                    || ((L_CF(l) >= L_CF_2(l2)) && (L_CF(l) <= U_CF_2(l2)))...
+                                    || ((U_CF_2(l2) >= L_CF(l)) && (U_CF_2(l2) <= U_CF(l)))...
+                                    || ((L_CF_2(l2) >= L_CF(l)) && (L_CF_2(l2) <= U_CF(l))))
+                                
+                                % record the two pnts that can be connected. Note
+                                % that our sweep line assumption is still in effect
+                                I1 = find(abs(V_new(3,:)-M_CF(l))    <= 1e-5);
+                                I2 = find(abs(V_new(3,:)-M_CF_2(l2)) <= 1e-5);
+                                
+                                for k = 1:length(I1)
+                                    for k2 = 1:length(I2)
+                                        % only connect vertices between adjacent
+                                        % sweep lines
+                                        if abs(V_new(2,I1(k))-V_new(2,I2(k2))) == abs(y-y2)
+                                            A_connect_new(I1(k), I2(k2)) = 1;
+                                            A_connect_new(I2(k2), I1(k)) = 1;
+                                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                            if Obj.PlotSingleLayer
+                                                plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
+                                                    [V_new(2,I1(k)) V_new(2,I2(k2))],...
+                                                    [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
+                                            end
+                                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
                 end
             end
-            N_v = size(V_new, 2); % # of pnts to connect
+            
+        end
+        
+        %% ------------- Operations within one Plane ----------------------
+        %% Construct Adjacency Matrix within one Sweep Plane
+        function [A_connect_XY, V_XY] = OnePlane(Obj, tx, CF_cellXY)
+            CF_cellXY = Obj.EnhancedCellDecomp(CF_cellXY);
+            
+            % to store the middle points, with x, y and theta-coords
+            V_XY = [];
+            for i = 1:size(CF_cellXY,1)
+                for j = 1:size(CF_cellXY{i,4},1)
+                    % concatenate (x,y) coord of the mid pnts
+                    V_XY = [V_XY [tx; CF_cellXY{i,1}; CF_cellXY{i,4}(j);...
+                        Obj.Robot.q]];
+                end
+            end
+            N_v = size(V_XY, 2); % # of pnts to connect
             
             % Adjacency Matrix
-            A_connect_new = zeros(N_v,N_v);
+            A_connect_XY = zeros(N_v,N_v);
             
             % Connect vertices between adjacent cells: middle points of
             % each collision-free line segment
-            for i = 1:size(CF_cell,1)-1
-                y    = CF_cell{i,1};
-                L_CF = CF_cell{i,2};
-                U_CF = CF_cell{i,3};
-                M_CF = CF_cell{i,4};
+            for i = 1:size(CF_cellXY,1)-1
+                y    = CF_cellXY{i,1};
+                L_CF = CF_cellXY{i,2};
+                U_CF = CF_cellXY{i,3};
+                M_CF = CF_cellXY{i,4};
                 
-                y2     = CF_cell{i+1,1};
-                L_CF_2 = CF_cell{i+1,2};
-                U_CF_2 = CF_cell{i+1,3};
-                M_CF_2 = CF_cell{i+1,4};
+                y2     = CF_cellXY{i+1,1};
+                L_CF_2 = CF_cellXY{i+1,2};
+                U_CF_2 = CF_cellXY{i+1,3};
+                M_CF_2 = CF_cellXY{i+1,4};
                 
                 m  = size(M_CF,1);     % # of pnts on sweep line y_i
                 m2 = size(M_CF_2,1);   % # of pnts on sweep line y_i+1
                 
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if Obj.PlotSingleLayer
                     for k = 1:m
-                        plot3([L_CF(k) U_CF(k)], [y y],...
-                            Obj.LayerDist*V_new(3,end)*ones(2,1), '-m');
+                        plot3([tx tx], [y y], [L_CF(k) U_CF(k)], '-m');
                     end
                     for k = 1:m2
-                        plot3([L_CF_2(k) U_CF_2(k)], [y2 y2],...
-                            Obj.LayerDist*V_new(3,end)*ones(2,1), '-m');
+                        plot3([tx tx], [y2 y2], [L_CF_2(k) U_CF_2(k)], '-m');
                     end
                 end
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 % Connect within the same sweep line
                 for j = 1:m2-1
                     % Condition: upper bound of #j = low bound of #j+1
                     if (U_CF_2(j) == L_CF_2(j+1))
-                        I1 = find(abs(V_new(1,:) - M_CF_2(j))   <= 1e-5);
-                        I2 = find(abs(V_new(1,:) - M_CF_2(j+1)) <= 1e-5);
+                        I1 = find(abs(V_XY(3,:) - M_CF_2(j))   <= 1e-5);
+                        I2 = find(abs(V_XY(3,:) - M_CF_2(j+1)) <= 1e-5);
                         
                         for k = 1:length(I1)
                             for k2 = 1:length(I2)
                                 % only select vertices with the same y-coordinate
-                                if V_new(2,I1(k)) == V_new(2,I2(k2))
-                                    A_connect_new(I1(k), I2(k2)) = 1;
-                                    A_connect_new(I2(k2), I1(k)) = 1;
+                                if V_XY(2,I1(k)) == V_XY(2,I2(k2))
+                                    A_connect_XY(I1(k), I2(k2)) = 1;
+                                    A_connect_XY(I2(k2), I1(k)) = 1;
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     if Obj.PlotSingleLayer
-                                        plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
-                                            [V_new(2,I1(k)) V_new(2,I2(k2))],...
-                                            Obj.LayerDist*V_new(3,end)*ones(2,1), '-k', 'LineWidth', 1.2)
+                                        plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+                                            [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+                                            [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                     end
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 end
@@ -248,14 +310,13 @@ classdef HighwayRoadmap3D < handle
                 % connect between different sweep lines
                 for j = 1:m
                     for j2 = 1:m2
-                        %------ Error: not a solid condition --------------
+                        % ------------ Connection conditions --------------
                         % two mid pnts can be connected as long as there's at
                         % least one point (upper, lower, or even mid) that
                         % falls into the range of the other neighbour sweep
                         % line. 3 pnts for each line and 2 lines, so there are
                         % 6 conditions in total.
-                        
-                        %------ Correction --------------------------------
+                        %
                         % Mid-points should always within the range of the
                         % neighbor sweep line.
                         if (((M_CF(j) >= L_CF_2(j2)) && (M_CF(j) <= U_CF_2(j2)))...
@@ -264,28 +325,24 @@ classdef HighwayRoadmap3D < handle
                                 || ((L_CF(j) >= L_CF_2(j2)) && (L_CF(j) <= U_CF_2(j2)))...
                                 || ((U_CF_2(j2) >= L_CF(j)) && (U_CF_2(j2) <= U_CF(j)))...
                                 || ((L_CF_2(j2) >= L_CF(j)) && (L_CF_2(j2) <= U_CF(j))))
-                            %--------------------------------------------------
                             
                             % record the two pnts that can be connected. Note
                             % that our sweep line assumption is still in effect
-                            I1 = find(abs(V_new(1,:)-M_CF(j))    <= 1e-5);
-                            I2 = find(abs(V_new(1,:)-M_CF_2(j2)) <= 1e-5);
+                            I1 = find(abs(V_XY(3,:)-M_CF(j))    <= 1e-5);
+                            I2 = find(abs(V_XY(3,:)-M_CF_2(j2)) <= 1e-5);
                             
                             for k = 1:length(I1)
                                 for k2 = 1:length(I2)
                                     % only connect vertices between adjacent
                                     % sweep lines
-                                    if abs(V_new(2,I1(k))-V_new(2,I2(k2))) == abs(y-y2)
-                                        A_connect_new(I1(k), I2(k2)) = 1;
-                                        A_connect_new(I2(k2), I1(k)) = 1;
+                                    if abs(V_XY(2,I1(k))-V_XY(2,I2(k2))) == abs(y-y2)
+                                        A_connect_XY(I1(k), I2(k2)) = 1;
+                                        A_connect_XY(I2(k2), I1(k)) = 1;
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         if Obj.PlotSingleLayer
-                                            patch([L_CF(j) L_CF_2(j2) U_CF_2(j2) U_CF(j)],...
-                                                [y y2 y2 y], 'm', 'EdgeColor', 'none', 'FaceAlpha', 0.5)
-                                            
-                                            plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
-                                                [V_new(2,I1(k)) V_new(2,I2(k2))],...
-                                                Obj.LayerDist*V_new(3,end)*ones(2,1), '-k', 'LineWidth', 1.2)
+                                            plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+                                                [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+                                                [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                         end
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     end
@@ -296,144 +353,212 @@ classdef HighwayRoadmap3D < handle
                 end
             end
         end
+       
+        %% ----------------- Path Searching -------------------------------
+        %% Graph Search using Dijkstra Algorithm
+        function Dijkstra(Obj)
+            % Find the closest "high-way" node for the start and goal
+            % This is simply to find the mid pnt that's cloest to the
+            % P_start based on the objective function min(dist).
+            % This compares the dist between every mid pnt and the P_start
+            % goal and there's a lot of room for improving the computation
+            % time of this process
+            A_connect = Obj.Graph.AdjMat;
+            V = Obj.Graph.V;
+            N_V = size(V, 2);
+            [~, Obj.I_start] = min(sum((repmat(Obj.EndPts(:,1), 1, N_V)-V)...
+                .*(repmat(Obj.EndPts(:,1), 1, N_V)-V)));
+            [~, Obj.I_goal] = min(sum((repmat(Obj.EndPts(:,2), 1, N_V)-V)...
+                .*(repmat(Obj.EndPts(:,2), 1, N_V)-V)));
+            
+            % Find the connecting path
+            [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V(1:3,:)',...
+                Obj.I_start, Obj.I_goal);
+            if isnan(Obj.Paths)
+                disp('No Valid Path found!');
+                return;
+            end
+        end
+        
+        %% --------------- Plot the Valid Path ----------------------------
+        function PlotPath(Obj)
+            % plot the paths
+            V = Obj.Graph.V;
+            
+            figure(1); hold on; axis equal;
+            plot3(Obj.EndPts(1,1), Obj.EndPts(2,1), Obj.EndPts(3,1),...
+                's','MarkerFaceColor','g','MarkerSize',5); hold on;
+            plot3(Obj.EndPts(1,2), Obj.EndPts(2,2), Obj.EndPts(3,2),...
+                's','MarkerFaceColor','c','MarkerSize',5);
+            plot3([V(1,Obj.I_start), Obj.EndPts(1,1)], [V(2,Obj.I_start),...
+                Obj.EndPts(2,1)], [V(3,Obj.I_start), Obj.EndPts(3,1)], '-og','Linewidth',2);
+            plot3([V(1,Obj.I_goal),  Obj.EndPts(1,2)], [V(2,Obj.I_goal),...
+                Obj.EndPts(2,2)], [V(3,Obj.I_goal),  Obj.EndPts(3,2)], '-oc','Linewidth',2);
+            plot3(V(1,Obj.Paths),V(2,Obj.Paths),V(3,Obj.Paths),...
+                'r','Linewidth',2);
+            
+            figure(2); hold on; axis equal;
+            for i = 1:size(Obj.Arena,2)
+                Obj.Arena(i).PlotShape;
+            end
+            
+            for i = 1:size(Obj.Obs,2)
+                Obj.Obs(i).PlotShape;
+
+                box on;
+                text(Obj.Obs(i).tc(1),Obj.Obs(i).tc(2),Obj.Obs(i).tc(3),...
+                    num2str(i), 'Color', [1 1 1]);
+            end
+            
+            % Robot at Start and Goal points
+            for i = 1:2
+                Obj.Robot.tc = Obj.EndPts(1:3,i);
+                Obj.Robot.q = Obj.EndPts(4:7,i)';
+                
+                Obj.Robot.PlotShape;
+            end
+            % Robot within path
+            for i = 1:length(Obj.Paths)
+                Obj.Robot.tc = V(1:3,Obj.Paths(i));
+                Obj.Robot.q = V(4:7,Obj.Paths(i))';
+                
+                Obj.Robot.PlotShape;
+                %         MM(i) = getframe;
+            end
+            
+            % plot the paths
+            plot3(Obj.EndPts(1,1), Obj.EndPts(2,1), Obj.EndPts(3,1),...
+                's','MarkerFaceColor','g','MarkerSize',5); hold on;
+            plot3(Obj.EndPts(1,2), Obj.EndPts(2,2), Obj.EndPts(3,2),...
+                's','MarkerFaceColor','c','MarkerSize',5);
+            plot3([V(1,Obj.I_start), Obj.EndPts(1,1)], [V(2,Obj.I_start),...
+                Obj.EndPts(2,1)], [V(3,Obj.I_start), Obj.EndPts(3,1)], '-og','Linewidth',2);
+            plot3([V(1,Obj.I_goal),  Obj.EndPts(1,2)], [V(2,Obj.I_goal),...
+                Obj.EndPts(2,2)], [V(3,Obj.I_goal),  Obj.EndPts(3,2)], '-oc','Linewidth',2);
+            plot3(V(1,Obj.Paths),V(2,Obj.Paths),V(3,Obj.Paths),...
+                'm','Linewidth',2);
+            axis off
+            
+            % record the results in a movie file
+            % figure
+            % movie(MM)
+            % movie2avi(MM, 'ellipsoid.avi')
+        end
         
     end
-        
-        %% Private methods
+    
+    %% Private methods
     methods (Access = private)
         %% Detect Collision-Free Space
         %% Sweep Plane along X-axis
-        function [CF_cell] = SweepPlaneX(Obj, bd_s, bd_o)
-            CF_cell = cell(Obj.N_dx,2);
+        function [CF_cellXY] = SweepPlaneXY(Obj, bd_s, bd_o)
+            % bd_s: boundary between the robot and the arena
+            % bd_o: boundary between the robot and the obstacle
+            % N_dx: # of sweep planes along x-axis
+            % N_dy: # of sweep planes along y-axis
+            
+            % CF_CellXY : non-empty cell containing {[x], [CF_cellY]}
+            % CF_cellZ: non-empty cell containing {[y], [z_lower],
+            % [z_upper], [z_middle]}
+            
+            CF_cellXY = cell(Obj.N_dx, 2);
             
             % the increment along the x axis
             min_x = min(bd_s(1,:));
             max_x = max(bd_s(1,:));
+            delta_x = (max_x-min_x)/(Obj.N_dx-1);
+            tx = min_x:delta_x:max_x;
             
-            delta_x = ( max_x - min_x )/( Obj.N_dx - 1 );
-            tx = ( min_x ) : delta_x : ( max_x );
-            
-            for i = 1:Obj.N_dx
-                bd_s_x = [];
-                bd_o_x = [];
-                CF_cell{i,2} = tx(i);
-                
-                for j = 1:size(bd_s,3)
-                    [~,I_s_x] = find(abs(bd_s(1,:,j) - tx(i)) <= 1e-2);
-                    if mod(length(I_s_x),2) ~= 0
-                        I_s_x(end) = [];
-                    end
-                    bd_s_x(:,:,j) = bd_s(2:3,I_s_x,j);
-                    
-                    plot3(bd_s(1,I_s_x,j),bd_s(2,I_s_x,j),bd_s(3,I_s_x,j),'.b')
-                end
-                
-                for j = 1:size(bd_o,3)
-                    [~,I_o_x] = find(abs(bd_o(1,:,j) - tx(i)) <= 1e-2);
-                    if mod(length(I_o_x),2) ~= 0
-                        I_o_x(end) = [];
-                    end
-                    bd_o_x(:,:,j) = bd_o(2:3,I_o_x,j);
-                    plot3(bd_o(1,I_o_x,j),bd_o(2,I_o_x,j),bd_o(3,I_o_x,j),'.r')
-                end
-                
-                CF_cell{i,1} = Obj.SweepLine(bd_s_x, bd_o_x);
-            end
-        end
-        
-        %% Sweep Line along Y-axis
-        function [CF_cell] = SweepLine(Obj, bd_s, bd_o)
-            % bd_s boundary between the robot and the arena
-            % bd_o boundary between the robot and the obstacle
-            % N_dy # of sweep lines
-            
-            % CF_Cell: non-empty cell containing {[y], [x_lower],
-            % [x_upper], [x_middle]}
-            
-            % # of CF boundaries between the robot and the environment
-            N_bd_s = size(bd_s, 3);
-            % # of CF boundaries between the robot and the obstacles
-            N_bd_o = size(bd_o, 3);
-            % the registerd x coordinates, left, for the environment
-            x_s_L = [];
-            x_s_R = [];
-            x_o_L = [];
-            x_o_R = [];
-            %%%%%%%%%%%%%%%%%%%%%%
+            % Increment along the y axis
             min_y = min(bd_s(2,:));
             max_y = max(bd_s(2,:));
-            %%%%%%%%%%%%%%%%%%%%%%
-            % the increment along the y axis
-            delta_y = ( max_y - min_y )/( Obj.N_dy - 1 );
-            ty = ( min_y ) : delta_y : ( max_y );
+            delta_y = (max_y-min_y)/(Obj.N_dy-1);
+            ty = min_y:delta_y:max_y;
             
-            [bd_s_L, bd_s_R, s_Max_Y, s_Min_Y] = Separate_Boundary(bd_s);
-            [bd_o_L, bd_o_R, o_Max_Y, o_Min_Y] = Separate_Boundary(bd_o);
+            % Separate boundary into two parts
+            [bd_s_L, bd_s_R] = Separate_Boundary2(bd_s);
+            [bd_o_L, bd_o_R] = Separate_Boundary2(bd_o);
             
-            for i = 1:Obj.N_dy
-                [x_s_L_new, x_s_R_new] = ClosestPts_dy_New(bd_s_L, bd_s_R, s_Max_Y, s_Min_Y, ty(i));
-                x_s_L = [x_s_L; x_s_L_new];
-                x_s_R = [x_s_R; x_s_R_new];
-                
-                if isempty(o_Max_Y)
-                    x_o_L_new = []; x_o_R_new = [];
-                else
-                    [x_o_L_new, x_o_R_new] = ClosestPts_dy_New(bd_o_L, bd_o_R, o_Max_Y, o_Min_Y, ty(i));
-                end
-                x_o_L = [x_o_L; x_o_L_new];
-                x_o_R = [x_o_R; x_o_R_new];
-            end
+%             plot3(bd_s_L{1}(1,:),bd_s_L{1}(2,:),bd_s_L{1}(3,:),'.r')
+%             plot3(bd_s_R{1}(1,:),bd_s_R{1}(2,:),bd_s_R{1}(3,:),'.m')
             
-            % Explode the boundary points to make the CF cells convex,
-            % search over half curves
-            x_o_L = Obj.obstacleExplode(bd_o_L, x_o_L, ty, -1);
-            x_o_R = Obj.obstacleExplode(bd_o_R, x_o_R, ty, +1);
+            % Max and Min for obstacles
+            o_max_x = squeeze(max(bd_o(1,:,:),[],2));
+            o_min_x = squeeze(min(bd_o(1,:,:),[],2));
+            o_max_y = squeeze(max(bd_o(2,:,:),[],2));
+            o_min_y = squeeze(min(bd_o(2,:,:),[],2));
             
-            % Second scan to make valid intervals
-            for i = 1:Obj.N_dy
-                x_o_L_pts = x_o_L(i,:);
-                x_o_L_pts(isnan(x_o_L_pts)) = [];
-                x_o_R_pts = x_o_R(i,:);
-                x_o_R_pts(isnan(x_o_R_pts)) = [];
-                if (numel(x_o_L_pts) == 0) || (numel(x_o_R_pts) == 0)
-                    continue;
+            % Find intersecting points on boundaries
+            for i = 1:Obj.N_dx
+                % Registerd x coordinates, left, for the environment
+                z_s_L = nan(Obj.N_dy, size(bd_s,3));
+                z_s_R = nan(Obj.N_dy, size(bd_s,3));
+                z_o_L = nan(Obj.N_dy, size(bd_o,3));
+                z_o_R = nan(Obj.N_dy, size(bd_o,3));
+                for j = 1:Obj.N_dy
+                    [z_s_L_new, z_s_R_new] = ClosestPts_dxdy(bd_s_L,...
+                        bd_s_R, max_x, min_x, max_y, min_y, tx(i), ty(j));
+                    z_s_L(j,:) = z_s_L_new;
+                    z_s_R(j,:) = z_s_R_new;
+                    [z_o_L_new, z_o_R_new] = ClosestPts_dxdy(bd_o_L,...
+                        bd_o_R, o_max_x, o_min_x, o_max_y, o_min_y, tx(i), ty(j));
+                    z_o_L(j,:) = z_o_L_new;
+                    z_o_R(j,:) = z_o_R_new;
                 end
                 
-                % compare the ith element in Right set with (i+1)th element
-                % in Left set; if Left < Right, get rid of both points
-                x_o_R_pts = [x_o_L_pts(1) x_o_R_pts];
-                x_o_L_pts = [x_o_L_pts x_o_R_pts(end)];
+%                 for k = 1:size(bd_o,3)
+%                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_L(:,k),'b.')
+%                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_R(:,k),'c.')
+%                 end
+%                 plot3([tx(i)*ones(1,Obj.N_dy);tx(i)*ones(1,Obj.N_dy)],...
+%                     [ty;ty],[z_s_L,z_s_R]','k')
                 
-                I_diff_L_R = find(x_o_L_pts - x_o_R_pts < 0);
-                x_o_L_pts(I_diff_L_R) = []; x_o_L_pts(end) = [];
-                x_o_R_pts(I_diff_L_R) = []; x_o_R_pts(1) = [];
-                
-                x_o_L(i,1:size(x_o_L_pts,2)) =  x_o_L_pts;
-                x_o_R(i,1:size(x_o_R_pts,2)) =  x_o_R_pts;
+                % Record cell info
+                CF_cellXY{i,1} = tx(i);
+                CF_cellXY{i,2} = Obj.SweepLine(ty, z_s_L, z_s_R, z_o_L, z_o_R);
             end
             
-            % --- check the collision free regions line by line ---
+%             for i = 1:Obj.N_dx
+%                 xx = CF_cellXY{i,1};
+%                 cellY = CF_cellXY{i,2};
+%                 yy = []; zz = [];
+%                 for j = 1:Obj.N_dy
+%                     cellZ = cell2mat(cellY(j,4));
+%                     for k = 1:length(cellZ)
+%                         yy = [yy; cell2mat(cellY(j,1))];
+%                         zz = [zz; cellZ(k)];
+%                     end
+%                 end
+%                 
+%                 plot3(xx*ones(size(yy,1),1),yy,zz,'r.')
+%             end
+            
+        end
+        
+        function CF_cellZ = SweepLine(Obj, ty, z_s_L, z_s_R, z_o_L, z_o_R)
+            % Check the collision free regions line by line
             % condition:
             % CFS = (S_1...\cap... S_m) - (O_1...\cup...\O_n) for each dy
             
-            CF_cell = cell(Obj.N_dy, 4);
+            N_bd_s = size(z_s_L,2);
+            CF_cellZ = cell(Obj.N_dy, 4);
             for k = 1:Obj.N_dy
                 % union of the arena bounds (single arena case)
-                X_s_L = x_s_L(k,:)'; X_s_L(isnan(X_s_L))=[];
-                X_s_R = x_s_R(k,:)'; X_s_R(isnan(X_s_R))=[];
-                S_L = max(X_s_L); S_U = min(X_s_R);
-                if (length(X_s_L) < N_bd_s) || (S_L >= S_U)
+                Z_s_L = z_s_L(k,:)'; Z_s_L(isnan(Z_s_L))=[];
+                Z_s_R = z_s_R(k,:)'; Z_s_R(isnan(Z_s_R))=[];
+                S_L = max(Z_s_L); S_U = min(Z_s_R);
+                if (length(Z_s_L) < N_bd_s) || (S_L >= S_U)
                     continue
                 end
                 % intersection of the obstacle bounds
-                X_o_L = x_o_L(k,:)'; X_o_L(isnan(X_o_L))=[];
-                X_o_R = x_o_R(k,:)'; X_o_R(isnan(X_o_R))=[];
-                [O_L, O_U] = Union_Intervals(X_o_L, X_o_R);
+                Z_o_L = z_o_L(k,:)'; Z_o_L(isnan(Z_o_L))=[];
+                Z_o_R = z_o_R(k,:)'; Z_o_R(isnan(Z_o_R))=[];
+                [O_L, O_U] = Union_Intervals(Z_o_L, Z_o_R);
                 if isempty(O_L)
-                    CF_cell{k,1} = ty(k);
-                    CF_cell{k,2} = S_L;
-                    CF_cell{k,3} = S_U;
-                    CF_cell{k,4} = (S_L+S_U)/2;
+                    CF_cellZ{k,1} = ty(k);
+                    CF_cellZ{k,2} = S_L;
+                    CF_cellZ{k,3} = S_U;
+                    CF_cellZ{k,4} = (S_L+S_U)/2;
                     continue;
                 end
                 if (length(O_L)==1)
@@ -456,13 +581,81 @@ classdef HighwayRoadmap3D < handle
                     continue
                 end
                 bd_CF = transpose(reshape(bd_CF,2,length(bd_CF)/2));
-                CF_cell{k,1} = ty(k);
-                CF_cell{k,2} = bd_CF(:,1);
-                CF_cell{k,3} = bd_CF(:,2);
-                CF_cell{k,4} = (bd_CF(:,1)+bd_CF(:,2))./2;
+                CF_cellZ{k,1} = ty(k);
+                CF_cellZ{k,2} = bd_CF(:,1);
+                CF_cellZ{k,3} = bd_CF(:,2);
+                CF_cellZ{k,4} = (bd_CF(:,1)+bd_CF(:,2))./2;
             end
             % remove the empty entries
-            CF_cell = reshape(CF_cell(~cellfun('isempty',CF_cell)),[],4);
+            CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
+        end
+        
+        %% Enhanced cell decomposition
+        function CF_cell_N = EnhancedCellDecomp(Obj, CF_cell)
+            % Enhance the cell decomposition around "corners" of each
+            % obstacle:
+            % if the mid-point in line #i is not within the range of
+            % line segment from the adjacent sweep line #i+1,
+            % add x-coordinate of end points of the line segment from line
+            % #i+1 to #i, and vice versa.
+            
+            % CF_cell{:,1} -- y
+            % CF_cell{:,2} -- L_CF
+            % CF_cell{:,3} -- U_CF
+            % CF_cell{:,4} -- M_CF
+            
+            CF_cell_N = CF_cell;
+            ep = 0;
+            
+            for i = 1:length(CF_cell)-1
+                for j = 1:length(CF_cell{i,4})
+                    for j2 = 1:length(CF_cell{i+1,4})
+                        if (CF_cell_N{i,4}(j)<CF_cell_N{i+1,2}(j2))...
+                                && (CF_cell_N{i,3}(j)>=CF_cell_N{i+1,2}(j2))
+                            CF_cell_N{i,3} = [CF_cell_N{i,3};...
+                                CF_cell_N{i+1,2}(j2)+ep];
+                            CF_cell_N{i,2} = [CF_cell_N{i,2};...
+                                CF_cell_N{i+1,2}(j2)-ep];
+                            CF_cell_N{i,4} = [CF_cell_N{i,4};...
+                                CF_cell_N{i+1,2}(j2)];
+                            
+                        elseif (CF_cell_N{i,4}(j)>CF_cell_N{i+1,3}(j2))...
+                                && (CF_cell_N{i,2}(j)<=CF_cell_N{i+1,3}(j2))
+                            CF_cell_N{i,3} = [CF_cell_N{i,3};...
+                                CF_cell_N{i+1,3}(j2)+ep];
+                            CF_cell_N{i,2} = [CF_cell_N{i,2};...
+                                CF_cell_N{i+1,3}(j2)-ep];
+                            CF_cell_N{i,4} = [CF_cell_N{i,4};...
+                                CF_cell_N{i+1,3}(j2)];
+                        end
+                        
+                        if (CF_cell_N{i+1,4}(j2)<CF_cell_N{i,2}(j))...
+                                && (CF_cell_N{i+1,3}(j2)>=CF_cell_N{i,2}(j))
+                            CF_cell_N{i+1,3} = [CF_cell_N{i+1,3};...
+                                CF_cell_N{i,2}(j)+ep];
+                            CF_cell_N{i+1,2} = [CF_cell_N{i+1,2};...
+                                CF_cell_N{i,2}(j)-ep];
+                            CF_cell_N{i+1,4} = [CF_cell_N{i+1,4};...
+                                CF_cell_N{i,2}(j)];
+                            
+                        elseif (CF_cell_N{i+1,4}(j2)>CF_cell_N{i,3}(j))...
+                                && (CF_cell_N{i+1,2}(j2)<=CF_cell_N{i,3}(j))
+                            CF_cell_N{i+1,3} = [CF_cell_N{i+1,3};...
+                                CF_cell_N{i,3}(j)+ep];
+                            CF_cell_N{i+1,2} = [CF_cell_N{i+1,2};...
+                                CF_cell_N{i,3}(j)-ep];
+                            CF_cell_N{i+1,4} = [CF_cell_N{i+1,4};...
+                                CF_cell_N{i,3}(j)];
+                        end
+                    end
+                end
+            end
+            
+            for i = 1:length(CF_cell_N)
+                CF_cell_N{i,2} = sort(CF_cell_N{i,2});
+                CF_cell_N{i,3} = sort(CF_cell_N{i,3});
+                CF_cell_N{i,4} = sort(CF_cell_N{i,4});
+            end
         end
         
         %% Explode the boundary points of the obstacles to get convex CF cells
@@ -536,5 +729,5 @@ classdef HighwayRoadmap3D < handle
             x_o_Ex = sort(x_o_Ex,2);
         end
     end
-
+    
 end

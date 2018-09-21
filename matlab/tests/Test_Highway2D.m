@@ -5,7 +5,7 @@ initAddpath();
 
 disp('Initialization');
 % Environment
-[arena, obs, EndPts] = environment(22);
+[arena, obs, EndPts] = environment(21);
 % Robot: Only plan face
 face = robotInit(1);
 

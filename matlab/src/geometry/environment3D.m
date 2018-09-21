@@ -10,7 +10,7 @@ if opt == 21 % Superellipse Sparse
     a_s = [ra_s;rb_s;rc_s];
     q_s = [0;1;0;0];
     tc_s = [0;0;0];
-    eps_s = [0.5;0.6];
+    eps_s = [0.1;0.1];
     
     % superquadric obstacles
     ra_o  = [25 20];
@@ -67,8 +67,8 @@ end
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Ns = 1000;  % # of pnts on the superquadric arena
-No = 1000;  % # of pnts on the superquadric obstacles
+Ns = 100;  % # of pnts on the superquadric arena
+No = 100;  % # of pnts on the superquadric obstacles
 
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s

@@ -11,14 +11,14 @@ disp('Initialization');
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 50;
-option.N_dx = 30;
-option.N_dy = 40;
+option.N_layers = 1;
+option.N_dx = 50;
+option.N_dy = 5;
 option.sampleNum = 10;
 
 % plot options
 option.plots.Lim = [80 50 40];
-option.plots.isplot = 0;
+option.plots.isplot = 1;
 option.plots.D_layers = 20;
 
 %% Highway Roadmap
@@ -39,7 +39,13 @@ highway = HighwayRoadmap3D(robot, EndPts, arena, obs, option);
 % 
 % fprintf('Planning Time: %s seconds \n', num2str(Highway_time))
 
+tic;
 highway.MultiLayers();
+highway.Dijkstra();
+toc;
+
+highway.PlotPath();
+
 
 % [bd_s, bd_o] = highway.Boundary();
 % 
