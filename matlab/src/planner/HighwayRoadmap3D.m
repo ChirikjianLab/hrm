@@ -83,8 +83,8 @@ classdef HighwayRoadmap3D < handle
         end
         % --------------------------------------------------------------- %
         
-        %% Main Algorithm
-        %% Planning
+        %% ====================== Main Algorithm ==========================
+        %% ------------------------- Planning -----------------------------
         function Plan(Obj)
             Obj.MultiLayers();
             Obj.ConnectBtwLayers();
@@ -128,6 +128,13 @@ classdef HighwayRoadmap3D < handle
             end
         end
         
+        %% Connect vertices among adjacent C-layers
+        function ConnectBtwLayers(Obj)
+            
+        end
+        
+        
+        %% ====================== SUB-ROUTINES ============================
         %% ----------- Explicit Knowledge of the Environment --------------
         %% Generate boundary points using Closed-Form Mink-Operations
         function [bd_s, bd_o] = Boundary(Obj)
