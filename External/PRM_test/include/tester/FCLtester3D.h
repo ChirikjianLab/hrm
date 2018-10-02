@@ -1,3 +1,6 @@
+#ifndef IS_FCL_TESTER_3D_H
+#define IS_FCL_TESTER_3D_H
+
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/prm/PRM.h>
 #include "ompl/geometric/planners/prm/PRMstar.h"
@@ -48,3 +51,5 @@ class FCLtester3D: public Tester3D{
     bool checkSeparationArena(SuperEllipse3D robot_, SuperEllipse3D arena_) const;
 
 };
+
+#endif

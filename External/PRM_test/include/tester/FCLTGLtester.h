@@ -1,3 +1,6 @@
+#ifndef IS_FCLTGL_TESTER_H
+#define IS_FCLTGL_TESTER_H
+
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/prm/PRM.h>
 #include "ompl/geometric/planners/prm/PRMstar.h"
@@ -48,3 +51,5 @@ class FCLTGLtester: public Tester2D{
     bool checkSeparationArena(SuperEllipse robot_, SuperEllipse arena_) const;
 
 };
+
+#endif

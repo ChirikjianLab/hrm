@@ -1,3 +1,7 @@
+#ifndef IS_FCL_COLLISION_3D_H
+#define IS_FCL_COLLISION_3D_H
+
+
 #include <fcl/fcl.h>
 #include "fcl/geometry/shape/ellipsoid.h"
 #include <fcl/narrowphase/collision_object.h>
@@ -26,3 +30,5 @@ class FCLcollision3D{
         //bool fcl_tgl_separation(SuperEllipse se_i_, SuperEllipse se_j_, Vector2d r_i_, Vector2d r_j_, double theta_i_, double theta_j_);
 
 };
+
+#endif

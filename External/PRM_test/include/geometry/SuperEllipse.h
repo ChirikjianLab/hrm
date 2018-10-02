@@ -1,3 +1,6 @@
+#ifndef IS_SUPERELLIPSE_H
+#define IS_SUPERELLIPSE_H
+
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include <vector>
@@ -50,4 +53,6 @@ class SuperEllipse{
 
     void printTrianglesVertices();
 };
+
+#endif
 

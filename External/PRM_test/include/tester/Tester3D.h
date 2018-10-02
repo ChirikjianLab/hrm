@@ -1,3 +1,6 @@
+#ifndef IS_TESTER_3D_H
+#define IS_TESTER_3D_H
+
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/prm/PRM.h>
 #include <ompl/geometric/planners/prm/PRMstar.h>
@@ -65,3 +68,4 @@ class Tester3D{
     double id_planner;
 };
 
+#endif

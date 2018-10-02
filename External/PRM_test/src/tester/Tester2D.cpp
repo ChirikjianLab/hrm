@@ -23,9 +23,6 @@
 #include "tester/Tester2D.h"
 
 
- #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
-
-
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -62,7 +59,7 @@ Tester2D::Tester2D(double lowBound, double highBound, std::vector<SuperEllipse> 
     if(id_planner == 3){
         ss_->setPlanner(std::make_shared<og::RRTConnect>(ss_->getSpaceInformation())); 
     }
-    ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);
+    //ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);
 }
 
 bool Tester2D::compareStates(std::vector<double> goal_config, std::vector<double> last_config){
