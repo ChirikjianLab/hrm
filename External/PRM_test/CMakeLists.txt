@@ -100,10 +100,7 @@ target_link_libraries(test_PLANNER_ACS_3D tester "${OMPL_LIB}" "${FCL_LIBRARIES}
 add_executable(test_PLANNER_FCL_3D ${PROJECT_SOURCE_DIR}/src/PLANNER_test_FCL_3D.cpp)
 target_link_libraries(test_PLANNER_FCL_3D tester "${OMPL_LIB}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
-#add_executable(test_NLS1 ${PROJECT_SOURCE_DIR}/src/NonLinearSolver1.cpp)
-#target_link_libraries(test_NLS1 "${CCD_LIBRARIES}")
-
-#add_executable(test_NLS2 ${PROJECT_SOURCE_DIR}/src/NonLinearSolver2.cpp)
-#target_link_libraries(test_NLS2 "${CCD_LIBRARIES}")
+add_executable(test_sampler ${PROJECT_SOURCE_DIR}/src/sampler_test.cpp)
+target_link_libraries(test_sampler "${OMPL_LIB}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 

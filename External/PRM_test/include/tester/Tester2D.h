@@ -20,7 +20,6 @@
 #include <string>
 
 #include <unsupported/Eigen/Polynomials>
-#include <util/plannerUtil.h>
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 
 //#include "geometry/SuperEllipse.h"

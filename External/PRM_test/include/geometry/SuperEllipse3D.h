@@ -1,3 +1,6 @@
+#ifndef IS_SUPERELLIPSOID_H
+#define IS_SUPERELLIPSOID_H
+
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include <vector>
@@ -33,3 +36,5 @@ class SuperEllipse3D{
     void initQuaternion();
     void setQuaternion(Quaterniond q_);
 };
+
+#endif

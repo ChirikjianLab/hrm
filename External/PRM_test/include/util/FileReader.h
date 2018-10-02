@@ -1,3 +1,6 @@
+#ifndef IS_FILEREADER_H
+#define IS_FILEREADER_H
+
 #include <vector>
 #include <math.h>
 #include <iostream>
@@ -11,3 +14,5 @@ class FileReader{
        vector<vector<double>> parse2DCsvFile(string inputFileName); 
 
 };
+
+#endif

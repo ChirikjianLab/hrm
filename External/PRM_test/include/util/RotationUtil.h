@@ -1,3 +1,6 @@
+#ifndef IS_ROTATION_UTIL_H
+#define IS_ROTATION_UTIL_H
+
 #include <vector>
 #include <math.h>
 #include <iostream>
@@ -23,3 +26,5 @@ class RotationUtil{
         Quaterniond getQuaternionfromAngleAxis(double x_, double y_, double z_, double theta_);  
 
 };
+
+#endif
