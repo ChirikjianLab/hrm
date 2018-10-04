@@ -1,5 +1,8 @@
+#Sampler tester
+./test_sampler /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/endPts.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/robotConfig.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/arenaConfig.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/obsConfig.csv 1 5
+
 #ACS
-./test_PLANNER_ACS_2D /home/karen/Documents/PRM_test/config/endPts.csv /home/karen/Documents/PRM_test/config/robotConfig.csv /home/karen/Documents/PRM_test/config/arenaConfig.csv /home/karen/Documents/PRM_test/config/obsConfig.csv 1 5
+./test_PLANNER_ACS_2D /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/endPts.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/robotConfig.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/arenaConfig.csv /home/karen/Documents/Repositories/HighwayRoadMap/External/PRM_test/config/obsConfig.csv 1 5
 
 #ACSmb
 ./test_PLANNER_ACS_mb2D /home/karen/Documents/PRM_test/config/endPts.csv /home/karen/Documents/PRM_test/config/robotConfig.csv /home/karen/Documents/PRM_test/config/arenaConfig.csv /home/karen/Documents/PRM_test/config/obsConfig.csv 1 5
