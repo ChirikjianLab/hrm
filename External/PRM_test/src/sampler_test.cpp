@@ -29,6 +29,16 @@ using namespace std;
 #define pi 3.1415926
 #define sgn(v) ( ( (v) < 0 ) ? -1 : ( (v) > 0 ) )
 
+// return an obstacle-based sampler
+ ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
+ {
+     // we can perform any additional setup / configuration of a sampler here,
+     // but there is nothing to tweak in case of the ObstacleBasedValidStateSampler.
+     return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
+ }
+ 
+
+
 class SuperEllipse{
 public:
     /* Parameters of superellipse
@@ -219,9 +229,9 @@ public:
 
         std::cout << "Planning..."<< std::endl;
         
-        ss_.getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);     
-        auto planner(std::make_shared<og::PRM>(ss_.getSpaceInformation()));
-        ss_.setPlanner(planner);
+        ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);     
+        //auto planner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
+        //ss_->setPlanner(planner);
 
         ob::PlannerStatus solved = ss_->solve(200);
 
@@ -544,12 +554,4 @@ int main(int argc, char ** argv){
     return 0;
 }
  
- // return an obstacle-based sampler
- ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
- {
-     // we can perform any additional setup / configuration of a sampler here,
-     // but there is nothing to tweak in case of the ObstacleBasedValidStateSampler.
-     return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
- }
  
-
