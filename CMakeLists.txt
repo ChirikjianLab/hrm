@@ -55,8 +55,8 @@ set(SOURCE
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
 
-add_executable(test_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
-target_link_libraries(test_PRM_ACS_2D "${OMPL_TEST}")
+add_executable(test_PLANNER_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
+target_link_libraries(test_PLANNER_ACS_2D "${OMPL_TEST}")
 
 add_executable(test_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_2D.cpp)
 target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")

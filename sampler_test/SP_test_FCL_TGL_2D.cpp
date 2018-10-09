@@ -355,7 +355,7 @@ class PRMtester{
         }
 
       std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(100);
+      ob::PlannerStatus solved = ss_->solve(60);
 
       /*Getting times*/
       //flag = int(solved.operator bool());
@@ -701,10 +701,10 @@ int main(int argc, char ** argv){
     }   
 
     //Reading meshes
-    robot_parts[0].readingVerticesNTriangles(argv[7], argv[8]);  
-    arena_parts[0].readingVerticesNTriangles(argv[9], argv[10]);  
+    robot_parts[0].readingVerticesNTriangles(argv[8], argv[9]);
+    arena_parts[0].readingVerticesNTriangles(argv[10], argv[11]);
     for(int i=0;i<obstacles.size();i++){
-        int index = (i*2) +11;
+        int index = (i*2) +12;
         obstacles[i].readingVerticesNTriangles(argv[index], argv[index+1]);
         //obstacles[i].printTrianglesVertices();
     }
