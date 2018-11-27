@@ -46,12 +46,18 @@ classdef SuperQuadrics
                 error('Length exponent not equal to 2!')
             else
                 obj.a     = val{1};
-                obj.q     = val{2}';
+                
+                if size(val{2},2) ~= 4
+                    obj.q = val{2}';
+                else
+                    obj.q = val{2};
+                end
+                
                 obj.tc    = val{3};
                 obj.eps   = val{4};
                 obj.N     = val{5};
                 obj.color = color;
-                [obj.omega, obj.eta] = meshgrid(0:2*pi/(obj.N-1):2*pi,...
+                [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
                     0:2*pi/(obj.N-1):2*pi);
             end
         end
@@ -103,6 +109,10 @@ classdef SuperQuadrics
 
         %% ---------------------------------------------------------------%
         function pnt = GetPoints(objSQ)
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            end
+            
             % Generate N interpolated points of the given superquadrics   
             x = objSQ.a(1).*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
                 .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos');
@@ -121,6 +131,10 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function PlotShape(objSQ)
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            end
+            
             % Plot the superquadrics given the No. of points and fill color
             pnt = GetPoints(objSQ);
             
@@ -136,6 +150,12 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function PlotMinkowskiShape(objSQ, objE, K)
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            elseif (size(objE.q,1) == 4) && (size(objE.q,2) ~= 4)
+                objE.q = objE.q';
+            end
+            
             % Plot the Mink boundary given the No. of points and fill color           
             pnt = MinkowskiSum_3D_ES(objSQ, objE, K);
             

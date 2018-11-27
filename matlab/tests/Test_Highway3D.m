@@ -5,14 +5,14 @@ initAddpath();
 
 disp('Initialization');
 % Environment
-[arena, obs] = environment3D(21);
+[arena, obs] = environment3D(22);
 % Robot: Only plan face
 [robot, EndPts] = robotInit3D();
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 1;
-option.N_dx = 50;
+option.N_layers = 5;
+option.N_dx = 10;
 option.N_dy = 5;
 option.sampleNum = 10;
 
@@ -41,6 +41,7 @@ highway = HighwayRoadmap3D(robot, EndPts, arena, obs, option);
 
 tic;
 highway.MultiLayers();
+highway.ConnectBtwLayers();
 highway.Dijkstra();
 toc;
 

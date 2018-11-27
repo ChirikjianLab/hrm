@@ -98,7 +98,7 @@ classdef HighwayRoadmap3D < handle
             % Vertices (6 dof): [x; y; z; q1; q2; q3; q4];
             Obj.Graph.V = [];
             
-            % -- TEST: one random orientation --
+            % -- TEST: random orientations --
             Obj.q_r = rand(4,Obj.N_layers);
             
             % CF_Cell: Cell structure to store vertices
@@ -130,7 +130,65 @@ classdef HighwayRoadmap3D < handle
         
         %% Connect vertices among adjacent C-layers
         function ConnectBtwLayers(Obj)
+            % Initialize Vertex array and Adjacency matrix, proallocate
+            % size to speed up value assignment process
+            num = size(Obj.Graph.V,2);
+            Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, zeros(num,num));
+            Obj.Graph.V = [Obj.Graph.V nan(size(Obj.Graph.V))];
             
+            start = 1;
+            numAddVtx = num;
+            for l = 1:Obj.N_layers
+                % Finding vertices only in adjacent layers
+                N_V_l1 = Obj.N_v_layer(2,l);
+                V1 = Obj.Graph.V(1:3,start:N_V_l1);
+                
+                if l == Obj.N_layers
+%                     N_V_l2 = Obj.N_v_layer(2,1);
+%                     V2 = Obj.Graph.V(1:3,1:N_V_l2);
+                    continue;
+                else
+                    N_V_l2 = Obj.N_v_layer(2,l+1);
+                    V2 = Obj.Graph.V(1:3,N_V_l1+1:N_V_l2);
+                end
+                
+                % Determine whether two vertices can be connected
+                for m = 1:size(V1,2)
+                    % Search to find closest point
+                    j1 = m+start-1;
+                    
+                    for n = 1:size(V2,2)
+                        if norm(V1(:,m) - V2(:,n)) > 1
+                            continue;
+                        end
+                        j2 = n + N_V_l1;
+                        
+%                         [judge, midVtx] = Obj.IsConnectPoly(Obj.Graph.V(:,j1), Obj.Graph.V(:,j2));
+                        judge = 1;
+                        midVtx = 1/2*(Obj.Graph.V(:,j1)+Obj.Graph.V(:,j2));
+                        if judge
+                            % If a middle vertex is found,
+                            % append middle vertex to V and adjMat
+                            numAddVtx = numAddVtx+1;
+                            Obj.Graph.V(:,numAddVtx) = midVtx;
+                            Obj.Graph.AdjMat(numAddVtx, j1) = 1;
+                            Obj.Graph.AdjMat(j1, numAddVtx) = 1;
+                            Obj.Graph.AdjMat(numAddVtx, j2) = 1;
+                            Obj.Graph.AdjMat(j2, numAddVtx) = 1;
+                            
+                            %%%%%%%%%%%%%%%%%%%
+                            if Obj.PlotSingleLayer
+                                plot3([Obj.Graph.V(1,j1) Obj.Graph.V(1,numAddVtx)], [Obj.Graph.V(2,j1) Obj.Graph.V(2,numAddVtx)],...
+                                    [Obj.Graph.V(3,j1) Obj.Graph.V(3,numAddVtx)], 'b-', 'LineWidth', 5)
+                                plot3([Obj.Graph.V(1,j2) Obj.Graph.V(1,numAddVtx)], [Obj.Graph.V(2,j2) Obj.Graph.V(2,numAddVtx)],...
+                                    [Obj.Graph.V(3,j2) Obj.Graph.V(3,numAddVtx)], 'b-', 'LineWidth', 5)
+                            end
+                            %%%%%%%%%%%%%%%%%%%
+                        end
+                    end
+                end
+                start = N_V_l1+1;
+            end
         end
         
         
@@ -379,11 +437,13 @@ classdef HighwayRoadmap3D < handle
                 .*(repmat(Obj.EndPts(:,2), 1, N_V)-V)));
             
             % Find the connecting path
-            [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V(1:3,:)',...
+            [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V',...
                 Obj.I_start, Obj.I_goal);
+            
+            Obj.Graph.V(:,Obj.Paths)
+            
             if isnan(Obj.Paths)
-                disp('No Valid Path found!');
-                return;
+                error('No Valid Path found!');
             end
         end
         
