@@ -15,7 +15,7 @@ endPts = load(['../../config/', 'endPts.csv']);
 figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
-opt = 24;
+opt = 21;
 [ar, obs, pts] = environment(opt);
 
 % start and goal
@@ -63,7 +63,7 @@ plot(goal(1), goal(2), 'gd', 'LineWidth', 3);
 
 %% OMPL planners
 % Robot motions
-path_prm = load([loadPath, 'prm_path.csv']);
+path_prm = load([loadPath, 'prm_smooth_path.csv']);
 state_prm = load([loadPath, 'prm_state.csv']);
 edge_prm = load([loadPath, 'prm_edge.csv']);
 smooth_path_prm = load([loadPath, 'prm_smooth_path.csv']);
