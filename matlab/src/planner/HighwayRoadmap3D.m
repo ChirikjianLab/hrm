@@ -99,7 +99,7 @@ classdef HighwayRoadmap3D < handle
             Obj.Graph.V = [];
             
             % -- TEST: random orientations --
-            Obj.q_r = ones(4,Obj.N_layers);
+            Obj.q_r = Obj.sampleSO3();
             
             % CF_Cell: Cell structure to store vertices
             CF_Cell = cell(Obj.N_layers,1);
@@ -884,6 +884,32 @@ classdef HighwayRoadmap3D < handle
             if size(q,1) == 1 && size(q,2) == 4
                 q = q';
             end
+        end
+        
+        %% Samples from SO(3)
+        function q = sampleSO3(Obj)
+            N = Obj.N_layers;
+            
+            % Identity rotation
+            e = [0;1;0;0];
+            
+            % Uniform random samples for Quaternions
+            u = 0.5*[ones(1,N);rand(2,N)];
+            q = nan(4,N);
+            dist = nan(1,N);
+            for i = 1:N
+                q(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
+                          sqrt(1-u(1,i))*cos(2*pi*u(2,i));
+                          sqrt(u(1,i))*sin(2*pi*u(3,i));
+                          sqrt(u(1,i))*cos(2*pi*u(3,i))];
+                      
+                dist(i) = norm(q(:,i)-e);
+            end
+            
+            % Sort with respect to Identity
+            [~,idx] = sort(dist);
+            q = q(:,idx);
+            
         end
     end
     

@@ -14,11 +14,11 @@ disp('Initialization');
 load('highway3D.mat');
 
 %% Options for building the roadmap
-option.infla = 0.2;
+option.infla = 0.1;
 option.N_layers = 20;
 option.N_dx = 10;
 option.N_dy = 5;
-option.sampleNum = 10;
+option.sampleNum = 100;
 
 % plot options
 option.plots.Lim = [80 50 40];
