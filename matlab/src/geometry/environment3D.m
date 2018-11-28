@@ -89,12 +89,12 @@ No = 100;  % # of pnts on the superquadric obstacles
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s
     arena(i) = SuperQuadrics({a_s(:,i), q_s(:,i), tc_s(:,i),...
-        eps_s(:,i), Ns}, 'w');
+        eps_s(:,i), Ns}, 'w', 0);
 end
 
 for i = 1:N_o
     obs(i) = SuperQuadrics({a_o(:,i), q_o(:,i), tc_o(:,i),...
-        eps_o(:,i), No}, 'k');
+        eps_o(:,i), No}, 'k', 0);
 end
 
 %% == Plot obstacle(s), arena(s) =====

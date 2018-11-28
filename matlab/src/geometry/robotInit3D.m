@@ -1,4 +1,4 @@
-function [robot, EndPts] = robotInit3D()
+function [robot, EndPts] = robotInit3D(Hhc_path)
 %% == Construct Robot and Plot Start and Goal Poses ==
 
 % Construct object of robot using SuperQuadrics objects
@@ -21,7 +21,7 @@ q_start = [pi/3; 0.2;0.1;0.4];
 tc_goal  = [ 50;-20; 10];
 q_goal = [-pi/10; -0.16;0.17;0.24];
 
-robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b');
+robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.1, Hhc_path);
 
 EndPts = [[tc_start; q_start],[tc_goal; q_goal]];
 

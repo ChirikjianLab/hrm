@@ -99,7 +99,7 @@ classdef HighwayRoadmap3D < handle
             Obj.Graph.V = [];
             
             % -- TEST: random orientations --
-            Obj.q_r = rand(4,Obj.N_layers);
+            Obj.q_r = ones(4,Obj.N_layers);
             
             % CF_Cell: Cell structure to store vertices
             CF_Cell = cell(Obj.N_layers,1);
@@ -138,6 +138,7 @@ classdef HighwayRoadmap3D < handle
             
             start = 1;
             numAddVtx = num;
+            numConnect = 0;
             for l = 1:Obj.N_layers
                 % Finding vertices only in adjacent layers
                 N_V_l1 = Obj.N_v_layer(2,l);
@@ -163,10 +164,19 @@ classdef HighwayRoadmap3D < handle
                         end
                         j2 = n + N_V_l1;
                         
-%                         [judge, midVtx] = Obj.IsConnectPoly(Obj.Graph.V(:,j1), Obj.Graph.V(:,j2));
-                        judge = 1;
-                        midVtx = 1/2*(Obj.Graph.V(:,j1)+Obj.Graph.V(:,j2));
+                        V1p(1:3,1) = Obj.Graph.V(1:3,j1);
+                        V1p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j1));
+                        V2p(1:3,1) = Obj.Graph.V(1:3,j2);
+                        V2p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j2));
+
+                        [judge, midVtxp] = Obj.IsConnectPoly(V1p,V2p);
+       
+%                         judge = 1;
+%                         midVtx = 1/2*(Obj.Graph.V(:,j1)+Obj.Graph.V(:,j2));
                         if judge
+                            midVtx(1:3) = midVtxp(1:3);
+                            midVtx(4:7) = Obj.twist2quat(midVtxp(4:6));
+                            
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
                             numAddVtx = numAddVtx+1;
@@ -176,6 +186,7 @@ classdef HighwayRoadmap3D < handle
                             Obj.Graph.AdjMat(numAddVtx, j2) = 1;
                             Obj.Graph.AdjMat(j2, numAddVtx) = 1;
                             
+                            numConnect = numConnect+1;
                             %%%%%%%%%%%%%%%%%%%
                             if Obj.PlotSingleLayer
                                 plot3([Obj.Graph.V(1,j1) Obj.Graph.V(1,numAddVtx)], [Obj.Graph.V(2,j1) Obj.Graph.V(2,numAddVtx)],...
@@ -189,6 +200,7 @@ classdef HighwayRoadmap3D < handle
                 end
                 start = N_V_l1+1;
             end
+            numConnect
         end
         
         
@@ -440,11 +452,11 @@ classdef HighwayRoadmap3D < handle
             [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V',...
                 Obj.I_start, Obj.I_goal);
             
-            Obj.Graph.V(:,Obj.Paths)
-            
             if isnan(Obj.Paths)
-                error('No Valid Path found!');
+                disp('No Valid Path found!');
+                return;
             end
+            Obj.Graph.V(:,Obj.Paths)
         end
         
         %% --------------- Plot the Valid Path ----------------------------
@@ -794,6 +806,84 @@ classdef HighwayRoadmap3D < handle
                 
             end
             x_o_Ex = sort(x_o_Ex,2);
+        end
+        
+        %% Vertex connection between adjacent layers
+        % Convex Polyhedron Local C-space
+        function [judge, vtx] = IsConnectPoly(Obj, V1, V2)
+            judge = 0;
+            vtx = [];
+            
+            aa = Obj.polyVtx.lim(1);
+            bb = Obj.polyVtx.lim(2);
+            cc = Obj.polyVtx.lim(3);
+            tha = Obj.polyVtx.lim(4);
+            thb = Obj.polyVtx.lim(5);
+            thc = Obj.polyVtx.lim(6);
+            
+            % Efficient point-in-polyhedron-intersection check
+            % initial samples
+            pnt = ones(7,Obj.sampleNum);
+            
+            pnt(1:6,:) = [aa*(2*rand(1,Obj.sampleNum)-1);...
+                          bb*(2*rand(1,Obj.sampleNum)-1);...
+                          cc*(2*rand(1,Obj.sampleNum)-1);...
+                          tha*(2*rand(1,Obj.sampleNum)-1);...
+                          thb*(2*rand(1,Obj.sampleNum)-1);...
+                          thc*(2*rand(1,Obj.sampleNum)-1)];
+            
+            % find points inside polyhedron 1
+            in1 = zeros(1,Obj.sampleNum);
+            % check points inside the decomposed simplexes
+            for j = 1:size(Obj.polyVtx.invMat,3)
+                alpha = Obj.polyVtx.invMat(:,:,j) * pnt;
+                in1 = in1 + (all(alpha>=0,1) & all(alpha<=1,1));
+            end
+            validPnt = pnt(1:6,(in1>0));
+            
+            % change coordinate to polyhedron 2
+            if size(validPnt,2) == 0
+                return;
+            else
+                vtx1 = validPnt + V1;
+                vtx2 = ones(7,size(vtx1,2));
+                vtx2(1:6,:) = vtx1 - V2;
+            end
+            
+            % find points inside polyhedron 2
+            in2 = zeros(1,size(vtx1,2));
+            for j = 1:size(Obj.polyVtx.invMat,3)
+                alpha = Obj.polyVtx.invMat(:,:,j) * vtx2;
+                in2 = in2 + (all(alpha>=0,1) & all(alpha<=1,1));
+            end
+            validVtx = vtx1(:,(in2>0));
+            
+            % return results
+            if size(validVtx,2) == 0
+                return;
+            else
+                judge = 1;
+                vtx = validVtx(:,1);
+            end
+        end
+        
+        %% Transfers between Quaternion and Twist coord
+        function t = quat2twist(Obj,q)
+            if size(q,1) == 4 && size(q,2) == 1
+                q = q';
+            end
+            
+            R = quat2rotm(q);
+            t = vex(logm(R));
+        end
+        
+        function q = twist2quat(Obj,t)
+            R = expm(skew(t));
+            q = rotm2quat(R);
+            
+            if size(q,1) == 1 && size(q,2) == 4
+                q = q';
+            end
         end
     end
     

@@ -4,14 +4,18 @@ clear; close all; clc;
 initAddpath();
 
 disp('Initialization');
-% Environment
-[arena, obs] = environment3D(22);
-% Robot: Only plan face
-[robot, EndPts] = robotInit3D();
+% tic;
+% % Environment
+% [arena, obs] = environment3D(22);
+% % Robot: Only plan face
+% [robot, EndPts] = robotInit3D('../include/Hhc_3D.mat');
+% toc;
+
+load('highway3D.mat');
 
 %% Options for building the roadmap
-option.infla = 0.1;
-option.N_layers = 5;
+option.infla = 0.2;
+option.N_layers = 20;
 option.N_dx = 10;
 option.N_dy = 5;
 option.sampleNum = 10;
