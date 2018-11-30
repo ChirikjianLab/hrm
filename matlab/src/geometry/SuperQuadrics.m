@@ -28,7 +28,7 @@ classdef SuperQuadrics
     methods
         %% Constructor
         % Use 5D cell to contruct the object
-        function obj = SuperQuadrics(val, color, infla, Hhc_path)
+        function obj = SuperQuadrics(val, color, infla, vargin)
             %SUPERELLIPSE: construct class object
             if nargin < 3
                 error('No. of inputs not correct.')
@@ -62,7 +62,7 @@ classdef SuperQuadrics
                 
                 obj.infla = infla;
                 if infla > 0
-                    obj.polyVtx = obj.LocalCSpace_PCG3(Hhc_path);
+                    obj.polyVtx = obj.LocalCSpace_PCG3(vargin);
                 end
             end
         end
@@ -113,29 +113,44 @@ classdef SuperQuadrics
         end
         
         %% Generate Local C-Space using KC
-        function polyVtx = LocalCSpace_PCG3(obj, Hhc_path)
+        function polyVtx = LocalCSpace_PCG3(obj, vargin)
             % Parameters
             epi = obj.infla;
             ra = obj.a;
             rb = ra*(epi+1);
             
-            % H, h, c symbolic expressions
-            Hhc_3D = load(Hhc_path);
-            Hhc_3D = Hhc_3D.Hhc_3D;
+            opt = vargin.opt;
+            vtx = [];
             
-            % Find extreme vertices with largest magnitude in c-space
-            [Z_max, ~] = KC_Extreme_3d(ra, epi+1, Hhc_3D);
-            vtx = Z_max;
-            
-            % Finding c, closed-form solution (maximum rotational angle)
-            ratio = [ra(2)/ra(3);ra(1)/ra(3);ra(1)/ra(2)];
-            axis_extreme = zeros(length(ratio),1);
-            for i = 1:length(ratio)
-                % Rotational axis
-                axis_extreme(i) = maxAngle(ratio(i), epi);
-                
-                % Translational axis
-                axis_extreme(i+length(ratio)) = rb(i)-ra(i);
+            switch opt
+                case 'full'
+                    % H, h, c symbolic expressions
+                    Hhc_3D = load(vargin.Hhc_path);
+                    Hhc_3D = Hhc_3D.Hhc_3D;
+                    
+                    % Find extreme vertices with largest magnitude in c-space
+                    [Z_max, ~] = KC_Extreme_3d(ra, epi+1, Hhc_3D);
+                    vtx = [vtx; Z_max];
+                    
+                    % Finding c, closed-form solution (maximum rotational angle)
+                    ratio = [ra(2)/ra(3);ra(1)/ra(3);ra(1)/ra(2)];
+                    axis_extreme = zeros(length(ratio),1);
+                    for i = 1:length(ratio)
+                        % Rotational axis
+                        axis_extreme(i) = maxAngle(ratio(i), epi);
+                        
+                        % Translational axis
+                        axis_extreme(i+length(ratio)) = rb(i)-ra(i);
+                    end
+                    
+                case 'rotation'
+                    % local c-space for rotation only
+                    % Finding c, closed-form solution (maximum rotational angle)
+                    ratio = [ra(2)/ra(3);ra(1)/ra(3);ra(1)/ra(2)];
+                    axis_extreme = zeros(length(ratio),1);
+                    for i = 1:length(ratio)
+                        axis_extreme(i) = maxAngle(ratio(i), epi);
+                    end
             end
             
             Z_end = zeros(2*length(axis_extreme), length(axis_extreme));

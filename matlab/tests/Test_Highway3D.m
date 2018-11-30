@@ -4,24 +4,27 @@ clear; close all; clc;
 initAddpath();
 
 disp('Initialization');
-% tic;
-% % Environment
-% [arena, obs] = environment3D(22);
-% % Robot: Only plan face
-% [robot, EndPts] = robotInit3D('../include/Hhc_3D.mat');
-% toc;
+tic;
+% Environment
+[arena, obs] = environment3D(22);
+% Robot: Only plan face
+vargin.opt = 'rotation';
+vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-load('highway3D.mat');
+[robot, EndPts] = robotInit3D(vargin);
+toc;
+
+% load('highway3D.mat');
 
 %% Options for building the roadmap
 option.infla = 0.1;
 option.N_layers = 20;
 option.N_dx = 10;
-option.N_dy = 5;
-option.sampleNum = 100;
+option.N_dy = 10;
+option.sampleNum = 10;
 
 % plot options
-option.plots.Lim = [80 50 40];
+option.plots.Lim = [65 35 25];
 option.plots.isplot = 1;
 option.plots.D_layers = 20;
 

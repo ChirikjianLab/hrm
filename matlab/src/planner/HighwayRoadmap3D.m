@@ -166,16 +166,18 @@ classdef HighwayRoadmap3D < handle
                         
                         V1p(1:3,1) = Obj.Graph.V(1:3,j1);
                         V1p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j1));
-                        V2p(1:3,1) = Obj.Graph.V(1:3,j2);
+                        V2p(1:3,1) = Obj.Graph.V(1:3,j1);
                         V2p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j2));
 
                         [judge, midVtxp] = Obj.IsConnectPoly(V1p,V2p);
        
 %                         judge = 1;
-%                         midVtx = 1/2*(Obj.Graph.V(:,j1)+Obj.Graph.V(:,j2));
+
                         if judge
                             midVtx(1:3) = midVtxp(1:3);
                             midVtx(4:7) = Obj.twist2quat(midVtxp(4:6));
+%                             midVtx(1:3) = Obj.Graph.V(1:3,j1);
+%                             midVtx(4:7) = Obj.Graph.V(4:7,j1);
                             
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
@@ -296,9 +298,9 @@ classdef HighwayRoadmap3D < handle
                                             A_connect_new(I2(k2), I1(k)) = 1;
                                             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                             if Obj.PlotSingleLayer
-                                                plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
-                                                    [V_new(2,I1(k)) V_new(2,I2(k2))],...
-                                                    [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                                 plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
+%                                                     [V_new(2,I1(k)) V_new(2,I2(k2))],...
+%                                                     [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                             end
                                             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         end
@@ -373,9 +375,9 @@ classdef HighwayRoadmap3D < handle
                                     A_connect_XY(I2(k2), I1(k)) = 1;
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     if Obj.PlotSingleLayer
-                                        plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-                                            [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-                                            [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                         plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+%                                             [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+%                                             [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                     end
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 end
@@ -417,9 +419,9 @@ classdef HighwayRoadmap3D < handle
                                         A_connect_XY(I2(k2), I1(k)) = 1;
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         if Obj.PlotSingleLayer
-                                            plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-                                                [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-                                                [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                             plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+%                                                 [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+%                                                 [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                         end
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     end
@@ -543,14 +545,16 @@ classdef HighwayRoadmap3D < handle
             CF_cellXY = cell(Obj.N_dx, 2);
             
             % the increment along the x axis
-            min_x = min(bd_s(1,:));
-            max_x = max(bd_s(1,:));
+%             min_x = min(bd_s(1,:));
+%             max_x = max(bd_s(1,:));
+            min_x = -Obj.Lim(1); max_x = Obj.Lim(1);
             delta_x = (max_x-min_x)/(Obj.N_dx-1);
             tx = min_x:delta_x:max_x;
             
             % Increment along the y axis
-            min_y = min(bd_s(2,:));
-            max_y = max(bd_s(2,:));
+%             min_y = min(bd_s(2,:));
+%             max_y = max(bd_s(2,:));
+            min_y = -Obj.Lim(2); max_y = Obj.Lim(2);
             delta_y = (max_y-min_y)/(Obj.N_dy-1);
             ty = min_y:delta_y:max_y;
             
@@ -812,42 +816,35 @@ classdef HighwayRoadmap3D < handle
         % Convex Polyhedron Local C-space
         function [judge, vtx] = IsConnectPoly(Obj, V1, V2)
             judge = 0;
-            vtx = [];
+            vtx = nan(6,1);
+            vtx(1:3) = V1(1:3);
             
-            aa = Obj.polyVtx.lim(1);
-            bb = Obj.polyVtx.lim(2);
-            cc = Obj.polyVtx.lim(3);
-            tha = Obj.polyVtx.lim(4);
-            thb = Obj.polyVtx.lim(5);
-            thc = Obj.polyVtx.lim(6);
+            axisLim = Obj.polyVtx.lim;
             
             % Efficient point-in-polyhedron-intersection check
             % initial samples
-            pnt = ones(7,Obj.sampleNum);
+            rot = ones(4,Obj.sampleNum);
             
-            pnt(1:6,:) = [aa*(2*rand(1,Obj.sampleNum)-1);...
-                          bb*(2*rand(1,Obj.sampleNum)-1);...
-                          cc*(2*rand(1,Obj.sampleNum)-1);...
-                          tha*(2*rand(1,Obj.sampleNum)-1);...
-                          thb*(2*rand(1,Obj.sampleNum)-1);...
-                          thc*(2*rand(1,Obj.sampleNum)-1)];
+            for i = 1:3
+                rot(i,:) = axisLim(i)*(2*rand(1,Obj.sampleNum)-1);
+            end
             
             % find points inside polyhedron 1
             in1 = zeros(1,Obj.sampleNum);
             % check points inside the decomposed simplexes
             for j = 1:size(Obj.polyVtx.invMat,3)
-                alpha = Obj.polyVtx.invMat(:,:,j) * pnt;
+                alpha = Obj.polyVtx.invMat(:,:,j) * rot;
                 in1 = in1 + (all(alpha>=0,1) & all(alpha<=1,1));
             end
-            validPnt = pnt(1:6,(in1>0));
+            validRot = rot(1:3,(in1>0));
             
             % change coordinate to polyhedron 2
-            if size(validPnt,2) == 0
+            if size(validRot,2) == 0
                 return;
             else
-                vtx1 = validPnt + V1;
-                vtx2 = ones(7,size(vtx1,2));
-                vtx2(1:6,:) = vtx1 - V2;
+                vtx1 = validRot + V1(4:6);
+                vtx2 = ones(4,size(vtx1,2));
+                vtx2(1:3,:) = vtx1 - V2(4:6);
             end
             
             % find points inside polyhedron 2
@@ -863,7 +860,7 @@ classdef HighwayRoadmap3D < handle
                 return;
             else
                 judge = 1;
-                vtx = validVtx(:,1);
+                vtx(4:6) = validVtx(:,1);
             end
         end
         
