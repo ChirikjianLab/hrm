@@ -443,12 +443,12 @@ classdef HighwayRoadmap3D < handle
             % goal and there's a lot of room for improving the computation
             % time of this process
             A_connect = Obj.Graph.AdjMat;
-            V = Obj.Graph.V;
+            V = Obj.Graph.V(1:3,:);
             N_V = size(V, 2);
-            [~, Obj.I_start] = min(sum((repmat(Obj.EndPts(:,1), 1, N_V)-V)...
-                .*(repmat(Obj.EndPts(:,1), 1, N_V)-V)));
-            [~, Obj.I_goal] = min(sum((repmat(Obj.EndPts(:,2), 1, N_V)-V)...
-                .*(repmat(Obj.EndPts(:,2), 1, N_V)-V)));
+            [~, Obj.I_start] = min(sum((repmat(Obj.EndPts(1:3,1), 1, N_V)-V)...
+                .*(repmat(Obj.EndPts(1:3,1), 1, N_V)-V)));
+            [~, Obj.I_goal] = min(sum((repmat(Obj.EndPts(1:3,2), 1, N_V)-V)...
+                .*(repmat(Obj.EndPts(1:3,2), 1, N_V)-V)));
             
             % Find the connecting path
             [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V',...
@@ -888,10 +888,10 @@ classdef HighwayRoadmap3D < handle
             N = Obj.N_layers;
             
             % Identity rotation
-            e = [0;1;0;0];
+            e = [0;0;0;1];
             
             % Uniform random samples for Quaternions
-            u = 0.5*[ones(1,N);rand(2,N)];
+            u = 0.4*[ones(1,N);rand(2,N)];
             q = nan(4,N);
             dist = nan(1,N);
             for i = 1:N

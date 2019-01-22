@@ -18,7 +18,7 @@ toc;
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 20;
+option.N_layers = 50;
 option.N_dx = 10;
 option.N_dy = 10;
 option.sampleNum = 10;
