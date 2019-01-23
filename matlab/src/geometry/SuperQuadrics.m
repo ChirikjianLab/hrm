@@ -181,7 +181,7 @@ classdef SuperQuadrics
             yy = reshape(y, 1, m*n);
             zz = reshape(z, 1, m*n);
             
-            pnt = objSQ.exp2rotm(objSQ.q)*[xx;yy;zz] + repmat(objSQ.tc,1,m*n);
+            pnt = objSQ.exp2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
         end
         
         %% ---------------------------------------------------------------%
@@ -231,10 +231,6 @@ classdef SuperQuadrics
         
         %% Exponential coordinate transformations
         function R = exp2rotm(Obj, q)
-            if norm(q) > 1
-                q = q/norm(q);
-            end
-            
             R = expm(skew(q));
         end
         

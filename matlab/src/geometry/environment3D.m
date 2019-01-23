@@ -61,18 +61,39 @@ elseif opt == 22 % Superquadrics cluttered
              [.1;.85]];
     
 elseif opt == 23 % Superellipse Maze
-    ra_s = 70; rb_s = 40; ang_s = 0;
-    tx_s = 0; ty_s = 0;
-    eps_s = 0.1;
+    % Arena
+    ra_s = 70; 
+    rb_s = 40;
+    rc_s = 30;
     
-    % superquadric obstacles
-    ra_o  = [10 12 10  8 40  6 22];
-    rb_o  = [30 25 30 30  5 30 10];
-    ang_o = [ 0  0  0  0  0  0  0];
+    q_s = [0;0;0];
+    tc_s = [0;0;0];
+    eps_s = [0.1;0.1];
     
-    tx_o     = [-60 -31   5  32  22  54 -28];
-    ty_o     = [-10  15 -10   0  35 -10 -30];
-    eps_o    = [0.8 0.2 0.4 0.2 0.2 0.8 0.3];
+    % Obstacles
+    ra_o = [10 10 10 10 30  5  5];
+    rb_o = [15 15 12 12  5  5 35];
+    rc_o = [12 12 30 30  5 30  5];
+    
+    q_o  = pi* [[0; 0; 0],...
+                [0; 0; 0],...
+                [0; 0; 0],...
+                [0; 0; 0],...
+                [0; 0; 0],...
+                [0; 0; 0],...
+                [0; 0; 0]];
+    
+    tx_o  = [-20 -20 -20 -20 40 40 40];
+    ty_o  = [  0   0  25 -25  0  0  0];
+    tz_o  = [ 16 -16   0   0  0  0  0];
+    
+    eps_o = [[.3;.3],...
+             [.3;.3],...
+             [.2;.2],...
+             [.2;.2],...
+             [.2;.2],...
+             [.2;.2],...
+             [.2;.2]];
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -83,8 +104,8 @@ tc_o = [tx_o;ty_o;tz_o];
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Ns = 100;  % # of pnts on the superquadric arena
-No = 100;  % # of pnts on the superquadric obstacles
+Ns = 20;  % # of pnts on the superquadric arena
+No = 20;  % # of pnts on the superquadric obstacles
 
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s
