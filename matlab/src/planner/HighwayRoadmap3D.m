@@ -98,8 +98,8 @@ classdef HighwayRoadmap3D < handle
             % Vertices (6 dof): [x; y; z; q1; q2; q3; q4];
             Obj.Graph.V = [];
             
-            % -- TEST: one random orientation --
-            Obj.q_r = rand(4,Obj.N_layers);
+            % -- TEST: random orientations --
+            Obj.q_r = Obj.sampleSO3();
             
             % CF_Cell: Cell structure to store vertices
             CF_Cell = cell(Obj.N_layers,1);
@@ -130,7 +130,79 @@ classdef HighwayRoadmap3D < handle
         
         %% Connect vertices among adjacent C-layers
         function ConnectBtwLayers(Obj)
+            % Initialize Vertex array and Adjacency matrix, proallocate
+            % size to speed up value assignment process
+            num = size(Obj.Graph.V,2);
+            Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, zeros(num,num));
+            Obj.Graph.V = [Obj.Graph.V nan(size(Obj.Graph.V))];
             
+            start = 1;
+            numAddVtx = num;
+            numConnect = 0;
+            for l = 1:Obj.N_layers
+                % Finding vertices only in adjacent layers
+                N_V_l1 = Obj.N_v_layer(2,l);
+                V1 = Obj.Graph.V(1:3,start:N_V_l1);
+                
+                if l == Obj.N_layers
+%                     N_V_l2 = Obj.N_v_layer(2,1);
+%                     V2 = Obj.Graph.V(1:3,1:N_V_l2);
+                    continue;
+                else
+                    N_V_l2 = Obj.N_v_layer(2,l+1);
+                    V2 = Obj.Graph.V(1:3,N_V_l1+1:N_V_l2);
+                end
+                
+                % Determine whether two vertices can be connected
+                for m = 1:size(V1,2)
+                    % Search to find closest point
+                    j1 = m+start-1;
+                    
+                    for n = 1:size(V2,2)
+                        if norm(V1(:,m) - V2(:,n)) > 1
+                            continue;
+                        end
+                        j2 = n + N_V_l1;
+                        
+                        V1p(1:3,1) = Obj.Graph.V(1:3,j1);
+                        V1p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j1));
+                        V2p(1:3,1) = Obj.Graph.V(1:3,j1);
+                        V2p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j2));
+
+                        [judge, midVtxp] = Obj.IsConnectPoly(V1p,V2p);
+       
+%                         judge = 1;
+
+                        if judge
+                            midVtx(1:3) = midVtxp(1:3);
+                            midVtx(4:7) = Obj.twist2quat(midVtxp(4:6));
+%                             midVtx(1:3) = Obj.Graph.V(1:3,j1);
+%                             midVtx(4:7) = Obj.Graph.V(4:7,j1);
+                            
+                            % If a middle vertex is found,
+                            % append middle vertex to V and adjMat
+                            numAddVtx = numAddVtx+1;
+                            Obj.Graph.V(:,numAddVtx) = midVtx;
+                            Obj.Graph.AdjMat(numAddVtx, j1) = 1;
+                            Obj.Graph.AdjMat(j1, numAddVtx) = 1;
+                            Obj.Graph.AdjMat(numAddVtx, j2) = 1;
+                            Obj.Graph.AdjMat(j2, numAddVtx) = 1;
+                            
+                            numConnect = numConnect+1;
+                            %%%%%%%%%%%%%%%%%%%
+                            if Obj.PlotSingleLayer
+                                plot3([Obj.Graph.V(1,j1) Obj.Graph.V(1,numAddVtx)], [Obj.Graph.V(2,j1) Obj.Graph.V(2,numAddVtx)],...
+                                    [Obj.Graph.V(3,j1) Obj.Graph.V(3,numAddVtx)], 'b-', 'LineWidth', 5)
+                                plot3([Obj.Graph.V(1,j2) Obj.Graph.V(1,numAddVtx)], [Obj.Graph.V(2,j2) Obj.Graph.V(2,numAddVtx)],...
+                                    [Obj.Graph.V(3,j2) Obj.Graph.V(3,numAddVtx)], 'b-', 'LineWidth', 5)
+                            end
+                            %%%%%%%%%%%%%%%%%%%
+                        end
+                    end
+                end
+                start = N_V_l1+1;
+            end
+            numConnect
         end
         
         
@@ -226,9 +298,9 @@ classdef HighwayRoadmap3D < handle
                                             A_connect_new(I2(k2), I1(k)) = 1;
                                             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                             if Obj.PlotSingleLayer
-                                                plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
-                                                    [V_new(2,I1(k)) V_new(2,I2(k2))],...
-                                                    [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                                 plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
+%                                                     [V_new(2,I1(k)) V_new(2,I2(k2))],...
+%                                                     [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                             end
                                             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         end
@@ -303,9 +375,9 @@ classdef HighwayRoadmap3D < handle
                                     A_connect_XY(I2(k2), I1(k)) = 1;
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     if Obj.PlotSingleLayer
-                                        plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-                                            [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-                                            [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                         plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+%                                             [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+%                                             [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                     end
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 end
@@ -347,9 +419,9 @@ classdef HighwayRoadmap3D < handle
                                         A_connect_XY(I2(k2), I1(k)) = 1;
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         if Obj.PlotSingleLayer
-                                            plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-                                                [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-                                                [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+%                                             plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+%                                                 [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+%                                                 [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                         end
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     end
@@ -379,12 +451,14 @@ classdef HighwayRoadmap3D < handle
                 .*(repmat(Obj.EndPts(:,2), 1, N_V)-V)));
             
             % Find the connecting path
-            [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V(1:3,:)',...
+            [Obj.Costs, Obj.Paths] = dijkstra(A_connect, V',...
                 Obj.I_start, Obj.I_goal);
+            
             if isnan(Obj.Paths)
                 disp('No Valid Path found!');
                 return;
             end
+            Obj.Graph.V(:,Obj.Paths)
         end
         
         %% --------------- Plot the Valid Path ----------------------------
@@ -471,14 +545,16 @@ classdef HighwayRoadmap3D < handle
             CF_cellXY = cell(Obj.N_dx, 2);
             
             % the increment along the x axis
-            min_x = min(bd_s(1,:));
-            max_x = max(bd_s(1,:));
+%             min_x = min(bd_s(1,:));
+%             max_x = max(bd_s(1,:));
+            min_x = -Obj.Lim(1); max_x = Obj.Lim(1);
             delta_x = (max_x-min_x)/(Obj.N_dx-1);
             tx = min_x:delta_x:max_x;
             
             % Increment along the y axis
-            min_y = min(bd_s(2,:));
-            max_y = max(bd_s(2,:));
+%             min_y = min(bd_s(2,:));
+%             max_y = max(bd_s(2,:));
+            min_y = -Obj.Lim(2); max_y = Obj.Lim(2);
             delta_y = (max_y-min_y)/(Obj.N_dy-1);
             ty = min_y:delta_y:max_y;
             
@@ -734,6 +810,103 @@ classdef HighwayRoadmap3D < handle
                 
             end
             x_o_Ex = sort(x_o_Ex,2);
+        end
+        
+        %% Vertex connection between adjacent layers
+        % Convex Polyhedron Local C-space
+        function [judge, vtx] = IsConnectPoly(Obj, V1, V2)
+            judge = 0;
+            vtx = nan(6,1);
+            vtx(1:3) = V1(1:3);
+            
+            axisLim = Obj.polyVtx.lim;
+            
+            % Efficient point-in-polyhedron-intersection check
+            % initial samples
+            rot = ones(4,Obj.sampleNum);
+            
+            for i = 1:3
+                rot(i,:) = axisLim(i)*(2*rand(1,Obj.sampleNum)-1);
+            end
+            
+            % find points inside polyhedron 1
+            in1 = zeros(1,Obj.sampleNum);
+            % check points inside the decomposed simplexes
+            for j = 1:size(Obj.polyVtx.invMat,3)
+                alpha = Obj.polyVtx.invMat(:,:,j) * rot;
+                in1 = in1 + (all(alpha>=0,1) & all(alpha<=1,1));
+            end
+            validRot = rot(1:3,(in1>0));
+            
+            % change coordinate to polyhedron 2
+            if size(validRot,2) == 0
+                return;
+            else
+                vtx1 = validRot + V1(4:6);
+                vtx2 = ones(4,size(vtx1,2));
+                vtx2(1:3,:) = vtx1 - V2(4:6);
+            end
+            
+            % find points inside polyhedron 2
+            in2 = zeros(1,size(vtx1,2));
+            for j = 1:size(Obj.polyVtx.invMat,3)
+                alpha = Obj.polyVtx.invMat(:,:,j) * vtx2;
+                in2 = in2 + (all(alpha>=0,1) & all(alpha<=1,1));
+            end
+            validVtx = vtx1(:,(in2>0));
+            
+            % return results
+            if size(validVtx,2) == 0
+                return;
+            else
+                judge = 1;
+                vtx(4:6) = validVtx(:,1);
+            end
+        end
+        
+        %% Transfers between Quaternion and Twist coord
+        function t = quat2twist(Obj,q)
+            if size(q,1) == 4 && size(q,2) == 1
+                q = q';
+            end
+            
+            R = quat2rotm(q);
+            t = vex(logm(R));
+        end
+        
+        function q = twist2quat(Obj,t)
+            R = expm(skew(t));
+            q = rotm2quat(R);
+            
+            if size(q,1) == 1 && size(q,2) == 4
+                q = q';
+            end
+        end
+        
+        %% Samples from SO(3)
+        function q = sampleSO3(Obj)
+            N = Obj.N_layers;
+            
+            % Identity rotation
+            e = [0;1;0;0];
+            
+            % Uniform random samples for Quaternions
+            u = 0.5*[ones(1,N);rand(2,N)];
+            q = nan(4,N);
+            dist = nan(1,N);
+            for i = 1:N
+                q(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
+                          sqrt(1-u(1,i))*cos(2*pi*u(2,i));
+                          sqrt(u(1,i))*sin(2*pi*u(3,i));
+                          sqrt(u(1,i))*cos(2*pi*u(3,i))];
+                      
+                dist(i) = norm(q(:,i)-e);
+            end
+            
+            % Sort with respect to Identity
+            [~,idx] = sort(dist);
+            q = q(:,idx);
+            
         end
     end
     

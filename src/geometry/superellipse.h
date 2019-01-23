@@ -1,5 +1,5 @@
-#ifndef MINKOWSKI_ES_2D_H
-#define MINKOWSKI_ES_2D_H
+#ifndef SUPERELLIPSE_H
+#define SUPERELLIPSE_H
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
@@ -32,4 +32,4 @@ public:
     double expFun(double th, double p, bool func);
 };
 
-#endif // MINKOWSKI_ES_2D_H
+#endif // SUPERELLIPSE_H

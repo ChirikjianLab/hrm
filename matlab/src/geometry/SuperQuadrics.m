@@ -11,10 +11,10 @@ classdef SuperQuadrics
     properties
         a       % semi-axes lengths, 3x1 vector
         q       % quaternion for orientation, 4x1 vector
-        tc      % center, 3x1 vector 
+        tc      % center, 3x1 vector
         eps     % exponent for the signed power function, 2x1 vector
-
-        N       % No. of interpolated points on the perimeter 
+        
+        N       % No. of interpolated points on the perimeter
         color   % fill color of the superellipse
         
         infla   % inflation factor for Kinematics of Containment
@@ -28,9 +28,9 @@ classdef SuperQuadrics
     methods
         %% Constructor
         % Use 5D cell to contruct the object
-        function obj = SuperQuadrics(val, color)
+        function obj = SuperQuadrics(val, color, infla, vargin)
             %SUPERELLIPSE: construct class object
-            if nargin ~= 2
+            if nargin < 3
                 error('No. of inputs not correct.')
             end
             
@@ -46,13 +46,24 @@ classdef SuperQuadrics
                 error('Length exponent not equal to 2!')
             else
                 obj.a     = val{1};
-                obj.q     = val{2}';
+                
+                if size(val{2},2) ~= 4
+                    obj.q = val{2}';
+                else
+                    obj.q = val{2};
+                end
+                
                 obj.tc    = val{3};
                 obj.eps   = val{4};
                 obj.N     = val{5};
                 obj.color = color;
-                [obj.omega, obj.eta] = meshgrid(0:2*pi/(obj.N-1):2*pi,...
+                [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
                     0:2*pi/(obj.N-1):2*pi);
+                
+                obj.infla = infla;
+                if infla > 0
+                    obj.polyVtx = obj.LocalCSpace_PCG3(vargin);
+                end
             end
         end
         
@@ -92,18 +103,90 @@ classdef SuperQuadrics
             gradPhiz = objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'sin')...
                 .* ones(size(objSQ.omega))/objSQ.a(3);
             [m, n] = size(gradPhix);
-            gradPhi = [reshape(gradPhix, 1, m*n); 
-                       reshape(gradPhiy, 1, m*n); 
-                       reshape(gradPhiz, 1, m*n)];
-
+            gradPhi = [reshape(gradPhix, 1, m*n);
+                reshape(gradPhiy, 1, m*n);
+                reshape(gradPhiz, 1, m*n)];
+            
             % Closed-Form Minkowski Sum/Difference
             X_eb = GetPoints(objSQ) + K*r*Tinv^2*R1*gradPhi ./...
                 sqrt(sum( (Tinv*R1*gradPhi).^2, 1 ));
         end
-
+        
+        %% Generate Local C-Space using KC
+        function polyVtx = LocalCSpace_PCG3(obj, vargin)
+            % Parameters
+            epi = obj.infla;
+            ra = obj.a;
+            rb = ra*(epi+1);
+            
+            opt = vargin.opt;
+            vtx = [];
+            
+            switch opt
+                case 'full'
+                    % H, h, c symbolic expressions
+                    Hhc_3D = load(vargin.Hhc_path);
+                    Hhc_3D = Hhc_3D.Hhc_3D;
+                    
+                    % Find extreme vertices with largest magnitude in c-space
+                    [Z_max, ~] = KC_Extreme_3d(ra, epi+1, Hhc_3D);
+                    vtx = [vtx; Z_max];
+                    
+                    % Finding c, closed-form solution (maximum rotational angle)
+                    ratio = [ra(2)/ra(3);ra(1)/ra(3);ra(1)/ra(2)];
+                    axis_extreme = zeros(length(ratio),1);
+                    for i = 1:length(ratio)
+                        % Rotational axis
+                        axis_extreme(i) = maxAngle(ratio(i), epi);
+                        
+                        % Translational axis
+                        axis_extreme(i+length(ratio)) = rb(i)-ra(i);
+                    end
+                    
+                case 'rotation'
+                    % local c-space for rotation only
+                    % Finding c, closed-form solution (maximum rotational angle)
+                    ratio = [ra(2)/ra(3);ra(1)/ra(3);ra(1)/ra(2)];
+                    axis_extreme = zeros(length(ratio),1);
+                    for i = 1:length(ratio)
+                        axis_extreme(i) = maxAngle(ratio(i), epi);
+                    end
+            end
+            
+            Z_end = zeros(2*length(axis_extreme), length(axis_extreme));
+            for i = 1:length(axis_extreme)
+                Z_end(2*i-1,i) = axis_extreme(i);
+                Z_end(2*i,i) = -axis_extreme(i);
+            end
+            
+            vtx = [vtx; Z_end];
+            
+            % Generate inversions of matrices for point-in-simplex test
+            enum = delaunayn(vtx);
+            for i = 1:size(enum,1)
+                simp = vtx(enum(i,:),:)';
+                simp_homo = [simp; ones(1,size(simp,2))];
+                
+                % disgard the simplex if (n+1) points are linearly dependent
+                if rank(simp_homo) < size(simp_homo,2)
+                    continue;
+                end
+                
+                inv_simpMat(:,:,i) = inv(simp_homo);
+            end
+            
+            polyVtx.vertex = vtx;
+            polyVtx.lim = axis_extreme;
+            polyVtx.invMat = inv_simpMat;
+        end
+        
         %% ---------------------------------------------------------------%
         function pnt = GetPoints(objSQ)
-            % Generate N interpolated points of the given superquadrics   
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            end
+            
+            % Generate N interpolated points of the given superquadrics
             x = objSQ.a(1).*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
                 .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos');
             y = objSQ.a(2)*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
@@ -121,6 +204,10 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function PlotShape(objSQ)
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            end
+            
             % Plot the superquadrics given the No. of points and fill color
             pnt = GetPoints(objSQ);
             
@@ -136,7 +223,13 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function PlotMinkowskiShape(objSQ, objE, K)
-            % Plot the Mink boundary given the No. of points and fill color           
+            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
+                objSQ.q = objSQ.q';
+            elseif (size(objE.q,1) == 4) && (size(objE.q,2) ~= 4)
+                objE.q = objE.q';
+            end
+            
+            % Plot the Mink boundary given the No. of points and fill color
             pnt = MinkowskiSum_3D_ES(objSQ, objE, K);
             
             m = length(objSQ.omega);

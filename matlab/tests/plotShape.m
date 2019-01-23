@@ -23,7 +23,7 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 22;
+opt = 12;
 [ar, obs, pts] = environment(opt);
 
 sc = 20;

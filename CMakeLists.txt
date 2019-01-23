@@ -40,6 +40,9 @@ ENDIF()
 # Headers
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
+
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
@@ -47,16 +50,18 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
 # Sources
 set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp"
+    "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.cpp"
     "${PROJECT_SOURCE_DIR}/src/planners/interval.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp"
+    "${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
 
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
 
-add_executable(test_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
-target_link_libraries(test_PRM_ACS_2D "${OMPL_TEST}")
+add_executable(test_PLANNER_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
+target_link_libraries(test_PLANNER_ACS_2D "${OMPL_TEST}")
 
 add_executable(test_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_2D.cpp)
 target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
@@ -64,4 +69,16 @@ target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${C
 add_executable(test_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_TGL_2D.cpp)
 target_link_libraries(test_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
+# Sampler versions
+add_executable(sam_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_ACS_2D.cpp)
+target_link_libraries(sam_PRM_ACS_2D "${OMPL_TEST}")
+
+add_executable(sam_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_2D.cpp)
+target_link_libraries(sam_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+
+add_executable(sam_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_TGL_2D.cpp)
+target_link_libraries(sam_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+
 # TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})
+
+
