@@ -95,7 +95,8 @@ classdef HighwayRoadmap3D < handle
         function MultiLayers(Obj)
             % Adjacency Matrix
             Obj.Graph.AdjMat = [];
-            % Vertices (6 dof): [x; y; z; q1; q2; q3; q4];
+            % Vertices (6 dof): [x; y; z; q1; q2; q3],
+            % rotation is parameterized in exponential coordinates
             Obj.Graph.V = [];
             
             % -- TEST: random orientations --
@@ -106,7 +107,7 @@ classdef HighwayRoadmap3D < handle
             
             for i = 1:Obj.N_layers
                 % Initialize angle of robot
-                Obj.Robot.q = Obj.q_r(:,i);
+                Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
                 
                 % Generate Adjacency Matrix for one layer
                 [bd_s, bd_o] = Obj.Boundary();
@@ -164,21 +165,14 @@ classdef HighwayRoadmap3D < handle
                         end
                         j2 = n + N_V_l1;
                         
-                        V1p(1:3,1) = Obj.Graph.V(1:3,j1);
-                        V1p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j1));
-                        V2p(1:3,1) = Obj.Graph.V(1:3,j1);
-                        V2p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j2));
+                        V1p = Obj.Graph.V(:,j1);
+                        V2p = Obj.Graph.V(:,j1);
 
-                        [judge, midVtxp] = Obj.IsConnectPoly(V1p,V2p);
+                        [judge, midVtx] = Obj.IsConnectPoly(V1p,V2p);
        
 %                         judge = 1;
 
                         if judge
-                            midVtx(1:3) = midVtxp(1:3);
-                            midVtx(4:7) = Obj.twist2quat(midVtxp(4:6));
-%                             midVtx(1:3) = Obj.Graph.V(1:3,j1);
-%                             midVtx(4:7) = Obj.Graph.V(4:7,j1);
-                            
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
                             numAddVtx = numAddVtx+1;
@@ -494,14 +488,14 @@ classdef HighwayRoadmap3D < handle
             % Robot at Start and Goal points
             for i = 1:2
                 Obj.Robot.tc = Obj.EndPts(1:3,i);
-                Obj.Robot.q = Obj.EndPts(4:7,i)';
+                Obj.Robot.q = Obj.EndPts(4:6,i)';
                 
                 Obj.Robot.PlotShape;
             end
             % Robot within path
             for i = 1:length(Obj.Paths)
                 Obj.Robot.tc = V(1:3,Obj.Paths(i));
-                Obj.Robot.q = V(4:7,Obj.Paths(i))';
+                Obj.Robot.q = V(4:6,Obj.Paths(i))';
                 
                 Obj.Robot.PlotShape;
                 %         MM(i) = getframe;
@@ -884,7 +878,7 @@ classdef HighwayRoadmap3D < handle
         end
         
         %% Samples from SO(3)
-        function q = sampleSO3(Obj)
+        function quat = sampleSO3(Obj)
             N = Obj.N_layers;
             
             % Identity rotation
@@ -892,21 +886,20 @@ classdef HighwayRoadmap3D < handle
             
             % Uniform random samples for Quaternions
             u = 0.5*[ones(1,N);rand(2,N)];
-            q = nan(4,N);
+            quat = nan(4,N);
             dist = nan(1,N);
             for i = 1:N
-                q(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
+                quat(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
                           sqrt(1-u(1,i))*cos(2*pi*u(2,i));
                           sqrt(u(1,i))*sin(2*pi*u(3,i));
                           sqrt(u(1,i))*cos(2*pi*u(3,i))];
                       
-                dist(i) = norm(q(:,i)-e);
+                dist(i) = norm(quat(:,i)-e);
             end
             
             % Sort with respect to Identity
             [~,idx] = sort(dist);
-            q = q(:,idx);
-            
+            quat = quat(:,idx);
         end
     end
     

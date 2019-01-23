@@ -10,16 +10,16 @@ N_r = 100;
 
 % Initialize robot parameters
 a_r = [5;3;2];
-q_r = [0;1;0;0];
+q_r = [0;0;0];
 tc_r = [0;0;0];
 eps_r = [1;1];
 
 % start and goal configurations
 tc_start = [-53; 20;-15];
-q_start = [pi/3; 0.2;0.1;0.4];
+q_start = pi * [0.2;0.1;0.4];
 
 tc_goal  = [ 50;-20; 10];
-q_goal = [-pi/10; -0.16;0.17;0.24];
+q_goal = pi * [-0.16;0.17;0.24];
 
 robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.1, vargin);
 
