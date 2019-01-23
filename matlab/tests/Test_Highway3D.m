@@ -18,10 +18,11 @@ toc;
 
 %% Options for building the roadmap
 option.infla = 0.1;
-option.N_layers = 50;
+
+option.N_layers = 10;
 option.N_dx = 10;
 option.N_dy = 10;
-option.sampleNum = 10;
+option.sampleNum = 100;
 
 % plot options
 option.plots.Lim = [65 35 25];
