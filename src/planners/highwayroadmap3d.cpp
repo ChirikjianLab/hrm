@@ -9,8 +9,8 @@
 
 #define pi 3.1415926
 
-highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace vtxMat, vector< vector<double> > endpt,
-                                   vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option opt){
+highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace3D vtxMat, vector< vector<double> > endpt,
+                                   vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt){
     Robot = robot;
     Endpt = endpt;
     Arena = arena;
@@ -50,10 +50,10 @@ void highwayRoadmap3D::buildRoadmap(){
         for(int j=0; j<4; j++) Robot[0].Shape.q[j] = q[i][j];
 
         // boundary for obstacles and arenas
-        boundary bd = boundaryGen();
+        boundary3D bd = boundaryGen();
 
         // collision-free cells, stored by tx, ty, zL, zU, zM
-        cf_cell CFcell = sweepPlane(bd.bd_s, bd.bd_o);
+        cf_cell3D CFcell = sweepPlane(bd.bd_s, bd.bd_o);
 
         // construct adjacency matrix for one layer
         connectOneLayer(CFcell);
@@ -67,9 +67,9 @@ void highwayRoadmap3D::buildRoadmap(){
 
 // ******************************************************************** //
 // Generate Minkowski boundary
-boundary highwayRoadmap3D::boundaryGen(){
+boundary3D highwayRoadmap3D::boundaryGen(){
     vector<SuperQuadrics> robot_infla(Robot.size());
-    boundary bd;
+    boundary3D bd;
 
     for(size_t num_r = 0; num_r < Robot.size(); num_r++){
         robot_infla[num_r] = Robot[num_r];
@@ -90,12 +90,12 @@ boundary highwayRoadmap3D::boundaryGen(){
 
 // ******************************************************************** //
 // Generate collision-free vertices by Sweep Plane + Sweep Line process //
-cf_cell highwayRoadmap3D::sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
-    cf_cell cell, cell_new;
+cf_cell3D highwayRoadmap3D::sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
+    cf_cell3D cell, cell_new;
 
-    boundary::sepBd x_bd_s[N_dy][N_s], x_bd_o[N_dy][N_o];
+    boundary3D::sepBd x_bd_s[N_dy][N_s], x_bd_o[N_dy][N_o];
 
-    boundary::sepBd P_bd_s[N_s], P_bd_o[N_o];
+    boundary3D::sepBd P_bd_s[N_s], P_bd_o[N_o];
     MatrixXd bd_s_L[N_s], bd_s_R[N_s], bd_o_L[N_o], bd_o_R[N_o];
     MatrixXd x_s_L(N_dy, N_s), x_s_R(N_dy, N_s);
     MatrixXd x_o_L(N_dy, N_o), x_o_R(N_dy, N_o);
@@ -221,7 +221,7 @@ cf_cellYZ highwayRoadmap3D::sweepLine(vector<double> ty,
 
 // ******************************************************************** //
 // Connect vertices within one C-layer //
-void highwayRoadmap3D::connectOneLayer(cf_cell cell){
+void highwayRoadmap3D::connectOneLayer(cf_cell3D cell){
     vector<unsigned int> N_v_plane;
     unsigned int N_0=0, N_1=0;
 
@@ -378,13 +378,13 @@ void highwayRoadmap3D::search(){
 /*********************************** Private Functions ******************************************/
 /************************************************************************************************/
 // For a given curve, separate its boundary into two parts
-boundary::sepBd highwayRoadmap3D::separateBoundary(MatrixXd bd){
+boundary3D::sepBd highwayRoadmap3D::separateBoundary(MatrixXd bd){
     const int half_num = Arena[0].num/2;
     MatrixXd::Index I_max_y, I_min_y;
     int I_start_y;
     MatrixXd P_bd_L, P_bd_R;
     double max_y, min_y;
-    boundary::sepBd P_bd;
+    boundary3D::sepBd P_bd;
 
     // Find separating point
     max_y = bd.row(1).maxCoeff(&I_max_y);
@@ -408,8 +408,8 @@ boundary::sepBd highwayRoadmap3D::separateBoundary(MatrixXd bd){
     return P_bd;
 }
 
-boundary::sepBd highwayRoadmap3D::closestPt(boundary::sepBd P_bd, double ty){
-    boundary::sepBd x_bd;
+boundary3D::sepBd highwayRoadmap3D::closestPt(boundary3D::sepBd P_bd, double ty){
+    boundary3D::sepBd x_bd;
     MatrixXd::Index I_L, I_R;
     VectorXd y(1);
 
@@ -521,7 +521,7 @@ cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell){
 vector<double> highwayRoadmap3D::addMidVtx(vector<double> vtx1, vector<double> vtx2){
     // Connect vertexes among different layers, and add a middle vertex to the roadmap
     vector<double> midVtx, pt, pt1, pt2;
-    ptInPoly polyTest;
+    ptInPoly3D polyTest;
     bool flag;
     midVtx.clear();
 
@@ -532,9 +532,9 @@ vector<double> highwayRoadmap3D::addMidVtx(vector<double> vtx1, vector<double> v
             pt1.push_back(pt[i] - vtx1[i]);
             pt2.push_back(pt[i] - vtx2[i]);
         }
-        flag = polyTest.isPtInPoly(polyVtx, pt1);
+        flag = polyTest.isPtInPoly3D(polyVtx, pt1);
         if(flag){
-            flag = polyTest.isPtInPoly(polyVtx, pt2);
+            flag = polyTest.isPtInPoly3D(polyVtx, pt2);
             if(flag){
                 midVtx = pt;
                 return midVtx;

@@ -12,7 +12,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 include_directories("${PROJECT_SOURCE_DIR}")
 
 # Packages
-find_library(OMPL_TEST ompl REQUIRED)
+find_library(OMPL ompl REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -60,24 +60,24 @@ set(SOURCE
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
 
-add_executable(test_PLANNER_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
-target_link_libraries(test_PLANNER_ACS_2D "${OMPL_TEST}")
+#add_executable(test_PLANNER_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
+#target_link_libraries(test_PLANNER_ACS_2D "${OMPL}")
 
-add_executable(test_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_2D.cpp)
-target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(test_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_2D.cpp)
+#target_link_libraries(test_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
-add_executable(test_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_TGL_2D.cpp)
-target_link_libraries(test_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(test_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_TGL_2D.cpp)
+#target_link_libraries(test_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 # Sampler versions
-add_executable(sam_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_ACS_2D.cpp)
-target_link_libraries(sam_PRM_ACS_2D "${OMPL_TEST}")
+#add_executable(sam_PRM_ACS_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_ACS_2D.cpp)
+#target_link_libraries(sam_PRM_ACS_2D "${OMPL_TEST}")
 
-add_executable(sam_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_2D.cpp)
-target_link_libraries(sam_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(sam_PLANNER_FCL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_2D.cpp)
+#target_link_libraries(sam_PLANNER_FCL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
-add_executable(sam_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_TGL_2D.cpp)
-target_link_libraries(sam_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+#add_executable(sam_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_TGL_2D.cpp)
+#target_link_libraries(sam_PLANNER_FCL_TGL_2D "${OMPL_TEST}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 # TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})
 
