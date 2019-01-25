@@ -6,7 +6,7 @@ initAddpath();
 disp('Initialization');
 tic;
 % Environment
-[arena, obs] = environment3D(21);
+[arena, obs] = environment3D(23);
 % Robot: Only plan face
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
@@ -19,7 +19,7 @@ toc;
 %% Options for building the roadmap
 option.infla = 0.1;
 
-option.N_layers = 5;
+option.N_layers = 20;
 option.N_dx = 10;
 option.N_dy = 10;
 option.sampleNum = 100;
