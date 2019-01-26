@@ -95,7 +95,8 @@ classdef HighwayRoadmap3D < handle
         function MultiLayers(Obj)
             % Adjacency Matrix
             Obj.Graph.AdjMat = [];
-            % Vertices (6 dof): [x; y; z; q1; q2; q3; q4];
+            % Vertices (6 dof): [x; y; z; q1; q2; q3],
+            % rotation is parameterized in exponential coordinates
             Obj.Graph.V = [];
             
             % -- TEST: random orientations --
@@ -106,6 +107,7 @@ classdef HighwayRoadmap3D < handle
             
             for i = 1:Obj.N_layers
                 % Initialize angle of robot
+%                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
                 Obj.Robot.q = Obj.q_r(:,i);
                 
                 % Generate Adjacency Matrix for one layer
@@ -164,21 +166,12 @@ classdef HighwayRoadmap3D < handle
                         end
                         j2 = n + N_V_l1;
                         
-                        V1p(1:3,1) = Obj.Graph.V(1:3,j1);
-                        V1p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j1));
-                        V2p(1:3,1) = Obj.Graph.V(1:3,j1);
-                        V2p(4:6,1) = Obj.quat2twist(Obj.Graph.V(4:7,j2));
+                        V1p = Obj.Graph.V(:,j1);
+                        V2p = Obj.Graph.V(:,j1);
 
-                        [judge, midVtxp] = Obj.IsConnectPoly(V1p,V2p);
-       
-%                         judge = 1;
+                        [judge, midVtx] = Obj.IsConnectPoly(V1p,V2p);
 
                         if judge
-                            midVtx(1:3) = midVtxp(1:3);
-                            midVtx(4:7) = Obj.twist2quat(midVtxp(4:6));
-%                             midVtx(1:3) = Obj.Graph.V(1:3,j1);
-%                             midVtx(4:7) = Obj.Graph.V(4:7,j1);
-                            
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
                             numAddVtx = numAddVtx+1;
@@ -235,16 +228,15 @@ classdef HighwayRoadmap3D < handle
         function [A_connect_new, V_new] = OneLayer(Obj, CF_cell)
             V_new = [];
             A_connect_new = [];
-            
             N_V_Plane = zeros(1,Obj.N_dx);
+            
             % Connect each sweep plane in x-direction
             for i = 1:Obj.N_dx
-                N_V_Plane(i) = size(V_new,2);
-                
                 [A_connect_XY, V_XY] = OnePlane(Obj,...
                     CF_cell{i,1}, CF_cell{i,2});
                 V_new = [V_new V_XY];
                 A_connect_new = blkdiag(A_connect_new, A_connect_XY);
+                N_V_Plane(i) = size(V_new,2);
             end
             
             % Connect between adjacent sweep plane in y-direction
@@ -252,6 +244,10 @@ classdef HighwayRoadmap3D < handle
                 CF_cellXY = CF_cell{i,2};
                 CF_cellXY2 = CF_cell{i+1,2};
                 for j = 1:Obj.N_dy
+                    if isempty(CF_cellXY{j,1}) || isempty(CF_cellXY2{j,1})
+                        continue;
+                    end
+                    
                     y    = CF_cellXY{j,1};
                     L_CF = CF_cellXY{j,2};
                     U_CF = CF_cellXY{j,3};
@@ -286,25 +282,29 @@ classdef HighwayRoadmap3D < handle
                                 
                                 % record the two pnts that can be connected. Note
                                 % that our sweep line assumption is still in effect
-                                I1 = find(abs(V_new(3,:)-M_CF(l))    <= 1e-5);
-                                I2 = find(abs(V_new(3,:)-M_CF_2(l2)) <= 1e-5);
+                                V1 = [CF_cell{i,1}; y; M_CF(l)];
+                                V2 = [CF_cell{i+1,1}; y2; M_CF_2(l2)];
                                 
-                                for k = 1:length(I1)
-                                    for k2 = 1:length(I2)
-                                        % only connect vertices between adjacent
-                                        % sweep lines
-                                        if abs(V_new(2,I1(k))-V_new(2,I2(k2))) == abs(y-y2)
-                                            A_connect_new(I1(k), I2(k2)) = 1;
-                                            A_connect_new(I2(k2), I1(k)) = 1;
-                                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                                            if Obj.PlotSingleLayer
-%                                                 plot3([V_new(1,I1(k)) V_new(1,I2(k2))],...
-%                                                     [V_new(2,I1(k)) V_new(2,I2(k2))],...
-%                                                     [V_new(3,I1(k)) V_new(3,I2(k2))], '-k', 'LineWidth', 1.2)
-                                            end
-                                            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                                        end
+                                I1 = find( (abs(V_new(1,:)-V1(1)) <= 1e-5) &...
+                                    (abs(V_new(2,:)-V1(2)) <= 1e-5) &...
+                                    (abs(V_new(3,:)-V1(3)) <= 1e-5) );
+                                I2 = find( (abs(V_new(1,:)-V2(1)) <= 1e-5) &...
+                                    (abs(V_new(2,:)-V2(2)) <= 1e-5) &...
+                                    (abs(V_new(3,:)-V2(3)) <= 1e-5) );
+                                
+                                % only connect vertices between adjacent
+                                % sweep lines
+                                if abs(V_new(2,I1)-V_new(2,I2)) == abs(y-y2)
+                                    A_connect_new(I1, I2) = 1;
+                                    A_connect_new(I2, I1) = 1;
+                                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                                    if Obj.PlotSingleLayer
+                                        plot3([V_new(1,I1) V_new(1,I2)],...
+                                            [V_new(2,I1) V_new(2,I2)],...
+                                            [V_new(3,I1) V_new(3,I2)],...
+                                            '-k', 'LineWidth', 1.2)
                                     end
+                                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 end
                             end
                         end
@@ -494,14 +494,14 @@ classdef HighwayRoadmap3D < handle
             % Robot at Start and Goal points
             for i = 1:2
                 Obj.Robot.tc = Obj.EndPts(1:3,i);
-                Obj.Robot.q = Obj.EndPts(4:7,i)';
+                Obj.Robot.q = Obj.EndPts(4:6,i);
                 
                 Obj.Robot.PlotShape;
             end
             % Robot within path
             for i = 1:length(Obj.Paths)
                 Obj.Robot.tc = V(1:3,Obj.Paths(i));
-                Obj.Robot.q = V(4:7,Obj.Paths(i))';
+                Obj.Robot.q = V(4:6,Obj.Paths(i));
                 
                 Obj.Robot.PlotShape;
                 %         MM(i) = getframe;
@@ -670,7 +670,7 @@ classdef HighwayRoadmap3D < handle
                 CF_cellZ{k,4} = (bd_CF(:,1)+bd_CF(:,2))./2;
             end
             % remove the empty entries
-            CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
+%             CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
         end
         
         %% Enhanced cell decomposition
@@ -884,29 +884,47 @@ classdef HighwayRoadmap3D < handle
         end
         
         %% Samples from SO(3)
-        function q = sampleSO3(Obj)
+%         function quat = sampleSO3(Obj)
+%             N = Obj.N_layers;
+%             
+%             % Identity rotation
+%             e = [0;0;0;1];
+%             
+%             % Uniform random samples for Quaternions
+%             u = 0.5*[ones(1,N);rand(2,N)];
+%             quat = nan(4,N);
+% 
+%             dist = nan(1,N);
+%             for i = 1:N
+%                 quat(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
+%                           sqrt(1-u(1,i))*cos(2*pi*u(2,i));
+%                           sqrt(u(1,i))*sin(2*pi*u(3,i));
+%                           sqrt(u(1,i))*cos(2*pi*u(3,i))];
+%                       
+%                 dist(i) = norm(quat(:,i)-e);
+%             end
+%             
+%             % Sort with respect to Identity
+%             [~,idx] = sort(dist);
+%             quat = quat(:,idx);
+%         end
+        
+        function q_exp = sampleSO3(Obj)
             N = Obj.N_layers;
             
-            % Identity rotation
-            e = [0;1;0;0];
-            
-            % Uniform random samples for Quaternions
-            u = 0.5*[ones(1,N);rand(2,N)];
-            q = nan(4,N);
-            dist = nan(1,N);
+            % Uniform random samples for Exponential coordinates
+            q_exp = zeros(3,N);
+            dist = zeros(1,N);
             for i = 1:N
-                q(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
-                          sqrt(1-u(1,i))*cos(2*pi*u(2,i));
-                          sqrt(u(1,i))*sin(2*pi*u(3,i));
-                          sqrt(u(1,i))*cos(2*pi*u(3,i))];
+                q_exp(:,i) = pi*rand(3,1);
+                R = expm(skew(q_exp(:,i)));
                       
-                dist(i) = norm(q(:,i)-e);
+                dist(i) = norm( vex( logm(R'*eye(3)) ) );
             end
             
             % Sort with respect to Identity
             [~,idx] = sort(dist);
-            q = q(:,idx);
-            
+            q_exp = q_exp(:,idx);
         end
     end
     

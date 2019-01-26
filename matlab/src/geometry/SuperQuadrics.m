@@ -10,7 +10,7 @@ classdef SuperQuadrics
     
     properties
         a       % semi-axes lengths, 3x1 vector
-        q       % quaternion for orientation, 4x1 vector
+        q       % exponential coordinates for orientation, 3x1 vector
         tc      % center, 3x1 vector
         eps     % exponent for the signed power function, 2x1 vector
         
@@ -38,21 +38,13 @@ classdef SuperQuadrics
                 error('Length 1st input not equal to 5!')
             elseif length(val{1}) ~= 3
                 error('Length semi-axes not equal to 3!')
-            elseif length(val{2}) ~= 4
-                error('Length Quoternion not equal to 4!')
             elseif length(val{3}) ~= 3
                 error('Length center point not equal to 3!')
             elseif length(val{4}) ~= 2
                 error('Length exponent not equal to 2!')
             else
                 obj.a     = val{1};
-                
-                if size(val{2},2) ~= 4
-                    obj.q = val{2}';
-                else
-                    obj.q = val{2};
-                end
-                
+                obj.q     = val{2};
                 obj.tc    = val{3};
                 obj.eps   = val{4};
                 obj.N     = val{5};
@@ -83,15 +75,9 @@ classdef SuperQuadrics
                 error('Second object is not an ellipsoid. \n')
             end
             
-            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
-                objSQ.q = objSQ.q';
-            elseif (size(objE.q,1) == 4) && (size(objE.q,2) ~= 4)
-                objE.q = objE.q';
-            end
-            
             % Parameters
-            R1 = quat2rotm(objSQ.q);
-            R2 = quat2rotm(objE.q);
+            R1 = objSQ.exp2rotm(objSQ.q);
+            R2 = objE.exp2rotm(objE.q);
             
             r = min(objE.a);
             Tinv = R2*diag(objE.a/r)*R2';
@@ -182,10 +168,6 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function pnt = GetPoints(objSQ)
-            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
-                objSQ.q = objSQ.q';
-            end
-            
             % Generate N interpolated points of the given superquadrics
             x = objSQ.a(1).*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
                 .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos');
@@ -199,15 +181,11 @@ classdef SuperQuadrics
             yy = reshape(y, 1, m*n);
             zz = reshape(z, 1, m*n);
             
-            pnt = quat2rotm(objSQ.q)*[xx;yy;zz] + repmat(objSQ.tc,1,m*n);
+            pnt = objSQ.exp2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
         end
         
         %% ---------------------------------------------------------------%
-        function PlotShape(objSQ)
-            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
-                objSQ.q = objSQ.q';
-            end
-            
+        function PlotShape(objSQ)  
             % Plot the superquadrics given the No. of points and fill color
             pnt = GetPoints(objSQ);
             
@@ -223,12 +201,6 @@ classdef SuperQuadrics
         
         %% ---------------------------------------------------------------%
         function PlotMinkowskiShape(objSQ, objE, K)
-            if (size(objSQ.q,1) == 4) && (size(objSQ.q,2) ~= 4)
-                objSQ.q = objSQ.q';
-            elseif (size(objE.q,1) == 4) && (size(objE.q,2) ~= 4)
-                objE.q = objE.q';
-            end
-            
             % Plot the Mink boundary given the No. of points and fill color
             pnt = MinkowskiSum_3D_ES(objSQ, objE, K);
             
@@ -246,7 +218,7 @@ classdef SuperQuadrics
     %% Private Methods
     methods (Access=protected)
         %% Exponent functions
-        function val = sc_eps(obj, angle, eps, name)
+        function val = sc_eps(Obj, angle, eps, name)
             %SuperEllipse.sc_eps: a sin/cos exponentiation function
             if strcmp(name, 'sin')
                 val = sign(sin(angle)).*abs(sin(angle)).^eps;
@@ -255,6 +227,11 @@ classdef SuperQuadrics
             else
                 error('The third input has to be either "cos" or "sin".')
             end
+        end
+        
+        %% Exponential coordinate transformations
+        function R = exp2rotm(Obj, q)
+            R = expm(skew(q));
         end
         
     end

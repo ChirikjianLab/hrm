@@ -33,28 +33,28 @@ using namespace std;
 #define sgn(v) ( ( (v) < 0 ) ? -1 : ( (v) > 0 ) )
 
 // return an obstacle-based sampler
- ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
+}
 
 // return a GaussianValidStateSampler
- ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::GaussianValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::GaussianValidStateSampler>(si);
+}
 
 // return a MaximizeClearanceValidStateSampler
- ob::ValidStateSamplerPtr allocMaximizeClearanceValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocMaximizeClearanceValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
+}
 
 // return a BridgeTestValidStateSampler
- ob::ValidStateSamplerPtr allocBridgeTestValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::BridgeTestValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocBridgeTestValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::BridgeTestValidStateSampler>(si);
+}
 
 class SuperEllipse{
 public:
@@ -265,9 +265,9 @@ public:
         /*Getting times*/
         //flag = int(solved.operator bool());
         total_time = ss_->getLastPlanComputationTime();
-        astar_time = ss_->getPlanner()->getAstarTime();
-        construct_time = ss_->getPlanner()->getConstrucTime();
-        total_random = ss_->getPlanner()->getTotalRandomConfig();
+        //        astar_time = ss_->getPlanner()->getAstarTime();
+        //        construct_time = ss_->getPlanner()->getConstrucTime();
+        //        total_random = ss_->getPlanner()->getTotalRandomConfig();
 
         //Getting graph info
         ob::PlannerData pd(ss_->getSpaceInformation());
@@ -347,8 +347,10 @@ public:
             // Saving times and configs in file
             std::ofstream outfile;
             outfile.open("time_prm.csv", std::ios_base::app);
-            outfile << id_planner<<","<<sampler<<","<<flag <<","<< total_time<<"," << astar_time <<","<< construct_time<<","<<
-                       total_random<<","<<nodes_graph<<","<<edges_graph<<","<<nodes_path<<","<<valid_space<<"\n";
+            //            outfile << id_planner<<","<<sampler<<","<<flag <<","<< total_time<<"," << astar_time <<","<< construct_time<<","<<
+            //                       total_random<<","<<nodes_graph<<","<<edges_graph<<","<<nodes_path<<","<<valid_space<<"\n";
+            outfile << id_planner <<","<< sampler <<","<< flag <<","<< total_time <<"," <<
+                       nodes_graph <<","<< edges_graph <<","<< nodes_path <<","<< valid_space <<"\n";
             outfile.close();
             return true;
         }
@@ -448,11 +450,11 @@ private:
 
     unsigned int nodes_graph;
     unsigned int edges_graph;
-    int total_random;
+    //    int total_random;
     int nodes_path;
     int flag;
-    double astar_time;
-    double construct_time;
+    //    double astar_time;
+    //    double construct_time;
     double total_time;
     double valid_space;
     int id_planner;
@@ -567,7 +569,8 @@ int main(int argc, char ** argv){
 
     std::ofstream outfile;
     outfile.open("time_prm.csv", std::ios_base::app);
-    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,ASTAR_TIME,CONST_TIME,RANDOM_CONF,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
+    //    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,ASTAR_TIME,CONST_TIME,RANDOM_CONF,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
+    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
     outfile.close();
     //Planner number: PRM:1, PRMstar:2, RRT:3, RRTconnect:4
     int N = atoi(argv[6]);

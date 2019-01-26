@@ -38,28 +38,28 @@ using namespace std;
 #define sgn(v) ( ( (v) < 0 ) ? -1 : ( (v) > 0 ) )
 
 // return an obstacle-based sampler
- ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
+}
 
 // return a GaussianValidStateSampler
- ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::GaussianValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::GaussianValidStateSampler>(si);
+}
 
 // return a MaximizeClearanceValidStateSampler
- ob::ValidStateSamplerPtr allocMaximizeClearanceValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocMaximizeClearanceValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::MaximizeClearanceValidStateSampler>(si);
+}
 
 // return a BridgeTestValidStateSampler
- ob::ValidStateSamplerPtr allocBridgeTestValidStateSampler(const ob::SpaceInformation *si)
- {
-     return std::make_shared<ob::BridgeTestValidStateSampler>(si);
- }
+ob::ValidStateSamplerPtr allocBridgeTestValidStateSampler(const ob::SpaceInformation *si)
+{
+    return std::make_shared<ob::BridgeTestValidStateSampler>(si);
+}
 
 
 typedef Matrix<double,4,1> Vector4d;
@@ -80,56 +80,56 @@ public:
     // Functions
     //SuperEllipse(double a[6], int num);
     MatrixXd originShape(double a[6], int num){
-      double th;
-      Vector2d x;
-      MatrixXd trans(2,num), X(2,num);
+        double th;
+        Vector2d x;
+        MatrixXd trans(2,num), X(2,num);
 
-      for(int i=0; i<num; i++){
-        th = 2*i*pi/(num-1);
+        for(int i=0; i<num; i++){
+            th = 2*i*pi/(num-1);
 
-        x(0,0) = a[0] * expFun(th,a[3],0);
-        x(1,0) = a[1] * expFun(th,a[3],1);
+            x(0,0) = a[0] * expFun(th,a[3],0);
+            x(1,0) = a[1] * expFun(th,a[3],1);
 
-        trans(0,i) = a[4]; trans(1,i) = a[5];
-        X(0,i) = x(0,0); X(1,i) = x(1,0);
-      }
-      X = Rotation2Dd(a[2]).matrix() * X + trans;
-      return X;
+            trans(0,i) = a[4]; trans(1,i) = a[5];
+            X(0,i) = x(0,0); X(1,i) = x(1,0);
+        }
+        X = Rotation2Dd(a[2]).matrix() * X + trans;
+        return X;
     }
     
     double expFun(double th, double p, bool func){
-      return (func == 0) ? sgn(cos(th)) * pow(abs(cos(th)), p) : sgn(sin(th)) * pow(abs(sin(th)), p) ;
+        return (func == 0) ? sgn(cos(th)) * pow(abs(cos(th)), p) : sgn(sin(th)) * pow(abs(sin(th)), p) ;
     }
 
     /*
     * coeff_canon_i/j_ semi axis, r_i/j_ centers, A_i/j_ rotation matrix
     * If separated return False, if in collision returns True
     */
-    bool algebraic_condition_separation(Vector2d coeff_canon_i_, Vector2d coeff_canon_j_, Vector2d r_i_, Vector2d r_j_, Matrix2d A_i_, Matrix2d A_j_){       
+    bool algebraic_condition_separation(Vector2d coeff_canon_i_, Vector2d coeff_canon_j_, Vector2d r_i_, Vector2d r_j_, Matrix2d A_i_, Matrix2d A_j_){
         //Surface i
         Matrix3d A;
-        A << 1/pow(coeff_canon_i_(0,0),2), 0 ,0, 
-             0, 1/pow(coeff_canon_i_(1,0),2), 0,
-             0, 0, -1;
+        A << 1/pow(coeff_canon_i_(0,0),2), 0 ,0,
+                0, 1/pow(coeff_canon_i_(1,0),2), 0,
+                0, 0, -1;
         //Surface j
         Matrix3d B;
         B << 1/pow(coeff_canon_j_(0,0),2), 0 ,0,
-             0, 1/pow(coeff_canon_j_(1,0),2), 0,
-             0, 0, -1;
+                0, 1/pow(coeff_canon_j_(1,0),2), 0,
+                0, 0, -1;
         
         //Rigid body transformations
         Matrix3d T_i;
         T_i << A_i_(0, 0), A_i_(0, 1), r_i_(0,0),
-               A_i_(1, 0), A_i_(1, 1), r_i_(1,0),
-               0,0,1;
+                A_i_(1, 0), A_i_(1, 1), r_i_(1,0),
+                0,0,1;
 
         Matrix3d T_j;
         T_j << A_j_(0, 0), A_j_(0, 1), r_j_(0,0),
-               A_j_(1, 0), A_j_(1, 1), r_j_(1,0),
-               0,0,1;
+                A_j_(1, 0), A_j_(1, 1), r_j_(1,0),
+                0,0,1;
         Matrix3d Ma = T_i;
         Matrix3d Mb = T_j;
-      
+
         //aij belongs to A in det(lambda*A - Ma'*(Mb^-1)'*B*(Mb^-1)*Ma)
         Matrix3d a = A;
         //bij belongs to b = Ma'*(Mb^-1)'*B*(Mb^-1)*Ma matmul
@@ -148,10 +148,10 @@ public:
         //Solving characteristic polynomial
         Vector5d characteristic_polynomial;
         characteristic_polynomial << T0,T1,T2,T3,T4;
- 
+
         //cout << "characteristic_polynomial: " << characteristic_polynomial.transpose() << endl;
         PolynomialSolver<double, 4>psolve;
-		psolve.compute(characteristic_polynomial);
+        psolve.compute(characteristic_polynomial);
         //cout << "Complex roots: " << psolve.roots().transpose() << endl;
         
         /*Checking roots conditions
@@ -163,101 +163,101 @@ public:
         Eigen::MatrixXd roots = Eigen::MatrixXd::Zero(6,1);
         int j = 0;
         for(int i=0;i<psolve.roots().size();i++){
-          if(psolve.roots()[i].real() < -0.000001){
-            //cout<<psolve.roots()[i].real()<<endl;
-            roots(j,0) = psolve.roots()[i].real();
-            j++;
-          }
+            if(psolve.roots()[i].real() < -0.000001){
+                //cout<<psolve.roots()[i].real()<<endl;
+                roots(j,0) = psolve.roots()[i].real();
+                j++;
+            }
         }
         if(j == 2){
-          if(roots(0,0) != roots(1,0)){
-            return true;
-          }
-          if(abs(roots(0,0) - roots(1,0))<0.001){
-            return false;
-          }
+            if(roots(0,0) != roots(1,0)){
+                return true;
+            }
+            if(abs(roots(0,0) - roots(1,0))<0.001){
+                return false;
+            }
         }
         return false;
     }
 
     Matrix2d rotation_angle_axis(double theta){
-      Matrix2d S;
-      S << 0, -1, 1,0;
-      Matrix2d R;
-      MatrixXd id = MatrixXd::Identity(2,2);
-      R = id + ((sin(theta)) * S) + ((1 - cos(theta))*(S * S));
-      return R;
+        Matrix2d S;
+        S << 0, -1, 1,0;
+        Matrix2d R;
+        MatrixXd id = MatrixXd::Identity(2,2);
+        R = id + ((sin(theta)) * S) + ((1 - cos(theta))*(S * S));
+        return R;
     }
 
     bool fcl_separation(Vector2d coeff_canon_i_, Vector2d coeff_canon_j_, Vector2d r_i_, Vector2d r_j_, double theta_i_, double theta_j_){
-      bool res = false;
-      GeometryPtr_t i_geometry(new fcl::Ellipsoid<double>(coeff_canon_i_(0,0), coeff_canon_i_(1,0), 0.0001));
-      fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitZ())); 
-      fcl::Vector3<double> T_i_(r_i_(0,0), r_i_(1,0), 0.0);
-      fcl::Transform3<double> i_transform = fcl::Transform3<double>::Identity();
-      i_transform.translation() = (T_i_);
-      i_transform.linear() = rotation_i_;
-      fcl::CollisionObject<double> i_ellipsoid(i_geometry, i_transform);
+        bool res = false;
+        GeometryPtr_t i_geometry(new fcl::Ellipsoid<double>(coeff_canon_i_(0,0), coeff_canon_i_(1,0), 0.0001));
+        fcl::Matrix3<double> rotation_i_(fcl::AngleAxis<double>(theta_i_, fcl::Vector3<double>::UnitZ()));
+        fcl::Vector3<double> T_i_(r_i_(0,0), r_i_(1,0), 0.0);
+        fcl::Transform3<double> i_transform = fcl::Transform3<double>::Identity();
+        i_transform.translation() = (T_i_);
+        i_transform.linear() = rotation_i_;
+        fcl::CollisionObject<double> i_ellipsoid(i_geometry, i_transform);
 
-      GeometryPtr_t j_geometry(new fcl::Ellipsoid<double>(coeff_canon_j_(0,0), coeff_canon_j_(1,0), 0.0001));
-      fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitZ()));
-      fcl::Vector3<double> T_j_(r_j_(0,0), r_j_(1,0), 0.0);
-      fcl::Transform3<double> j_transform = fcl::Transform3<double>::Identity();
-      j_transform.translation() = (T_j_);
-      j_transform.linear() = rotation_j_;
-      fcl::CollisionObject<double> j_ellipsoid(j_geometry, j_transform);
+        GeometryPtr_t j_geometry(new fcl::Ellipsoid<double>(coeff_canon_j_(0,0), coeff_canon_j_(1,0), 0.0001));
+        fcl::Matrix3<double> rotation_j_(fcl::AngleAxis<double>(theta_j_, fcl::Vector3<double>::UnitZ()));
+        fcl::Vector3<double> T_j_(r_j_(0,0), r_j_(1,0), 0.0);
+        fcl::Transform3<double> j_transform = fcl::Transform3<double>::Identity();
+        j_transform.translation() = (T_j_);
+        j_transform.linear() = rotation_j_;
+        fcl::CollisionObject<double> j_ellipsoid(j_geometry, j_transform);
 
-      fcl::CollisionRequest<double> request;
-      fcl::CollisionResult<double> result;
-      
-      fcl::collide(&i_ellipsoid, &j_ellipsoid, request, result);
-      if (result.numContacts() > 0){
-        //std::cout << "In collision" << std::endl;
-        res = false;
-      }else{
-        //std::cout << "Not in collision" << std::endl;
-        res = true;
-      }
+        fcl::CollisionRequest<double> request;
+        fcl::CollisionResult<double> result;
 
-      return res;
+        fcl::collide(&i_ellipsoid, &j_ellipsoid, request, result);
+        if (result.numContacts() > 0){
+            //std::cout << "In collision" << std::endl;
+            res = false;
+        }else{
+            //std::cout << "Not in collision" << std::endl;
+            res = true;
+        }
+
+        return res;
     }
 };
 
 
 class PRMtester{
-  public:
+public:
     PRMtester(double xBound, double yBound, std::vector<SuperEllipse> arena_, std::vector<SuperEllipse> robot_, std::vector<SuperEllipse> obs_, int id, int sam_){
-      arena = arena_;
-      robot = robot_;
-      obstacles = obs_;      
-      id_planner = id;
-      sampler = sam_;
+        arena = arena_;
+        robot = robot_;
+        obstacles = obs_;
+        id_planner = id;
+        sampler = sam_;
 
-      auto space(std::make_shared<ob::SE2StateSpace>());
-      ob::RealVectorBounds bounds(2);
-      bounds.setHigh(0,xBound);
-      bounds.setLow(0,-xBound);
-      bounds.setHigh(1,yBound);
-      bounds.setLow(1,-yBound);
-      space->setBounds(bounds);
-      ss_ = std::make_shared<og::SimpleSetup>(space);   
+        auto space(std::make_shared<ob::SE2StateSpace>());
+        ob::RealVectorBounds bounds(2);
+        bounds.setHigh(0,xBound);
+        bounds.setLow(0,-xBound);
+        bounds.setHigh(1,yBound);
+        bounds.setLow(1,-yBound);
+        space->setBounds(bounds);
+        ss_ = std::make_shared<og::SimpleSetup>(space);
 
-      ss_->setStateValidityChecker([this](const ob::State *state) { return isStateValid(state); });
-      space->setup();
-      ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
+        ss_->setStateValidityChecker([this](const ob::State *state) { return isStateValid(state); });
+        space->setup();
+        ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
 
-      if(id_planner == 1){
-        ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation())); 
-      }
-      if(id_planner == 2){
-        ss_->setPlanner(std::make_shared<og::PRMstar>(ss_->getSpaceInformation())); 
-      }
-      if(id_planner == 3){
-        ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation())); 
-      }
-      if(id_planner == 4){
-        ss_->setPlanner(std::make_shared<og::RRTConnect>(ss_->getSpaceInformation())); 
-      }
+        if(id_planner == 1){
+            ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
+        }
+        if(id_planner == 2){
+            ss_->setPlanner(std::make_shared<og::PRMstar>(ss_->getSpaceInformation()));
+        }
+        if(id_planner == 3){
+            ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation()));
+        }
+        if(id_planner == 4){
+            ss_->setPlanner(std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
+        }
 
     }
 
@@ -270,24 +270,24 @@ class PRMtester{
 
     }
     bool plan(std::vector<double> start_, std::vector<double> goal_, int n){
-      if (!ss_){
-        return false;
-      }
-      ob::ScopedState<> start(ss_->getStateSpace());
-      start->as<ob::SE2StateSpace::StateType>()->setX(start_[0]);
-      start->as<ob::SE2StateSpace::StateType>()->setY(start_[1]);
-      start->as<ob::SE2StateSpace::StateType>()->setYaw(start_[2]);
+        if (!ss_){
+            return false;
+        }
+        ob::ScopedState<> start(ss_->getStateSpace());
+        start->as<ob::SE2StateSpace::StateType>()->setX(start_[0]);
+        start->as<ob::SE2StateSpace::StateType>()->setY(start_[1]);
+        start->as<ob::SE2StateSpace::StateType>()->setYaw(start_[2]);
         
-      ob::ScopedState<> goal(ss_->getStateSpace());
-      goal->as<ob::SE2StateSpace::StateType>()->setX(goal_[0]);
-      goal->as<ob::SE2StateSpace::StateType>()->setY(goal_[1]);
-      goal->as<ob::SE2StateSpace::StateType>()->setYaw(goal_[2]);
+        ob::ScopedState<> goal(ss_->getStateSpace());
+        goal->as<ob::SE2StateSpace::StateType>()->setX(goal_[0]);
+        goal->as<ob::SE2StateSpace::StateType>()->setY(goal_[1]);
+        goal->as<ob::SE2StateSpace::StateType>()->setYaw(goal_[2]);
         
-      ss_->setStartAndGoalStates(start, goal);
-      ss_->setup();
-      // ss_->print();
+        ss_->setStartAndGoalStates(start, goal);
+        ss_->setup();
+        // ss_->print();
 
-    //Setting up the sampler
+        //Setting up the sampler
         if(sampler == 1){
             ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);
         }
@@ -301,229 +301,232 @@ class PRMtester{
             ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocBridgeTestValidStateSampler);
         }
 
-      std::cout << "Planning..."<< std::endl;
-      ob::PlannerStatus solved = ss_->solve(20);
+        std::cout << "Planning..."<< std::endl;
+        ob::PlannerStatus solved = ss_->solve(20);
 
-      /*Getting times*/
-      //flag = int(solved.operator bool());
-      total_time = ss_->getLastPlanComputationTime();
-      astar_time = ss_->getPlanner()->getAstarTime();
-      construct_time = ss_->getPlanner()->getConstrucTime();
-      total_random = ss_->getPlanner()->getTotalRandomConfig();
+        /*Getting times*/
+        //flag = int(solved.operator bool());
+        total_time = ss_->getLastPlanComputationTime();
+        //      astar_time = ss_->getPlanner()->getAstarTime();
+        //      construct_time = ss_->getPlanner()->getConstrucTime();
+        //      total_random = ss_->getPlanner()->getTotalRandomConfig();
 
-      //Getting graph info
-      ob::PlannerData pd(ss_->getSpaceInformation());
-      ss_->getPlannerData(pd);
-      nodes_graph = pd.numVertices();
-      edges_graph = pd.numEdges();
-   
-      // Store all the valid states
-      ofstream file_state;   
-      const ob::State *state;
-      file_state.open("prm_state.csv");
-      for(size_t i=0; i<pd.numVertices(); i++){
-          state = pd.getVertex(i).getState()->as<ob::State>();
-          file_state << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
-                     << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
-                     << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
-      }
-      file_state.close();
-      
-      // Store all the valid edges
-      ofstream file_edge;
-      file_edge.open("prm_edge.csv");
-      vector< vector<unsigned int> > edge(pd.numVertices());
-      for(size_t i=0; i<pd.numVertices(); i++){
-          pd.getEdges(i,edge[i]);
-          for(int j=0; j<edge[i].size(); j++) file_edge << int(i) << " " << int(edge[i][j]) << "\n";
-      }
-      file_edge.close();
+        //Getting graph info
+        ob::PlannerData pd(ss_->getSpaceInformation());
+        ss_->getPlannerData(pd);
+        nodes_graph = pd.numVertices();
+        edges_graph = pd.numEdges();
 
-      nodes_path = ss_->getSolutionPath().getStates().size();
-      valid_space = ss_->getSpaceInformation()->probabilityOfValidState(1000);
-  
-      bool aux_flag = false;
-      if(solved){
-        std::cout << "Found solution:" << std::endl;
-        // print the path to screen
-        // ss_->getSolutionPath().print(std::cout);
-        //Storing solution in a file 
-        const std::vector<ob::State*> &states = ss_->getSolutionPath().getStates();
-        ob::State *state;
-        ofstream file_traj;
-        file_traj.open("prm_path.csv");
-        for( size_t i = 0 ; i < states.size( ) ; ++i ){
-          state = states[i]->as<ob::State >( );
-          file_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << "," 
-                   << state->as<ob::SE2StateSpace::StateType>()->getY() << "," 
-                   << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+        // Store all the valid states
+        ofstream file_state;
+        const ob::State *state;
+        file_state.open("prm_state.csv");
+        for(size_t i=0; i<pd.numVertices(); i++){
+            state = pd.getVertex(i).getState()->as<ob::State>();
+            file_state << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
+                       << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
+                       << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
         }
-        
-        file_traj.close();
-        std::vector<double> final_conf;
-        final_conf.resize(3);
-        final_conf[0] = state->as<ob::SE2StateSpace::StateType>()->getX();
-        final_conf[1] = state->as<ob::SE2StateSpace::StateType>()->getY();
-        final_conf[2] = state->as<ob::SE2StateSpace::StateType>()->getYaw();
-        aux_flag = compareStates(goal_, final_conf);    
+        file_state.close();
 
-        // Smooth path
-        ss_->getSolutionPath().interpolate(50);
-        
-        // print the path to screen
-        //ss_->getSolutionPath().printAsMatrix(std::cout);
-        //Storing solution in a file
-        const std::vector<ob::State*> &s_states = ss_->getSolutionPath().getStates();
-
-        ofstream file_smooth_traj;
-        file_smooth_traj.open("prm_smooth_path.csv");
-        for( size_t i = 0 ; i < s_states.size( ) ; ++i ){
-          state = s_states[i]->as<ob::State >( );
-          file_smooth_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
-                   << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
-                   << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+        // Store all the valid edges
+        ofstream file_edge;
+        file_edge.open("prm_edge.csv");
+        vector< vector<unsigned int> > edge(pd.numVertices());
+        for(size_t i=0; i<pd.numVertices(); i++){
+            pd.getEdges(i,edge[i]);
+            for(int j=0; j<edge[i].size(); j++) file_edge << int(i) << " " << int(edge[i][j]) << "\n";
         }
-        file_smooth_traj.close();
-        flag = int(aux_flag); 
+        file_edge.close();
 
-        //Saving times and configs in file
-        std::ofstream outfile;
-        outfile.open("time_fcl.csv", std::ios_base::app);
-        outfile << id_planner<<","<<sampler<<","<<flag <<","<< total_time<<"," << astar_time <<","<< construct_time<<","<<
-        total_random<<","<<nodes_graph<<","<<edges_graph<<","<<nodes_path<<","<<valid_space<<"\n";
-        outfile.close();        
-        return true;
-      } 
-      return false;
+        nodes_path = ss_->getSolutionPath().getStates().size();
+        valid_space = ss_->getSpaceInformation()->probabilityOfValidState(1000);
+
+        bool aux_flag = false;
+        if(solved){
+            std::cout << "Found solution:" << std::endl;
+            // print the path to screen
+            // ss_->getSolutionPath().print(std::cout);
+            //Storing solution in a file
+            const std::vector<ob::State*> &states = ss_->getSolutionPath().getStates();
+            ob::State *state;
+            ofstream file_traj;
+            file_traj.open("prm_path.csv");
+            for( size_t i = 0 ; i < states.size( ) ; ++i ){
+                state = states[i]->as<ob::State >( );
+                file_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
+                          << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
+                          << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+            }
+
+            file_traj.close();
+            std::vector<double> final_conf;
+            final_conf.resize(3);
+            final_conf[0] = state->as<ob::SE2StateSpace::StateType>()->getX();
+            final_conf[1] = state->as<ob::SE2StateSpace::StateType>()->getY();
+            final_conf[2] = state->as<ob::SE2StateSpace::StateType>()->getYaw();
+            aux_flag = compareStates(goal_, final_conf);
+
+            // Smooth path
+            ss_->getSolutionPath().interpolate(50);
+
+            // print the path to screen
+            //ss_->getSolutionPath().printAsMatrix(std::cout);
+            //Storing solution in a file
+            const std::vector<ob::State*> &s_states = ss_->getSolutionPath().getStates();
+
+            ofstream file_smooth_traj;
+            file_smooth_traj.open("prm_smooth_path.csv");
+            for( size_t i = 0 ; i < s_states.size( ) ; ++i ){
+                state = s_states[i]->as<ob::State >( );
+                file_smooth_traj << state->as<ob::SE2StateSpace::StateType>()->getX() << ","
+                                 << state->as<ob::SE2StateSpace::StateType>()->getY() << ","
+                                 << state->as<ob::SE2StateSpace::StateType>()->getYaw() << "\n";
+            }
+            file_smooth_traj.close();
+            flag = int(aux_flag);
+
+            //Saving times and configs in file
+            std::ofstream outfile;
+            outfile.open("time_fcl.csv", std::ios_base::app);
+            //        outfile << id_planner<<","<<sampler<<","<<flag <<","<< total_time<<"," << astar_time <<","<< construct_time<<","<<
+            //        total_random<<","<<nodes_graph<<","<<edges_graph<<","<<nodes_path<<","<<valid_space<<"\n";
+
+            outfile << id_planner <<","<< sampler <<","<< flag <<","<< total_time <<"," <<
+                       nodes_graph <<","<< edges_graph <<","<< nodes_path <<","<< valid_space <<"\n";
+            outfile.close();
+            return true;
+        }
+        return false;
     }
 
 private:
 
     bool isStateValid(const ob::State *state) const{
-        bool res  = true;        
+        bool res  = true;
         double x = state->as<ob::SE2StateSpace::StateType>()->getX();
         double y = state->as<ob::SE2StateSpace::StateType>()->getY();
         double yaw = state->as<ob::SE2StateSpace::StateType>()->getYaw();
 
-		for(unsigned int j=0; j<robot.size();j++){
-			SuperEllipse robot_config = {{robot[j].a[0],robot[j].a[1],yaw,robot[j].a[3],x,y}, robot[j].num};
-			//Checking collision against obstacles
-        	for(unsigned int i=0; i<obstacles.size(); i++){
-          		bool aux = checkSeparation(robot_config, obstacles[i]);
-          		if(aux == false){
-            		res = false;
-          		}
-        	}
-        	if(res == false){
-          		return res;
-        	}
-//			for(int k=0;k<arena.size();k++){
-//				res = checkSeparationArena(robot_config, arena[k]);
-//				if(res == false){
-//					return res;
-//				}
-//			}
-		}
-        return res; 
+        for(unsigned int j=0; j<robot.size();j++){
+            SuperEllipse robot_config = {{robot[j].a[0],robot[j].a[1],yaw,robot[j].a[3],x,y}, robot[j].num};
+            //Checking collision against obstacles
+            for(unsigned int i=0; i<obstacles.size(); i++){
+                bool aux = checkSeparation(robot_config, obstacles[i]);
+                if(aux == false){
+                    res = false;
+                }
+            }
+            if(res == false){
+                return res;
+            }
+            //			for(int k=0;k<arena.size();k++){
+            //				res = checkSeparationArena(robot_config, arena[k]);
+            //				if(res == false){
+            //					return res;
+            //				}
+            //			}
+        }
+        return res;
     }
 
-    //Returns true when separated and false when overlapping 
-    bool checkASC(SuperEllipse robot_, SuperEllipse obs_) const{      
-      Vector2d coeff_canon_i_;
-      coeff_canon_i_ << robot_.a[0], robot_.a[1];
-      Vector2d coeff_canon_j_;
-      coeff_canon_j_ << obs_.a[0], obs_.a[1];
-      Vector2d r_i_;
-      r_i_ << robot_.a[4], robot_.a[5];
-      Vector2d r_j_;
-      r_j_ << obs_.a[4], obs_.a[5];
-      Matrix2d A_i_ = robot_.rotation_angle_axis(robot_.a[2]); 
-      Matrix2d A_j_ = obs_.rotation_angle_axis(obs_.a[2]);
-      bool res = robot_.algebraic_condition_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
-      /*if(res){
+    //Returns true when separated and false when overlapping
+    bool checkASC(SuperEllipse robot_, SuperEllipse obs_) const{
+        Vector2d coeff_canon_i_;
+        coeff_canon_i_ << robot_.a[0], robot_.a[1];
+        Vector2d coeff_canon_j_;
+        coeff_canon_j_ << obs_.a[0], obs_.a[1];
+        Vector2d r_i_;
+        r_i_ << robot_.a[4], robot_.a[5];
+        Vector2d r_j_;
+        r_j_ << obs_.a[4], obs_.a[5];
+        Matrix2d A_i_ = robot_.rotation_angle_axis(robot_.a[2]);
+        Matrix2d A_j_ = obs_.rotation_angle_axis(obs_.a[2]);
+        bool res = robot_.algebraic_condition_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
+        /*if(res){
         std::cout<<"True"<<std::endl;
       }else{
         std::cout<<"False"<<std::endl;
       }*/
-      return res;       
+        return res;
     }
 
     //Returns true when separated and false when overlapping
     bool checkASCArena(SuperEllipse robot_, SuperEllipse arena_) const{
-      bool res = true; 
-      double max = 0;
-      for(int i=0;i<2;i++){
-        if(robot_.a[i]>max){
-          max = robot_.a[i];
+        bool res = true;
+        double max = 0;
+        for(int i=0;i<2;i++){
+            if(robot_.a[i]>max){
+                max = robot_.a[i];
+            }
         }
-      }     
-      Vector2d coeff_canon_i_;
-      coeff_canon_i_ << robot_.a[0], robot_.a[1];
-      Vector2d coeff_canon_j_;
-      //coeff_canon_j_ << (arena_.a[0]-(max*2)), (arena_.a[1]-(max*2));
-      coeff_canon_j_ << (arena_.a[0]-(max)), (arena_.a[1]-(max));
-      Vector2d r_i_;
-      r_i_ << robot_.a[4], robot_.a[5];
-      Vector2d r_j_;
-      r_j_ << arena_.a[4], arena_.a[5];
-      
-      
-      Matrix2d A_i_ = robot_.rotation_angle_axis(robot_.a[2]); 
-      Matrix2d A_j_ = arena_.rotation_angle_axis(arena_.a[2]);
-      bool aux = robot_.algebraic_condition_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
-      if(aux == true){
-        res = false;
-      }
-      
-      //If arena is a superellipsoid with epsilon = 0.001
-      /*if((coeff_canon_i_(0,0)<-coeff_canon_j_(0,0) || coeff_canon_i_(0,0)>coeff_canon_j_(0,0)) &&
+        Vector2d coeff_canon_i_;
+        coeff_canon_i_ << robot_.a[0], robot_.a[1];
+        Vector2d coeff_canon_j_;
+        //coeff_canon_j_ << (arena_.a[0]-(max*2)), (arena_.a[1]-(max*2));
+        coeff_canon_j_ << (arena_.a[0]-(max)), (arena_.a[1]-(max));
+        Vector2d r_i_;
+        r_i_ << robot_.a[4], robot_.a[5];
+        Vector2d r_j_;
+        r_j_ << arena_.a[4], arena_.a[5];
+
+
+        Matrix2d A_i_ = robot_.rotation_angle_axis(robot_.a[2]);
+        Matrix2d A_j_ = arena_.rotation_angle_axis(arena_.a[2]);
+        bool aux = robot_.algebraic_condition_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, A_i_, A_j_);
+        if(aux == true){
+            res = false;
+        }
+
+        //If arena is a superellipsoid with epsilon = 0.001
+        /*if((coeff_canon_i_(0,0)<-coeff_canon_j_(0,0) || coeff_canon_i_(0,0)>coeff_canon_j_(0,0)) &&
          (coeff_canon_i_(1,0)<-coeff_canon_j_(1,0) || coeff_canon_i_(1,0)>coeff_canon_j_(1,0)) ){
         res = false;
-      } */     
-      return res;
+      } */
+        return res;
     }
 
-    //Returns true when separated and false when overlapping 
-    bool checkSeparation(SuperEllipse robot_, SuperEllipse obs_) const{      
-      Vector2d coeff_canon_i_;
-      coeff_canon_i_ << robot_.a[0], robot_.a[1];
-      Vector2d coeff_canon_j_;
-      coeff_canon_j_ << obs_.a[0], obs_.a[1];
-      Vector2d r_i_;
-      r_i_ << robot_.a[4], robot_.a[5];
-      Vector2d r_j_;
-      r_j_ << obs_.a[4], obs_.a[5];
-      bool res = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], obs_.a[2]);
-      /*if(res){
+    //Returns true when separated and false when overlapping
+    bool checkSeparation(SuperEllipse robot_, SuperEllipse obs_) const{
+        Vector2d coeff_canon_i_;
+        coeff_canon_i_ << robot_.a[0], robot_.a[1];
+        Vector2d coeff_canon_j_;
+        coeff_canon_j_ << obs_.a[0], obs_.a[1];
+        Vector2d r_i_;
+        r_i_ << robot_.a[4], robot_.a[5];
+        Vector2d r_j_;
+        r_j_ << obs_.a[4], obs_.a[5];
+        bool res = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], obs_.a[2]);
+        /*if(res){
         std::cout<<"True"<<std::endl;
       }else{
         std::cout<<"False"<<std::endl;
       }*/
-      return res;       
+        return res;
     }
 
     //Returns true when separated and false when overlapping
     bool checkSeparationArena(SuperEllipse robot_, SuperEllipse arena_) const{
-      bool res = true; 
-      double max = 0;
-      for(int i=0;i<3;i++){
-        if(robot_.a[i]>max){
-          max = robot_.a[i];
+        bool res = true;
+        double max = 0;
+        for(int i=0;i<3;i++){
+            if(robot_.a[i]>max){
+                max = robot_.a[i];
+            }
         }
-      }     
-      Vector2d coeff_canon_i_;
-      coeff_canon_i_ << robot_.a[0], robot_.a[1];
-      Vector2d coeff_canon_j_;
-      coeff_canon_j_ << (arena_.a[0]-max), (arena_.a[1]-max);
-      Vector2d r_i_;
-      r_i_ << robot_.a[4], robot_.a[5];
-      Vector2d r_j_;
-      r_j_ << arena_.a[4], arena_.a[5];
-      bool aux = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], arena_.a[2]);
-      if(aux == true){
-        res = false;
-      }       
-      return res;
+        Vector2d coeff_canon_i_;
+        coeff_canon_i_ << robot_.a[0], robot_.a[1];
+        Vector2d coeff_canon_j_;
+        coeff_canon_j_ << (arena_.a[0]-max), (arena_.a[1]-max);
+        Vector2d r_i_;
+        r_i_ << robot_.a[4], robot_.a[5];
+        Vector2d r_j_;
+        r_j_ << arena_.a[4], arena_.a[5];
+        bool aux = robot_.fcl_separation(coeff_canon_i_, coeff_canon_j_, r_i_, r_j_, robot_.a[2], arena_.a[2]);
+        if(aux == true){
+            res = false;
+        }
+        return res;
     }
 
     og::SimpleSetupPtr ss_;
@@ -533,11 +536,11 @@ private:
 
     unsigned int nodes_graph;
     unsigned int edges_graph;
-    int total_random;
+    //    int total_random;
     int nodes_path;
     int flag;
-    double astar_time;
-    double construct_time;
+    //    double astar_time;
+    //    double construct_time;
     double total_time;
     double valid_space;
     int id_planner;
@@ -585,17 +588,17 @@ vector<vector<double>> parse2DCsvFile(string inputFileName) {
 
 
 int main(int argc, char ** argv){
-   	if (argc != 8) {
+    if (argc != 8) {
         cerr<< "Usage: Please add 1) configuration file 2)Agent 3)Arena 4)Obstacles 5)int indicating which planner to use 6) N iteratons 7)sampler" << endl;
         return 1;
     }
 
-	std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
+    std::cout << "OMPL version: " << OMPL_VERSION << std::endl;
     
-  	std::vector<SuperEllipse> robot_parts;
-	std::vector<SuperEllipse> arena_parts;
-	std::vector<SuperEllipse> obstacles;
- 
+    std::vector<SuperEllipse> robot_parts;
+    std::vector<SuperEllipse> arena_parts;
+    std::vector<SuperEllipse> obstacles;
+
     string file_endpt = argv[1];
     vector<vector<double> > endPts = parse2DCsvFile(file_endpt);
 
@@ -625,9 +628,9 @@ int main(int argc, char ** argv){
     string file_robConfig = argv[2];
     vector<vector<double> > rob_config = parse2DCsvFile(file_robConfig);
     for(int j=0; j<rob_config.size(); j++){
-      SuperEllipse robot_aux = {{rob_config[j][0],rob_config[j][1],rob_config[j][2],
-                                rob_config[j][3],rob_config[j][4],rob_config[j][5]}, b0};	      
-      robot_parts.push_back(robot_aux);  
+        SuperEllipse robot_aux = {{rob_config[j][0],rob_config[j][1],rob_config[j][2],
+                                   rob_config[j][3],rob_config[j][4],rob_config[j][5]}, b0};
+        robot_parts.push_back(robot_aux);
     }
 
     // Environment
@@ -636,25 +639,26 @@ int main(int argc, char ** argv){
     vector<vector<double> > arena_config = parse2DCsvFile(file_arenaConfig);
     // Arena and Obstacles as class of SuperEllipse
     for(int j=0; j<arena_config.size(); j++){
-      SuperEllipse arena_aux = {{arena_config[j][0],arena_config[j][1],arena_config[j][2],
-                                arena_config[j][3],arena_config[j][4],arena_config[j][5]}, b0};	      
-      arena_parts.push_back(arena_aux);  
+        SuperEllipse arena_aux = {{arena_config[j][0],arena_config[j][1],arena_config[j][2],
+                                   arena_config[j][3],arena_config[j][4],arena_config[j][5]}, b0};
+        arena_parts.push_back(arena_aux);
     }
 
     string file_obsConfig = argv[4];
     vector<vector<double> > obs_config = parse2DCsvFile(file_obsConfig);
     for(int j=0; j<obs_config.size(); j++){
-      SuperEllipse obs_aux = {{obs_config[j][0],obs_config[j][1],obs_config[j][2],
-                                obs_config[j][3],obs_config[j][4],obs_config[j][5]}, b0};	      
-      obstacles.push_back(obs_aux);  
-    }   
+        SuperEllipse obs_aux = {{obs_config[j][0],obs_config[j][1],obs_config[j][2],
+                                 obs_config[j][3],obs_config[j][4],obs_config[j][5]}, b0};
+        obstacles.push_back(obs_aux);
+    }
 
     std::ofstream outfile;
     outfile.open("time_fcl.csv", std::ios_base::app);
-    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,ASTAR_TIME,CONST_TIME,RANDOM_CONF,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
-    outfile.close(); 
+    //    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,ASTAR_TIME,CONST_TIME,RANDOM_CONF,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
+    outfile << "PLANNER,SAMPLER,SUCCESS,TOTAL_TIME,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
+    outfile.close();
     //Planner number: PRM:0, PRMstar:1, RRT:2, RRTconnect:3
-    int N = atoi(argv[6]);  
+    int N = atoi(argv[6]);
     int planner_used =atoi(argv[5]);
     int sampler_used = atoi(argv[7]);
     for(int i = 0; i < N; i++){

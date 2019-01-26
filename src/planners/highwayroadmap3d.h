@@ -27,19 +27,19 @@ typedef property_map<AdjGraph, edge_weight_t>::type WeightMap;
 
 
 // euclidean distance heuristic
-template <class Graph, class CostType>
-class distance_heuristic : public astar_heuristic<Graph, CostType>
-{
-public:
-  distance_heuristic(Vertex Goal, AdjGraph &graph) : Goal_(Goal), graph_(graph) {}
-  CostType operator()(Vertex u)
-  {
-      return get(vertex_index, graph_, Goal_) - get(vertex_index, graph_, Goal_);
-  }
-private:
-  Vertex Goal_;
-  AdjGraph graph_;
-};
+//template <class Graph, class CostType>
+//class distance_heuristic : public astar_heuristic<Graph, CostType>
+//{
+//public:
+//  distance_heuristic(Vertex Goal, AdjGraph &graph) : Goal_(Goal), graph_(graph) {}
+//  CostType operator()(Vertex u)
+//  {
+//      return get(vertex_index, graph_, Goal_) - get(vertex_index, graph_, Goal_);
+//  }
+//private:
+//  Vertex Goal_;
+//  AdjGraph graph_;
+//};
 
 // cf_cell: collision-free points
 struct cf_cellYZ{
@@ -50,13 +50,13 @@ public:
     vector< vector<double> > xM;
 };
 
-struct cf_cell{
+struct cf_cell3D{
     vector<double> tz;
     vector<cf_cellYZ> cellYZ;
 };
 
 // boundary: Minkowski boundary points for obstacles and arenas
-struct boundary{
+struct boundary3D{
 public:
     vector<MatrixXd> bd_s, bd_o;
 
@@ -70,13 +70,13 @@ public:
 };
 
 // Parameters for the polyhedron local c-space
-struct polyCSpace{
+struct polyCSpace3D{
 public:
     vector< vector<double> > vertex;
     vector< vector<double> > invMat;
 };
 
-struct option{
+struct option3D{
     double infla;
     size_t N_layers, N_dy, sampleNum, N_o, N_s;
     vector<double> Lim;
@@ -126,7 +126,7 @@ public:
     double Cost=0.0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
-    polyCSpace polyVtx;
+    polyCSpace3D polyVtx;
 
     struct Time{
     public:
@@ -135,8 +135,8 @@ public:
 
     // functions
 private:
-    boundary::sepBd separateBoundary(MatrixXd bd);
-    boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
+    boundary3D::sepBd separateBoundary(MatrixXd bd);
+    boundary3D::sepBd closestPt(boundary3D::sepBd P_bd, double ty);
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
     vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
@@ -145,16 +145,16 @@ private:
     vector< vector<double> > sampleSO3();
 
 public:
-    highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace polyVtx, vector< vector<double> > endpt,
-                     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option opt);
+    highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace3D polyVtx, vector< vector<double> > endpt,
+                     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt);
     void plan();
     void buildRoadmap();
-    boundary boundaryGen();
-    cf_cell sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
+    boundary3D boundaryGen();
+    cf_cell3D sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     cf_cellYZ sweepLine(vector<double> ty,
                         MatrixXd x_s_L, MatrixXd x_s_R,
                         MatrixXd x_o_L, MatrixXd x_o_R);
-    void connectOneLayer(cf_cell cell);
+    void connectOneLayer(cf_cell3D cell);
     void connectOnePlane(double tz, cf_cellYZ cellYZ);
     void connectMultiLayer();
     void search();
