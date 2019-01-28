@@ -31,8 +31,7 @@ classdef HighwayRoadmap3D < handle
         I_goal               % Index in V Corr to Nearest Vertex with Goal
     end
     properties
-        Graph        % Customized graph which contains an array of vertices
-        % and an adjacency matrix
+        Graph        % Graph: Vertices list (V) and Adjacency Matrix (AdjMat)
         Robot        % Robot Object of class SuperQuadrics
         EndPts       % Start and Goal points of the robot
         Arena        % Arena Obj. of class SuperQuadrics
@@ -107,7 +106,7 @@ classdef HighwayRoadmap3D < handle
             
             for i = 1:Obj.N_layers
                 % Initialize angle of robot
-%                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
+                %                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
                 Obj.Robot.q = Obj.q_r(:,i);
                 
                 % Generate Adjacency Matrix for one layer
@@ -118,7 +117,7 @@ classdef HighwayRoadmap3D < handle
                 [A_connect_new, V_new] = Obj.OneLayer(CF_Cell{i});
                 
                 % Store AdjMat and Vertices
-                % concatenate adjacency matrices in different layers
+                % append adjacency matrix in different layers
                 Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, A_connect_new);
                 % concatenate mid pnts set in different layers
                 Obj.Graph.V = [Obj.Graph.V V_new];
@@ -147,8 +146,8 @@ classdef HighwayRoadmap3D < handle
                 V1 = Obj.Graph.V(1:3,start:N_V_l1);
                 
                 if l == Obj.N_layers
-%                     N_V_l2 = Obj.N_v_layer(2,1);
-%                     V2 = Obj.Graph.V(1:3,1:N_V_l2);
+                    %                     N_V_l2 = Obj.N_v_layer(2,1);
+                    %                     V2 = Obj.Graph.V(1:3,1:N_V_l2);
                     continue;
                 else
                     N_V_l2 = Obj.N_v_layer(2,l+1);
@@ -167,10 +166,10 @@ classdef HighwayRoadmap3D < handle
                         j2 = n + N_V_l1;
                         
                         V1p = Obj.Graph.V(:,j1);
-                        V2p = Obj.Graph.V(:,j1);
-
+                        V2p = Obj.Graph.V(:,j2);
+                        
                         [judge, midVtx] = Obj.IsConnectPoly(V1p,V2p);
-
+                        
                         if judge
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
@@ -375,9 +374,9 @@ classdef HighwayRoadmap3D < handle
                                     A_connect_XY(I2(k2), I1(k)) = 1;
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     if Obj.PlotSingleLayer
-%                                         plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-%                                             [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-%                                             [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+                                        %                                         plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+                                        %                                             [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+                                        %                                             [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                     end
                                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 end
@@ -419,9 +418,9 @@ classdef HighwayRoadmap3D < handle
                                         A_connect_XY(I2(k2), I1(k)) = 1;
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         if Obj.PlotSingleLayer
-%                                             plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
-%                                                 [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
-%                                                 [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
+                                            %                                             plot3([V_XY(1,I1(k)) V_XY(1,I2(k2))],...
+                                            %                                                 [V_XY(2,I1(k)) V_XY(2,I2(k2))],...
+                                            %                                                 [V_XY(3,I1(k)) V_XY(3,I2(k2))], '-k', 'LineWidth', 1.2)
                                         end
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                     end
@@ -432,7 +431,7 @@ classdef HighwayRoadmap3D < handle
                 end
             end
         end
-       
+        
         %% ----------------- Path Searching -------------------------------
         %% Graph Search using Dijkstra Algorithm
         function Dijkstra(Obj)
@@ -485,7 +484,7 @@ classdef HighwayRoadmap3D < handle
             
             for i = 1:size(Obj.Obs,2)
                 Obj.Obs(i).PlotShape;
-
+                
                 box on;
                 text(Obj.Obs(i).tc(1),Obj.Obs(i).tc(2),Obj.Obs(i).tc(3),...
                     num2str(i), 'Color', [1 1 1]);
@@ -545,15 +544,15 @@ classdef HighwayRoadmap3D < handle
             CF_cellXY = cell(Obj.N_dx, 2);
             
             % the increment along the x axis
-%             min_x = min(bd_s(1,:));
-%             max_x = max(bd_s(1,:));
+            %             min_x = min(bd_s(1,:));
+            %             max_x = max(bd_s(1,:));
             min_x = -Obj.Lim(1); max_x = Obj.Lim(1);
             delta_x = (max_x-min_x)/(Obj.N_dx-1);
             tx = min_x:delta_x:max_x;
             
             % Increment along the y axis
-%             min_y = min(bd_s(2,:));
-%             max_y = max(bd_s(2,:));
+            %             min_y = min(bd_s(2,:));
+            %             max_y = max(bd_s(2,:));
             min_y = -Obj.Lim(2); max_y = Obj.Lim(2);
             delta_y = (max_y-min_y)/(Obj.N_dy-1);
             ty = min_y:delta_y:max_y;
@@ -562,8 +561,8 @@ classdef HighwayRoadmap3D < handle
             [bd_s_L, bd_s_R] = Separate_Boundary2(bd_s);
             [bd_o_L, bd_o_R] = Separate_Boundary2(bd_o);
             
-%             plot3(bd_s_L{1}(1,:),bd_s_L{1}(2,:),bd_s_L{1}(3,:),'.r')
-%             plot3(bd_s_R{1}(1,:),bd_s_R{1}(2,:),bd_s_R{1}(3,:),'.m')
+            %             plot3(bd_s_L{1}(1,:),bd_s_L{1}(2,:),bd_s_L{1}(3,:),'.r')
+            %             plot3(bd_s_R{1}(1,:),bd_s_R{1}(2,:),bd_s_R{1}(3,:),'.m')
             
             % Max and Min for obstacles
             o_max_x = squeeze(max(bd_o(1,:,:),[],2));
@@ -589,32 +588,32 @@ classdef HighwayRoadmap3D < handle
                     z_o_R(j,:) = z_o_R_new;
                 end
                 
-%                 for k = 1:size(bd_o,3)
-%                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_L(:,k),'b.')
-%                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_R(:,k),'c.')
-%                 end
-%                 plot3([tx(i)*ones(1,Obj.N_dy);tx(i)*ones(1,Obj.N_dy)],...
-%                     [ty;ty],[z_s_L,z_s_R]','k')
+                %                 for k = 1:size(bd_o,3)
+                %                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_L(:,k),'b.')
+                %                     plot3(tx(i)*ones(Obj.N_dy),ty,z_o_R(:,k),'c.')
+                %                 end
+                %                 plot3([tx(i)*ones(1,Obj.N_dy);tx(i)*ones(1,Obj.N_dy)],...
+                %                     [ty;ty],[z_s_L,z_s_R]','k')
                 
                 % Record cell info
                 CF_cellXY{i,1} = tx(i);
                 CF_cellXY{i,2} = Obj.SweepLine(ty, z_s_L, z_s_R, z_o_L, z_o_R);
             end
             
-%             for i = 1:Obj.N_dx
-%                 xx = CF_cellXY{i,1};
-%                 cellY = CF_cellXY{i,2};
-%                 yy = []; zz = [];
-%                 for j = 1:Obj.N_dy
-%                     cellZ = cell2mat(cellY(j,4));
-%                     for k = 1:length(cellZ)
-%                         yy = [yy; cell2mat(cellY(j,1))];
-%                         zz = [zz; cellZ(k)];
-%                     end
-%                 end
-%                 
-%                 plot3(xx*ones(size(yy,1),1),yy,zz,'r.')
-%             end
+            %             for i = 1:Obj.N_dx
+            %                 xx = CF_cellXY{i,1};
+            %                 cellY = CF_cellXY{i,2};
+            %                 yy = []; zz = [];
+            %                 for j = 1:Obj.N_dy
+            %                     cellZ = cell2mat(cellY(j,4));
+            %                     for k = 1:length(cellZ)
+            %                         yy = [yy; cell2mat(cellY(j,1))];
+            %                         zz = [zz; cellZ(k)];
+            %                     end
+            %                 end
+            %
+            %                 plot3(xx*ones(size(yy,1),1),yy,zz,'r.')
+            %             end
             
         end
         
@@ -670,7 +669,7 @@ classdef HighwayRoadmap3D < handle
                 CF_cellZ{k,4} = (bd_CF(:,1)+bd_CF(:,2))./2;
             end
             % remove the empty entries
-%             CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
+            %             CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
         end
         
         %% Enhanced cell decomposition
@@ -884,47 +883,86 @@ classdef HighwayRoadmap3D < handle
         end
         
         %% Samples from SO(3)
-%         function quat = sampleSO3(Obj)
-%             N = Obj.N_layers;
-%             
-%             % Identity rotation
-%             e = [0;0;0;1];
-%             
-%             % Uniform random samples for Quaternions
-%             u = 0.5*[ones(1,N);rand(2,N)];
-%             quat = nan(4,N);
-% 
-%             dist = nan(1,N);
-%             for i = 1:N
-%                 quat(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
-%                           sqrt(1-u(1,i))*cos(2*pi*u(2,i));
-%                           sqrt(u(1,i))*sin(2*pi*u(3,i));
-%                           sqrt(u(1,i))*cos(2*pi*u(3,i))];
-%                       
-%                 dist(i) = norm(quat(:,i)-e);
-%             end
-%             
-%             % Sort with respect to Identity
-%             [~,idx] = sort(dist);
-%             quat = quat(:,idx);
-%         end
+        %         function quat = sampleSO3(Obj)
+        %             N = Obj.N_layers;
+        %
+        %             % Identity rotation
+        %             e = [0;0;0;1];
+        %
+        %             % Uniform random samples for Quaternions
+        %             u = 0.5*[ones(1,N);rand(2,N)];
+        %             quat = nan(4,N);
+        %
+        %             dist = nan(1,N);
+        %             for i = 1:N
+        %                 quat(:,i) = [sqrt(1-u(1,i))*sin(2*pi*u(2,i));
+        %                           sqrt(1-u(1,i))*cos(2*pi*u(2,i));
+        %                           sqrt(u(1,i))*sin(2*pi*u(3,i));
+        %                           sqrt(u(1,i))*cos(2*pi*u(3,i))];
+        %
+        %                 dist(i) = norm(quat(:,i)-e);
+        %             end
+        %
+        %             % Sort with respect to Identity
+        %             [~,idx] = sort(dist);
+        %             quat = quat(:,idx);
+        %         end
         
         function q_exp = sampleSO3(Obj)
             N = Obj.N_layers;
+%             figure; hold on; axis equal;
             
             % Uniform random samples for Exponential coordinates
             q_exp = zeros(3,N);
+            q_exp(:,1:2) = Obj.EndPts(4:6,1:2);
+            
+%             plot3(q_exp(1,1:2),q_exp(2,1:2),q_exp(3,1:2), 'r*')
             dist = zeros(1,N);
-            for i = 1:N
-                q_exp(:,i) = pi*rand(3,1);
+            for i = 3:N
+                q_exp(:,i) = pi * rand(3,1);
                 R = expm(skew(q_exp(:,i)));
-                      
+                
                 dist(i) = norm( vex( logm(R'*eye(3)) ) );
             end
             
             % Sort with respect to Identity
             [~,idx] = sort(dist);
             q_exp = q_exp(:,idx);
+            
+            
+%             plot3(q_exp(1,:),q_exp(2,:),q_exp(3,:), 'b.')
+%             ellipsoid(0,0,0,pi,pi,pi)
+        end
+        
+        
+        %         function q_exp = sampleSO3(Obj)
+        %             N = Obj.N_layers;
+        %             q_exp = zeros(3,N);
+        %             q_exp(:,1:2) = Obj.EndPts(4:6,1:2);
+        %
+        %             % Interpolation between start and goal
+        %             q_s = Obj.EndPts(4:6,1);
+        %             q_g = Obj.EndPts(4:6,2);
+        %
+        %             R_s = expm(skew(q_s));
+        %             R_g = expm(skew(q_g));
+        %
+        %             for i = 3:N
+        %                 R_exp = R_s * expm( 1/N * logm(R_g'*R_s) * i );
+        %                 q_exp(:,i) = vex( logm(R_exp) ) + 0.05*rand(3,1);
+        % %                 q_exp(:,i) = q_s + (q_g-q_s)/(N-1) * i + 0.05*rand(3,1);
+        %             end
+        %
+        %             figure; hold on; axis equal;
+        %             plot3(q_exp(1,:),q_exp(2,:),q_exp(3,:), '.')
+        %             plot3(q_s(1),q_s(2),q_s(3),'g*')
+        %             plot3(q_g(1),q_g(2),q_g(3),'r*')
+        %         end
+        
+        function dist_so3 = distSO3(Obj, q1, q2)
+            R1 = expm(skew(q1));
+            R2 = expm(skew(q2));
+            dist_so3 = norm( vex( logm(R1'*R2) ) );
         end
     end
     

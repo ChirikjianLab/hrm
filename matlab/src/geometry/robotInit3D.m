@@ -16,12 +16,12 @@ eps_r = [1;1];
 
 % start and goal configurations
 tc_start = [-55; 0; -15];
-q_start = pi * [0.2;0.1;0.4];
+q_start = pi * rand(3,1);
 
 tc_goal  = [ 53;-20; 10];
-q_goal = pi * [-0.16;0.17;0.24];
+q_goal = pi * rand(3,1);
 
-robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.1, vargin);
+robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.2, vargin);
 
 EndPts = [[tc_start; q_start],[tc_goal; q_goal]];
 
