@@ -19,9 +19,9 @@ toc;
 %% Options for building the roadmap
 option.infla = robot.infla;
 
-option.N_layers = 70;
-option.N_dx = 10;
-option.N_dy = 10;
+option.N_layers = 2;
+option.N_dx = 20;
+option.N_dy = 20;
 option.sampleNum = 100;
 
 % plot options
@@ -34,7 +34,8 @@ disp('Highway Roadmap 3D');
 
 % tic;
 robot.color = 'g';
-highway = HighwayRoadmap3D_2(robot, EndPts, arena, obs, option);
+% highway = HighwayRoadmap3D(robot, EndPts, arena, obs, option);
+highway = HighwayRoadmap3D_3(robot, EndPts, arena, obs, option);
 % highway.Plan();
 % if ~isnan(highway.Paths)
 %     valid = highway.validation();
