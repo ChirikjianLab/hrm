@@ -9,20 +9,35 @@ function [z_bd_L, z_bd_R] = ClosestPts_dxdy(P_bd_L, P_bd_R, ...
 
 
 N_bd = size(P_bd_L,2); % # of curves
-I_bd_L = zeros(N_bd,1);
-I_bd_R = zeros(N_bd,1);
-z_bd_L = zeros(1,N_bd);
-z_bd_R = zeros(1,N_bd);
+I_bd_L = nan(N_bd,1);
+I_bd_R = nan(N_bd,1);
+z_bd_L = nan(1,N_bd);
+z_bd_R = nan(1,N_bd);
 
 for i = 1:N_bd
-    d_bd_L = []; d_bd_R = [];
+%     plot3(P_bd_L{i}(1,:), P_bd_L{i}(2,:), P_bd_L{i}(3,:), 'g.')
+%     plot3(P_bd_R{i}(1,:), P_bd_R{i}(2,:), P_bd_R{i}(3,:), 'r.')
+    
     % find the closed points on the left
-    d_bd_L = P_bd_L{i}(1:2,:)-[tx;ty];
-    [~, I_bd_L(i)] = min( d_bd_L(1,:).^2+d_bd_L(2,:).^2 );
+    [~, I_bd_L_x] = min( abs(P_bd_L{i}(1,:) - tx) );
+    [~, I_bd_L_y] = min( abs(P_bd_L{i}(2,I_bd_L_x) - ty) );
+    I_bd_L(i) = I_bd_L_x(I_bd_L_y);
     
     % find the closed points on the right
-    d_bd_R = P_bd_R{i}(1:2,:)-[tx;ty];
-    [~, I_bd_R(i)] = min( d_bd_R(1,:).^2+d_bd_R(2,:).^2 );
+    [~, I_bd_R_x] = min( abs(P_bd_R{i}(1,:) - tx) );
+    [~, I_bd_R_y] = min( abs(P_bd_R{i}(2,I_bd_R_x) - ty) );
+    I_bd_R(i) = I_bd_R_x(I_bd_R_y);
+
+    
+    
+%     d_bd_L = []; d_bd_R = [];
+%     % find the closed points on the left
+%     d_bd_L = P_bd_L{i}(1:2,:)-[tx;ty];
+%     [~, I_bd_L(i)] = min( d_bd_L(1,:).^2+d_bd_L(2,:).^2 );
+%     
+%     % find the closed points on the right
+%     d_bd_R = P_bd_R{i}(1:2,:)-[tx;ty];
+%     [~, I_bd_R(i)] = min( d_bd_R(1,:).^2+d_bd_R(2,:).^2 );
 end
 
 % check if tx and ty are in the range

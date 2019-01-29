@@ -1,13 +1,14 @@
 function [P_bd_L, P_bd_R] = Separate_Boundary2(P_bd)
 
-P_bd_L = [];
-P_bd_R = [];
+N_bd = size(P_bd,3); % # of curves
+P_bd_L = cell(1,N_bd);
+P_bd_R = cell(1,N_bd);
 if isempty(P_bd)
     return;
 end
 
-N_pt = size(P_bd,2); % # of pts per curve
-N_bd = size(P_bd,3); % # of curves
+% N_pt = size(P_bd,2); % # of pts per curve
+
 Max_Z = squeeze(max(P_bd(3,:,:),[],2));
 Min_Z = squeeze(min(P_bd(3,:,:),[],2));
 Mid_Z = (Max_Z+Min_Z)/2;
