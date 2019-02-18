@@ -22,7 +22,7 @@ classdef HighwayRoadmap3D_3 < handle
         sampleNum            % # of samples inside KC c-space
         
         N_layers             % Number of Layers
-        q_r                  % Quoternions of the Robot
+        q_r                  % Rotation param of the Robot
         N_v_layer            % Number of vertices in each layer
         d12                  % Distance Metric for Two Layers
         polyVtx              % Vertices defining local c-space
@@ -108,7 +108,7 @@ classdef HighwayRoadmap3D_3 < handle
             
             for i = 1:Obj.N_layers
                 % Initialize angle of robot
-%                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
+                %                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
                 Obj.Robot.q = Obj.q_r(:,i);
                 
                 % Generate Adjacency Matrix for one layer
@@ -168,9 +168,9 @@ classdef HighwayRoadmap3D_3 < handle
                         
                         V1p = Obj.Graph.V(:,j1);
                         V2p = Obj.Graph.V(:,j2);
-
+                        
                         judge = Obj.isPtinCFLine(V1p, V2p);
-
+                        
                         if judge
                             Obj.Graph.AdjMat(j1, j2) = 1;
                             Obj.Graph.AdjMat(j2, j1) = 1;
@@ -470,10 +470,10 @@ classdef HighwayRoadmap3D_3 < handle
                             if ( (V2(3) >= cellX{j,2}(k)) && (V2(3) <= cellX{j,3}(k)) )
                                 judge = 1;
                                 
-
+                                
                                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 if Obj.PlotSingleLayer
-%                                 figure(2); hold on; axis equal;
+                                    %                                 figure(2); hold on; axis equal;
                                     plot3([V1(1) V1(1)], [V1(2) V1(2)], [cellX{j,2}(k) cellX{j,3}(k)], ...
                                         'k-', 'LineWidth', 1.5)
                                     plot3(V1(1), V1(2), V1(3), 'g*')
@@ -487,7 +487,7 @@ classdef HighwayRoadmap3D_3 < handle
                 end
             end
         end
-       
+        
         %% ----------------- Path Searching -------------------------------
         %% Graph Search using Dijkstra Algorithm
         function Dijkstra(Obj)
@@ -540,7 +540,7 @@ classdef HighwayRoadmap3D_3 < handle
             
             for i = 1:size(Obj.Obs,2)
                 Obj.Obs(i).PlotShape;
-
+                
                 box on;
                 text(Obj.Obs(i).tc(1),Obj.Obs(i).tc(2),Obj.Obs(i).tc(3),...
                     num2str(i), 'Color', [1 1 1]);
@@ -629,6 +629,13 @@ classdef HighwayRoadmap3D_3 < handle
                         bd_o_R, o_max_x, o_min_x, o_max_y, o_min_y, tx(i), ty(j));
                     z_o_L(j,:) = z_o_L_new;
                     z_o_R(j,:) = z_o_R_new;
+                    
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    if Obj.PlotSingleLayer
+                        plot3(tx(i), ty(j), z_o_L_new, 'g*')
+                        plot3(tx(i), ty(j), z_o_R_new, 'r*')
+                    end
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 end
                 
                 % Record cell info
@@ -689,7 +696,7 @@ classdef HighwayRoadmap3D_3 < handle
                 CF_cellZ{k,4} = (bd_CF(:,1)+bd_CF(:,2))./2;
             end
             % remove the empty entries
-%             CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
+            %             CF_cellZ = reshape(CF_cellZ(~cellfun('isempty',CF_cellZ)),[],4);
         end
         
         %% Enhanced cell decomposition
@@ -831,25 +838,6 @@ classdef HighwayRoadmap3D_3 < handle
             x_o_Ex = sort(x_o_Ex,2);
         end
         
-        %% Transfers between Quaternion and Twist coord
-        function t = quat2twist(Obj,q)
-            if size(q,1) == 4 && size(q,2) == 1
-                q = q';
-            end
-            
-            R = quat2rotm(q);
-            t = vex(logm(R));
-        end
-        
-        function q = twist2quat(Obj,t)
-            R = expm(skew(t));
-            q = rotm2quat(R);
-            
-            if size(q,1) == 1 && size(q,2) == 4
-                q = q';
-            end
-        end
-        
         %% Samples from SO(3)
         function q_exp = sampleSO3(Obj)
             N = Obj.N_layers;
@@ -857,16 +845,20 @@ classdef HighwayRoadmap3D_3 < handle
             % Uniform random samples for Exponential coordinates
             q_exp = zeros(3,N);
             dist = zeros(1,N);
-            for i = 1:N
+            i = 1;
+            while i ~= N
                 q_exp(:,i) = pi*rand(3,1);
-                R = expm(skew(q_exp(:,i)));
-                      
-                dist(i) = norm( vex( logm(R'*eye(3)) ) );
+                if norm(q_exp(:,i)) > pi, continue; end
+                
+                %                 R = expm(skew(q_exp(:,i)));
+                
+                %                 dist(i) = norm( vex( logm(R'*eye(3)) ) );
+                i = i+1;
             end
             
             % Sort with respect to Identity
-            [~,idx] = sort(dist);
-            q_exp = q_exp(:,idx);
+            %             [~,idx] = sort(dist);
+            %             q_exp = q_exp(:,idx);
         end
         
         %% Tight-fitted ellipsoid
