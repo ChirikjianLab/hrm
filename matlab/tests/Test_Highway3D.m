@@ -13,20 +13,21 @@ vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
 [robot, EndPts] = robotInit3D(vargin);
 toc;
+disp('Environment Setup Finished!')
 
 % load('highway3D.mat');
 
 %% Options for building the roadmap
 option.infla = robot.infla;
 
-option.N_layers = 2;
+option.N_layers = 10;
 option.N_dx = 20;
 option.N_dy = 20;
 option.sampleNum = 100;
 
 % plot options
 option.plots.Lim = arena.a-robot.a(1);
-option.plots.isplot = 1;
+option.plots.isplot = 0;
 option.plots.D_layers = 20;
 
 %% Highway Roadmap
@@ -53,6 +54,8 @@ highway.MultiLayers();
 highway.ConnectBtwLayers();
 highway.Dijkstra();
 toc;
+
+disp('Planning Finished!')
 
 highway.PlotPath();
 

@@ -133,8 +133,6 @@ classdef HighwayRoadmap3D_3 < handle
         
         %% Connect vertices among adjacent C-layers
         function ConnectBtwLayers(Obj)
-            Obj.midLayer(); 
-            
             start = 1;
             numConnect = 0;
             for l = 1:Obj.N_layers
@@ -147,6 +145,14 @@ classdef HighwayRoadmap3D_3 < handle
                 else
                     N_V_l2 = Obj.N_v_layer(2,l+1);
                     V2 = Obj.Graph.V(1:3,N_V_l1+1:N_V_l2);
+                    
+                    % Construct the middle layer
+                    [c, q_c] = Obj.tfe(Obj.Robot.a, Obj.Robot.a,...
+                        Obj.q_r(:,l), Obj.q_r(:,l+1));
+                    E_c = Obj.Robot;
+                    E_c.a = c;
+                    E_c.q = q_c;
+                    Obj.midLayer(E_c);
                 end
                 
                 % Determine whether two vertices can be connected
@@ -167,6 +173,7 @@ classdef HighwayRoadmap3D_3 < handle
 
                         if judge
                             Obj.Graph.AdjMat(j1, j2) = 1;
+                            Obj.Graph.AdjMat(j2, j1) = 1;
                             
                             numConnect = numConnect+1;
                             %%%%%%%%%%%%%%%%%%%
@@ -420,23 +427,23 @@ classdef HighwayRoadmap3D_3 < handle
         
         %% ----------------- Layer Connections ----------------------------
         %% Middle layer from sphere of radius max(robot.a)
-        function midLayer(Obj)
+        function midLayer(Obj, E_c)
             bd_s = []; % boundary of the arena(s)
             bd_o = []; % boundary of the obstacles
             
-            % Enclose the robot by sphere of radius max(robot.a)
-            Sphere = Obj.Robot;
-            Sphere.a = max(Obj.Robot.a) * ones(3,1);
-            Sphere.q = zeros(3,1);
+%             % Enclose the robot by sphere of radius max(robot.a)
+%             Sphere = Obj.Robot;
+%             Sphere.a = max(Obj.Robot.a) * ones(3,1);
+%             Sphere.q = zeros(3,1);
             
             % inner boundary between the robot and the arena
             for i = 1:length(Obj.Arena)
-                bd_s_f = Obj.Arena(i).MinkowskiSum_3D_ES(Sphere, -1);
+                bd_s_f = Obj.Arena(i).MinkowskiSum_3D_ES(E_c, -1);
                 bd_s = cat(3, bd_s, bd_s_f);
             end
             % outer boundary between the robot and the arena
             for i = 1:length(Obj.Obs)
-                bd_o_f = Obj.Obs(i).MinkowskiSum_3D_ES(Sphere, 1);
+                bd_o_f = Obj.Obs(i).MinkowskiSum_3D_ES(E_c, 1);
                 bd_o = cat(3, bd_o, bd_o_f);
             end
             Obj.midLayer_cell = Obj.SweepPlaneXY(bd_s, bd_o);
@@ -860,6 +867,28 @@ classdef HighwayRoadmap3D_3 < handle
             % Sort with respect to Identity
             [~,idx] = sort(dist);
             q_exp = q_exp(:,idx);
+        end
+        
+        %% Tight-fitted ellipsoid
+        function [c, q_c] = tfe(Obj,a,b,q_a,q_b)
+            Ra = expm(skew(q_a));
+            Rb = expm(skew(q_b));
+            
+            % Shrinking affine transformation
+            r = min(b);
+            T = Rb*diag(r./b)*Rb';
+            
+            % In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
+            Ap = T \ Ra*diag(a.^(-2))*Ra' / T;
+            [Rap, semiAp] = svd(Ap);
+            a_p = diag(semiAp^(-1/2));
+            c_p = max(a_p,r);
+            
+            % Strech back
+            C = T * Rap*diag(c_p.^(-2))*Rap' * T;
+            [Rc, semiC] = svd(C);
+            c = diag(semiC^(-1/2));
+            q_c = vex(logm(Rc));
         end
     end
     
