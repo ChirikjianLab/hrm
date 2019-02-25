@@ -89,6 +89,7 @@ classdef SuperEllipse
                   
             % Parameters
             the = 0:2*pi/(obj.N-1):2*pi;
+            
             a1 = obj.ra; b1 = obj.rb; th1 = obj.ang; eps1 = obj.eps;
             a2 = objEllip.ra; b2 = objEllip.rb; th2 = objEllip.ang;
             C = [obj.tx;obj.ty];
@@ -217,9 +218,10 @@ classdef SuperEllipse
             % Generate N interpolated points of the given superellipse
             
             the = linspace(2*pi/(obj.N+1),2*pi+2*pi/(obj.N+1),obj.N);
+            
             x   = obj.ra*obj.sc_eps(the, obj.eps, 'cos');
             y   = obj.rb*obj.sc_eps(the, obj.eps, 'sin');
-            pnt = rot2(obj.ang)*[x; y] + repmat([obj.tx; obj.ty], 1, obj.N);
+            pnt = rot2(obj.ang)*[x; y] + [obj.tx; obj.ty];
         end
         
         %% Plot superelliptical shape
@@ -232,7 +234,7 @@ classdef SuperEllipse
             end
             
             xy = GetPoints(obj);
-            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha',0.8);
+            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.8);
         end
         
         %% Plot Minkowski boundary
@@ -242,7 +244,7 @@ classdef SuperEllipse
             % Plot the superellipse given the No. of points and fill color
             
             xy = MinkowskiSum_ES(obj, objEllip, K);
-            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha',0.8);
+            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.8);
         end
         
         %% Exponentiation function

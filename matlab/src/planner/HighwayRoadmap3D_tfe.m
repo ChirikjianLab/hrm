@@ -1,4 +1,4 @@
-classdef HighwayRoadmap3D_3 < handle
+classdef HighwayRoadmap3D_tfe < handle
     %HIGHWAYROADMAP3D builds a roadmap based on closed-form characterization
     % of the configuration space. Robots are modeled as an ellipsoid
     % while obstacles and arenas are modeled as unions of superquadrics.
@@ -44,7 +44,7 @@ classdef HighwayRoadmap3D_3 < handle
     
     methods
         %% Constructor
-        function Obj = HighwayRoadmap3D_3(Robot, EndPts, Arena, Obs, option)
+        function Obj = HighwayRoadmap3D_tfe(Robot, EndPts, Arena, Obs, option)
             % Robot: an ellipsoid, class: SuperQuadrics
             % Arena: a union of superquadrics, class: SuperQuadrics
             % Obs: a union of superquadrics, class: SuperQuadrics
@@ -108,7 +108,6 @@ classdef HighwayRoadmap3D_3 < handle
             
             for i = 1:Obj.N_layers
                 % Initialize angle of robot
-                %                 Obj.Robot.q = Obj.quat2twist( Obj.q_r(:,i) );
                 Obj.Robot.q = Obj.q_r(:,i);
                 
                 % Generate Adjacency Matrix for one layer
@@ -195,8 +194,8 @@ classdef HighwayRoadmap3D_3 < handle
         %% ----------- Explicit Knowledge of the Environment --------------
         %% Generate boundary points using Closed-Form Mink-Operations
         function [bd_s, bd_o] = Boundary(Obj)
-            bd_s = []; % boundary of the arena(s)
-            bd_o = []; % boundary of the obstacles
+            bd_s = cell(1,length(Obj.Arena)); % boundary of the arena(s)
+            bd_o = cell(1,length(Obj.Obs)); % boundary of the obstacles
             
             % Inflate the robot inflation factor, obtain the Mink
             % boundaries using the inflated robot
@@ -205,13 +204,12 @@ classdef HighwayRoadmap3D_3 < handle
             
             % inner boundary between the robot and the arena
             for i = 1:length(Obj.Arena)
-                bd_s_f = Obj.Arena(i).MinkowskiSum_3D_ES(Robot_infla, -1);
-                bd_s = cat(3, bd_s, bd_s_f);
+                bd_s{i} = Obj.Arena(i).MinkowskiSum_3D_ES(Robot_infla, -1);
             end
             % outer boundary between the robot and the arena
             for i = 1:length(Obj.Obs)
-                bd_o_f = Obj.Obs(i).MinkowskiSum_3D_ES(Robot_infla, 1);
-                bd_o = cat(3, bd_o, bd_o_f);
+                bd_o{i} = Obj.Obs(i).MinkowskiSum_3D_ES(Robot_infla, 1);
+%                 plot3(bd_o{i}(1,:),bd_o{i}(2,:),bd_o{i}(3,:),'.')
             end
         end
         
@@ -428,23 +426,16 @@ classdef HighwayRoadmap3D_3 < handle
         %% ----------------- Layer Connections ----------------------------
         %% Middle layer from sphere of radius max(robot.a)
         function midLayer(Obj, E_c)
-            bd_s = []; % boundary of the arena(s)
-            bd_o = []; % boundary of the obstacles
-            
-%             % Enclose the robot by sphere of radius max(robot.a)
-%             Sphere = Obj.Robot;
-%             Sphere.a = max(Obj.Robot.a) * ones(3,1);
-%             Sphere.q = zeros(3,1);
+            bd_s = cell(1,length(Obj.Arena)); % boundary of the arena(s)
+            bd_o = cell(1,length(Obj.Obs)); % boundary of the obstacles
             
             % inner boundary between the robot and the arena
             for i = 1:length(Obj.Arena)
-                bd_s_f = Obj.Arena(i).MinkowskiSum_3D_ES(E_c, -1);
-                bd_s = cat(3, bd_s, bd_s_f);
+                bd_s{i} = Obj.Arena(i).MinkowskiSum_3D_ES(E_c, -1);
             end
             % outer boundary between the robot and the arena
             for i = 1:length(Obj.Obs)
-                bd_o_f = Obj.Obs(i).MinkowskiSum_3D_ES(E_c, 1);
-                bd_o = cat(3, bd_o, bd_o_f);
+                bd_o{i} = Obj.Obs(i).MinkowskiSum_3D_ES(E_c, 1);
             end
             Obj.midLayer_cell = Obj.SweepPlaneXY(bd_s, bd_o);
         end
@@ -469,7 +460,6 @@ classdef HighwayRoadmap3D_3 < handle
                         if ( (V1(3) >= cellX{j,2}(k)) && (V1(3) <= cellX{j,3}(k)) )
                             if ( (V2(3) >= cellX{j,2}(k)) && (V2(3) <= cellX{j,3}(k)) )
                                 judge = 1;
-                                
                                 
                                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                 if Obj.PlotSingleLayer
@@ -603,40 +593,46 @@ classdef HighwayRoadmap3D_3 < handle
             delta_y = (max_y-min_y)/(Obj.N_dy-1);
             ty = min_y:delta_y:max_y;
             
-            % Separate boundary into two parts
-            [bd_s_L, bd_s_R] = Separate_Boundary2(bd_s);
-            [bd_o_L, bd_o_R] = Separate_Boundary2(bd_o);
+%             % Separate boundary into two parts
+%             [bd_s_L, bd_s_R] = Separate_Boundary3D(bd_s);
+%             [bd_o_L, bd_o_R] = Separate_Boundary3D(bd_o);
             
-            % Max and Min for obstacles
-            o_max_x = squeeze(max(bd_o(1,:,:),[],2));
-            o_min_x = squeeze(min(bd_o(1,:,:),[],2));
-            o_max_y = squeeze(max(bd_o(2,:,:),[],2));
-            o_min_y = squeeze(min(bd_o(2,:,:),[],2));
+%             % Max and Min for obstacles
+%             for i = 1:length(bd_o)
+%                 o_max_x(i,1) = max(bd_o{i}(1,:));
+%                 o_min_x(i,1) = min(bd_o{i}(1,:));
+%                 o_max_y(i,1) = max(bd_o{i}(2,:));
+%                 o_min_y(i,1) = min(bd_o{i}(2,:));
+%             end
             
             % Find intersecting points on boundaries
             for i = 1:Obj.N_dx
-                % Registerd x coordinates, left, for the environment
-                z_s_L = nan(Obj.N_dy, size(bd_s,3));
-                z_s_R = nan(Obj.N_dy, size(bd_s,3));
-                z_o_L = nan(Obj.N_dy, size(bd_o,3));
-                z_o_R = nan(Obj.N_dy, size(bd_o,3));
-                for j = 1:Obj.N_dy
-                    [z_s_L_new, z_s_R_new] = ClosestPts_dxdy(bd_s_L,...
-                        bd_s_R, max_x, min_x, max_y, min_y, tx(i), ty(j));
-                    z_s_L(j,:) = z_s_L_new;
-                    z_s_R(j,:) = z_s_R_new;
-                    [z_o_L_new, z_o_R_new] = ClosestPts_dxdy(bd_o_L,...
-                        bd_o_R, o_max_x, o_min_x, o_max_y, o_min_y, tx(i), ty(j));
-                    z_o_L(j,:) = z_o_L_new;
-                    z_o_R(j,:) = z_o_R_new;
-                    
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    if Obj.PlotSingleLayer
-                        plot3(tx(i), ty(j), z_o_L_new, 'g*')
-                        plot3(tx(i), ty(j), z_o_R_new, 'r*')
-                    end
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                end
+%                 % Registerd x coordinates, left, for the environment
+%                 z_s_L = nan(Obj.N_dy, length(bd_s));
+%                 z_s_R = nan(Obj.N_dy, length(bd_s));
+%                 z_o_L = nan(Obj.N_dy, length(bd_o));
+%                 z_o_R = nan(Obj.N_dy, length(bd_o));
+                
+                [z_s_L, z_s_R] = ClosestPts_dxdy_new(bd_s, tx(i), ty);
+                [z_o_L, z_o_R] = ClosestPts_dxdy_new(bd_o, tx(i), ty);
+                
+%                 for j = 1:Obj.N_dy
+%                     [z_s_L_new, z_s_R_new] = ClosestPts_dxdy(bd_s_L,...
+%                         bd_s_R, max_x, min_x, max_y, min_y, tx(i), ty(j));
+%                     z_s_L(j,:) = z_s_L_new;
+%                     z_s_R(j,:) = z_s_R_new;
+%                     [z_o_L_new, z_o_R_new] = ClosestPts_dxdy(bd_o_L,...
+%                         bd_o_R, o_max_x, o_min_x, o_max_y, o_min_y, tx(i), ty(j));
+%                     z_o_L(j,:) = z_o_L_new;
+%                     z_o_R(j,:) = z_o_R_new;
+%                     
+%                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     if Obj.PlotSingleLayer
+%                         plot3(tx(i), ty(j), z_o_L_new, 'g*')
+%                         plot3(tx(i), ty(j), z_o_R_new, 'r*')
+%                     end
+%                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                 end
                 
                 % Record cell info
                 CF_cellXY{i,1} = tx(i);
@@ -767,98 +763,18 @@ classdef HighwayRoadmap3D_3 < handle
             end
         end
         
-        %% Explode the boundary points of the obstacles to get convex CF cells
-        function x_o_Ex = obstacleExplode(Obj, bd_o, x_o, ty, K)
-            x_o_Ex = nan(size(x_o));
-            for i = 1:size(x_o,2)
-                % To record when the first scanned point appears
-                count = 0;
-                
-                for j = 1:Obj.N_dy-1
-                    dist = 0;
-                    if (isnan(x_o(j,i))) || (isnan(x_o(j+1,i)))
-                        continue;
-                    end
-                    count = count + 1;
-                    
-                    for k = 1:size(bd_o,2)
-                        p1 = [x_o(j,i);ty(j)];
-                        p2 = [x_o(j+1,i);ty(j+1)];
-                        p = bd_o(:,k,i);
-                        if (p(2) > ty(j)) && (p(2) < ty(j+1))
-                            % distance from a point to a line
-                            d = abs((p2(2)-p1(2))*p(1) - (p2(1)-p1(1))*p(2) + p2(1)*p1(2) - p2(2)*p1(1))...
-                                / sqrt((p2(2)-p1(2))^2 + (p2(1)-p1(1))^2);
-                            if d > dist
-                                % find the maximum distance
-                                dist = d;
-                            end
-                        end
-                    end
-                    
-                    % Explode the points and update
-                    phi = atan2( (p2(2)-p1(2)) , (p2(1)-p1(1)));
-                    
-                    % If the updated is smaller than the previous x-exploded, set the
-                    % current as the updated value; otherwise, keep the previous value
-                    x_Ex = x_o(j,i) + K*dist/sin(phi);
-                    if K == -1
-                        if x_Ex <= x_o_Ex(j,i)
-                            x_o_Ex(j,i) = x_Ex;
-                        end
-                    elseif K == +1
-                        if x_Ex >= x_o_Ex(j,i)
-                            x_o_Ex(j,i) = x_Ex;
-                        end
-                    end
-                    
-                    % The first scanned point
-                    if count == 1
-                        x_o_Ex(j,i) = x_o(j,i) + K*dist/sin(phi);
-                    end
-                    
-                    % update the next x-exploded value
-                    x_o_Ex(j+1,i) = x_o(j+1,i) + K*dist/sin(phi);
-                end
-                
-                if Obj.PlotSingleLayer
-                    for j = 1:Obj.N_dy-1
-                        if (isnan(x_o(j,i))) || (isnan(x_o(j+1,i)))
-                            continue;
-                        end
-                        
-                        % Plot exploded points
-                        plot([x_o_Ex(j,i) x_o_Ex(j+1,i)], [ty(j) ty(j+1)], 'g-');
-                        plot(x_o_Ex(j,i), ty(j), 'g*');
-                        plot(x_o_Ex(j+1,i), ty(j+1), 'g*');
-                    end
-                end
-                
-            end
-            x_o_Ex = sort(x_o_Ex,2);
-        end
-        
         %% Samples from SO(3)
         function q_exp = sampleSO3(Obj)
             N = Obj.N_layers;
             
             % Uniform random samples for Exponential coordinates
             q_exp = zeros(3,N);
-            dist = zeros(1,N);
             i = 1;
             while i ~= N
                 q_exp(:,i) = pi*rand(3,1);
                 if norm(q_exp(:,i)) > pi, continue; end
-                
-                %                 R = expm(skew(q_exp(:,i)));
-                
-                %                 dist(i) = norm( vex( logm(R'*eye(3)) ) );
                 i = i+1;
             end
-            
-            % Sort with respect to Identity
-            %             [~,idx] = sort(dist);
-            %             q_exp = q_exp(:,idx);
         end
         
         %% Tight-fitted ellipsoid

@@ -36,7 +36,7 @@ disp('Highway Roadmap 3D');
 % tic;
 robot.color = 'g';
 % highway = HighwayRoadmap3D(robot, EndPts, arena, obs, option);
-highway = HighwayRoadmap3D_3(robot, EndPts, arena, obs, option);
+highway = HighwayRoadmap3D_tfe(robot, EndPts, arena, obs, option);
 % highway.Plan();
 % if ~isnan(highway.Paths)
 %     valid = highway.validation();

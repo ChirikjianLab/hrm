@@ -20,6 +20,10 @@ for i = 1:N_bd
     
     % find the closed points on the left
     [~, I_bd_L_x] = min( abs(P_bd_L{i}(1,:) - tx) );
+%     [~, I_bd_L_x] = find( abs(P_bd_L{i}(1,:) - tx) <= 0.1 );
+    
+    if isempty(I_bd_L_x); continue; end
+    
     [~, I_bd_L_y] = min( abs(P_bd_L{i}(2,I_bd_L_x) - ty) );
     I_bd_L(i) = I_bd_L_x(I_bd_L_y);
     

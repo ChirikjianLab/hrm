@@ -18,8 +18,8 @@ I_MaxY = squeeze(I_MaxY);
 I_MinY = squeeze(I_MinY);
 I_StartY = min([I_MaxY I_MinY], [], 2);
 I_StartY = min([I_StartY N_pt/2*ones(N_bd, 1)], [], 2);
-P_bd_L = zeros(size(P_bd,1), N_pt/2, N_bd);
-P_bd_R = zeros(size(P_bd,1), N_pt/2, N_bd);
+P_bd_L = zeros(size(P_bd,1), floor(N_pt/2), N_bd);
+P_bd_R = zeros(size(P_bd,1), ceil(N_pt/2), N_bd);
 
 % divide every curve into two parts, splited by I_StartY
 for j = 1:N_bd

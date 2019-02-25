@@ -1,13 +1,10 @@
-function robot = robotInit(opt)
+function robot = robotInit(opt, infla)
 %% == Construct Robot and Plot Start and Goal Poses ==
 
 % Construct object of robot using SuperEllipse objects
 % one face as base that can translate and rotate,
 % two ears attached to the base that can rotate
 % C-space: SE(2) x S^2
-
-% Boundary inflation factor
-infla = 0.1;
 
 % Initialize body parts
 face = SuperEllipse([5,3,0,0,0,1,50], 'g', infla);

@@ -1,4 +1,4 @@
-classdef HighwayRoadmap < handle
+classdef HighwayRoadmap2D_tfe < handle
     %HIGHWAYROADMAP builds a roadmap based on closed-form characterization
     % of the configuration space. Robots are modeled as a union of ellipses
     % while obstacles and arenas are modeled as unions of superellipses.
@@ -17,6 +17,8 @@ classdef HighwayRoadmap < handle
         infla                % Inflation Factor of the robot
         sampleNum            % # of samples inside KC c-space
         
+        midLayer_cell
+        
         N_layers             % Number of Layers
         ang_r                % Angles of the Robot Link
         N_v_layer            % Number of vertices in each layer
@@ -28,7 +30,7 @@ classdef HighwayRoadmap < handle
     end
     properties
         Graph        % Customized graph which contains an array of vertices
-        % and an adjacency matrix
+                     % and an adjacency matrix
         Robot        % Robot Object of class RabbitRobot2D (SuperEllipse)
         EndPts       % Start and Goal points of the robot
         Arena        % Arena Obj. of class SuperEllipse
@@ -92,6 +94,8 @@ classdef HighwayRoadmap < handle
             Obj.Graph.AdjMat = [];
             % Vertices (3 dof): [x; y; ang];
             Obj.Graph.V = [];
+            % Distance between vertex and obstacle
+            Obj.Graph.dist = [];
             
             % Setup the number of layers
             dr = pi/(Obj.N_layers-1);
@@ -115,17 +119,19 @@ classdef HighwayRoadmap < handle
                 CF_Cell{i} = Obj.RasterScanY(bd_s, bd_o);
                 
                 % Connect Verices within One Layer
-                [A_connect_new, V_new] = Obj.OneLayer(CF_Cell{i});
+                [A_connect_new, V_new, dist_new] = Obj.OneLayer(CF_Cell{i});
                 
                 % Store AdjMat and Vertices
                 % concatenate adjacency matrices in different layers
                 Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, A_connect_new);
                 % concatenate mid pnts set in different layers
                 Obj.Graph.V = [Obj.Graph.V V_new];
+                % concatenate dist between mid pnts and end pnts
+                Obj.Graph.dist = [Obj.Graph.dist dist_new];
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if Obj.PlotSingleLayer
-                    m     CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
+                    CF_Cell_2 = Obj.EnhancedCellDecomp(CF_Cell{i});
                     
                     for j=1:size(bd_s,3)
                         plot3(bd_s(1,:,j),bd_s(2,:,j),...
@@ -175,15 +181,17 @@ classdef HighwayRoadmap < handle
         
         %% ------------- Operations within one Layer ----------------------
         %% Construct Adjacency Matrix within one Layer
-        function [A_connect_new, V_new] = OneLayer(Obj, CF_cell)
+        function [A_connect_new, V_new, dist_new] = OneLayer(Obj, CF_cell)
             CF_cell = Obj.EnhancedCellDecomp(CF_cell);
             
             % to store the middle points, with x, y and theta-coords
             V_new = [];
+            dist_new = [];
             for i = 1:size(CF_cell,1)
                 for j = 1:size(CF_cell{i,4},1)
                     % concatenate (x,y) coord of the mid pnts
                     V_new = [V_new [CF_cell{i,4}(j); CF_cell{i,1}; Obj.Robot.ang]];
+                    dist_new = [dist_new abs(CF_cell{i,4}(j)-CF_cell{i,3}(j))];
                 end
             end
             N_v = size(V_new, 2); % # of pnts to connect
@@ -316,10 +324,24 @@ classdef HighwayRoadmap < handle
                 if l == Obj.N_layers
                     N_V_l2 = Obj.N_v_layer(2,1);
                     V2 = Obj.Graph.V(1:2,1:N_V_l2);
+                    
+                    % Compute Tight-fitted Ellipsoid
+                    ra = [Obj.Robot.ra; Obj.Robot.rb];
+                    [c, th_c] = Obj.tfe(ra, ra, Obj.ang_r(:,l), Obj.ang_r(:,1));
                 else
                     N_V_l2 = Obj.N_v_layer(2,l+1);
                     V2 = Obj.Graph.V(1:2,N_V_l1+1:N_V_l2);
+                    
+                    % Construct the middle layer
+                    ra = [Obj.Robot.ra; Obj.Robot.rb];
+                    [c, th_c] = Obj.tfe(ra, ra, Obj.ang_r(:,l), Obj.ang_r(:,l+1));
                 end
+                
+                % Construct middle C-layer
+                E_c = Obj.Robot;
+                E_c.ra = c(1); E_c.rb = c(2);
+                E_c.ang = th_c;
+                Obj.midLayer(E_c);
                 
                 % Keep track of index number in vertex 2
                 m2 = 1;
@@ -340,7 +362,14 @@ classdef HighwayRoadmap < handle
                         m2 = n;
                         j2 = n + N_V_l1;
                         
-                        [judge, midVtx] = Obj.IsConnectPoly(Obj.Graph.V(:,j1), Obj.Graph.V(:,j2));
+%                         [judge, midVtx] = Obj.IsConnectPoly(Obj.Graph.V(:,j1), Obj.Graph.V(:,j2));
+                        dist_j1j2 = abs(Obj.Graph.V(1,j1)-Obj.Graph.V(1,j2));
+                        if ( dist_j1j2 >= Obj.Graph.dist(j1) )
+                            continue;
+                        end
+                        judge = Obj.isPtinCFLine(Obj.Graph.V(:,j1), Obj.Graph.V(:,j2));            
+                        midVtx = [Obj.Graph.V(1:2,j2); Obj.Graph.V(3,j1)];
+                        
                         if judge
                             % If a middle vertex is found,
                             % append middle vertex to V and adjMat
@@ -377,6 +406,45 @@ classdef HighwayRoadmap < handle
                     if i ~= j
                         Obj.d12(i,j) = sum((coord(:,:,i)-coord(:,:,j))...
                             .*(coord(:,:,i)-coord(:,:,j)));
+                    end
+                end
+            end
+        end
+        
+        %% ----------------- Layer Connections ----------------------------
+        %% Middle layer from sphere of radius max(robot.a)
+        function midLayer(Obj, E_c)
+            bd_s = []; % boundary of the arena(s)
+            bd_o = []; % boundary of the obstacles
+            
+            % inner boundary between the robot and the arena
+            for i = 1:length(Obj.Arena)
+                bd_s_f = Obj.Arena(i).MinkowskiSum_ES(E_c, -1);
+                bd_s = cat(3, bd_s, bd_s_f);
+            end
+            % outer boundary between the robot and the arena
+            for i = 1:length(Obj.Obs)
+                bd_o_f = Obj.Obs(i).MinkowskiSum_ES(E_c, 1);
+                bd_o = cat(3, bd_o, bd_o_f);
+            end
+            Obj.midLayer_cell = Obj.RasterScanY(bd_s, bd_o);
+        end
+        
+        %% Vertex connection between adjacent layers
+        function judge = isPtinCFLine(Obj, V1, V2)
+            judge = 0;
+            for i = 1:size(Obj.midLayer_cell,1)
+                % Search for y-coord
+                if Obj.midLayer_cell{i,1} ~= V1(2)
+                    continue;
+                end
+                
+                for j = 1:length(Obj.midLayer_cell{i,4})
+                    if ( (V1(1) >= Obj.midLayer_cell{i,2}(j)) && (V1(1) <= Obj.midLayer_cell{i,3}(j)) )
+                        if ( (V2(1) >= Obj.midLayer_cell{i,2}(j)) && (V2(1) <= Obj.midLayer_cell{i,3}(j)) )
+                            judge = 1;
+                            return;
+                        end
                     end
                 end
             end
@@ -830,6 +898,28 @@ classdef HighwayRoadmap < handle
                 judge = 1;
                 vtx = validVtx(:,1);
             end
+        end
+        
+        %% Tight-fitted ellipsoid
+        function [c, th_c] = tfe(Obj,a,b,th_a,th_b)
+            Ra = rot2(th_a);
+            Rb = rot2(th_b);
+            
+            % Shrinking affine transformation
+            r = min(b);
+            T = Rb*diag(r./b)*Rb';
+            
+            % In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
+            Ap = T \ Ra*diag(a.^(-2))*Ra' / T;
+            [Rap, semiAp] = svd(Ap);
+            a_p = diag(semiAp^(-1/2));
+            c_p = max(a_p,r);
+            
+            % Strech back
+            C = T * Rap*diag(c_p.^(-2))*Rap' * T;
+            [Rc, semiC] = svd(C);
+            c = diag(semiC^(-1/2));
+            th_c = acos(Rc(1,1));
         end
         
     end

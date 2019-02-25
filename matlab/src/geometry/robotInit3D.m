@@ -5,8 +5,7 @@ function [robot, EndPts] = robotInit3D(vargin)
 % C-space: SE(3)
 
 %% Initialization
-% Boundary inflation factor
-N_r = 100;
+N_r = 1;
 
 % Initialize robot parameters
 a_r = [8;5;3];

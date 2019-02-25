@@ -7,10 +7,10 @@ disp('Initialization');
 % Environment
 [arena, obs, EndPts] = environment(22);
 % Robot: Only plan face
-face = robotInit(1);
+option.infla = 0.1;
+face = robotInit(1, option.infla);
 
 %% Options for building the roadmap
-option.infla = 0.1;
 option.N_layers = 50;
 option.N_dy = 40;
 option.sampleNum = 10;
@@ -24,7 +24,7 @@ option.plots.D_layers = 20;
 disp('Highway Roadmap');
 tic
 face.color = 'g';
-highway = HighwayRoadmap(face, EndPts, arena, obs, option);
+highway = HighwayRoadmap2D(face, EndPts, arena, obs, option);
 highway.Plan();
 if ~isnan(highway.Paths)
     valid = highway.validation();
