@@ -80,8 +80,8 @@ classdef SuperQuadrics
             end
             
             % Parameters
-            R1 = objSQ.exp2rotm(objSQ.q);
-            R2 = objE.exp2rotm(objE.q);
+            R1 = objSQ.par2rotm(objSQ.q);
+            R2 = objE.par2rotm(objE.q);
             
             r = min(objE.a);
             Tinv = R2*diag(objE.a/r)*R2';
@@ -185,7 +185,7 @@ classdef SuperQuadrics
             yy = reshape(y, 1, m*n);
             zz = reshape(z, 1, m*n);
             
-            pnt = objSQ.exp2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
+            pnt = objSQ.par2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
         end
         
         %% Sample angles
@@ -282,8 +282,15 @@ classdef SuperQuadrics
         end
         
         %% Exponential coordinate transformations
-        function R = exp2rotm(Obj, q)
-            R = expm(skew(q));
+        function R = par2rotm(Obj, q)
+            if length(q) == 3
+                R = expm(skew(q));
+            elseif length(q) == 4
+                if size(q,2) ~= 4
+                    q = q';
+                end
+                R = quat2rotm(q);
+            end
         end
         
     end

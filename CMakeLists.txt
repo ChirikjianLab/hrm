@@ -81,4 +81,8 @@ target_link_libraries(sam_PLANNER_FCL_TGL_2D "${OMPL}" "${FCL_LIBRARIES}" "${CCD
 
 # TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})
 
+# 3D version
+# Executables
+add_executable(highwayRoadMap3D ${PROJECT_SOURCE_DIR}/test/test_highway3d.cpp ${SOURCE})
+
 

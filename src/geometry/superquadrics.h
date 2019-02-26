@@ -24,10 +24,18 @@ public:
 	} Shape;
 
 	// Number of points on boundary
-    int num;
+    unsigned long num;
+
+    // Curvature for computing almost uniform sampling
+    double cur;
+
+    // Angle parameters
+    vector<double> eta, omega;
 
 	// Functions
-	MatrixXd originShape();
+    vector<double> sampleSE(double, double, double, double);
+    double updateTheta(double, double, double, double, double);
+    MatrixXd originShape();
     MatrixXd minkSum3D(shape, int);
     double expFun(double, double, bool);
 };

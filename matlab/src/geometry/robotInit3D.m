@@ -9,28 +9,33 @@ N_r = 1;
 
 % Initialize robot parameters
 a_r = [8;5;3];
-q_r = [0;0;0];
+q_r = [0;1;0;0];
 tc_r = [0;0;0];
 eps_r = [1;1];
 
-% start and goal configurations
-tc_start = [-55; 0; -15];
-q_start = pi * rand(3,1);
-
-tc_goal  = [ 53;-20; 10];
-q_goal = pi * rand(3,1);
-
 robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.2, vargin);
 
-EndPts = [[tc_start; q_start],[tc_goal; q_goal]];
+% start and goal configurations
+tc_start = [-55; 0; -15];
+q_start = pi * rand(1,4);
+q_start = q_start/norm(q_start);
+% q_start = pi * rand(3,1);
+
+tc_goal  = [ 53;-20; 10];
+q_goal = pi * rand(1,4);
+q_goal = q_goal/norm(q_goal);
+% q_goal = pi * rand(3,1);
+
+EndPts = [[tc_start', q_start]; 
+          [tc_goal', q_goal]];
 
 %% Plot
 % plot the robot at start and goal configs
-robot.q = q_start';
+robot.q = q_start;
 robot.tc = tc_start;
 robot.PlotShape();
 
-robot.q = q_goal';
+robot.q = q_goal;
 robot.tc = tc_goal;
 robot.PlotShape();
 
