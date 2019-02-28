@@ -42,64 +42,54 @@ vector<SuperQuadrics> generateSQ(string file_name, double D){
     return obj;
 }
 
-//void plan(unsigned int N_l, unsigned int N_x, unsigned int N_y){
-//    // Options
-//    option opt;
-//    opt.infla = rob_config[0][11];
-//    opt.N_layers = N_l;
-//    opt.N_dy = N_y;
-//    opt.sampleNum = 10;
+highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts,
+                      vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
+                      int N_l, int N_x, int N_y){
+    option3D opt;
+    opt.N_o = obs.size(); opt.N_s = arena.size();
+    opt.N_layers = size_t(N_l); opt.N_dx = size_t(N_x); opt.N_dy = size_t(N_y);
 
-//    opt.N_o = obs.size();
-//    opt.N_s = arena.size();
+    //****************//
+    // Main Algorithm //
+    //****************//
+    highwayRoadmap3D high3D(robot, EndPts, arena, obs, opt);
 
-//    //****************//
-//    // Main Algorithm //
-//    //****************//
-//    highwayRoadmap3D high3D(robot, polyVtx, EndPts, arena, obs, opt);
-//    high3D.plan();
+    // TEST: Minkowski boundary
+    boundary3D bd_mink = high3D.boundaryGen();
 
-//    // calculate original boundary points
-//    boundary bd_ori;
-//    for(size_t i=0; i<opt.N_s; i++){
-//        bd_ori.bd_s.push_back( high.Arena[i].originShape() );
-//    }
-//    for(size_t i=0; i<opt.N_o; i++){
-//        bd_ori.bd_o.push_back( high.Obs[i].originShape() );
-//    }
+    // write to .csv file
+    boundary3D bd_ori;
+    for(size_t i=0; i<arena.size(); i++){
+        bd_ori.bd_s.push_back( arena[i].originShape() );
 
-//    // Output boundary and cell info
-//    boundary bd = high3D.boundaryGen();
-//    cf_cell cell = high3D.rasterScan(bd.bd_s, bd.bd_o);
-//    high3D.connectOneLayer(cell);
+        // write to .csv file
+        ofstream file_ori_bd;
+        file_ori_bd.open("arena_3d_" + to_string(i) + ".csv");
+        file_ori_bd << bd_ori.bd_s[i] << "\n";
+        file_ori_bd.close();
 
+        ofstream file_bd;
+        file_bd.open("arena_mink_3d_" + to_string(i) + ".csv");
+        file_bd << bd_mink.bd_s[i] << "\n";
+        file_bd.close();
+    }
+    for(size_t i=0; i<obs.size(); i++){
+        bd_ori.bd_o.push_back( obs[i].originShape() );
 
-//    // write to .csv file
-//    ofstream file_ori_bd;
-//    file_ori_bd.open("bd_ori.csv");
-//    for(size_t i=0; i<bd_ori.bd_o.size(); i++) file_ori_bd << bd_ori.bd_o[i] << "\n";
-//    for(size_t i=0; i<bd_ori.bd_s.size(); i++) file_ori_bd << bd_ori.bd_s[i] << "\n";
-//    file_ori_bd.close();
+        // write to .csv file
+        ofstream file_ori_bd;
+        file_ori_bd.open("obs_3d_" + to_string(i) + ".csv");
+        file_ori_bd << bd_ori.bd_o[i] << "\n";
+        file_ori_bd.close();
 
-//    ofstream file_bd;
-//    file_bd.open("bd.csv");
-//    for(size_t i=0; i<bd.bd_o.size(); i++) file_bd << bd.bd_o[i] << "\n";
-//    for(size_t i=0; i<bd.bd_s.size(); i++) file_bd << bd.bd_s[i] << "\n";
-//    file_bd.close();
+        ofstream file_bd;
+        file_bd.open("obs_mink_3d_" + to_string(i) + ".csv");
+        file_bd << bd_mink.bd_o[i] << "\n";
+        file_bd.close();
+    }
 
-//    ofstream file_cell;
-//    file_cell.open("cell.csv");
-//    for(size_t i=0; i<cell.ty.size(); i++){
-//        for(size_t j=0; j<cell.xL[i].size(); j++)
-//            file_cell << cell.ty[i] << ' ' <<
-//                         cell.xL[i][j] << ' ' <<
-//                         cell.xM[i][j] << ' ' <<
-//                         cell.xU[i][j] << "\n";
-//    }
-//    file_cell.close();
-
-//    return high;
-//}
+    return high3D;
+}
 
 int main(int argc, char ** argv){
     if (argc != 6) {
@@ -132,41 +122,8 @@ int main(int argc, char ** argv){
     EndPts.push_back(endPts[0]);
     EndPts.push_back(endPts[1]);
 
-    // Test for Minkowski sums
-    // calculate original and Minkowski boundary points
-    boundary3D bd_ori, bd_mink;
-    for(size_t i=0; i<arena.size(); i++){
-        bd_ori.bd_s.push_back( arena[i].originShape() );
-        bd_mink.bd_s.push_back( arena[i].minkSum3D(robot[0].Shape, -1) );
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("arena_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_s[i] << "\n";
-        file_ori_bd.close();
-
-        ofstream file_bd;
-        file_bd.open("arena_mink_3d_" + to_string(i) + ".csv");
-        file_bd << bd_mink.bd_s[i] << "\n";
-        file_bd.close();
-    }
-    for(size_t i=0; i<obs.size(); i++){
-        bd_ori.bd_o.push_back( obs[i].originShape() );
-        bd_mink.bd_o.push_back( obs[i].minkSum3D(robot[0].Shape, 1) );
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("obs_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_o[i] << "\n";
-        file_ori_bd.close();
-
-        ofstream file_bd;
-        file_bd.open("obs_mink_3d_" + to_string(i) + ".csv");
-        file_bd << bd_mink.bd_o[i] << "\n";
-        file_bd.close();
-    }
-
-//    highwayRoadmap high = plan(N_l, N_y);
+    // Path planning using HighwayRoadmap3D
+    highwayRoadmap3D high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
 
 //    for(int i=0; i<N; i++){
 //        high = plan(N_l, N_y);

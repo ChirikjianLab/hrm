@@ -13,10 +13,10 @@ public:
     bool isPtInPoly(polyCSpace polyVtx, vector<double> pt);
 };
 
-class ptInPoly3D
-{
-public:
-    bool isPtInPoly3D(polyCSpace3D polyVtx, vector<double> pt);
-};
+//class ptInPoly3D
+//{
+//public:
+//    bool isPtInPoly3D(polyCSpace3D polyVtx, vector<double> pt);
+//};
 
 #endif // PTINPOLY_H

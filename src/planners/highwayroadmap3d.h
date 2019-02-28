@@ -51,7 +51,7 @@ public:
 };
 
 struct cf_cell3D{
-    vector<double> tz;
+    vector<double> tx;
     vector<cf_cellYZ> cellYZ;
 };
 
@@ -64,21 +64,16 @@ public:
     struct sepBd{
     public:
         MatrixXd P_bd_L, P_bd_R;
-        double max_y, min_y;
-        double x_L, x_R;
     } P_bd;
-};
 
-// Parameters for the polyhedron local c-space
-struct polyCSpace3D{
-public:
-    vector< vector<double> > vertex;
-    vector< vector<double> > invMat;
+    struct sepZ{
+    public:
+        MatrixXd z_L, z_R;
+    };
 };
 
 struct option3D{
-    double infla;
-    size_t N_layers, N_dy, sampleNum, N_o, N_s;
+    size_t N_layers, N_dx, N_dy, N_o, N_s;
     vector<double> Lim;
 };
 
@@ -88,12 +83,10 @@ class highwayRoadmap3D
 /*
 N_o       : number of obstacles;
 N_s       : number of arenas;
-N_dz      : number of sweep planes within one C-layer;
+N_dx      : number of sweep planes within one C-layer;
 N_dy      : number of sweep lines within one sweep plane;
 Lim       : planning bound limit;
-infla     : inflation factor for the robot;
 N_layers  : number of C-layers;
-N_KCsample: number of samples for searching in the intersection between two local c-space;
 q_r       : sampled orientations (Quaternion) of the robot;
 N_v_layer : number of vertex in each layer;
 
@@ -101,14 +94,12 @@ graph     : a structure consisting of vertex and edges;
 Cost      : cost of the searched path;
 Endpt     : start and goal configurations;
 Path      : valid path of motions;
-polyVtx   : descriptions of polyhedron local c-space
 planTime  : planning time: roadmap building time and path search time
 */
 private:
-    unsigned int N_o, N_s, N_dz, N_dy, N_layers;
-    double infla;
-    size_t N_KCsample;
-    vector<double> q, Lim;
+    size_t N_o, N_s, N_dx, N_dy, N_layers;
+    vector<double> Lim;
+    vector<vector<double>> q_r;
     vector<size_t> N_v_layer;
 
 public:
@@ -126,7 +117,6 @@ public:
     double Cost=0.0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
-    polyCSpace3D polyVtx;
 
     struct Time{
     public:
@@ -136,16 +126,15 @@ public:
     // functions
 private:
     boundary3D::sepBd separateBoundary(MatrixXd bd);
-    boundary3D::sepBd closestPt(boundary3D::sepBd P_bd, double ty);
-    MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
+    boundary3D::sepZ closestPt(vector<MatrixXd> bd, double tx, vector<double> ty);
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
     vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
     double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
-    vector< vector<double> > sampleSO3();
+    void sampleSO3();
 
 public:
-    highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace3D polyVtx, vector< vector<double> > endpt,
+    highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,
                      vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt);
     void plan();
     void buildRoadmap();

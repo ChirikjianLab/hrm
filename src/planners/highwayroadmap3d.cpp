@@ -9,7 +9,7 @@
 
 #define pi 3.1415926
 
-highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace3D vtxMat, vector< vector<double> > endpt,
+highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,
                                    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt){
     Robot = robot;
     Endpt = endpt;
@@ -18,12 +18,9 @@ highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, polyCSpace3D vtx
     N_o = opt.N_o;
     N_s = opt.N_s;
 
-    polyVtx = vtxMat;
-
-    infla = opt.infla;
     N_layers = opt.N_layers;
+    N_dx = opt.N_dx;
     N_dy = opt.N_dy;
-    N_KCsample = opt.sampleNum;
     Lim = opt.Lim;
 
     Cost = 0;
@@ -43,11 +40,11 @@ void highwayRoadmap3D::buildRoadmap(){
     graph multiGraph;
 
     // Samples from SO(3)
-    vector< vector<double> > q;
-    q = sampleSO3();
+    sampleSO3();
 
     for(size_t i=0; i<N_layers; i++){
-        for(int j=0; j<4; j++) Robot[0].Shape.q[j] = q[i][j];
+        for(size_t j=0; j<q_r[i].size(); j++)
+            Robot[0].Shape.q[j] = q_r[i][j];
 
         // boundary for obstacles and arenas
         boundary3D bd = boundaryGen();
@@ -68,19 +65,14 @@ void highwayRoadmap3D::buildRoadmap(){
 // ******************************************************************** //
 // Generate Minkowski boundary
 boundary3D highwayRoadmap3D::boundaryGen(){
-    vector<SuperQuadrics> robot_infla(Robot.size());
     boundary3D bd;
 
     for(size_t num_r = 0; num_r < Robot.size(); num_r++){
-        robot_infla[num_r] = Robot[num_r];
-        // Enlarge the robot
-        for(size_t i=0; i<3; i++) robot_infla[num_r].Shape.a[i] *= 1+infla;
-
         // calculate Minkowski boundary points
         for(size_t i=0; i<N_s; i++)
-            bd.bd_s.push_back( Arena[i].minkSum3D(robot_infla[num_r].Shape,  -1) );
+            bd.bd_s.push_back( Arena[i].minkSum3D(Robot[num_r].Shape,  -1) );
         for(size_t i=0; i<N_o; i++)
-            bd.bd_o.push_back( Obs[i].minkSum3D(robot_infla[num_r].Shape, +1) );
+            bd.bd_o.push_back( Obs[i].minkSum3D(Robot[num_r].Shape, +1) );
     }
 
     return bd;
@@ -91,51 +83,31 @@ boundary3D highwayRoadmap3D::boundaryGen(){
 // ******************************************************************** //
 // Generate collision-free vertices by Sweep Plane + Sweep Line process //
 cf_cell3D highwayRoadmap3D::sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
-    cf_cell3D cell, cell_new;
+    cf_cell3D cell;
 
-    boundary3D::sepBd x_bd_s[N_dy][N_s], x_bd_o[N_dy][N_o];
+    boundary3D::sepZ z_bd_s, z_bd_o;
 
-    boundary3D::sepBd P_bd_s[N_s], P_bd_o[N_o];
     MatrixXd bd_s_L[N_s], bd_s_R[N_s], bd_o_L[N_o], bd_o_R[N_o];
     MatrixXd x_s_L(N_dy, N_s), x_s_R(N_dy, N_s);
     MatrixXd x_o_L(N_dy, N_o), x_o_R(N_dy, N_o);
 
-    // Separate boundaries of Arenas and Obstacles into two parts
-    for(size_t i=0; i<N_s; i++) {
-        P_bd_s[i] = separateBoundary(bd_s[i]);
-        bd_s_L[i] = P_bd_s[i].P_bd_L;
-        bd_s_R[i] = P_bd_s[i].P_bd_R;
-    }
-    for(size_t i=0; i<N_o; i++) {
-        P_bd_o[i] = separateBoundary(bd_o[i]);
-        bd_o_L[i] = P_bd_o[i].P_bd_L;
-        bd_o_R[i] = P_bd_o[i].P_bd_R;
-    }
-
     // Find closest points for each raster scan line
-    vector<double> ty(N_dy), tz(N_dz);
-    double dy = 2*Lim[1]/(N_dy-1), dz = 2*Lim[2]/(N_dz-1);
+    vector<double> tx(N_dx), ty(N_dy);
+    double dx = 2*Lim[0]/(N_dx-1), dy = 2*Lim[1]/(N_dy-1);
+    for(size_t i=0; i<N_dx; i++) tx.push_back(-Lim[0] + i * dx);
+    for(size_t i=0; i<N_dy; i++) tx.push_back(-Lim[1] + i * dy);
 
-    for(size_t i=0; i<N_dz; i++){
-        // z-coordinate of each sweep plane
-        cell.tz[i] = -Lim[2] + i * dz;
-        for(size_t j=0; j<N_dy; j++){
-            // y-coordinate of each sweep line
-            ty[j] = -Lim[1] + j * dy;
-            // x-coordinate of the intersection btw sweep line and arenas
-            for(size_t k=0; k<N_s; k++) {
-                x_bd_s[j][k] = closestPt(P_bd_s[k], ty[j]);
-                x_s_L(j,k) = x_bd_s[j][k].x_L;
-                x_s_R(j,k) = x_bd_s[j][k].x_R;
-            }
-            // x-coordinate of the intersection btw sweep line and obstacles
-            for(size_t k=0; k<N_o; k++) {
-                x_bd_o[j][k] = closestPt(P_bd_o[k], ty[j]);
-                x_o_L(j,k) = x_bd_o[j][k].x_L;
-                x_o_R(j,k) = x_bd_o[j][k].x_R;
-            }
-        }
-        cell.cellYZ[i] = sweepLine(ty, x_s_L, x_s_R, x_o_L, x_o_R);
+    for(size_t i=0; i<N_dx; i++){
+        // separated z-coord
+        z_bd_s = closestPt(bd_s, tx[i], ty);
+        z_bd_o = closestPt(bd_o, tx[i], ty);
+
+        // Store x-coordinate of each sweep plane
+        cell.tx[i] = tx[i];
+        // Store y,z-coord into the cell
+        cell.cellYZ[i] = sweepLine(ty,
+                                   z_bd_s.z_L, z_bd_s.z_R,
+                                   z_bd_o.z_L, z_bd_o.z_R);
 
     //    ofstream file_obs;
     //    file_obs.open("bd_obs.csv");
@@ -225,11 +197,11 @@ void highwayRoadmap3D::connectOneLayer(cf_cell3D cell){
     vector<unsigned int> N_v_plane;
     unsigned int N_0=0, N_1=0;
 
-    for(size_t i=0; i<cell.tz.size(); i++){
+    for(size_t i=0; i<cell.tx.size(); i++){
         N_v_plane.push_back(vtxEdge.vertex.size());
-        connectOnePlane(cell.tz[i], cell.cellYZ[i]);
+        connectOnePlane(cell.tx[i], cell.cellYZ[i]);
     }
-    for(size_t i=0; i<cell.tz.size()-1; i++){
+    for(size_t i=0; i<cell.tx.size()-1; i++){
         N_0 = N_v_plane[i]; N_1 = N_v_plane[i+1];
         for(size_t j1=0; j1<cell.cellYZ[i].ty.size(); j1++){
             // Connect vertex btw adjacent planes
@@ -387,8 +359,8 @@ boundary3D::sepBd highwayRoadmap3D::separateBoundary(MatrixXd bd){
     boundary3D::sepBd P_bd;
 
     // Find separating point
-    max_y = bd.row(1).maxCoeff(&I_max_y);
-    min_y = bd.row(1).minCoeff(&I_min_y);
+    max_y = bd.row(2).maxCoeff(&I_max_y);
+    min_y = bd.row(2).minCoeff(&I_min_y);
     I_start_y = min(I_max_y, I_min_y);
     I_start_y = min(I_start_y, half_num);
 
@@ -402,81 +374,47 @@ boundary3D::sepBd highwayRoadmap3D::separateBoundary(MatrixXd bd){
 
     P_bd.P_bd_L = P_bd_L;
     P_bd.P_bd_R = P_bd_R;
-    P_bd.max_y = max_y;
-    P_bd.min_y = min_y;
 
     return P_bd;
 }
 
-boundary3D::sepBd highwayRoadmap3D::closestPt(boundary3D::sepBd P_bd, double ty){
-    boundary3D::sepBd x_bd;
+// Find the closest points with a sweep plane, and return separated z-coords
+boundary3D::sepZ highwayRoadmap3D::closestPt(vector<MatrixXd> bd,
+                                              double tx, vector<double> ty){
+    boundary3D::sepZ z_bd;
+    z_bd.z_L = MatrixXd::Constant(ty.size(), bd.size(),
+                                  std::numeric_limits<double>::quiet_NaN());
+    z_bd.z_R = z_bd.z_L;
+
     MatrixXd::Index I_L, I_R;
     VectorXd y(1);
 
-    // check if ty in the range of each arena/obstacle
-    if( (ty > P_bd.max_y) || (ty < P_bd.min_y) ){
-        x_bd.x_L = numeric_limits<double>::quiet_NaN();
-        x_bd.x_R = numeric_limits<double>::quiet_NaN();
-        return x_bd;
-    }
-    // For each ty, find closes point, ie the intersection btw sweep line and arena/obstacle
-    y << ty;
-    (P_bd.P_bd_L.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_L);
-    (P_bd.P_bd_R.row(1).colwise() - y).colwise().squaredNorm().minCoeff(&I_R);
+    for(size_t i=0; i<bd.size(); i++){
+        // Find points close to the given x-plane
+        Matrix<double, 3, Dynamic> yz_bd;
+        for(long k=0; k<bd[i].cols(); k++)
+            if( fabs(bd[i](0,k) - tx) <= 0.1) yz_bd << bd[i].col(k);
+        if(yz_bd.cols() == 0) continue;
 
-    x_bd.x_L = P_bd.P_bd_L(0,I_L);
-    x_bd.x_R = P_bd.P_bd_R(0,I_R);
-    return x_bd;
-}
+        // Split the boundary of the plane into two parts
+        boundary3D::sepBd P_bd = separateBoundary(yz_bd);
+        if(P_bd.P_bd_L.cols() == 0 || P_bd.P_bd_R.cols() == 0) continue;
 
-MatrixXd highwayRoadmap3D::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K){
-    // Enclose the curved boundaries of c-obstacles by polyhedrons
-    MatrixXd x_o_Ex(N_dy, N_o);
-    double x_Ex;
-    double d;
+        // Sweep y-coords
+        for(size_t j=0; j<ty.size(); j++){
+            // For each ty, find closes point, ie the intersection btw sweep line and arena/obstacle
+            y << ty[j];
+            (P_bd.P_bd_L.row(1).colwise() - y).
+                    colwise().squaredNorm().minCoeff(&I_L);
+            (P_bd.P_bd_R.row(1).colwise() - y).
+                    colwise().squaredNorm().minCoeff(&I_R);
 
-    // Initialize x_o_Ex as NaN matrix
-    for(size_t j=0; j<N_o; j++){
-        for(size_t i=0; i<N_dy; i++){
-            x_o_Ex(i,j) = numeric_limits<double>::quiet_NaN();
+            z_bd.z_L(j,i) = P_bd.P_bd_L(2,I_L);
+            z_bd.z_R(j,i) = P_bd.P_bd_R(2,I_R);
         }
     }
 
-    // Compute tangent line and enlarge the boundary
-    for(size_t j=0; j<N_o; j++){
-        int count = 0;
-
-        for(size_t i=0; i<N_dy-1; i++){
-            double dist = 0, phi;
-
-            if( isnan(x_o(i,j)) || isnan(x_o(i+1,j)) ) continue;
-            count += 1;
-            double p1[2] = {x_o(i,j), ty[i]};
-            double p2[2] = {x_o(i+1,j), ty[i+1]};
-
-            // Search for farthest point to the line segment def by two intersecting points
-            for(size_t k=0; k<sizeof(bd_o[j]); k++){
-                double p[2] = {bd_o[j](0,k), bd_o[j](1,k)};
-
-                if( (p[1] > ty[i]) && (p[1] < ty[i+1]) ){
-                    d = abs( (p2[1]-p1[1])*p[0] - (p2[0]-p1[0])*p[1] + p2[0]*p1[1] - p2[1]*p1[0] )
-                            / sqrt( pow((p2[1]-p1[1]),2) + pow((p2[0]-p1[0]),2) );
-                    if(d > dist) dist = d;
-                }
-            }
-            phi = atan2( p2[1]-p1[1], p2[0]-p1[0] );
-            x_Ex = x_o(i,j) + K * dist/sin(phi);
-
-            // Update the boundary point to be farthest to the previous one
-            if(K == -1) {if(x_Ex <= x_o(i,j)) x_o_Ex(i,j) = x_Ex;}
-            else if(K == +1) {if(x_Ex >= x_o(i,j)) x_o_Ex(i,j) = x_Ex;}
-
-            if(count == 1) x_o_Ex(i,j) = x_o(i,j) + K * dist/sin(phi);
-            x_o_Ex(i+1,j) = x_o(i+1,j) + K * dist/sin(phi);
-        }
-    }
-
-    return x_o_Ex;
+    return z_bd;
 }
 
 cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell){
@@ -521,49 +459,41 @@ cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell){
 vector<double> highwayRoadmap3D::addMidVtx(vector<double> vtx1, vector<double> vtx2){
     // Connect vertexes among different layers, and add a middle vertex to the roadmap
     vector<double> midVtx, pt, pt1, pt2;
-    ptInPoly3D polyTest;
-    bool flag;
-    midVtx.clear();
+//    ptInPoly3D polyTest;
+//    bool flag;
+//    midVtx.clear();
 
-    for(size_t iter = 0; iter<N_KCsample; iter++){
-        pt.clear(); pt1.clear(); pt2.clear();
-        for(size_t i=0; i<vtx1.size(); i++){
-            pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
-            pt1.push_back(pt[i] - vtx1[i]);
-            pt2.push_back(pt[i] - vtx2[i]);
-        }
-        flag = polyTest.isPtInPoly3D(polyVtx, pt1);
-        if(flag){
-            flag = polyTest.isPtInPoly3D(polyVtx, pt2);
-            if(flag){
-                midVtx = pt;
-                return midVtx;
-            }
-        }
-    }
+//    for(size_t iter = 0; iter<N_KCsample; iter++){
+//        pt.clear(); pt1.clear(); pt2.clear();
+//        for(size_t i=0; i<vtx1.size(); i++){
+//            pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
+//            pt1.push_back(pt[i] - vtx1[i]);
+//            pt2.push_back(pt[i] - vtx2[i]);
+//        }
+//        flag = polyTest.isPtInPoly3D(polyVtx, pt1);
+//        if(flag){
+//            flag = polyTest.isPtInPoly3D(polyVtx, pt2);
+//            if(flag){
+//                midVtx = pt;
+//                return midVtx;
+//            }
+//        }
+//    }
 
     return midVtx;
 }
 
-vector< vector<double> > highwayRoadmap3D::sampleSO3(){
-    vector< vector<double> > q(N_layers);
-    vector<double> dist(N_layers), u(3);
-
-    // Identity
-    vector<double> e = {0, 1, 0, 0};
+void highwayRoadmap3D::sampleSO3(){
+    vector<double> u(3);
 
     // Uniform random samples for Quaternions
     for(size_t i=0; i<N_layers; i++){
         u = {rand()*0.5/RAND_MAX, rand()*0.5/RAND_MAX, rand()*0.5/RAND_MAX};
-        q[i][0] = sqrt(1-u[0])*sin(2*pi*u[1]);
-        q[i][1] = sqrt(1-u[0])*cos(2*pi*u[1]);
-        q[i][2] = sqrt(u[0])*sin(2*pi*u[2]);
-        q[i][3] = sqrt(u[0])*cos(2*pi*u[2]);
-
-        dist[i] = vector_dist(e,q[i]);
+        this->q_r[i][0] = sqrt(1-u[0])*sin(2*pi*u[1]);
+        this->q_r[i][1] = sqrt(1-u[0])*cos(2*pi*u[1]);
+        this->q_r[i][2] = sqrt(u[0])*sin(2*pi*u[2]);
+        this->q_r[i][3] = sqrt(u[0])*cos(2*pi*u[2]);
     }
-
-    return q;
 }
 
 unsigned int highwayRoadmap3D::find_cell(vector<double> v){
