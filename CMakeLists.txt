@@ -45,6 +45,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
 
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
 
 # Sources
@@ -55,6 +56,7 @@ set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp"
+    "${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
 
 # Executables

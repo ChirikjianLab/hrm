@@ -39,7 +39,7 @@ classdef HighwayRoadmap2D < handle
     
     methods
         %% Constructor
-        function Obj = HighwayRoadmap(Robot, EndPts, Arena, Obs, option)
+        function Obj = HighwayRoadmap2D(Robot, EndPts, Arena, Obs, option)
             % Robot: a union of ellipsoids, class: SuperEllipse
             % Arena: a union of superquadrics, class: SuperEllipse
             % Obs: a union of superquadrics, class: SuperEllipse
@@ -303,7 +303,7 @@ classdef HighwayRoadmap2D < handle
             % size to speed up value assignment process
             n = size(Obj.Graph.V,2);
             Obj.Graph.AdjMat = blkdiag(Obj.Graph.AdjMat, zeros(n,n));
-            Obj.Graph.V = [Obj.Graph.V zeros(size(Obj.Graph.V))];
+            Obj.Graph.V = [Obj.Graph.V nan(size(Obj.Graph.V))];
             
             Obj.LayerPurmutation();
             start = 1;

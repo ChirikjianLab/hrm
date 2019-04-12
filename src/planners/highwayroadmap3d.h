@@ -12,6 +12,7 @@
 #include <ompl/util/Time.h>
 
 #include <src/geometry/superquadrics.h>
+#include <src/geometry/intersectlinemesh3d.h>
 
 using namespace std;
 using namespace boost;
@@ -72,6 +73,11 @@ public:
     };
 };
 
+struct Mesh{
+    MatrixXd vertices;
+    MatrixXd faces;
+};
+
 struct option3D{
     size_t N_layers, N_dx, N_dy, N_o, N_s;
     vector<double> Lim;
@@ -111,7 +117,6 @@ public:
         vector<double> weight;
     } vtxEdge;
 
-
     AdjGraph Graph;
     vector<SuperQuadrics> Robot, Arena, Obs;
     double Cost=0.0;
@@ -132,6 +137,7 @@ private:
     double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
     void sampleSO3();
+    Mesh getMesh(MatrixXd, int);
 
 public:
     highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,
@@ -139,6 +145,7 @@ public:
     void plan();
     void buildRoadmap();
     boundary3D boundaryGen();
+    cf_cell3D sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     cf_cell3D sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     cf_cellYZ sweepLine(vector<double> ty,
                         MatrixXd x_s_L, MatrixXd x_s_R,

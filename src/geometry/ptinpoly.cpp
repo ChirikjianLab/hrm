@@ -1,6 +1,4 @@
 #include "ptinpoly.h"
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
 
 bool ptInPoly::isPtInPoly(polyCSpace polyVtx, vector<double> pt){
     bool flag = 0;

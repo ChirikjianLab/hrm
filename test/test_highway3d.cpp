@@ -88,6 +88,9 @@ highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts
         file_bd.close();
     }
 
+    // TEST: Sweep line
+    cf_cell3D CF_cell = high3D.sweepLineZ(bd_mink.bd_s, bd_mink.bd_o);
+
     return high3D;
 }
 

@@ -506,6 +506,30 @@ classdef HighwayRoadmap3D_tfe < handle
             Obj.Graph.V(:,Obj.Paths)
         end
         
+        %% ------------------ Plan Validation -----------------------------
+        %% Post operation for found path, collision checking along path
+%         function valid = validation(Obj)
+%             % Do collision checking along the found path to validate.
+%             for i = 1:size(Obj.Paths,2)-1
+%                 idx1 = Obj.Paths(i);
+%                 idx2 = Obj.Paths(i+1);
+%                 collision = IsEdgeInCollision(Obj, Obj.Graph.V(:,idx1),...
+%                     Obj.Graph.V(:,idx2), 2);
+%                 
+%                 if collision
+%                     valid = false;
+%                     disp(['Collision between Vertices # ', num2str(idx1),...
+%                         ' and ', num2str(idx2)]);
+%                     break;
+%                 end
+%             end
+%             
+%             if ~collision
+%                 valid = true;
+%                 disp('Path is Valid!')
+%             end
+%         end
+        
         %% --------------- Plot the Valid Path ----------------------------
         function PlotPath(Obj)
             % plot the paths
