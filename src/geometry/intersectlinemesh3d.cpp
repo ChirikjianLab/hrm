@@ -4,11 +4,11 @@ vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line, MatrixXd vertices
     vector<Vector3d> points;
     double tol = 1e-12;
 
-    for (int i=0; i<faces.cols(); i++) {
+    for (int i=0; i<faces.rows(); i++) {
         // find triangle edge vectors
-        Vector3d t0 = vertices.row(int(faces(i,0))),
-                 u = vertices.row(int(faces(i,1))),
-                 v = vertices.row(int(faces(i,2)));
+        Vector3d t0 = vertices.col(int(faces(i,0))),
+                 u = vertices.col(int(faces(i,1))),
+                 v = vertices.col(int(faces(i,2)));
         u -= t0; v -= t0;
 
         // triangle normal

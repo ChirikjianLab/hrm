@@ -92,15 +92,15 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
     // Find intersection points for each sweep line
     vector<double> tx(N_dx), ty(N_dy);
     double dx = 2*Lim[0]/(N_dx-1), dy = 2*Lim[1]/(N_dy-1);
-    for(size_t i=0; i<N_dx; i++) tx.push_back(-Lim[0] + i * dx);
-    for(size_t i=0; i<N_dy; i++) ty.push_back(-Lim[1] + i * dy);
+    for(size_t i=0; i<N_dx; i++) tx[i] = -Lim[0] + i * dx;
+    for(size_t i=0; i<N_dy; i++) ty[i] = -Lim[1] + i * dy;
 
     // Generate mesh for the boundaries
     vector<Mesh> P_s(N_s), P_o(N_o);
     for(size_t i=0; i<N_s; i++)
-        P_s[i] = getMesh(bd_s[i], int(Arena[i].num));
+        P_s[i] = getMesh(bd_s[i], int(Arena[i].n));
     for(size_t i=0; i<N_o; i++)
-        P_o[i] = getMesh(bd_o[i], int(Obs[i].num));
+        P_o[i] = getMesh(bd_o[i], int(Obs[i].n));
 
     // Find intersections along each sweep line
     for(size_t i=0; i<N_dx; i++){
@@ -108,23 +108,25 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
                  z_o_L(N_dy, N_o), z_o_R(N_dy, N_o);
 
         for(size_t j=0; j<N_dy; j++){
-            VectorXd lineZ; lineZ << tx[i], ty[j], 0, 0, 0, 1;
+            VectorXd lineZ(6); lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
             for(size_t m=0; m<N_s; m++){
                 vector<Vector3d> pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
-                z_s_L(j,m) = min(pts_s[0](3), pts_s[1](3));
-                z_s_R(j,m) = max(pts_s[0](3), pts_s[1](3));
+                if(pts_s.empty()) continue;
+                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
+                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
             }
             for(size_t n=0; n<N_o; n++){
                 vector<Vector3d> pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
-                z_s_L(j,n) = min(pts_o[0](3), pts_o[1](3));
-                z_s_R(j,n) = max(pts_o[0](3), pts_o[1](3));
+                if(pts_o.empty()) continue;
+                z_o_L(j,n) = min(pts_o[0](2), pts_o[1](2));
+                z_o_R(j,n) = max(pts_o[0](2), pts_o[1](2));
             }
         }
 
         // Store cell info
-        CF_cell.tx[i] = tx[i];
-        CF_cell.cellYZ[i] = sweepLine(ty, z_s_L, z_s_R, z_o_L, z_o_R);
+        CF_cell.tx.push_back(tx[i]);
+        CF_cell.cellYZ.push_back( sweepLine(ty, z_s_L, z_s_R, z_o_L, z_o_R) );
     }
 
     return CF_cell;
@@ -569,17 +571,19 @@ double highwayRoadmap3D::vector_dist(vector<double> v1, vector<double> v2){
 
 Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n){
     Mesh M;
-    int Num = n*n-n-1;
+    int Num = (n-1)*(n-1);
+    ArrayXd q((n-1)*(n-1));
+    for(int i=0; i<n-1; i++) q.segment(i*(n-1),(n-1)) = ArrayXd::LinSpaced(n-1,i*n,(i+1)*n-2);
 
     M.vertices = bd;
 
     M.faces = MatrixXd::Zero(2*Num,3);
-    M.faces.block(Num,1,0,0) = VectorXd::LinSpaced(1,0,n*n-n-2);
-    M.faces.block(Num,1,0,1) = VectorXd::LinSpaced(1,n,n*n-2);
-    M.faces.block(Num,1,0,2) = VectorXd::LinSpaced(1,n+1,n*n-1);
-    M.faces.block(Num,1,Num,0) = VectorXd::LinSpaced(1,0,n*n-n-2);
-    M.faces.block(Num,1,Num,1) = VectorXd::LinSpaced(1,1,n*n-1);
-    M.faces.block(Num,1,Num,2) = VectorXd::LinSpaced(1,n+1,n*n-1);
+    M.faces.block(0,0,Num,1) = q;
+    M.faces.block(0,1,Num,1) = q + n;
+    M.faces.block(0,2,Num,1) = q + n + 1;
+    M.faces.block(Num,0,Num,1) = q;
+    M.faces.block(Num,1,Num,1) = q + 1;
+    M.faces.block(Num,2,Num,1) = q + n + 1;
 
     return M;
 }

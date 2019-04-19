@@ -9,10 +9,15 @@
 // Get the points on the boundary of original shape
 MatrixXd SuperQuadrics::originShape(){
     // Parameter angles
-    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
-    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
-
-    num = eta.size() * omega.size();
+//    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
+//    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
+    if(eta.size()==0){
+        for(size_t i=0; i<n; i++){
+            eta.push_back(i*2*pi/(n-1));
+            omega.push_back(i*pi/(n-1));
+        }
+        num = eta.size() * omega.size();
+    }
 
     MatrixXd C(3,num), X(3,num);
 
@@ -36,8 +41,13 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
     if( (shp_b.eps[0] != 1.0) || (shp_b.eps[1] != 1.0) ) cerr << "Second object is not an ellipsoid" << endl;
 
     // Parameter angles
-    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
-    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
+//    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
+//    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
+
+    for(size_t i=0; i<n; i++){
+        eta.push_back(i*2*pi/(n-1));
+        omega.push_back(i*pi/(n-1));
+    }
 
     num = eta.size() * omega.size();
 
@@ -67,6 +77,7 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
     return X_eb;
 }
 
+// For almost uniform sampling //
 // Sampe angles
 vector<double> SuperQuadrics::sampleSE(double a, double b, double ep, double D){
     vector<double> theta, ang;

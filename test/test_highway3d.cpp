@@ -36,7 +36,7 @@ vector<SuperQuadrics> generateSQ(string file_name, double D){
         obj[j].Shape.q[1] = config[j][9];
         obj[j].Shape.q[2] = config[j][10];
         obj[j].Shape.q[3] = config[j][11];
-        obj[j].cur = D;
+        obj[j].n = D;
     }
 
     return obj;
@@ -48,6 +48,9 @@ highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts
     option3D opt;
     opt.N_o = obs.size(); opt.N_s = arena.size();
     opt.N_layers = size_t(N_l); opt.N_dx = size_t(N_x); opt.N_dy = size_t(N_y);
+    opt.Lim = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
+               arena[0].Shape.a[1]-robot[0].Shape.a[0],
+               arena[0].Shape.a[2]-robot[0].Shape.a[0]};
 
     //****************//
     // Main Algorithm //
@@ -96,13 +99,13 @@ highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts
 
 int main(int argc, char ** argv){
     if (argc != 6) {
-        cerr<< "Usage: Please add 1) Num of trials 2) Curvature of objects 3) Num of layers 4) Num of sweep planes 5) Num of sweep lines" << endl;
+        cerr<< "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num of layers 4) Num of sweep planes 5) Num of sweep lines" << endl;
         return 1;
     }
 
     // Record planning time for N trials
     int N = atoi(argv[1]);
-    double cur = atof(argv[2]);
+    double n = atof(argv[2]);
     int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
     vector<double> time_stat(N);
@@ -112,9 +115,9 @@ int main(int argc, char ** argv){
            arena_config = "../config/arena_config_3d.csv",
            obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot = generateSQ(robot_config, cur),
-                          arena = generateSQ(arena_config, cur),
-                          obs = generateSQ(obs_config, cur);
+    vector<SuperQuadrics> robot = generateSQ(robot_config, n),
+                          arena = generateSQ(arena_config, n),
+                          obs = generateSQ(obs_config, n);
 
     // Start and goal setup
     inputFile file;

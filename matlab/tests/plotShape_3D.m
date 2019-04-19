@@ -21,5 +21,14 @@ for i = 1:size(obs,2)
     Obs_mink{i} = load([loadPath, 'obs_mink_3d_', num2str(i-1), '.csv']);
     
     plot3(Obs_mink{i}(1,:),Obs_mink{i}(2,:),Obs_mink{i}(3,:),'b.')
+    
+    plotSurf(Obs_mink{i})
 end
 
+function plotSurf(X)
+x = reshape(X(1,:),20,20);
+y = reshape(X(2,:),20,20);
+z = reshape(X(3,:),20,20);
+
+surf(x,y,z)
+end
