@@ -11,7 +11,7 @@ if opt == 21 % Superquadrics Sparse
     %     q_s = [0;0;0];
     
     tc_s = [0;0;0];
-    eps_s = [0.1;0.1];
+    eps_s = [0.4;0.4];
     
     % Obstacles
     ra_o  = [25 20];
@@ -123,8 +123,8 @@ end
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Ns = 2;  % # of pnts on the superquadric arena
-No = 2;  % # of pnts on the superquadric obstacles
+Ns = 20;  % # of pnts on the superquadric arena
+No = 20;  % # of pnts on the superquadric obstacles
 
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s

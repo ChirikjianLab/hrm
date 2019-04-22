@@ -46,9 +46,9 @@ typedef property_map<AdjGraph, edge_weight_t>::type WeightMap;
 struct cf_cellYZ{
 public:
     vector<double> ty;
-    vector< vector<double> > xL;
-    vector< vector<double> > xU;
-    vector< vector<double> > xM;
+    vector< vector<double> > zL;
+    vector< vector<double> > zU;
+    vector< vector<double> > zM;
 };
 
 struct cf_cell3D{
@@ -106,7 +106,13 @@ private:
     size_t N_o, N_s, N_dx, N_dy, N_layers;
     vector<double> Lim;
     vector<vector<double>> q_r;
-    vector<size_t> N_v_layer;
+
+    struct vertexIdx{
+    public:
+        size_t layer;
+        vector<size_t> plane;
+        vector< vector<size_t> > line;
+    } N_v;
 
 public:
     // graph: vector of vertices, vector of connectable edges
@@ -116,6 +122,9 @@ public:
         Edge edge;
         vector<double> weight;
     } vtxEdge;
+
+    // Vertex index info
+    vector<vertexIdx> vtxId;
 
     AdjGraph Graph;
     vector<SuperQuadrics> Robot, Arena, Obs;
@@ -146,8 +155,7 @@ public:
     void buildRoadmap();
     boundary3D boundaryGen();
     cf_cell3D sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
-    cf_cell3D sweepPlane(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
-    cf_cellYZ sweepLine(vector<double> ty,
+    cf_cellYZ cfLine(vector<double> ty,
                         MatrixXd x_s_L, MatrixXd x_s_R,
                         MatrixXd x_o_L, MatrixXd x_o_R);
     void connectOneLayer(cf_cell3D cell);

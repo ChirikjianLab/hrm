@@ -55,7 +55,7 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
     Matrix<double, 3, 1> ones; ones << 1,1,1;
 
     double a1 = Shape.a[0], b1 = Shape.a[1], c1 = Shape.a[2], eps1 = Shape.eps[0], eps2 = Shape.eps[1],
-           a2 = Shape.a[0], b2 = Shape.a[1], c2 = Shape.a[2];
+           a2 = shp_b.a[0], b2 = shp_b.a[1], c2 = shp_b.a[2];
     MatrixXd R1 = Quaterniond(Shape.q[0],Shape.q[1],Shape.q[2],Shape.q[3]).toRotationMatrix(),
              R2 = Quaterniond(shp_b.q[0],shp_b.q[1],shp_b.q[2],shp_b.q[3]).toRotationMatrix();
 

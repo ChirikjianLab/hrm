@@ -94,6 +94,38 @@ highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts
     // TEST: Sweep line
     cf_cell3D CF_cell = high3D.sweepLineZ(bd_mink.bd_s, bd_mink.bd_o);
 
+    ofstream file_cell;
+    file_cell.open("cell_3d.csv");
+    for(size_t i=0; i<CF_cell.tx.size(); i++)
+        for(size_t j=0; j<CF_cell.cellYZ[i].ty.size(); j++)
+            for(size_t k=0; k<CF_cell.cellYZ[i].zM[j].size(); k++)
+                file_cell << CF_cell.tx[i] << ' ' <<
+                             CF_cell.cellYZ[i].ty[j] << ' ' <<
+                             CF_cell.cellYZ[i].zL[j][k] << ' ' <<
+                             CF_cell.cellYZ[i].zM[j][k] << ' ' <<
+                             CF_cell.cellYZ[i].zU[j][k] << "\n";
+    file_cell.close();
+
+    // TEST: Connect one C-layer
+    high3D.connectOneLayer(CF_cell);
+
+    // Write the output to .csv files
+    ofstream file_vtx;
+    file_vtx.open("vertex_3d.csv");
+    vector<vector<double>> vtx = high3D.vtxEdge.vertex;
+    for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
+                                       << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' ' << vtx[i][6] << "\n";
+    file_vtx.close();
+
+    ofstream file_edge;
+    file_edge.open("edge_3d.csv");
+    vector<pair<int, int>> edge = high3D.vtxEdge.edge;
+    for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+    file_edge.close();
+
+    // TEST: Build Roadmap
+    high3D.buildRoadmap();
+
     return high3D;
 }
 

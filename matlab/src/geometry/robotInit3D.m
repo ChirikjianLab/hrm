@@ -5,7 +5,7 @@ function [robot, EndPts] = robotInit3D(vargin)
 % C-space: SE(3)
 
 %% Initialization
-N_r = 1;
+N_r = 20;
 
 % Initialize robot parameters
 a_r = [8;5;3];
@@ -17,16 +17,16 @@ robot = SuperQuadrics({a_r, q_r, tc_r, eps_r, N_r}, 'b', 0.2, vargin);
 
 % start and goal configurations
 tc_start = [-55; 0; -15];
-% q_start = pi * rand(1,4);
-% q_start = q_start/norm(q_start);
-q_start = pi * rand(3,1);
+q_start = pi * rand(1,4);
+q_start = q_start/norm(q_start);
+% q_start = pi * rand(3,1);
 
 tc_goal  = [ 53;-20; 10];
-% q_goal = pi * rand(1,4);
-% q_goal = q_goal/norm(q_goal);
-q_goal = pi * rand(3,1);
+q_goal = pi * rand(1,4);
+q_goal = q_goal/norm(q_goal);
+% q_goal = pi * rand(3,1);
 
-EndPts = [[tc_start; q_start],[tc_goal; q_goal]];
+EndPts = [[tc_start; q_start'],[tc_goal; q_goal']];
 
 %% Plot
 % plot the robot at start and goal configs
