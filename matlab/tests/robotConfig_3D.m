@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 21;
+opt = 22;
 [ar, obs] = environment3D(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -37,5 +37,5 @@ vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 robot = [face.a',face.eps',face.tc',face.q];
 
 csvwrite(fullfile(outPath,'robot_config_3d.csv'), robot);
-csvwrite(fullfile(outPath,'endPts_3d.csv'), endPts);
+csvwrite(fullfile(outPath,'endPts_3d.csv'), endPts');
 

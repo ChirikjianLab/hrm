@@ -114,6 +114,10 @@ private:
         vector< vector<size_t> > line;
     } N_v;
 
+    SuperQuadrics::shape mid;
+    cf_cell3D mid_cell;
+    vector<double> midVtx;
+
 public:
     // graph: vector of vertices, vector of connectable edges
     struct graph{
@@ -137,16 +141,18 @@ public:
         double buildTime, searchTime;
     } planTime;
 
-    // functions
+// functions
 private:
     boundary3D::sepBd separateBoundary(MatrixXd bd);
     boundary3D::sepZ closestPt(vector<MatrixXd> bd, double tx, vector<double> ty);
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
-    vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
     double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
     void sampleSO3();
     Mesh getMesh(MatrixXd, int);
+    SuperQuadrics::shape tfe(double[3], double[3], vector<double>, vector<double>);
+    void midLayer(SuperQuadrics::shape);
+    bool isPtinCFLine(vector<double>, vector<double>);
 
 public:
     highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,

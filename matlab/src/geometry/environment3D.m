@@ -11,7 +11,7 @@ if opt == 21 % Superquadrics Sparse
     %     q_s = [0;0;0];
     
     tc_s = [0;0;0];
-    eps_s = [0.4;0.4];
+    eps_s = [0.1;0.1];
     
     % Obstacles
     ra_o  = [25 20];

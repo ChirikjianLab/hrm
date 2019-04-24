@@ -3,7 +3,6 @@
 #include <random>
 #include <src/planners/highwayroadmap3d.h>
 #include <src/planners/interval.h>
-#include <src/geometry/ptinpoly.h>
 
 #include <fstream>
 
@@ -104,18 +103,20 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
 
     // Find intersections along each sweep line
     for(size_t i=0; i<N_dx; i++){
-        MatrixXd z_s_L(N_dy, N_s), z_s_R(N_dy, N_s),
-                 z_o_L(N_dy, N_o), z_o_R(N_dy, N_o);
+        MatrixXd z_s_L = MatrixXd::Constant(N_dy, N_s, -Lim[2]),
+                 z_s_R = MatrixXd::Constant(N_dy, N_s, Lim[2]),
+                 z_o_L = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN()),
+                 z_o_R = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
 
         for(size_t j=0; j<N_dy; j++){
             VectorXd lineZ(6); lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
-            for(size_t m=0; m<N_s; m++){
-                vector<Vector3d> pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
-                if(pts_s.empty()) continue;
-                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
-                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
-            }
+//            for(size_t m=0; m<N_s; m++){
+//                vector<Vector3d> pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
+//                if(pts_s.empty()) continue;
+//                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
+//                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
+//            }
             for(size_t n=0; n<N_o; n++){
                 vector<Vector3d> pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
                 if(pts_o.empty()) continue;
@@ -187,6 +188,7 @@ cf_cellYZ highwayRoadmap3D::cfLine(vector<double> ty,
 void highwayRoadmap3D::connectOneLayer(cf_cell3D cell){
     size_t I0=0, I1=0;
 
+    N_v.line.clear();
     for(size_t i=0; i<cell.tx.size(); i++){
         connectOnePlane(cell.tx[i], cell.cellYZ[i]);
     }
@@ -251,12 +253,12 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell){
             // Connect vertex btw adjacent cells
             if(i != CFcell.ty.size()-1){
                 for(size_t j2=0; j2<CFcell.zM[i+1].size(); j2++){
-                    if( ( (CFcell.zM[i][j1] > CFcell.zL[i+1][j2] && CFcell.zM[i][j1] < CFcell.zU[i+1][j2]) &&
-                          (CFcell.zM[i+1][j2] > CFcell.zL[i][j1] && CFcell.zM[i+1][j2] < CFcell.zU[i][j1]) ) &&
-                        ( (CFcell.zU[i][j1] > CFcell.zL[i+1][j2] && CFcell.zU[i][j1] < CFcell.zU[i+1][j2]) ||
-                          (CFcell.zL[i][j1] > CFcell.zL[i+1][j2] && CFcell.zL[i][j1] < CFcell.zU[i+1][j2]) ||
-                          (CFcell.zU[i+1][j2] > CFcell.zL[i][j1] && CFcell.zU[i+1][j2] < CFcell.zU[i][j1]) ||
-                          (CFcell.zL[i+1][j2] > CFcell.zL[i][j1] && CFcell.zL[i+1][j2] < CFcell.zU[i][j1]) ) ){
+                    if( ( (CFcell.zM[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zM[i][j1] <= CFcell.zU[i+1][j2]) &&
+                          (CFcell.zM[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zM[i+1][j2] <= CFcell.zU[i][j1]) ) &&
+                        ( (CFcell.zU[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zU[i][j1] <= CFcell.zU[i+1][j2]) ||
+                          (CFcell.zL[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zL[i][j1] <= CFcell.zU[i+1][j2]) ||
+                          (CFcell.zU[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zU[i+1][j2] <= CFcell.zU[i][j1]) ||
+                          (CFcell.zL[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zL[i+1][j2] <= CFcell.zU[i][j1]) ) ){
                         vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
                         vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[N_0+j1],vtxEdge.vertex[N_1+j2]) );
                     }
@@ -271,45 +273,51 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell){
 // ******************************************************************** //
 // Connect vertices within adjacent C-layers //
 void highwayRoadmap3D::connectMultiLayer(){
-    size_t n, n_11, n_12, n_2;
-    double d;
+    size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
     size_t start = 0;
-    vector<double> midVtx;
-    vector<double> v1, v2;
-
-    n = vtxEdge.vertex.size();
 
     for(size_t i=0; i<N_layers; i++){
         // Find vertex only in adjecent layers
-        n_11 = vtxId[i].layer;
-        n_2 = vtxId[i+1].layer;
+        n_1 = vtxId[i].layer;
+
+        // Construct the middle layer
+        if(i == N_layers-1){
+            n_12 = 0;
+            n_2 = vtxId[0].layer;
+            mid = tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[0]);
+        }
+        else{
+            n_12 = n_1;
+            n_2 = vtxId[i+1].layer;
+            mid = tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[i+1]);
+        }
+        midLayer(mid);
 
         // Nearest vertex btw layers
-        for(size_t m=start; m<n_11; m++){
-            v1 = vtxEdge.vertex[m];
-            n_12 = n_11;
-            if(i == N_layers-1){
-                n_2 = vtxId[0].layer;
-                v1[2] = 0.0;
-                n_12 = 0;
-            }
-            for(size_t m2=n_12; m2<n_2; m2++){
-                v2 = vtxEdge.vertex[m2];
-                if(vector_dist(v1,v2) <= 0.1) midVtx = addMidVtx(v1,v2);
-                if(!midVtx.empty()){
+        for(size_t m0=start; m0<n_1; m0++){
+            for(size_t m1=n_12; m1<n_2; m1++){
+                if( fabs(vtxEdge.vertex[m0][0]-vtxEdge.vertex[m1][0]) <= 1e-8 &&
+                    fabs(vtxEdge.vertex[m0][1]-vtxEdge.vertex[m1][1]) <= 1e-8 &&
+                    isPtinCFLine(vtxEdge.vertex[m0],vtxEdge.vertex[m1]) ){
+                    // Middle vertex: trans = V1; rot = V2;
+                    midVtx = {vtxEdge.vertex[m0][0],vtxEdge.vertex[m0][1],vtxEdge.vertex[m0][2],
+                              vtxEdge.vertex[m1][3],vtxEdge.vertex[m1][4],vtxEdge.vertex[m1][5],vtxEdge.vertex[m1][6]};
                     vtxEdge.vertex.push_back(midVtx);
 
-                    vtxEdge.edge.push_back(make_pair(m, n));
-                    vtxEdge.weight.push_back( vector_dist(v1,midVtx) );
-                    vtxEdge.edge.push_back(make_pair(m2, n));
-                    vtxEdge.weight.push_back( vector_dist(v2,midVtx) );
+                    // Add new connections
+                    vtxEdge.edge.push_back(make_pair(m0, n));
+                    vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[m0],midVtx) );
+                    vtxEdge.edge.push_back(make_pair(m1, n));
+                    vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[m1],midVtx) );
                     n++;
+
+                    // Continue from where it pauses
+                    n_12 = m1;
                     break;
                 }
             }
-            midVtx.clear();
         }
-        start = n_11;
+        start = n_1;
     }
 }
 // ******************************************************************** //
@@ -318,11 +326,12 @@ void highwayRoadmap3D::search(){
     unsigned int idx_s, idx_g, num;
 
     // Construct the roadmap
-    int num_vtx = vtxEdge.vertex.size();
+    size_t num_vtx = vtxEdge.vertex.size();
     AdjGraph g(num_vtx);
 
     for(size_t i=0; i<vtxEdge.edge.size(); i++)
-        add_edge(vtxEdge.edge[i].first, vtxEdge.edge[i].second, Weight(vtxEdge.weight[i]) ,g);
+        add_edge(size_t(vtxEdge.edge[i].first), size_t(vtxEdge.edge[i].second),
+                 Weight(vtxEdge.weight[i]), g);
 
     // Locate the nearest vertex for start and goal in the roadmap
     idx_s = find_cell(Endpt[0]);
@@ -341,12 +350,13 @@ void highwayRoadmap3D::search(){
 
     // Record path and cost
     num = 0;
-    Paths.push_back(idx_s);
-    while(Paths[num] != idx_g && num <= num_vtx){
-        Paths.push_back(p[Paths[num]]);
-        Cost += d[Paths[num]];
+    Paths.push_back(int(idx_s));
+    while(Paths[num] != int(idx_g) && num <= num_vtx){
+        Paths.push_back( int(p[ size_t(Paths[num]) ]) );
+        Cost += d[ size_t(Paths[num]) ];
         num++;
     }
+    if(num == num_vtx+1) Paths.clear();
 }
 
 
@@ -393,31 +403,31 @@ cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell){
     return cell_new;
 }
 
-// Connect vertexes among different layers, and add a middle vertex to the roadmap
-vector<double> highwayRoadmap3D::addMidVtx(vector<double> vtx1, vector<double> vtx2){
-    vector<double> midVtx, pt, pt1, pt2;
-//    ptInPoly3D polyTest;
-//    bool flag;
-//    midVtx.clear();
+// Connect vertexes among different layers
+void highwayRoadmap3D::midLayer(SuperQuadrics::shape Ec){
+    boundary3D bd;
+    // calculate Minkowski boundary points
+    for(size_t i=0; i<N_s; i++) bd.bd_s.push_back(Arena[i].minkSum3D(Ec,-1));
+    for(size_t i=0; i<N_o; i++) bd.bd_o.push_back(Obs[i].minkSum3D(Ec,+1));
 
-//    for(size_t iter = 0; iter<N_KCsample; iter++){
-//        pt.clear(); pt1.clear(); pt2.clear();
-//        for(size_t i=0; i<vtx1.size(); i++){
-//            pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
-//            pt1.push_back(pt[i] - vtx1[i]);
-//            pt2.push_back(pt[i] - vtx2[i]);
-//        }
-//        flag = polyTest.isPtInPoly3D(polyVtx, pt1);
-//        if(flag){
-//            flag = polyTest.isPtInPoly3D(polyVtx, pt2);
-//            if(flag){
-//                midVtx = pt;
-//                return midVtx;
-//            }
-//        }
-//    }
+    mid_cell = sweepLineZ(bd.bd_s, bd.bd_o);
+}
 
-    return midVtx;
+bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2){
+    for(size_t i=0; i<mid_cell.tx.size(); i++){
+        if(fabs(mid_cell.tx[i]-V1[0])>1e-8) continue;
+
+        for(size_t j=0; j<mid_cell.cellYZ[i].ty.size(); j++) {
+            if(fabs(mid_cell.cellYZ[i].ty[j]-V1[1])>1e-8) continue;
+
+            for(size_t k=0; k<mid_cell.cellYZ[i].zM[j].size(); k++)
+                if((V1[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
+                   (V1[2] <= mid_cell.cellYZ[i].zU[j][k]) &&
+                   (V2[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
+                   (V2[2] <= mid_cell.cellYZ[i].zU[j][k])) return 1;
+        }
+    }
+    return 0;
 }
 
 // Uniform random sampling on SO(3)
@@ -439,15 +449,14 @@ unsigned int highwayRoadmap3D::find_cell(vector<double> v){
     double d_min, d;
     unsigned int idx = 0;
 
-    d_min = vector_dist(v,vtxEdge.vertex[0]);
+    d_min = vector_dist({v[0],v[1],v[2]},{vtxEdge.vertex[0][0],vtxEdge.vertex[0][1],vtxEdge.vertex[0][2]});
     for(unsigned int i=0; i<vtxEdge.vertex.size(); i++){
-        d = vector_dist(v,vtxEdge.vertex[i]);
+        d = vector_dist({v[0],v[1],v[2]},{vtxEdge.vertex[i][0],vtxEdge.vertex[i][1],vtxEdge.vertex[i][2]});
         if(d < d_min){
             d_min = d;
             idx = i;
         }
     }
-
     return idx;
 }
 
@@ -476,4 +485,32 @@ Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n){
     M.faces.block(Num,2,Num,1) = q + n + 1;
 
     return M;
+}
+
+SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, vector<double> q_a, vector<double> q_b){
+    Matrix3d Ra = Quaterniond(q_a[0],q_a[1],q_a[2],q_a[3]).toRotationMatrix(),
+             Rb = Quaterniond(q_b[0],q_b[1],q_b[2],q_b[3]).toRotationMatrix();
+
+    double r = fmin(b[0],fmin(b[1],b[2]));
+    DiagonalMatrix<double, 3> diag, diag_a, diag_c;
+    diag.diagonal() = Array3d(r/b[0],r/b[1],r/b[2]);
+    diag_a.diagonal() = Array3d(pow(a[0],-2),pow(a[1],-2),pow(a[2],-2));
+
+    // Shrinking affine transformation
+    Matrix3d T = Rb * diag * Rb.transpose();
+
+    // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
+    Matrix3d Ap = T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
+    JacobiSVD<Matrix3d> svd(Ap, ComputeFullU | ComputeFullV);
+    Array3d a_p = svd.singularValues().array().pow(-0.5);
+    Array3d c_p = {max(a_p(0),r), max(a_p(1),r), max(a_p(2),r)};
+
+    // Stretch back
+    diag_c.diagonal() = c_p.pow(-2);
+    Matrix3d C = T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
+    svd.compute(C);
+    Quaterniond q_c(svd.matrixU());
+    Array3d c = svd.singularValues().array().pow(-0.5);
+
+    return SuperQuadrics::shape({{c(0),c(1),c(2)}, {q_c.w(),q_c.x(),q_c.y(),q_c.z()}, {1,1}, {0,0,0}, 0});
 }

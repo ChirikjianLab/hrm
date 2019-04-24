@@ -49,12 +49,12 @@ classdef SuperQuadrics
                 obj.eps   = val{4};
                 obj.N     = val{5};
                 obj.color = color;
-%                 [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
-%                     0:2*pi/(obj.N-1):2*pi);
+                [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
+                    0:2*pi/(obj.N-1):2*pi);
                 
-                et = obj.sampleSE(1,obj.a(3),obj.eps(1),1/obj.N);
-                om = obj.sampleSE(obj.a(1),obj.a(2),obj.eps(2),1/obj.N);
-                [obj.eta, obj.omega] = meshgrid(et,om);
+%                 et = obj.sampleSE(1,obj.a(3),obj.eps(1),1/obj.N);
+%                 om = obj.sampleSE(obj.a(1),obj.a(2),obj.eps(2),1/obj.N);
+%                 [obj.eta, obj.omega] = meshgrid(et,om);
                 
                 obj.infla = infla;
                 if infla > 0

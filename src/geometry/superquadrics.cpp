@@ -13,8 +13,8 @@ MatrixXd SuperQuadrics::originShape(){
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
     if(eta.size()==0){
         for(size_t i=0; i<n; i++){
-            eta.push_back(i*2*pi/(n-1));
-            omega.push_back(i*pi/(n-1));
+            eta.push_back(-pi/2+i*pi/(n-1));
+            omega.push_back(-pi+i*2*pi/(n-1));
         }
         num = eta.size() * omega.size();
     }
@@ -45,8 +45,8 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
 
     for(size_t i=0; i<n; i++){
-        eta.push_back(i*2*pi/(n-1));
-        omega.push_back(i*pi/(n-1));
+        eta.push_back(-pi/2+i*pi/(n-1));
+        omega.push_back(-pi+i*2*pi/(n-1));
     }
 
     num = eta.size() * omega.size();

@@ -24,7 +24,7 @@ public:
 	} Shape;
 
 	// Number of points on boundary
-    unsigned long n;
+    unsigned long n = 20;
     unsigned long num;
 
     // Curvature for computing almost uniform sampling
