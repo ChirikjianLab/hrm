@@ -7,7 +7,10 @@ loadPath = '../../bin/';
 disp('Environment Initialization...')
 
 opt = 22;
-[ar, obs] = environment3D(opt);
+if opt == 21, obs = 2;
+elseif opt == 22, obs = 7;
+end
+figure; hold on; axis equal;
 
 %% Robot Initialization
 disp('Robot Configurations...');
@@ -18,29 +21,32 @@ vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 [face, ~] = robotInit3D(vargin);
 
 %% Results from C++
-for i = 1:size(ar,2)
+for i = 1:1
     Arena{i} = load([loadPath, 'arena_3d_', num2str(i-1), '.csv']);
     Arena_mink{i} = load([loadPath, 'arena_mink_3d_', num2str(i-1), '.csv']);
     
+%     plot3(Arena{i}(1,:),Arena{i}(2,:),Arena{i}(3,:),'r.')
 %     plot3(Arena_mink{i}(1,:),Arena_mink{i}(2,:),Arena_mink{i}(3,:),'g.')
     
-%     plotSurf(Arena_mink{i})
+    plotSurf(Arena_mink{i},'w')
 end
 
-for i = 1:size(obs,2)
+for i = 1:obs
     Obs{i} = load([loadPath, 'obs_3d_', num2str(i-1), '.csv']);
     Obs_mink{i} = load([loadPath, 'obs_mink_3d_', num2str(i-1), '.csv']);
     
-    for k = 1:size(Obs_mink{i},2)
-        if mod(k,10) == 0
-            face.tc = Obs_mink{i}(:,k);
-            face.PlotShape
-            plot3(Obs_mink{i}(1,k),Obs_mink{i}(2,k),Obs_mink{i}(3,k),'r*')
-        end
-    end
+%     for k = 1:size(Obs_mink{i},2)
+%         if mod(k,10) == 0
+%             face.tc = Obs_mink{i}(:,k);
+%             face.PlotShape
+%             plot3(Obs_mink{i}(1,k),Obs_mink{i}(2,k),Obs_mink{i}(3,k),'r*')
+%         end
+%     end
     
+%     plot3(Obs{i}(1,:),Obs{i}(2,:),Obs{i}(3,:),'r.')
 %     plot3(Obs_mink{i}(1,:),Obs_mink{i}(2,:),Obs_mink{i}(3,:),'b.')
     
+    plotSurf(Obs{i},'k')
 %     plotSurf(Obs_mink{i})
 end
 
@@ -94,12 +100,12 @@ if ~isempty(path)
     end
 end
 
-function plotSurf(X)
+function plotSurf(X,c)
 num = sqrt(size(X,2));
 
 x = reshape(X(1,:),num,num);
 y = reshape(X(2,:),num,num);
 z = reshape(X(3,:),num,num);
 
-surf(x,y,z)
+surf(x,y,z,'FaceAlpha',0.3,'FaceColor',c,'EdgeColor','none')
 end

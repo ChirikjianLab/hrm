@@ -105,7 +105,7 @@ planTime  : planning time: roadmap building time and path search time
 private:
     size_t N_o, N_s, N_dx, N_dy, N_layers;
     vector<double> Lim;
-    vector<vector<double>> q_r;
+    vector<Quaterniond> q_r;
 
     struct vertexIdx{
     public:
@@ -150,7 +150,7 @@ private:
     unsigned int find_cell(vector<double> v);
     void sampleSO3();
     Mesh getMesh(MatrixXd, int);
-    SuperQuadrics::shape tfe(double[3], double[3], vector<double>, vector<double>);
+    SuperQuadrics::shape tfe(double[3], double[3], Quaterniond, Quaterniond);
     void midLayer(SuperQuadrics::shape);
     bool isPtinCFLine(vector<double>, vector<double>);
 

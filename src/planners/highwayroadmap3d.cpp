@@ -44,22 +44,29 @@ void highwayRoadmap3D::buildRoadmap(){
     sampleSO3();
 
     for(size_t i=0; i<N_layers; i++){
-        for(size_t j=0; j<q_r[i].size(); j++)
-            Robot[0].Shape.q[j] = q_r[i][j];
+        Robot[0].Shape.q = q_r[i];
 
         // boundary for obstacles and arenas
+//        time::point start = time::now();
         boundary3D bd = boundaryGen();
+//        cout << "Boundary: " << time::seconds(time::now() - start) << 's' << endl;
 
         // collision-free cells, stored by tx, ty, zL, zU, zM
+//        start = time::now();
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
+//        cout << "Sweep line: " << time::seconds(time::now() - start) << 's' << endl;
 
         // construct adjacency matrix for one layer
+//        start = time::now();
         connectOneLayer(CFcell);
+//        cout << "Connect within one layer: " << time::seconds(time::now() - start) << 's' << endl;
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
     }
+//    time::point start = time::now();
     connectMultiLayer();
+//    cout << "Connect btw different layers: " << time::seconds(time::now() - start) << 's' << endl;
 }
 
 
@@ -87,6 +94,12 @@ boundary3D highwayRoadmap3D::boundaryGen(){
 cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
     cf_cell3D CF_cell;
     intersectLineMesh3d lineMesh;
+    vector<Vector3d> pts_o;
+
+    MatrixXd z_s_L = MatrixXd::Constant(N_dy, N_s, -Lim[2]),
+             z_s_R = MatrixXd::Constant(N_dy, N_s, Lim[2]),
+             z_o_L = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN()),
+             z_o_R = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
 
     // Find intersection points for each sweep line
     vector<double> tx(N_dx), ty(N_dy);
@@ -103,10 +116,7 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
 
     // Find intersections along each sweep line
     for(size_t i=0; i<N_dx; i++){
-        MatrixXd z_s_L = MatrixXd::Constant(N_dy, N_s, -Lim[2]),
-                 z_s_R = MatrixXd::Constant(N_dy, N_s, Lim[2]),
-                 z_o_L = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN()),
-                 z_o_R = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+//        time::point tstart = time::now();
 
         for(size_t j=0; j<N_dy; j++){
             VectorXd lineZ(6); lineZ << tx[i], ty[j], 0, 0, 0, 1;
@@ -118,18 +128,23 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
 //                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
 //            }
             for(size_t n=0; n<N_o; n++){
-                vector<Vector3d> pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
+                pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
                 if(pts_o.empty()) continue;
                 z_o_L(j,n) = min(pts_o[0](2), pts_o[1](2));
                 z_o_R(j,n) = max(pts_o[0](2), pts_o[1](2));
             }
         }
+//        cout << "Intersect: " << time::seconds(time::now() - tstart) << 's' << endl;
 
         // Store cell info
         CF_cell.tx.push_back(tx[i]);
         CF_cell.cellYZ.push_back( cfLine(ty, z_s_L, z_s_R, z_o_L, z_o_R) );
-    }
 
+        z_s_L = MatrixXd::Constant(N_dy, N_s, -Lim[2]);
+        z_s_R = MatrixXd::Constant(N_dy, N_s, Lim[2]);
+        z_o_L = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+        z_o_R = MatrixXd::Constant(N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+    }
     return CF_cell;
 }
 
@@ -231,8 +246,8 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell){
         for(size_t j=0; j<CFcell.zM[i].size(); j++){
             // Construct a vector of vertex
             vtxEdge.vertex.push_back({tx, CFcell.ty[i], CFcell.zM[i][j],
-                                      Robot[0].Shape.q[0], Robot[0].Shape.q[1],
-                                      Robot[0].Shape.q[2], Robot[0].Shape.q[3]});
+                                      Robot[0].Shape.q.w(), Robot[0].Shape.q.x(),
+                                      Robot[0].Shape.q.y(), Robot[0].Shape.q.z()});
         }
     }
 
@@ -430,18 +445,15 @@ bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2){
     return 0;
 }
 
-// Uniform random sampling on SO(3)
+// Sampled rotations on SO(3), return a list of Quaternions
 void highwayRoadmap3D::sampleSO3(){
-    vector<double> u(3);
-
-    // Uniform random samples for Quaternions
-    for(size_t i=0; i<N_layers; i++){
-        u = {rand()*0.5/RAND_MAX, rand()*0.5/RAND_MAX, rand()*0.5/RAND_MAX};
-        this->q_r.push_back({sqrt(1-u[0])*sin(2*pi*u[1]),
-                             sqrt(1-u[0])*cos(2*pi*u[1]),
-                             sqrt(u[0])*sin(2*pi*u[2]),
-                             sqrt(u[0])*cos(2*pi*u[2])});
-    }
+    if(Robot[0].Shape.q_sample.empty())
+        // Uniform random samples for Quaternions
+        for(size_t i=0; i<N_layers; i++) q_r.push_back(Quaterniond::UnitRandom());
+    else
+        // Pre-defined samples of Quaternions
+        N_layers = Robot[0].Shape.q_sample.size();
+        q_r = Robot[0].Shape.q_sample;
 }
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex
@@ -487,9 +499,9 @@ Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n){
     return M;
 }
 
-SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, vector<double> q_a, vector<double> q_b){
-    Matrix3d Ra = Quaterniond(q_a[0],q_a[1],q_a[2],q_a[3]).toRotationMatrix(),
-             Rb = Quaterniond(q_b[0],q_b[1],q_b[2],q_b[3]).toRotationMatrix();
+SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, Quaterniond q_a, Quaterniond q_b){
+    Matrix3d Ra = q_a.toRotationMatrix(),
+             Rb = q_b.toRotationMatrix();
 
     double r = fmin(b[0],fmin(b[1],b[2]));
     DiagonalMatrix<double, 3> diag, diag_a, diag_c;
@@ -512,5 +524,5 @@ SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, vector<double> 
     Quaterniond q_c(svd.matrixU());
     Array3d c = svd.singularValues().array().pow(-0.5);
 
-    return SuperQuadrics::shape({{c(0),c(1),c(2)}, {q_c.w(),q_c.x(),q_c.y(),q_c.z()}, {1,1}, {0,0,0}, 0});
+    return SuperQuadrics::shape({{c(0),c(1),c(2)}, {1,1}, {0,0,0}, {q_c.w(),q_c.x(),q_c.y(),q_c.z()}, 0});
 }

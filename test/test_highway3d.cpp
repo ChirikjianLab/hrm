@@ -32,10 +32,10 @@ vector<SuperQuadrics> generateSQ(string file_name, double D){
         obj[j].Shape.pos[0] = config[j][5];
         obj[j].Shape.pos[1] = config[j][6];
         obj[j].Shape.pos[2] = config[j][7];
-        obj[j].Shape.q[0] = config[j][8];
-        obj[j].Shape.q[1] = config[j][9];
-        obj[j].Shape.q[2] = config[j][10];
-        obj[j].Shape.q[3] = config[j][11];
+        obj[j].Shape.q.w() = config[j][8];
+        obj[j].Shape.q.x() = config[j][9];
+        obj[j].Shape.q.y() = config[j][10];
+        obj[j].Shape.q.z() = config[j][11];
         obj[j].n = D;
     }
 
@@ -130,7 +130,7 @@ highwayRoadmap3D plan(vector<SuperQuadrics> robot, vector<vector<double>> EndPts
 }
 
 int main(int argc, char ** argv){
-    if (argc != 6) {
+    if (argc != 7) {
         cerr<< "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num of layers 4) Num of sweep planes 5) Num of sweep lines" << endl;
         return 1;
     }
@@ -151,6 +151,23 @@ int main(int argc, char ** argv){
                           arena = generateSQ(arena_config, n),
                           obs = generateSQ(obs_config, n);
 
+    // Read predefined quaternions
+    string quat_file = argv[6];
+    if(quat_file.compare("0") == 0) cout << "Will generate uniform random rotations from SO(3)" << endl;
+    else{
+        inputFile q_file;
+        vector<vector<double>> quat_sample = q_file.parse2DCsvFile(quat_file);
+
+        for(size_t i=0; i<quat_sample.size(); i++){
+            Quaterniond q;
+            q.w() = quat_sample[i][0];
+            q.x() = quat_sample[i][1];
+            q.y() = quat_sample[i][2];
+            q.z() = quat_sample[i][3];
+            robot[0].Shape.q_sample.push_back(q);
+        }
+    }
+
     // Start and goal setup
     inputFile file;
     string file_endpt = "../config/endPts_3d.csv";
@@ -161,6 +178,14 @@ int main(int argc, char ** argv){
     EndPts.push_back(endPts[1]);
 
     highwayRoadmap3D high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
+    // Planning Time and Path Cost
+    cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
+    cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
+    cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+
+    cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
+    cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
+    cout << "Cost: " << high3D.Cost << endl;
 
     for(size_t i=0; i<N; i++){
         // Path planning using HighwayRoadmap3D

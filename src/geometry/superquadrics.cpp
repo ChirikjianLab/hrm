@@ -12,28 +12,23 @@ MatrixXd SuperQuadrics::originShape(){
 //    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
     if(eta.size()==0){
-        for(size_t i=0; i<n; i++){
-            eta.push_back(-pi/2+i*pi/(n-1));
-            omega.push_back(-pi+i*2*pi/(n-1));
-        }
-        num = eta.size() * omega.size();
+        eta = RowVectorXd::LinSpaced(n,-pi,pi).replicate(n,1);
+        omega = VectorXd::LinSpaced(n,-pi/2,pi/2).replicate(1,n);
+        num = n*n;
     }
 
-    MatrixXd C(3,num), X(3,num);
+    MatrixXd X(3,num), x, y, z;
+    Vector3d C; C << Shape.pos[0], Shape.pos[1], Shape.pos[2];
 
-    int k = 0;
-    for(size_t i=0; i<eta.size(); i++){
-        for(size_t j=0; j<omega.size(); j++){
-            X(0,k) = Shape.a[0] * expFun(eta[i],Shape.eps[0],0) * expFun(omega[j],Shape.eps[1],0);
-            X(1,k) = Shape.a[1] * expFun(eta[i],Shape.eps[0],0) * expFun(omega[j],Shape.eps[1],1);
-            X(2,k) = Shape.a[2] * expFun(eta[i],Shape.eps[0],1);
+    // Parameterized surface
+    x = Shape.a[0] * expFun_mat(eta, Shape.eps[0], 0).cwiseProduct( expFun_mat(omega, Shape.eps[1], 0) ); x.resize(1,num);
+    y = Shape.a[1] * expFun_mat(eta, Shape.eps[0], 0).cwiseProduct( expFun_mat(omega, Shape.eps[1], 1) ); y.resize(1,num);
+    z = Shape.a[2] * expFun_mat(eta, Shape.eps[0], 1).cwiseProduct( MatrixXd::Constant(n,n,1) ); z.resize(1,num);
+    X.row(0) = x;
+    X.row(1) = y;
+    X.row(2) = z;
 
-            C(0,k) = Shape.pos[0]; C(1,k) = Shape.pos[1]; C(2,k) = Shape.pos[2];
-            k++;
-        }
-    }
-    X = Quaterniond(Shape.q[0],Shape.q[1],Shape.q[2],Shape.q[3]).toRotationMatrix().matrix() * X + C;
-    return X;
+    return (Shape.q.toRotationMatrix() * X).colwise() + C;
 }
 
 // Get the points on Minkowski boundary
@@ -44,37 +39,33 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
 //    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
 
-    for(size_t i=0; i<n; i++){
-        eta.push_back(-pi/2+i*pi/(n-1));
-        omega.push_back(-pi+i*2*pi/(n-1));
-    }
+    eta = RowVectorXd::LinSpaced(n,-pi,pi).replicate(n,1);
+    omega = VectorXd::LinSpaced(n,-pi/2,pi/2).replicate(1,n);
+    num = n*n;
 
-    num = eta.size() * omega.size();
-
-    MatrixXd X_eb(3,num), gradPhi(3,num), normal(3,num), C(3,num);
-    Matrix<double, 3, 1> ones; ones << 1,1,1;
+    MatrixXd gradPhi(3,num);
+    MatrixXd gradPhix(n,n),gradPhiy(n,n),gradPhiz(n,n);
 
     double a1 = Shape.a[0], b1 = Shape.a[1], c1 = Shape.a[2], eps1 = Shape.eps[0], eps2 = Shape.eps[1],
            a2 = shp_b.a[0], b2 = shp_b.a[1], c2 = shp_b.a[2];
-    MatrixXd R1 = Quaterniond(Shape.q[0],Shape.q[1],Shape.q[2],Shape.q[3]).toRotationMatrix(),
-             R2 = Quaterniond(shp_b.q[0],shp_b.q[1],shp_b.q[2],shp_b.q[3]).toRotationMatrix();
+    MatrixXd R1 = Shape.q.toRotationMatrix(),
+             R2 = shp_b.q.toRotationMatrix();
 
     double r = fmin(a2,fmin(b2,c2));
     DiagonalMatrix<double, 3> diag; diag.diagonal() = Array3d(a2/r,b2/r,c2/r);
 
     Matrix3d Tinv = R2 * diag * R2.transpose();
 
-    int k = 0;
-    for(size_t i=0; i<eta.size(); i++){
-        for(size_t j=0; j<omega.size(); j++){
-            gradPhi(0,k) = expFun(eta[i], 2-eps1, 0) * expFun(omega[j], 2-eps2, 0) / a1;
-            gradPhi(1,k) = expFun(eta[i], 2-eps1, 0) * expFun(omega[j], 2-eps2, 1) / b1;
-            gradPhi(2,k) = expFun(eta[i], 2-eps2, 1) / c1;
-            k++;
-        }
-    }
-    X_eb = originShape() + (K*r*Tinv*Tinv*R1*gradPhi).cwiseQuotient( ones * (Tinv*R1*gradPhi).colwise().norm() );
-    return X_eb;
+    // Gradient
+    gradPhix = expFun_mat(eta, 2-eps1, 0).cwiseProduct( expFun_mat(omega, 2-eps2, 0) ) / a1; gradPhix.resize(1,num);
+    gradPhiy = expFun_mat(eta, 2-eps1, 0).cwiseProduct( expFun_mat(omega, 2-eps2, 1) ) / b1; gradPhiy.resize(1,num);
+    gradPhiz = expFun_mat(eta, 2-eps1, 1).cwiseProduct( MatrixXd::Constant(n,n,1) ) / c1; gradPhiz.resize(1,num);
+    gradPhi.row(0) = gradPhix;
+    gradPhi.row(1) = gradPhiy;
+    gradPhi.row(2) = gradPhiz;
+
+    return originShape() + (K*r*Tinv*Tinv*R1*gradPhi).cwiseQuotient
+            ( MatrixXd::Constant(3,1,1) * (Tinv*R1*gradPhi).colwise().norm() );
 }
 
 // For almost uniform sampling //
@@ -116,4 +107,9 @@ double SuperQuadrics::updateTheta(double th, double a, double b, double ep, doub
 // Exponential functions
 double SuperQuadrics::expFun(double th, double p, bool func){
     return (func == 0) ? sgn(cos(th)) * pow(abs(cos(th)), p) : sgn(sin(th)) * pow(abs(sin(th)), p) ;
+}
+
+MatrixXd SuperQuadrics::expFun_mat(MatrixXd Th, double p, bool func){
+    if(func) return Th.array().cos().sign().cwiseProduct( Th.array().cos().abs().pow(p) );
+    else return Th.array().sin().sign().cwiseProduct( Th.array().sin().abs().pow(p) ) ;
 }

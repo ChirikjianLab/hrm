@@ -17,21 +17,21 @@ public:
 	*/
 	struct shape {
         double a[3];
-        double q[4];
         double eps[2];
 		double pos[3];
+        Quaterniond q;
         double infla;
+        vector<Quaterniond> q_sample;
 	} Shape;
 
 	// Number of points on boundary
-    unsigned long n = 20;
-    unsigned long num;
+    long n = 20, num;
 
     // Curvature for computing almost uniform sampling
     double cur;
 
     // Angle parameters
-    vector<double> eta, omega;
+    MatrixXd eta, omega;
 
 	// Functions
     vector<double> sampleSE(double, double, double, double);
@@ -39,6 +39,7 @@ public:
     MatrixXd originShape();
     MatrixXd minkSum3D(shape, int);
     double expFun(double, double, bool);
+    MatrixXd expFun_mat(MatrixXd, double, bool);
 };
 
 #endif // SUPERQUADRICS_H
