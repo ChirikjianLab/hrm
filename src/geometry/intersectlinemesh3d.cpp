@@ -1,4 +1,5 @@
 #include "intersectlinemesh3d.h"
+#include <iostream>
 
 vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line, Matrix3Xd vertices, MatrixX3d faces){
     vector<Vector3d> points;
@@ -13,6 +14,20 @@ vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line, Matrix3Xd vertice
     double a,b,uu,uv,vv,wu,wv,D,s,t;
 
     for (int i=0; i<faces.rows(); i++) {
+        // ignore the face that is out of range
+        if( line(0) < fmin(vertices(0,int(faces(i,0))),
+                           fmin(vertices(0,int(faces(i,1))),
+                                vertices(0,int(faces(i,2))))) ||
+            line(0) > fmax(vertices(0,int(faces(i,0))),
+                           fmax(vertices(0,int(faces(i,1))),
+                                vertices(0,int(faces(i,2))))) ) continue;
+        if( line(1) < fmin(vertices(1,int(faces(i,0))),
+                           fmin(vertices(1,int(faces(i,1))),
+                                vertices(1,int(faces(i,2))))) ||
+            line(1) > fmax(vertices(1,int(faces(i,0))),
+                           fmax(vertices(1,int(faces(i,1))),
+                                vertices(1,int(faces(i,2))))) ) continue;
+
         // find triangle edge vectors
         t0 = vertices.col(int(faces(i,0)));
         u = vertices.col(int(faces(i,1))) - t0;

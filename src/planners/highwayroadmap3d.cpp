@@ -121,12 +121,12 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
         for(size_t j=0; j<N_dy; j++){
             VectorXd lineZ(6); lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
-//            for(size_t m=0; m<N_s; m++){
-//                vector<Vector3d> pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
-//                if(pts_s.empty()) continue;
-//                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
-//                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
-//            }
+            for(size_t m=0; m<N_s; m++){
+                vector<Vector3d> pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
+                if(pts_s.empty()) continue;
+                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
+                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
+            }
             for(size_t n=0; n<N_o; n++){
                 pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
                 if(pts_o.empty()) continue;
