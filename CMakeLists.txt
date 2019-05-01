@@ -37,6 +37,27 @@ IF (CCD_FOUND)
     ADD_DEFINITIONS( "-DHAS_CCD" )
 ENDIF()
 
+#find_package(GSL REQUIRED)
+#IF (GSL_FOUND)
+#    INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR} ${GSLCBLAS_INCLUDE_DIR})
+#    link_libraries(${GSL_LIBRARIES} ${GSLBLAS_LIBRARIES})
+#    ADD_DEFINITIONS( "-DHAS_GSL" )
+#ENDIF()
+
+find_package(CGAL REQUIRED)
+IF (CGAL_FOUND)
+    INCLUDE_DIRECTORIES(${CGAL_INCLUDE_DIR})
+    link_libraries(${CGAL_LIBRARIES})
+    ADD_DEFINITIONS( "-DHAS_CGAL" )
+ENDIF()
+
+find_package(GMP REQUIRED)
+IF (GMP_FOUND)
+    INCLUDE_DIRECTORIES(${GMP_INCLUDE_DIR})
+    link_libraries(${GMP_LIBRARIES})
+    ADD_DEFINITIONS( "-DHAS_GMP" )
+ENDIF()
+
 # Headers
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
@@ -47,6 +68,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/mesh_gen.h)
 
 # Sources
 set(SOURCE
@@ -58,6 +80,7 @@ set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
+set(MESH "${PROJECT_SOURCE_DIR}/include/mesh_gen.cpp")
 
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
@@ -81,10 +104,11 @@ target_link_libraries(sam_PLANNER_FCL_2D "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIB
 add_executable(sam_PLANNER_FCL_TGL_2D ${PROJECT_SOURCE_DIR}/sampler_test/SP_test_FCL_TGL_2D.cpp)
 target_link_libraries(sam_PLANNER_FCL_TGL_2D "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
-# TARGET_LINK_LIBRARIES(highwayRoadMap ${OpenCV_LIBS})
-
 # 3D version
 # Executables
 add_executable(highwayRoadMap3D ${PROJECT_SOURCE_DIR}/test/test_highway3d.cpp ${SOURCE})
+
+add_executable(test_PLANNER_FCL_3D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_3D.cpp ${SOURCE} ${MESH})
+target_link_libraries(test_PLANNER_FCL_3D "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 
