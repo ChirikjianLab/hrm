@@ -1,8 +1,10 @@
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/prm/PRM.h>
-#include "ompl/geometric/planners/prm/PRMstar.h"
+#include <ompl/geometric/planners/prm/LazyPRM.h>
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/rrt/RRT.h>
+#include <ompl/geometric/planners/est/EST.h>
+#include <ompl/geometric/planners/kpiece/KPIECE1.h>
 #include <ompl/util/PPM.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
@@ -37,29 +39,29 @@ EMesh getMesh(SuperQuadrics sq){
     sq.Shape.pos[0] = 0.0; sq.Shape.pos[1] = 0.0; sq.Shape.pos[2] = 0.0;
 
     EMesh M;
-//    MeshGenerator MeshGen;
-//    ParametricPoints pts = MeshGen.getBoundary3D(sq);
-//    M = MeshGen.getMesh(pts);
+    MeshGenerator MeshGen;
+    ParametricPoints pts = MeshGen.getBoundary3D(sq);
+    M = MeshGen.getMesh(pts);
 
-    long n = sq.n;
-    long Num = (n-1)*(n-1);
+    //    long n = sq.n;
+    //    long Num = (n-1)*(n-1);
 
-    for(int i=0; i<sq.num; i++) M.vertices.push_back({sq.originShape()(0,i),
-                                                      sq.originShape()(1,i),
-                                                      sq.originShape()(2,i)});
+    //    for(int i=0; i<sq.num; i++) M.vertices.push_back({sq.originShape()(0,i),
+    //                                                      sq.originShape()(1,i),
+    //                                                      sq.originShape()(2,i)});
 
-    ArrayXd q((n-1)*(n-1));
-    for(int i=0; i<n-1; i++) q.segment(i*(n-1),(n-1)) = ArrayXd::LinSpaced(n-1,i*n,(i+1)*n-2);
+    //    ArrayXd q((n-1)*(n-1));
+    //    for(int i=0; i<n-1; i++) q.segment(i*(n-1),(n-1)) = ArrayXd::LinSpaced(n-1,i*n,(i+1)*n-2);
 
-    MatrixXd faces = MatrixXd::Zero(2*Num,3);
-    faces.block(0,0,Num,1) = q;
-    faces.block(0,1,Num,1) = q + n;
-    faces.block(0,2,Num,1) = q + n + 1;
-    faces.block(Num,0,Num,1) = q;
-    faces.block(Num,1,Num,1) = q + 1;
-    faces.block(Num,2,Num,1) = q + n + 1;
+    //    MatrixXd faces = MatrixXd::Zero(2*Num,3);
+    //    faces.block(0,0,Num,1) = q;
+    //    faces.block(0,1,Num,1) = q + n;
+    //    faces.block(0,2,Num,1) = q + n + 1;
+    //    faces.block(Num,0,Num,1) = q;
+    //    faces.block(Num,1,Num,1) = q + 1;
+    //    faces.block(Num,2,Num,1) = q + n + 1;
 
-    for(int i=0; i<faces.rows(); i++) M.triangles.push_back({size_t(faces(i,0)),size_t(faces(i,1)),size_t(faces(i,2))});
+    //    for(int i=0; i<faces.rows(); i++) M.triangles.push_back({size_t(faces(i,0)),size_t(faces(i,1)),size_t(faces(i,2))});
 
     return M;
 }
@@ -107,8 +109,8 @@ public:
     //    int total_random;
     unsigned long nodes_path;
     int flag;
-//    double astar_time;
-//    double construct_time;
+    //    double astar_time;
+    //    double construct_time;
     double total_time;
     double valid_space;
     int id_planner;
@@ -135,13 +137,15 @@ public:
 
         ss_->setStateValidityChecker([this](const ob::State *state) { return isStateValid(state); });
         space->setup();
-//        ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
+        ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
 
         // Set planner
         if(id_planner == 0) ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
-        if(id_planner == 1) ss_->setPlanner(std::make_shared<og::PRMstar>(ss_->getSpaceInformation()));
+        if(id_planner == 1) ss_->setPlanner(std::make_shared<og::LazyPRM>(ss_->getSpaceInformation()));
         if(id_planner == 2) ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation()));
         if(id_planner == 3) ss_->setPlanner(std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
+        if(id_planner == 4) ss_->setPlanner(std::make_shared<og::EST>(ss_->getSpaceInformation()));
+        if(id_planner == 5) ss_->setPlanner(std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
     }
 
     bool compareStates(std::vector<double> goal_config, std::vector<double> last_config){
@@ -176,10 +180,14 @@ public:
 
         ss_->setStartAndGoalStates(start, goal);
         ss_->setup();
-        ss_->print();
+        //        ss_->print();
 
         std::cout << "Planning..."<< std::endl;
         ob::PlannerStatus solved = ss_->solve(100);
+        if(!solved){
+            flag = false;
+            return flag;
+        }
 
         /*Getting times*/
         //flag = int(solved.operator bool());
@@ -277,10 +285,11 @@ public:
             }
             file_smooth_traj.close();
             flag = int(aux_flag);
+            if(total_time >= 100) flag = false;
             return true;
         }
         return false;
-      }
+    }
 
     bool isStateValid(const ob::State *state) const{
         bool res = true;
@@ -333,10 +342,7 @@ public:
             model_sq->beginModel();
             model_sq->addSubModel(obs_mesh[i].vertices, obs_mesh[i].triangles);
             model_sq->endModel();
-
             obj_obs.push_back(fcl::CollisionObjectd(GeometryPtr_t(model_sq)));
-//            GeometryPtr_t ellip2(new fcl::Ellipsoidd(obstacles[i].Shape.a[0],obstacles[i].Shape.a[1],obstacles[i].Shape.a[2]));
-//            obj_obs.push_back(fcl::CollisionObjectd(ellip2));
         }
     }
 };
@@ -358,16 +364,20 @@ int main(int argc, char ** argv){
             arena_config = "../config/arena_config_3d.csv",
             obs_config = "../config/obs_config_3d.csv";
     vector<SuperQuadrics> robot = generateSQ(robot_config, n),
-                          arena = generateSQ(arena_config, n),
-                          obs = generateSQ(obs_config, n);
+            arena = generateSQ(arena_config, n),
+            obs = generateSQ(obs_config, n);
 
     // Obstacle mesh
     vector<EMesh> obs_mesh;
     for(size_t i=0; i<obs.size(); i++) obs_mesh.push_back( getMesh(obs[i]) );
 
     // Boundary
-    vector<double> b1 = {-arena[0].Shape.a[0],-arena[0].Shape.a[1],-arena[0].Shape.a[2]},
-                   b2 = {arena[0].Shape.a[0],arena[0].Shape.a[1],arena[0].Shape.a[2]};
+    vector<double> b1 = {-arena[0].Shape.a[0]+robot[0].Shape.a[0],
+                         -arena[0].Shape.a[1]+robot[0].Shape.a[0],
+                         -arena[0].Shape.a[2]+robot[0].Shape.a[0]},
+                   b2 = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
+                         arena[0].Shape.a[1]-robot[0].Shape.a[0],
+                         arena[0].Shape.a[2]-robot[0].Shape.a[0]};
 
     // Start and goal setup
     inputFile file;
@@ -375,15 +385,24 @@ int main(int argc, char ** argv){
     vector<vector<double> > endPts = file.parse2DCsvFile(file_endpt);
 
     std::ofstream outfile;
-    outfile.open("time3D_ompl.csv", std::ios_base::app);
-    outfile << "PLANNER,SUCCESS,TOTAL_TIME,ASTAR_TIME,CONST_TIME,RANDOM_CONF,GRAPH_NODES,GRAPH_EDGES,PATH_CONFIG,VALID_SPACE\n";
-    outfile.close();
-    // Planner number: PRM:0, PRMstar:1, RRT:2, RRTconnect:3
-    int planner_used =atoi(argv[3]);
-    for(int i=0; i<N; i++){
-        FCLtester3D tester(b1, b2, robot, arena, obs, obs_mesh, planner_used);
-        tester.plan(endPts[0], endPts[1], i);
+    outfile.open("time3D_ompl.csv");
+    outfile << "PLANNER" << ',' << "SUCCESS" << ',' << "TOTAL_TIME" << ',' <<
+               "GRAPH_NODES" << ',' << "GRAPH_EDGES" << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << endl;
+    // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
+    int id_plan = atoi(argv[3]);
+    for(int j=0; j<id_plan; j++){
+        cout << "Planner: " << j << endl;
+        for(int i=0; i<N; i++){
+            cout << "Num of trials: " << i << endl;
+
+            FCLtester3D tester(b1, b2, robot, arena, obs, obs_mesh, j);
+            tester.plan(endPts[0], endPts[1], i);
+
+            outfile << tester.id_planner << ',' << tester.flag << ',' << tester.total_time << ',' <<
+                       tester.nodes_graph <<","<< tester.edges_graph <<","<< tester.nodes_path <<","<< tester.valid_space << endl;
+        }
     }
+    outfile.close();
 
     return 0;
 }

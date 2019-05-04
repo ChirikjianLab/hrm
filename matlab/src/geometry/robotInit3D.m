@@ -8,7 +8,8 @@ function [robot, EndPts] = robotInit3D(vargin)
 N_r = 20;
 
 % Initialize robot parameters
-a_r = [8;5;3];
+a_r = [10;6;4];
+% a_r = [8;5;3];
 q_r = [0;1;0;0];
 tc_r = [0;0;0];
 eps_r = [1;1];

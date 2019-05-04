@@ -6,9 +6,10 @@ loadPath = '../../bin/';
 %% environment
 disp('Environment Initialization...')
 
-opt = 22;
+opt = 24;
 if opt == 21, obs = 2;
 elseif opt == 22, obs = 7;
+elseif opt == 24, obs = 4;
 end
 figure; hold on; axis equal;
 
@@ -28,7 +29,7 @@ for i = 1:1
 %     plot3(Arena{i}(1,:),Arena{i}(2,:),Arena{i}(3,:),'r.')
 %     plot3(Arena_mink{i}(1,:),Arena_mink{i}(2,:),Arena_mink{i}(3,:),'g.')
     
-    plotSurf(Arena_mink{i},'w')
+%     plotSurf(Arena_mink{i},'w')
 end
 
 for i = 1:obs

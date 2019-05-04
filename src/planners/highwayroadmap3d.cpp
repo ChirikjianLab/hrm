@@ -28,6 +28,14 @@ highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<d
 }
 
 void highwayRoadmap3D::plan(){
+    // Samples from SO(3)
+    sampleSO3();
+    // Compute mid-layer TFE
+    for(size_t i=0; i<q_r.size(); i++){
+        if(i == N_layers-1) mid.push_back( tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[0]) );
+        else mid.push_back( tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[i+1]) );
+    }
+
     time::point start = time::now();
     buildRoadmap();
     planTime.buildTime = time::seconds(time::now() - start);
@@ -39,10 +47,6 @@ void highwayRoadmap3D::plan(){
 
 void highwayRoadmap3D::buildRoadmap(){
     graph Graph;
-
-    // Samples from SO(3)
-    sampleSO3();
-
     for(size_t i=0; i<N_layers; i++){
         Robot[0].Shape.q = q_r[i];
 
@@ -299,14 +303,12 @@ void highwayRoadmap3D::connectMultiLayer(){
         if(i == N_layers-1){
             n_12 = 0;
             n_2 = vtxId[0].layer;
-            mid = tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[0]);
         }
         else{
             n_12 = n_1;
             n_2 = vtxId[i+1].layer;
-            mid = tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[i+1]);
         }
-        midLayer(mid);
+        midLayer(mid[i]);
 
         // Nearest vertex btw layers
         for(size_t m0=start; m0<n_1; m0++){
@@ -372,6 +374,7 @@ void highwayRoadmap3D::search(){
         num++;
     }
     if(num == num_vtx+1) Paths.clear();
+    if(Paths.size() > 0) flag = true;
 }
 
 
@@ -450,10 +453,11 @@ void highwayRoadmap3D::sampleSO3(){
     if(Robot[0].Shape.q_sample.empty())
         // Uniform random samples for Quaternions
         for(size_t i=0; i<N_layers; i++) q_r.push_back(Quaterniond::UnitRandom());
-    else
+    else{
         // Pre-defined samples of Quaternions
         N_layers = Robot[0].Shape.q_sample.size();
         q_r = Robot[0].Shape.q_sample;
+    }
 }
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex

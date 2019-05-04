@@ -140,7 +140,7 @@ int main(int argc, char ** argv){
     double n = atof(argv[2]);
     int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
-    vector< vector<double> > time_stat(N);
+    vector< vector<double> > stat(N);
 
     // Read and setup environment config
     string robot_config = "../config/robot_config_3d.csv",
@@ -188,15 +188,18 @@ int main(int argc, char ** argv){
     cout << "Cost: " << high3D.Cost << endl;
 
     for(size_t i=0; i<N; i++){
+        cout << "Number of trials: " << i << endl;
+
         // Path planning using HighwayRoadmap3D
         high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
 
-        time_stat[i] = {high3D.planTime.buildTime,
-                        high3D.planTime.searchTime,
-                        high3D.planTime.buildTime + high3D.planTime.searchTime,
-                        double(high3D.vtxEdge.vertex.size()),
-                        double(high3D.vtxEdge.edge.size()),
-                        double(high3D.Paths.size())};
+        stat[i] = {high3D.planTime.buildTime,
+                   high3D.planTime.searchTime,
+                   high3D.planTime.buildTime + high3D.planTime.searchTime,
+                   double(high3D.vtxEdge.vertex.size()),
+                   double(high3D.vtxEdge.edge.size()),
+                   double(high3D.Paths.size()),
+                   double(high3D.flag)};
 
         // Planning Time and Path Cost
         cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
@@ -231,9 +234,12 @@ int main(int argc, char ** argv){
     // Store results
     ofstream file_time;
     file_time.open("time_high3D.csv");
-    file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
-    for(size_t i=0; i<N; i++) file_time << time_stat[i][0] << ',' << time_stat[i][1] << ',' << time_stat[i][2] << ','
-              << time_stat[i][3] << ',' << time_stat[i][4] << ',' << time_stat[i][5] << "\n";
+    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' <<
+                 "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ',' <<
+                 "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
+    for(size_t i=0; i<N; i++) file_time << stat[i][6] << ',' << stat[i][0] << ',' << stat[i][1] << ',' <<
+              stat[i][2] << ',' << N_l << ',' << N_x << ',' << N_y << ',' <<
+              stat[i][3] << ',' << stat[i][4] << ',' << stat[i][5] << "\n";
     file_time.close();
 
     return 0;

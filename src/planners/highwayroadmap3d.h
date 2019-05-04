@@ -114,7 +114,7 @@ private:
         vector< vector<size_t> > line;
     } N_v;
 
-    SuperQuadrics::shape mid;
+    vector<SuperQuadrics::shape> mid;
     cf_cell3D mid_cell;
     vector<double> midVtx;
 
@@ -140,6 +140,8 @@ public:
     public:
         double buildTime, searchTime;
     } planTime;
+
+    bool flag = false;
 
 // functions
 private:
