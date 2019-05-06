@@ -70,6 +70,8 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/mesh_gen.h)
 
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.h)
+
 # Sources
 set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp"
@@ -81,6 +83,8 @@ set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
 set(MESH "${PROJECT_SOURCE_DIR}/include/mesh_gen.cpp")
+set(OMPL_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.cpp")
+set(HIGHWAY_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.cpp")
 
 # Executables
 add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
@@ -111,4 +115,8 @@ add_executable(highwayRoadMap3D ${PROJECT_SOURCE_DIR}/test/test_highway3d.cpp ${
 add_executable(test_PLANNER_FCL_3D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_3D.cpp ${SOURCE} ${MESH})
 target_link_libraries(test_PLANNER_FCL_3D "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
+# Benchmark
+add_executable(benchmark3D_OMPL ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_ompl.cpp ${SOURCE} ${MESH} ${OMPL_PLANNER})
+target_link_libraries(benchmark3D_OMPL "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
+add_executable(benchmark3D_HIGHWAY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_highway.cpp ${SOURCE} ${HIGHWAY_PLANNER})

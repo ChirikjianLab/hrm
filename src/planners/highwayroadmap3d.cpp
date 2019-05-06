@@ -28,6 +28,11 @@ highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<d
 }
 
 void highwayRoadmap3D::plan(){
+    buildRoadmap();
+    search();
+}
+
+void highwayRoadmap3D::buildRoadmap(){
     // Samples from SO(3)
     sampleSO3();
     // Compute mid-layer TFE
@@ -37,16 +42,7 @@ void highwayRoadmap3D::plan(){
     }
 
     time::point start = time::now();
-    buildRoadmap();
-    planTime.buildTime = time::seconds(time::now() - start);
 
-    start = time::now();
-    search();
-    planTime.searchTime = time::seconds(time::now() - start);
-}
-
-void highwayRoadmap3D::buildRoadmap(){
-    graph Graph;
     for(size_t i=0; i<N_layers; i++){
         Robot[0].Shape.q = q_r[i];
 
@@ -71,6 +67,8 @@ void highwayRoadmap3D::buildRoadmap(){
 //    time::point start = time::now();
     connectMultiLayer();
 //    cout << "Connect btw different layers: " << time::seconds(time::now() - start) << 's' << endl;
+
+    planTime.buildTime = time::seconds(time::now() - start);
 }
 
 
@@ -340,6 +338,8 @@ void highwayRoadmap3D::connectMultiLayer(){
 // ******************************************************************** //
 
 void highwayRoadmap3D::search(){
+    time::point start = time::now();
+
     unsigned int idx_s, idx_g, num;
 
     // Construct the roadmap
@@ -375,6 +375,8 @@ void highwayRoadmap3D::search(){
     }
     if(num == num_vtx+1) Paths.clear();
     if(Paths.size() > 0) flag = true;
+
+    planTime.searchTime = time::seconds(time::now() - start);
 }
 
 
