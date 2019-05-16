@@ -11,7 +11,7 @@ using namespace std;
 class inputFile
 {
 public:
-    vector<vector<double>> parse2DCsvFile(string inputFileName);
+    vector< vector<double> > parse2DCsvFile(string inputFileName);
 };
 
 

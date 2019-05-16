@@ -1,15 +1,14 @@
 #include <iostream>
 #include <list>
 #include <random>
-#include <src/planners/highwayroadmap.h>
+#include <src/planners/highwayroadmap2d.h>
 #include <src/planners/interval.h>
-#include <src/geometry/ptinpoly.h>
-
 #include <fstream>
 
 #define pi 3.1415926
 
-highwayRoadmap::highwayRoadmap(vector<SuperEllipse> robot, polyCSpace vtxMat, vector< vector<double> > endpt, vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt){
+highwayRoadmap2D::highwayRoadmap2D(vector<SuperEllipse> robot, vector< vector<double> > endpt,
+                                   vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt){
     Robot = robot;
     Endpt = endpt;
     Arena = arena;
@@ -17,17 +16,14 @@ highwayRoadmap::highwayRoadmap(vector<SuperEllipse> robot, polyCSpace vtxMat, ve
     N_o = opt.N_o;
     N_s = opt.N_s;
 
-    polyVtx = vtxMat;
-
     infla = opt.infla;
     N_layers = opt.N_layers;
     N_dy = opt.N_dy;
-    N_KCsample = opt.sampleNum;
 
     Cost = 0;
 }
 
-void highwayRoadmap::plan(){
+void highwayRoadmap2D::plan(){
     time::point start = time::now();
     buildRoadmap();
     planTime.buildTime = time::seconds(time::now() - start);
@@ -37,7 +33,7 @@ void highwayRoadmap::plan(){
     planTime.searchTime = time::seconds(time::now() - start);
 }
 
-void highwayRoadmap::buildRoadmap(){
+void highwayRoadmap2D::buildRoadmap(){
     // angle steps
     double dr = pi/(N_layers-1);
     graph multiGraph;
@@ -59,7 +55,7 @@ void highwayRoadmap::buildRoadmap(){
     connectMultiLayer();
 }
 
-boundary highwayRoadmap::boundaryGen(){
+boundary highwayRoadmap2D::boundaryGen(){
     vector<SuperEllipse> robot_infla(Robot.size());
     boundary bd;
 
@@ -79,7 +75,7 @@ boundary highwayRoadmap::boundaryGen(){
     return bd;
 }
 
-cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
+cf_cell highwayRoadmap2D::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o){
     cf_cell cell, cell_new;
 
     boundary::sepBd P_bd_s[N_s], P_bd_o[N_o];
@@ -191,7 +187,7 @@ cf_cell highwayRoadmap::rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o)
     return cell_new;
 }
 
-void highwayRoadmap::connectOneLayer(cf_cell CFcell){
+void highwayRoadmap2D::connectOneLayer(cf_cell CFcell){
     vector<unsigned int> N_v_line;
     unsigned int N_0=0, N_1=0;
 
@@ -231,51 +227,52 @@ void highwayRoadmap::connectOneLayer(cf_cell CFcell){
     }
 }
 
-void highwayRoadmap::connectMultiLayer(){
-    size_t n, n_11, n_12, n_2;
+void highwayRoadmap2D::connectMultiLayer(){
+    size_t n = vtxEdge.vertex.size(), n_11, n_12, n_2;
     double d;
     size_t start = 0;
-    vector<double> midVtx;
     vector<double> v1, v2;
-
-    n = vtxEdge.vertex.size();
 
     for(size_t i=0; i<N_layers; i++){
         // Find vertex only in adjecent layers
         n_11 = N_v_layer[i];
         n_2 = N_v_layer[i+1];
 
+        // Compute middle C-layer
+        midLayer(mid[i]);
+
         // Nearest vertex btw layers
-        for(size_t m=start; m<n_11; m++){
-            v1 = vtxEdge.vertex[m];
+        for(size_t m0=start; m0<n_11; m0++){
+            v1 = vtxEdge.vertex[m0];
             n_12 = n_11;
             if(i == N_layers-1){
                 n_2 = N_v_layer[0];
                 v1[2] = 0.0;
                 n_12 = 0;
             }
-            for(size_t m2=n_12; m2<n_2; m2++){
-                v2 = vtxEdge.vertex[m2];
+            for(size_t m1=n_12; m1<n_2; m1++){
+                v2 = vtxEdge.vertex[m1];
                 d = pow((v1[0]-v2[0]),2.0)+pow((v1[1]-v2[1]),2.0);
-                if(d<=0.1) midVtx = addMidVtx(v1,v2);
-                if(!midVtx.empty()){
+                if(d<=0.1 && isPtinCFLine(v1,v2)){
+                    // Middle vertex: trans = V1; rot = V2;
+                    midVtx = {v1[0],v1[1],v2[2],};
                     vtxEdge.vertex.push_back(midVtx);
 
-                    vtxEdge.edge.push_back(make_pair(m, n));
+                    // Add new connections
+                    vtxEdge.edge.push_back(make_pair(m0, n));
                     vtxEdge.weight.push_back( vector_dist(v1,midVtx) );
-                    vtxEdge.edge.push_back(make_pair(m2, n));
+                    vtxEdge.edge.push_back(make_pair(m1, n));
                     vtxEdge.weight.push_back( vector_dist(v2,midVtx) );
                     n++;
                     break;
                 }
             }
-            midVtx.clear();
         }
         start = n_11;
     }
 }
 
-void highwayRoadmap::search(){
+void highwayRoadmap2D::search(){
     Vertex idx_s, idx_g, num;
 
     // Construct the roadmap
@@ -312,7 +309,7 @@ void highwayRoadmap::search(){
 /*********************************** Private Functions ******************************************/
 /************************************************************************************************/
 // For a given curve, separate its boundary into two parts
-boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
+boundary::sepBd highwayRoadmap2D::separateBoundary(MatrixXd bd){
     const int half_num = Arena[0].num/2;
     MatrixXd::Index I_max_y, I_min_y;
     int I_start_y;
@@ -342,7 +339,7 @@ boundary::sepBd highwayRoadmap::separateBoundary(MatrixXd bd){
     return P_bd;
 }
 
-boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
+boundary::sepBd highwayRoadmap2D::closestPt(boundary::sepBd P_bd, double ty){
     boundary::sepBd x_bd;
     MatrixXd::Index I_L, I_R;
     VectorXd y(1);
@@ -363,7 +360,7 @@ boundary::sepBd highwayRoadmap::closestPt(boundary::sepBd P_bd, double ty){
     return x_bd;
 }
 
-MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K){
+MatrixXd highwayRoadmap2D::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K){
     // Enclose the curved boundaries of c-obstacles by polyhedrons
     MatrixXd x_o_Ex(N_dy, N_o);
     double x_Ex;
@@ -413,7 +410,7 @@ MatrixXd highwayRoadmap::boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double t
     return x_o_Ex;
 }
 
-cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
+cf_cell highwayRoadmap2D::enhanceDecomp(cf_cell cell){
     // Make sure all connections between vertexes are within one convex cell
     cf_cell cell_new = cell;
 
@@ -452,34 +449,28 @@ cf_cell highwayRoadmap::enhanceDecomp(cf_cell cell){
     return cell_new;
 }
 
-vector<double> highwayRoadmap::addMidVtx(vector<double> vtx1, vector<double> vtx2){
-    // Connect vertexes among different layers, and add a middle vertex to the roadmap
-    vector<double> midVtx, pt, pt1, pt2;
-    ptInPoly polyTest;
-    bool flag;
-    midVtx.clear();
+// Connect vertexes among different layers
+void highwayRoadmap2D::midLayer(SuperEllipse::shape Ec){
+    boundary bd;
+    // calculate Minkowski boundary points
+    for(size_t i=0; i<N_s; i++) bd.bd_s.push_back(Arena[i].minkSum2D(Ec,-1));
+    for(size_t i=0; i<N_o; i++) bd.bd_o.push_back(Obs[i].minkSum2D(Ec,+1));
 
-    for(size_t iter = 0; iter<N_KCsample; iter++){
-        pt.clear(); pt1.clear(); pt2.clear();
-        for(size_t i=0; i<vtx1.size(); i++){
-            pt.push_back( (rand() * (vtx1[i]-vtx2[i]))/RAND_MAX + vtx2[i] );
-            pt1.push_back(pt[i] - vtx1[i]);
-            pt2.push_back(pt[i] - vtx2[i]);
-        }
-        flag = polyTest.isPtInPoly(polyVtx, pt1);
-        if(flag){
-            flag = polyTest.isPtInPoly(polyVtx, pt2);
-            if(flag){
-                midVtx = pt;
-                return midVtx;
-            }
-        }
-    }
-
-    return midVtx;
+    mid_cell = rasterScan(bd.bd_s, bd.bd_o);
 }
 
-unsigned int highwayRoadmap::find_cell(vector<double> v){
+bool highwayRoadmap2D::isPtinCFLine(vector<double> V1, vector<double> V2){
+    for(size_t i=0; i<mid_cell.ty.size(); i++){
+        if(fabs(mid_cell.ty[i]-V1[1])>1e-8) continue;
+
+        for(size_t j=0; j<mid_cell.xM[i].size(); j++)
+            if((V1[0] >= mid_cell.xL[i][j]) && (V1[0] <= mid_cell.xU[i][j]) &&
+               (V2[0] >= mid_cell.xL[i][j]) && (V2[0] <= mid_cell.xU[i][j])) return 1;
+    }
+    return 0;
+}
+
+unsigned int highwayRoadmap2D::find_cell(vector<double> v){
     // Find the cell that an arbitrary vertex locates, and find the closest roadmap vertex
     double d_min, d;
     unsigned int idx = 0;
@@ -496,9 +487,35 @@ unsigned int highwayRoadmap::find_cell(vector<double> v){
     return idx;
 }
 
-double highwayRoadmap::vector_dist(vector<double> v1, vector<double> v2){
+double highwayRoadmap2D::vector_dist(vector<double> v1, vector<double> v2){
     vector<double> diff;
     for(size_t i=0; i<v1.size(); i++) diff.push_back(v1[i]-v2[i]);
     return sqrt( inner_product(diff.begin(), diff.end(), diff.begin(), 0.0) );
 }
 
+SuperEllipse::shape highwayRoadmap2D::tfe(double* a, double* b){
+    Matrix2d Ra = Rotation2Dd(a[2]).matrix(), Rb = Rotation2Dd(b[2]).matrix();
+
+    double r = fmin(b[0],b[1]);
+    DiagonalMatrix<double, 2> diag, diag_a, diag_c;
+    diag.diagonal() = Array2d(r/b[0],r/b[1]);
+    diag_a.diagonal() = Array2d(pow(a[0],-2),pow(a[1],-2));
+
+    // Shrinking affine transformation
+    Matrix2d T = Rb * diag * Rb.transpose();
+
+    // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
+    Matrix2d Ap = T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
+    JacobiSVD<Matrix2d> svd(Ap, ComputeFullU | ComputeFullV);
+    Array2d a_p = svd.singularValues().array().pow(-0.5);
+    Array2d c_p = {max(a_p(0),r), max(a_p(1),r)};
+
+    // Stretch back
+    diag_c.diagonal() = c_p.pow(-2);
+    Matrix2d C = T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
+    svd.compute(C);
+    double ang_c = acos( svd.matrixU()(0,0) );
+    Array2d c = svd.singularValues().array().pow(-0.5);
+
+    return SuperEllipse::shape({{c(0),c(1)}, ang_c, 1, {0,0}});
+}

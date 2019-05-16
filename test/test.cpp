@@ -175,13 +175,13 @@ int main(int argc, char ** argv){
     // Write the output to .csv files
     ofstream file_vtx;
     file_vtx.open("vertex.csv");
-    vector<vector<double>> vtx = high.vtxEdge.vertex;
+    vector< vector<double> > vtx = high.vtxEdge.vertex;
     for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << "\n";
     file_vtx.close();
 
     ofstream file_edge;
     file_edge.open("edge.csv");
-    vector<pair<int, int>> edge = high.vtxEdge.edge;
+    vector< pair<int, int> > edge = high.vtxEdge.edge;
     for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
     file_edge.close();
 

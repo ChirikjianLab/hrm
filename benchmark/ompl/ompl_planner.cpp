@@ -1,13 +1,39 @@
 #include "ompl_planner.h"
 
+ob::ValidStateSamplerPtr allocUniformStateSampler(const ob::SpaceInformation *si){
+    return make_shared<ob::UniformValidStateSampler>(si);
+}
+
+// return an obstacle-based sampler
+ob::ValidStateSamplerPtr allocOBValidStateSampler(const ob::SpaceInformation *si){
+    return make_shared<ob::ObstacleBasedValidStateSampler>(si);
+}
+
+// return a GaussianValidStateSampler
+ob::ValidStateSamplerPtr allocGaussianValidStateSampler(const ob::SpaceInformation *si){
+    return make_shared<ob::GaussianValidStateSampler>(si);
+}
+
+// return a MaximizeClearanceValidStateSampler
+ob::ValidStateSamplerPtr allocMaximizeClearanceValidStateSampler(const ob::SpaceInformation *si){
+    return make_shared<ob::MaximizeClearanceValidStateSampler>(si);
+}
+
+// return a BridgeTestValidStateSampler
+ob::ValidStateSamplerPtr allocBridgeTestValidStateSampler(const ob::SpaceInformation *si){
+    return make_shared<ob::BridgeTestValidStateSampler>(si);
+}
+
 ompl_planner::ompl_planner(vector<double> lowBound, vector<double> highBound,
                            vector<SuperQuadrics> robot_,
-                           vector<SuperQuadrics> arena_, vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_, int id){
+                           vector<SuperQuadrics> arena_, vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_,
+                           int planner, int sampler){
     arena = arena_;
     robot = robot_;
     obstacles = obs_;
     obs_mesh = obs_mesh_;
-    id_planner = id;
+    id_planner = planner;
+    id_sampler = sampler;
 
     // Initiate object for collision detection using FCL
     setCollisionObj();
@@ -21,7 +47,7 @@ ompl_planner::ompl_planner(vector<double> lowBound, vector<double> highBound,
 
     ss_->setStateValidityChecker([this](const ob::State *state) { return isStateValid(state); });
     space->setup();
-    ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
+    // ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/ space->getMaximumExtent());
 
     // Set planner
     if(id_planner == 0) ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
@@ -30,6 +56,13 @@ ompl_planner::ompl_planner(vector<double> lowBound, vector<double> highBound,
     if(id_planner == 3) ss_->setPlanner(std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
     if(id_planner == 4) ss_->setPlanner(std::make_shared<og::EST>(ss_->getSpaceInformation()));
     if(id_planner == 5) ss_->setPlanner(std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
+
+    //Setting up the sampler
+    if(sampler == 0) ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocUniformStateSampler);
+    if(sampler == 1) ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocOBValidStateSampler);
+    if(sampler == 2) ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocGaussianValidStateSampler);
+    if(sampler == 3) ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocMaximizeClearanceValidStateSampler);
+    if(sampler == 4) ss_->getSpaceInformation()->setValidStateSamplerAllocator(allocBridgeTestValidStateSampler);
 }
 
 bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_){
@@ -59,7 +92,7 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_){
     //        ss_->print();
 
     cout << "Planning..."<< endl;
-    ob::PlannerStatus solved = ss_->solve(100);
+    ob::PlannerStatus solved = ss_->solve(60);
     if(!solved){
         flag = false;
         return flag;

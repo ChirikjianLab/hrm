@@ -6,8 +6,6 @@
 #include <limits>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <boost/graph/random.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <ompl/util/Time.h>
 
@@ -19,28 +17,12 @@ using namespace boost;
 using namespace ompl;
 
 typedef property<edge_weight_t, double> Weight;
-typedef adjacency_list<vecS, vecS, undirectedS, no_property, Weight > AdjGraph;
+typedef adjacency_list<vecS, vecS, undirectedS, no_property, Weight> AdjGraph;
 typedef AdjGraph::vertex_descriptor Vertex;
 typedef AdjGraph::edge_descriptor edge_descriptor;
 typedef AdjGraph::vertex_iterator vertex_iterator;
 typedef vector< pair<int, int> > Edge;
 typedef property_map<AdjGraph, edge_weight_t>::type WeightMap;
-
-
-// euclidean distance heuristic
-//template <class Graph, class CostType>
-//class distance_heuristic : public astar_heuristic<Graph, CostType>
-//{
-//public:
-//  distance_heuristic(Vertex Goal, AdjGraph &graph) : Goal_(Goal), graph_(graph) {}
-//  CostType operator()(Vertex u)
-//  {
-//      return get(vertex_index, graph_, Goal_) - get(vertex_index, graph_, Goal_);
-//  }
-//private:
-//  Vertex Goal_;
-//  AdjGraph graph_;
-//};
 
 // cf_cell: collision-free points
 struct cf_cellYZ{

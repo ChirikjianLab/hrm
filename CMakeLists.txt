@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.0)
 # Project's name
 project(highwayRoadMap)
 
-set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
@@ -37,13 +37,6 @@ IF (CCD_FOUND)
     ADD_DEFINITIONS( "-DHAS_CCD" )
 ENDIF()
 
-#find_package(GSL REQUIRED)
-#IF (GSL_FOUND)
-#    INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIR} ${GSLCBLAS_INCLUDE_DIR})
-#    link_libraries(${GSL_LIBRARIES} ${GSLBLAS_LIBRARIES})
-#    ADD_DEFINITIONS( "-DHAS_GSL" )
-#ENDIF()
-
 find_package(CGAL REQUIRED)
 IF (CGAL_FOUND)
     INCLUDE_DIRECTORIES(${CGAL_INCLUDE_DIR})
@@ -62,6 +55,7 @@ ENDIF()
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap2d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
 
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
@@ -75,6 +69,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.h)
 # Sources
 set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp"
+    "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap2d.cpp"
     "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.cpp"
     "${PROJECT_SOURCE_DIR}/src/planners/interval.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp"
@@ -87,7 +82,7 @@ set(OMPL_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.cpp")
 set(HIGHWAY_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.cpp")
 
 # Executables
-add_executable(highwayRoadMap ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
+add_executable(highwayRoadMap2D ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
 
 add_executable(test_PLANNER_ACS_2D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_ACS_2D.cpp)
 target_link_libraries(test_PLANNER_ACS_2D "${OMPL}")

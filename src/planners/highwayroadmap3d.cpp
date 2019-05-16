@@ -340,7 +340,7 @@ void highwayRoadmap3D::connectMultiLayer(){
 void highwayRoadmap3D::search(){
     time::point start = time::now();
 
-    unsigned int idx_s, idx_g, num;
+    Vertex idx_s, idx_g, num;
 
     // Construct the roadmap
     size_t num_vtx = vtxEdge.vertex.size();
@@ -357,18 +357,14 @@ void highwayRoadmap3D::search(){
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
     std::vector<double> d(num_vertices(g));
-
-    dijkstra_shortest_paths(g, idx_g,
-                            predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
-                            distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))));
-//    astar_search( g, idx_g, distance_heuristic<AdjGraph, int>(idx_g, g),
-//                  predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
-//                  distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))) );
+    astar_search( g, idx_s, [this, idx_g](Vertex v){ return vector_dist(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]); },
+                  predecessor_map(make_iterator_property_map(p.begin(), get(vertex_index, g))).
+                  distance_map(make_iterator_property_map(d.begin(), get(vertex_index, g))) );
 
     // Record path and cost
     num = 0;
-    Paths.push_back(int(idx_s));
-    while(Paths[num] != int(idx_g) && num <= num_vtx){
+    Paths.push_back(int(idx_g));
+    while(Paths[num] != int(idx_s) && num <= num_vtx){
         Paths.push_back( int(p[ size_t(Paths[num]) ]) );
         Cost += d[ size_t(Paths[num]) ];
         num++;
@@ -505,6 +501,7 @@ Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n){
     return M;
 }
 
+// Compute the Tightly-Fitted Ellipsoid enclosing two ellipsoids with the same center
 SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, Quaterniond q_a, Quaterniond q_b){
     Matrix3d Ra = q_a.toRotationMatrix(),
              Rb = q_b.toRotationMatrix();

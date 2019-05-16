@@ -37,8 +37,8 @@ vector<SuperQuadrics> generateSQ(string file_name, double D){
 }
 
 int main(int argc, char ** argv){
-    if (argc != 4) {
-        cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Planner" << endl;
+    if (argc != 5) {
+        cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Planner 4) Sampler" << endl;
         return 1;
     }
 
@@ -64,9 +64,9 @@ int main(int argc, char ** argv){
     vector<double> b1 = {-arena[0].Shape.a[0]+robot[0].Shape.a[0],
                          -arena[0].Shape.a[1]+robot[0].Shape.a[0],
                          -arena[0].Shape.a[2]+robot[0].Shape.a[0]},
-                   b2 = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
-                         arena[0].Shape.a[1]-robot[0].Shape.a[0],
-                         arena[0].Shape.a[2]-robot[0].Shape.a[0]};
+            b2 = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
+                  arena[0].Shape.a[1]-robot[0].Shape.a[0],
+                  arena[0].Shape.a[2]-robot[0].Shape.a[0]};
 
     // Start and goal setup
     inputFile file;
@@ -75,20 +75,26 @@ int main(int argc, char ** argv){
 
     std::ofstream outfile;
     outfile.open("time3D_ompl.csv");
-    outfile << "PLANNER" << ',' << "SUCCESS" << ',' << "TOTAL_TIME" << ',' <<
+    outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ',' << "TOTAL_TIME" << ',' <<
                "GRAPH_NODES" << ',' << "GRAPH_EDGES" << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << endl;
 
     // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
-    int id_plan = atoi(argv[3]);
-    cout << "Planner: " << id_plan << endl;
-    for(int i=0; i<N; i++){
-        cout << "Num of trials: " << i << endl;
+    // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
+    int id_plan = atoi(argv[3]), id_sample = atoi(argv[4]);
+    for (int m=0; m<id_plan; m++) {
+        for (int n=0; n<id_sample; n++) {
+            for(int i=0; i<N; i++){
+                cout << "Planner: " << m << endl;
+                cout << "Sampler: " << n << endl;
+                cout << "Num of trials: " << i << endl;
 
-        ompl_planner tester(b1, b2, robot, arena, obs, obs_mesh, id_plan);
-        tester.plan(endPts[0], endPts[1]);
+                ompl_planner tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
+                tester.plan(endPts[0], endPts[1]);
 
-        outfile << tester.id_planner << ',' << tester.flag << ',' << tester.total_time << ',' <<
-                   tester.nodes_graph <<","<< tester.edges_graph <<","<< tester.nodes_path <<","<< tester.valid_space << endl;
+                outfile << tester.id_planner << ',' << tester.id_sampler << ',' << tester.flag << ',' << tester.total_time << ',' <<
+                           tester.nodes_graph <<","<< tester.edges_graph <<","<< tester.nodes_path <<","<< tester.valid_space << endl;
+            }
+        }
     }
     outfile.close();
 

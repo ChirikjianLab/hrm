@@ -93,21 +93,47 @@ int main(int argc, char ** argv){
                  "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ',' <<
                  "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
 
-    highway_planner high3D(robot, EndPts, arena, obs, opt);
-    high3D.plan_graph();
-
     for(size_t i=0; i<N; i++){
         cout << "Number of trials: " << i << endl;
 
         // Path planning using HighwayRoadmap3D
-        high3D.plan_search();
+        highwayRoadmap3D high3D(robot, EndPts, arena, obs, opt);
+        high3D.plan();
+
+        // Planning Time and Path Cost
+        cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
+        cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
+        cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+
+        cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
+        cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
+        cout << "Cost: " << high3D.Cost << endl;
+
+        // Write the output to .csv files
+        ofstream file_vtx;
+        file_vtx.open("vertex3D.csv");
+        vector<vector<double>> vtx = high3D.vtxEdge.vertex;
+        for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' ' <<
+                                                       vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' ' << vtx[i][6] << "\n";
+        file_vtx.close();
+
+        ofstream file_edge;
+        file_edge.open("edge3D.csv");
+        vector<pair<int, int>> edge = high3D.vtxEdge.edge;
+        for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+        file_edge.close();
+
+        ofstream file_paths;
+        file_paths.open("paths3D.csv");
+        vector<int> paths = high3D.Paths;
+        if(~paths.empty()) for(size_t i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
+        file_paths.close();
 
         // Write results
-        for(size_t i=0; i<N; i++)
-            file_time << high3D.flag << ',' << high3D.planTime.buildTime << ',' << high3D.planTime.searchTime << ',' <<
-                         high3D.planTime.buildTime + high3D.planTime.searchTime << ',' <<
-                         N_l << ',' << N_x << ',' << N_y << ',' <<
-                         high3D.vtxEdge.vertex.size() << ',' << high3D.vtxEdge.edge.size() << ',' << high3D.Paths.size() << "\n";
+        file_time << high3D.flag << ',' << high3D.planTime.buildTime << ',' << high3D.planTime.searchTime << ',' <<
+                     high3D.planTime.buildTime + high3D.planTime.searchTime << ',' <<
+                     N_l << ',' << N_x << ',' << N_y << ',' <<
+                     high3D.vtxEdge.vertex.size() << ',' << high3D.vtxEdge.edge.size() << ',' << high3D.Paths.size() << "\n";
     }
     file_time.close();
 

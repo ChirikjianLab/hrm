@@ -11,6 +11,11 @@
 #include <ompl/util/PPM.h>
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/base/samplers/UniformValidStateSampler.h>
+#include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
+#include <ompl/base/samplers/GaussianValidStateSampler.h>
+#include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
+#include <ompl/base/samplers/BridgeTestValidStateSampler.h>
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
@@ -56,13 +61,14 @@ public:
     //    double construct_time;
     double total_time;
     double valid_space;
-    int id_planner;
+    int id_planner, id_sampler;
 
 // functions
 public:
     ompl_planner(vector<double> lowBound, vector<double> highBound,
                  vector<SuperQuadrics> robot_,
-                 vector<SuperQuadrics> arena_, vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_, int id);
+                 vector<SuperQuadrics> arena_, vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_,
+                 int planner, int sampler);
 
     bool plan(vector<double> start_, vector<double> goal_);
     bool isStateValid(const ob::State *state) const;

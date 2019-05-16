@@ -41,7 +41,7 @@ csvwrite(fullfile(outPath,'endPts.csv'), endPts);
 %% Robot Initialization
 disp('Robot Configurations...');
 % Robot: Only plan face
-face = robotInit(1);
+face = robotInit(1, 0.1);
 
 %% Store robot info as .csv files
 % Robot configuration

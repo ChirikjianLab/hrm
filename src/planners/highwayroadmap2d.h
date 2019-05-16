@@ -46,19 +46,12 @@ public:
     } P_bd;
 };
 
-// Parameters for the polyhedron local c-space
-struct polyCSpace{
-public:
-    vector< vector<double> > vertex;
-    vector< vector<double> > invMat;
-};
-
 struct option{
     double infla;
-    size_t N_layers, N_dy, sampleNum, N_o, N_s;
+    size_t N_layers, N_dy, N_o, N_s;
 };
 
-class highwayRoadmap
+class highwayRoadmap2D
 {
 // variables
 /*
@@ -79,11 +72,16 @@ polyVtx   : descriptions of polyhedron local c-space
 planTime  : planning time: roadmap building time and path search time
 */
 private:
-    unsigned int N_o, N_s, N_dy, N_layers;
+    size_t N_o, N_s, N_dy, N_layers;
     double infla;
     size_t N_KCsample;
     double ang_r;
     vector<size_t> N_v_layer;
+
+    // for middle C-layer
+    vector<SuperEllipse::shape> mid;
+    cf_cell mid_cell;
+    vector<double> midVtx;
 
 public:
     // graph: vector of vertices, vector of connectable edges
@@ -100,12 +98,13 @@ public:
     double Cost=0.0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
-    polyCSpace polyVtx;
 
     struct Time{
     public:
         double buildTime, searchTime;
     } planTime;
+
+    bool flag = false;
 
     // functions
 private:
@@ -113,12 +112,15 @@ private:
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
     MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
-    vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
     double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
+    void midLayer(SuperEllipse::shape Ec);
+    bool isPtinCFLine(vector<double> V1, vector<double> V2);
+    SuperEllipse::shape tfe(double[3], double[3]);
 
 public:
-    highwayRoadmap(vector<SuperEllipse> robot, polyCSpace polyVtx, vector< vector<double> > endpt, vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt);
+    highwayRoadmap2D(vector<SuperEllipse> robot, vector< vector<double> > endpt,
+                     vector<SuperEllipse> arena, vector<SuperEllipse> obs, option opt);
     void plan();
     void buildRoadmap();
     boundary boundaryGen();
