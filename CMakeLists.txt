@@ -55,6 +55,7 @@ ENDIF()
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap2d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
 
@@ -74,6 +75,7 @@ set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/interval.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.cpp"
+    "${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
