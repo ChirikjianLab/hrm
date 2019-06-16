@@ -234,7 +234,7 @@ classdef SuperEllipse
             end
             
             xy = GetPoints(obj);
-            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.8);
+            patch(xy(1,:), xy(2,:), obj.color, 'FaceAlpha', 0.6);
         end
         
         %% Plot Minkowski boundary

@@ -8,8 +8,10 @@
 #include <vector>
 
 #include <src/geometry/superquadrics.h>
-#include <src/planners/highwayroadmap3d.h>
+#include <src/planners/hrm3d_multibody.h>
 #include <include/parse2dcsvfile.h>
+
+#include <src/geometry/multibodytree3d.h>
 
 using namespace Eigen;
 using namespace std;
@@ -42,49 +44,33 @@ vector<SuperQuadrics> generateSQ(string file_name, double D){
     return obj;
 }
 
-highwayRoadmap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
+highwayRoadmap3D plan(multibodytree3D robot, vector<vector<double>> EndPts,
                       vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
                       int N_l, int N_x, int N_y){
     option3D opt;
     opt.N_o = obs.size(); opt.N_s = arena.size();
     opt.N_layers = size_t(N_l); opt.N_dx = size_t(N_x); opt.N_dy = size_t(N_y);
-    opt.Lim = {arena[0].Shape.a[0]-robot.Shape.a[0],
-               arena[0].Shape.a[1]-robot.Shape.a[0],
-               arena[0].Shape.a[2]-robot.Shape.a[0]};
+    opt.Lim = {arena[0].Shape.a[0]-robot.Base.Shape.a[0],
+               arena[0].Shape.a[1]-robot.Base.Shape.a[0],
+               arena[0].Shape.a[2]-robot.Base.Shape.a[0]};
 
     //****************//
     // Main Algorithm //
     //****************//
-    highwayRoadmap3D high3D(robot, EndPts, arena, obs, opt);
+    hrm3d_multibody high3D(robot, EndPts, arena, obs, opt);
 
     // TEST: Minkowski boundary
     boundary3D bd_mink = high3D.boundaryGen();
 
     // write to .csv file
     boundary3D bd_ori;
-    for(size_t i=0; i<arena.size(); i++){
-        bd_ori.bd_s.push_back( arena[i].originShape() );
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("arena_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_s[i] << "\n";
-        file_ori_bd.close();
-
+    for(size_t i=0; i<bd_mink.bd_s.size(); i++){
         ofstream file_bd;
         file_bd.open("arena_mink_3d_" + to_string(i) + ".csv");
         file_bd << bd_mink.bd_s[i] << "\n";
         file_bd.close();
     }
-    for(size_t i=0; i<obs.size(); i++){
-        bd_ori.bd_o.push_back( obs[i].originShape() );
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("obs_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_o[i] << "\n";
-        file_ori_bd.close();
-
+    for(size_t i=0; i<bd_mink.bd_o.size(); i++){
         ofstream file_bd;
         file_bd.open("obs_mink_3d_" + to_string(i) + ".csv");
         file_bd << bd_mink.bd_o[i] << "\n";
@@ -123,8 +109,8 @@ highwayRoadmap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
     for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
     file_edge.close();
 
-    // TEST: Build Roadmap + search
-    high3D.plan();
+//    // TEST: Build Roadmap + search
+//    high3D.plan();
 
     return high3D;
 }
@@ -147,10 +133,16 @@ int main(int argc, char ** argv){
            arena_config = "../config/arena_config_3d.csv",
            obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = generateSQ(robot_config, n),
-                          arena = generateSQ(arena_config, n),
+    vector<SuperQuadrics> robot_parts = generateSQ(robot_config, n);
+    vector<SuperQuadrics> arena = generateSQ(arena_config, n),
                           obs = generateSQ(obs_config, n);
-    SuperQuadrics robot = robot_aux[0];
+
+    // Generate multibody tree for robot
+    multibodytree3D robot;
+    robot.addBase(robot_parts[0]);
+    for (size_t i=1; i<robot_parts.size(); i++) {
+        robot.addBody(robot_parts[i]);
+    }
 
     // Read predefined quaternions
     string quat_file = argv[6];
@@ -165,7 +157,7 @@ int main(int argc, char ** argv){
             q.x() = quat_sample[i][1];
             q.y() = quat_sample[i][2];
             q.z() = quat_sample[i][3];
-            robot.Shape.q_sample.push_back(q);
+            robot.Base.Shape.q_sample.push_back(q);
         }
     }
 
@@ -179,69 +171,69 @@ int main(int argc, char ** argv){
     EndPts.push_back(endPts[1]);
 
     highwayRoadmap3D high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
-    // Planning Time and Path Cost
-    cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
-    cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
-    cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+//    // Planning Time and Path Cost
+//    cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
+//    cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
+//    cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
 
-    cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
-    cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
-    cout << "Cost: " << high3D.Cost << endl;
+//    cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
+//    cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
+//    cout << "Cost: " << high3D.Cost << endl;
 
-    for(size_t i=0; i<N; i++){
-        cout << "Number of trials: " << i << endl;
+//    for(size_t i=0; i<N; i++){
+//        cout << "Number of trials: " << i << endl;
 
-        // Path planning using HighwayRoadmap3D
-        high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
+//        // Path planning using HighwayRoadmap3D
+//        high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
 
-        stat[i] = {high3D.planTime.buildTime,
-                   high3D.planTime.searchTime,
-                   high3D.planTime.buildTime + high3D.planTime.searchTime,
-                   double(high3D.vtxEdge.vertex.size()),
-                   double(high3D.vtxEdge.edge.size()),
-                   double(high3D.Paths.size()),
-                   double(high3D.flag)};
+//        stat[i] = {high3D.planTime.buildTime,
+//                   high3D.planTime.searchTime,
+//                   high3D.planTime.buildTime + high3D.planTime.searchTime,
+//                   double(high3D.vtxEdge.vertex.size()),
+//                   double(high3D.vtxEdge.edge.size()),
+//                   double(high3D.Paths.size()),
+//                   double(high3D.flag)};
 
-        // Planning Time and Path Cost
-        cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
-        cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
-        cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+//        // Planning Time and Path Cost
+//        cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
+//        cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
+//        cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
 
-        cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
-        cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
-        cout << "Cost: " << high3D.Cost << endl;
-    }
+//        cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
+//        cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;
+//        cout << "Cost: " << high3D.Cost << endl;
+//    }
 
-    // Write the output to .csv files
-    ofstream file_vtx;
-    file_vtx.open("vertex3D.csv");
-    vector<vector<double>> vtx = high3D.vtxEdge.vertex;
-    for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' ' <<
-                                                   vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' ' << vtx[i][6] << "\n";
-    file_vtx.close();
+//    // Write the output to .csv files
+//    ofstream file_vtx;
+//    file_vtx.open("vertex3D.csv");
+//    vector<vector<double>> vtx = high3D.vtxEdge.vertex;
+//    for(size_t i=0; i<vtx.size(); i++) file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' ' <<
+//                                                   vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' ' << vtx[i][6] << "\n";
+//    file_vtx.close();
 
-    ofstream file_edge;
-    file_edge.open("edge3D.csv");
-    vector<pair<int, int>> edge = high3D.vtxEdge.edge;
-    for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
-    file_edge.close();
+//    ofstream file_edge;
+//    file_edge.open("edge3D.csv");
+//    vector<pair<int, int>> edge = high3D.vtxEdge.edge;
+//    for(size_t i=0; i<edge.size(); i++) file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+//    file_edge.close();
 
-    ofstream file_paths;
-    file_paths.open("paths3D.csv");
-    vector<int> paths = high3D.Paths;
-    if(~paths.empty()) for(size_t i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
-    file_paths.close();
+//    ofstream file_paths;
+//    file_paths.open("paths3D.csv");
+//    vector<int> paths = high3D.Paths;
+//    if(~paths.empty()) for(size_t i=0; i<paths.size(); i++) file_paths << paths[i] << ' ';
+//    file_paths.close();
 
-    // Store results
-    ofstream file_time;
-    file_time.open("time_high3D.csv");
-    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' <<
-                 "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ',' <<
-                 "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
-    for(size_t i=0; i<N; i++) file_time << stat[i][6] << ',' << stat[i][0] << ',' << stat[i][1] << ',' <<
-              stat[i][2] << ',' << N_l << ',' << N_x << ',' << N_y << ',' <<
-              stat[i][3] << ',' << stat[i][4] << ',' << stat[i][5] << "\n";
-    file_time.close();
+//    // Store results
+//    ofstream file_time;
+//    file_time.open("time_high3D.csv");
+//    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' <<
+//                 "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ',' <<
+//                 "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
+//    for(size_t i=0; i<N; i++) file_time << stat[i][6] << ',' << stat[i][0] << ',' << stat[i][1] << ',' <<
+//              stat[i][2] << ',' << N_l << ',' << N_x << ',' << N_y << ',' <<
+//              stat[i][3] << ',' << stat[i][4] << ',' << stat[i][5] << "\n";
+//    file_time.close();
 
     return 0;
 }

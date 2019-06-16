@@ -85,6 +85,12 @@ Path      : valid path of motions;
 planTime  : planning time: roadmap building time and path search time
 */
 private:
+    vector<SuperQuadrics::shape> mid;
+    cf_cell3D mid_cell;
+    vector<double> midVtx;
+
+public:
+    // Parameters for the roadmap
     size_t N_o, N_s, N_dx, N_dy, N_layers;
     vector<double> Lim;
     vector<Quaterniond> q_r;
@@ -96,11 +102,6 @@ private:
         vector< vector<size_t> > line;
     } N_v;
 
-    vector<SuperQuadrics::shape> mid;
-    cf_cell3D mid_cell;
-    vector<double> midVtx;
-
-public:
     // graph: vector of vertices, vector of connectable edges
     struct graph{
     public:
@@ -113,7 +114,8 @@ public:
     vector<vertexIdx> vtxId;
 
     AdjGraph Graph;
-    vector<SuperQuadrics> Robot, Arena, Obs;
+    SuperQuadrics Robot;
+    vector<SuperQuadrics> Arena, Obs;
     double Cost=0.0;
     vector< vector<double> > Endpt;
     vector<int> Paths;
@@ -127,31 +129,32 @@ public:
 
 // functions
 private:
-    boundary3D::sepBd separateBoundary(MatrixXd bd);
-    boundary3D::sepZ closestPt(vector<MatrixXd> bd, double tx, vector<double> ty);
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
     double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
-    void sampleSO3();
     Mesh getMesh(MatrixXd, int);
-    SuperQuadrics::shape tfe(double[3], double[3], Quaterniond, Quaterniond);
-    void midLayer(SuperQuadrics::shape);
+    virtual void midLayer(SuperQuadrics::shape);
     bool isPtinCFLine(vector<double>, vector<double>);
 
 public:
-    highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,
+    highwayRoadmap3D(SuperQuadrics robot, vector< vector<double> > endpt,
                      vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt);
-    void plan();
-    void buildRoadmap();
-    boundary3D boundaryGen();
+    virtual void plan();
+    virtual void buildRoadmap();
+    virtual boundary3D boundaryGen();
     cf_cell3D sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
     cf_cellYZ cfLine(vector<double> ty,
                         MatrixXd x_s_L, MatrixXd x_s_R,
                         MatrixXd x_o_L, MatrixXd x_o_R);
     void connectOneLayer(cf_cell3D cell);
     void connectOnePlane(double tz, cf_cellYZ cellYZ);
-    void connectMultiLayer();
+    virtual void connectMultiLayer();
     void search();
+
+    SuperQuadrics::shape tfe(double[3], double[3], Quaterniond, Quaterniond);
+    void sampleSO3();
+
+    virtual ~highwayRoadmap3D();
 };
 
 #endif // HIGHWAYROADMAP3D_H

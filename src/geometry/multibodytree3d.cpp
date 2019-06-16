@@ -1,6 +1,6 @@
 #include "multibodytree3d.h"
 
-multibodytree3D::multibodytree3D(SuperQuadrics base){
+void multibodytree3D::addBase(SuperQuadrics base){
     Base = base;
 }
 

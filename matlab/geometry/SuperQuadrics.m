@@ -50,11 +50,7 @@ classdef SuperQuadrics
                 obj.N     = val{5};
                 obj.color = color;
                 [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
-                    0:2*pi/(obj.N-1):2*pi);
-                
-%                 et = obj.sampleSE(1,obj.a(3),obj.eps(1),1/obj.N);
-%                 om = obj.sampleSE(obj.a(1),obj.a(2),obj.eps(2),1/obj.N);
-%                 [obj.eta, obj.omega] = meshgrid(et,om);
+                    0:2*pi/(obj.N-1):2*pi); 
                 
                 obj.infla = infla;
                 if infla > 0
@@ -188,52 +184,18 @@ classdef SuperQuadrics
             pnt = objSQ.par2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
         end
         
-        %% Sample angles
-        function theta = sampleSE(obj,a,b,ep,D)
-            theta(1) = 0;
-            n = 1;
-            i = 0;
-            max_iter = 1e5;
+        %% ---------------------------------------------------------------%
+        function S = GetSurf(objSQ)
+            pnt = GetPoints(objSQ);
             
-            while theta(n) < pi/2
-                if i > max_iter
-                    break;
-                end
-                
-                th = obj.updateTheta(theta(n),a,b,ep,D);
-                n = n+1;
-                theta(n) = th;
-                
-                i = i+1;
-            end
-            n = n+1;
-            theta(n) = pi/2;
+            m = size(objSQ.omega,1);
+            n = size(objSQ.eta,2);
+            X = reshape(pnt(1,:), m, n);
+            Y = reshape(pnt(2,:), m, n);
+            Z = reshape(pnt(3,:), m, n);
             
-%             theta = [theta, pi/2-theta];
-%             theta = sort(theta);
-            theta = [theta, theta+pi/2, theta+pi, theta+3/2*pi];
-        end
-        
-        % Update angles
-        function theta = updateTheta(obj,th,a,b,ep,D)
-            th_ep = 0.01;
-            if(th <= th_ep)
-                dth = (D/b+th^ep)^(1/ep) - th;
-            else
-                if (pi/2-th) <= th_ep
-                    th_n = (D/a+(pi/2-th)^ep)^(1/ep) - (pi/2-th);
-                else
-                    th_n = (D/ep * cos(th) * sin(th)) /...
-                        sqrt(a^2*sc_eps(th, 2*ep, 'cos')*...
-                            sc_eps(th, 4, 'sin') +...
-                             b^2*sc_eps(th, 2*ep, 'sin')*...
-                            sc_eps(th, 4, 'cos'));
-                end
-                
-                dth = th_n;
-            end
-            
-            theta = th+dth;
+            S = surf(X, Y, Z, 'FaceColor', objSQ.color,...
+                'EdgeColor', 'none', 'FaceAlpha',0.3);
         end
         
         %% ---------------------------------------------------------------%

@@ -17,7 +17,7 @@
 class highway_planner : public highwayRoadmap3D
 {
 public:
-    highway_planner(vector<SuperQuadrics> robot, vector<vector<double>> EndPts,
+    highway_planner(SuperQuadrics robot, vector<vector<double>> EndPts,
                     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
                     option3D opt);
     void plan_graph();

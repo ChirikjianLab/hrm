@@ -48,9 +48,10 @@ int main(int argc, char ** argv){
             arena_config = "../config/arena_config_3d.csv",
             obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot = generateSQ(robot_config, n),
+    vector<SuperQuadrics> robot_aux = generateSQ(robot_config, n),
             arena = generateSQ(arena_config, n),
             obs = generateSQ(obs_config, n);
+    SuperQuadrics robot;
 
     // Read predefined quaternions
     string quat_file = argv[6];
@@ -65,7 +66,7 @@ int main(int argc, char ** argv){
             q.x() = quat_sample[i][1];
             q.y() = quat_sample[i][2];
             q.z() = quat_sample[i][3];
-            robot[0].Shape.q_sample.push_back(q);
+            robot.Shape.q_sample.push_back(q);
         }
     }
 
@@ -82,9 +83,9 @@ int main(int argc, char ** argv){
     option3D opt;
     opt.N_o = obs.size(); opt.N_s = arena.size();
     opt.N_layers = size_t(N_l); opt.N_dx = size_t(N_x); opt.N_dy = size_t(N_y);
-    opt.Lim = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
-               arena[0].Shape.a[1]-robot[0].Shape.a[0],
-               arena[0].Shape.a[2]-robot[0].Shape.a[0]};
+    opt.Lim = {arena[0].Shape.a[0]-robot.Shape.a[0],
+               arena[0].Shape.a[1]-robot.Shape.a[0],
+               arena[0].Shape.a[2]-robot.Shape.a[0]};
 
     // Store results
     ofstream file_time;

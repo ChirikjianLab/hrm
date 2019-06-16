@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 22;
+opt = 12;
 [ar, obs] = environment3D(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -30,11 +30,17 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-[face, endPts] = robotInit3D(vargin);
+[Robot, endPts] = robotInit3D(vargin);
 
 %% Store robot info as .csv files
 % Robot configuration
-robot = [face.a',face.eps',face.tc',face.q];
+robot = [Robot.Base.a',Robot.Base.eps',Robot.Base.tc',Robot.Base.q'];
+
+for i = 1:Robot.numLink
+    robot = [robot;
+             Robot.Link{i}.a',Robot.Link{i}.eps',...
+             Robot.tf{i}(1:3,4)',rotm2quat(Robot.tf{i}(1:3,1:3))];
+end
 
 csvwrite(fullfile(outPath,'robot_config_3d.csv'), robot);
 csvwrite(fullfile(outPath,'endPts_3d.csv'), endPts');

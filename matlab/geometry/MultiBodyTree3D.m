@@ -1,0 +1,93 @@
+% MultiBodyTree class, construction of a multi-body robot
+%
+% Dependencies:
+%    SuperQuadrics.m: class of SuperQuadrics
+%
+% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2019
+
+classdef MultiBodyTree3D < handle
+    properties
+        Base      % Base of the robot, class: SuperQuadrics
+        numLink   % Number of links
+        Link      % Links of robot, a cell of class SuperQuadrics
+        tf        % SE(3) transformations from base to each link
+    end
+    
+    methods
+        %% Constructor
+        % input the base and number of links
+        function obj = MultiBodyTree3D(base, N)
+            obj.Base = base;
+            obj.numLink = N;
+            
+            obj.Link = cell(1,N);
+            obj.tf = cell(1,N);
+        end
+        
+        %% Add body to the robot
+        function addBody(obj, link, i)
+            if i > obj.numLink
+                warning('Link exceeds defined number, try again.')
+            else
+                obj.Link{i} = link;
+                
+                g = [obj.par2rotm(link.q), link.tc; zeros(1,3), 1];
+                obj.tf{i} = g;
+            end
+        end
+        
+        %% Transform the robot as a whole body
+        function robotTF(obj, g, isplot)
+            robot_aux.Base = obj.Base;
+            robot_aux.Base.tc = g(1:3,4);
+            robot_aux.Base.q = rotm2quat(g(1:3,1:3));
+            
+            if isplot
+                robot_aux.Base.PlotShape;
+            end
+            
+            robot_aux.Link = obj.Link;
+            for i = 1:size(obj.Link,2)
+                g_Link = g * obj.tf{i};
+                
+                robot_aux.Link{i}.tc = g_Link(1:3,4);
+                robot_aux.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
+                
+                if isplot
+                    robot_aux.Link{i}.PlotShape;
+                end
+            end
+        end
+        
+        %% Minkowski sums with SuperQuadrics
+        % Mink sum for each link in cell structure
+        function Mink = minkSumSQ(obj, S1, k)
+            Mink = nan(3,S1.N^2,obj.numLink+1);
+            
+            % Mink sum for the base link
+            Mink(:,:,1) = S1.MinkowskiSum_3D_ES(obj.Base,k);
+            R_base = expm(skew(obj.Base.q));
+            
+            % Mink sum for the other links
+            for i = 1:size(obj.Link,2)
+                R_link = R_base * obj.tf{i}(1:3,1:3);
+                obj.Link{i}.q = vex(logm(R_link));
+                
+                Mink(:,:,i+1) = S1.MinkowskiSum_3D_ES(obj.Link{i},k) -...
+                    R_base*obj.tf{i}(1:3,4);
+            end
+        end
+        
+        %% Exponential coordinate transformations
+        function R = par2rotm(Obj, q)
+            if length(q) == 3
+                R = expm(skew(q));
+            elseif length(q) == 4
+                if size(q,2) ~= 4
+                    q = q';
+                end
+                R = quat2rotm(q);
+            end
+        end
+    end
+end

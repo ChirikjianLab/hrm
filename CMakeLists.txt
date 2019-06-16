@@ -58,6 +58,7 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap2d.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multibody.h)
 
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
@@ -75,11 +76,16 @@ set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/interval.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superellipse.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.cpp"
-    "${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.cpp"
     "${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.cpp"
     "${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.cpp")
+
+set(MULTIBODY_3D
+    "${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.cpp"
+    "${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multibody.cpp")
+
 set(MESH "${PROJECT_SOURCE_DIR}/include/mesh_gen.cpp")
+
 set(OMPL_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.cpp")
 set(HIGHWAY_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.cpp")
 
@@ -111,6 +117,8 @@ add_executable(highwayRoadMap3D ${PROJECT_SOURCE_DIR}/test/test_highway3d.cpp ${
 
 add_executable(test_PLANNER_FCL_3D ${PROJECT_SOURCE_DIR}/test/PLANNER_test_FCL_3D.cpp ${SOURCE} ${MESH})
 target_link_libraries(test_PLANNER_FCL_3D "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
+
+add_executable(HRM3D_multiBody ${PROJECT_SOURCE_DIR}/test/test_hrm3d_multibody.cpp ${SOURCE} ${MULTIBODY_3D})
 
 # Benchmark
 add_executable(benchmark3D_OMPL ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_ompl.cpp ${SOURCE} ${MESH} ${OMPL_PLANNER})

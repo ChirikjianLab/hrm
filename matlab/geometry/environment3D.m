@@ -1,6 +1,6 @@
 function [arena, obs] = environment3D(opt)
 %% Arena, Obstacles and start and goal points
-if opt == 21 % Superquadrics Sparse
+if opt == 11 % Superquadrics Sparse
     % set up the parameters of the environment
     % Arena(s)
     ra_s = 70;
@@ -30,7 +30,7 @@ if opt == 21 % Superquadrics Sparse
     
     eps_o = [[1.5; 0.2], [0.4; 0.8]];
     
-elseif opt == 22 % Superquadrics cluttered
+elseif opt == 12 % Superquadrics cluttered
     % Arena
     ra_s = 70;
     rb_s = 40;
@@ -72,7 +72,7 @@ elseif opt == 22 % Superquadrics cluttered
     %              [.1;.85]];
     eps_o = 0.1+1.8*rand(2,size(ra_o,2));
     
-elseif opt == 23 % Superellipse Maze
+elseif opt == 13 % Superquadrics Maze
     % Arena
     ra_s = 70;
     rb_s = 40;
@@ -87,17 +87,17 @@ elseif opt == 23 % Superellipse Maze
     % Obstacles
     ra_o = [10 10 10 10 30  5  5];
     rb_o = [15 15 12 12  5  5 35];
-    rc_o = [12 12 30 30  5 30  5];
+    rc_o = [13 13 30 30  5 30  5];
     
     q_o = [zeros(size(ra_o,2),1), ...
         ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
-    %     q_o  = pi* [[0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0]];
+%     q_o  = pi* [[0; 0; 0],...
+%         [0; 0; 0],...
+%         [0; 0; 0],...
+%         [0; 0; 0],...
+%         [0; 0; 0],...
+%         [0; 0; 0],...
+%         [0; 0; 0]];
     
     tx_o  = [-20 -20 -20 -20 40 40 40];
     ty_o  = [  0   0  25 -25  0  0  0];
@@ -107,42 +107,6 @@ elseif opt == 23 % Superellipse Maze
         [.2;.2],...
         [.2;.2],...
         [.2;.2],...
-        [.2;.2],...
-        [.2;.2],...
-        [.2;.2]];
-    
-elseif opt == 24 % Small hole
-    % Arena
-    ra_s = 70;
-    rb_s = 40;
-    rc_s = 30;
-    
-    q_s = [0,1,0,0];
-    %     q_s = [0;0;0];
-    
-    tc_s = [0;0;0];
-    eps_s = [0.2;0.2];
-    
-    % Obstacles
-    ra_o = [40 40 40 40];
-    rb_o = [15 15 15 15];
-    rc_o = [12 12 30 30];
-    
-    q_o = [zeros(size(ra_o,2),1), ...
-        ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
-    %     q_o  = pi* [[0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0],...
-    %         [0; 0; 0]];
-    
-    tx_o  = [ 0   0   0   0];
-    ty_o  = [ 0   0  25 -25];
-    tz_o  = [17 -17   0   0];
-    
-    eps_o = [[.2;.2],...
         [.2;.2],...
         [.2;.2],...
         [.2;.2]];
@@ -159,8 +123,8 @@ end
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Ns = 20;  % # of pnts on the superquadric arena
-No = 20;  % # of pnts on the superquadric obstacles
+Ns = 20;  % parameter for pnts on the superquadric arena
+No = 20;  % parameter for pnts on the superquadric obstacles
 
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s

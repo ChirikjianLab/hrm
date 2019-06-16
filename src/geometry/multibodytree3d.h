@@ -12,7 +12,7 @@ public:
     vector<SuperQuadrics> Link;
     vector<Matrix4d> tf;
 public:
-    multibodytree3D(SuperQuadrics);
+    void addBase(SuperQuadrics);
     void addBody(SuperQuadrics);
     void robotTF(Matrix4d);
     vector<MatrixXd> minkSumSQ(SuperQuadrics, int);

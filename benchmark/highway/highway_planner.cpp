@@ -1,6 +1,6 @@
 #include "highway_planner.h"
 
-highway_planner::highway_planner(vector<SuperQuadrics> robot, vector<vector<double> > EndPts,
+highway_planner::highway_planner(SuperQuadrics robot, vector<vector<double> > EndPts,
                                  vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
                                  option3D opt) : highwayRoadmap3D (robot, EndPts, arena, obs, opt){
 }

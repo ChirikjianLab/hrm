@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <src/planners/highwayroadmap.h>
-#include <src/planners/highwayroadmap3d.h>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 

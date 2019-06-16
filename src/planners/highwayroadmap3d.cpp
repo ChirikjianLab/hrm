@@ -8,7 +8,7 @@
 
 #define pi 3.1415926
 
-highwayRoadmap3D::highwayRoadmap3D(vector<SuperQuadrics> robot, vector< vector<double> > endpt,
+highwayRoadmap3D::highwayRoadmap3D(SuperQuadrics robot, vector< vector<double> > endpt,
                                    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt){
     Robot = robot;
     Endpt = endpt;
@@ -37,14 +37,14 @@ void highwayRoadmap3D::buildRoadmap(){
     sampleSO3();
     // Compute mid-layer TFE
     for(size_t i=0; i<q_r.size(); i++){
-        if(i == N_layers-1) mid.push_back( tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[0]) );
-        else mid.push_back( tfe(Robot[0].Shape.a, Robot[0].Shape.a, q_r[i], q_r[i+1]) );
+        if(i == N_layers-1) mid.push_back( tfe(Robot.Shape.a, Robot.Shape.a, q_r[i], q_r[0]) );
+        else mid.push_back( tfe(Robot.Shape.a, Robot.Shape.a, q_r[i], q_r[i+1]) );
     }
 
     time::point start = time::now();
 
     for(size_t i=0; i<N_layers; i++){
-        Robot[0].Shape.q = q_r[i];
+        Robot.Shape.q = q_r[i];
 
         // boundary for obstacles and arenas
 //        time::point start = time::now();
@@ -77,13 +77,11 @@ void highwayRoadmap3D::buildRoadmap(){
 boundary3D highwayRoadmap3D::boundaryGen(){
     boundary3D bd;
 
-    for(size_t num_r = 0; num_r < Robot.size(); num_r++){
-        // calculate Minkowski boundary points
-        for(size_t i=0; i<N_s; i++)
-            bd.bd_s.push_back( Arena[i].minkSum3D(Robot[num_r].Shape,  -1) );
-        for(size_t i=0; i<N_o; i++)
-            bd.bd_o.push_back( Obs[i].minkSum3D(Robot[num_r].Shape, +1) );
-    }
+    // calculate Minkowski boundary points
+    for(size_t i=0; i<N_s; i++)
+        bd.bd_s.push_back( Arena[i].minkSum3D(Robot.Shape,  -1) );
+    for(size_t i=0; i<N_o; i++)
+        bd.bd_o.push_back( Obs[i].minkSum3D(Robot.Shape, +1) );
 
     return bd;
 }
@@ -248,8 +246,8 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell){
         for(size_t j=0; j<CFcell.zM[i].size(); j++){
             // Construct a vector of vertex
             vtxEdge.vertex.push_back({tx, CFcell.ty[i], CFcell.zM[i][j],
-                                      Robot[0].Shape.q.w(), Robot[0].Shape.q.x(),
-                                      Robot[0].Shape.q.y(), Robot[0].Shape.q.z()});
+                                      Robot.Shape.q.w(), Robot.Shape.q.x(),
+                                      Robot.Shape.q.y(), Robot.Shape.q.z()});
         }
     }
 
@@ -448,13 +446,13 @@ bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2){
 
 // Sampled rotations on SO(3), return a list of Quaternions
 void highwayRoadmap3D::sampleSO3(){
-    if(Robot[0].Shape.q_sample.empty())
+    if(Robot.Shape.q_sample.empty())
         // Uniform random samples for Quaternions
         for(size_t i=0; i<N_layers; i++) q_r.push_back(Quaterniond::UnitRandom());
     else{
         // Pre-defined samples of Quaternions
-        N_layers = Robot[0].Shape.q_sample.size();
-        q_r = Robot[0].Shape.q_sample;
+        N_layers = Robot.Shape.q_sample.size();
+        q_r = Robot.Shape.q_sample;
     }
 }
 
@@ -529,3 +527,5 @@ SuperQuadrics::shape highwayRoadmap3D::tfe(double* a, double* b, Quaterniond q_a
 
     return SuperQuadrics::shape({{c(0),c(1),c(2)}, {1,1}, {0,0,0}, {q_c.w(),q_c.x(),q_c.y(),q_c.z()}, 0});
 }
+
+highwayRoadmap3D::~highwayRoadmap3D(){};
