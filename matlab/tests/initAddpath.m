@@ -2,4 +2,5 @@
 function [] = initAddpath()
 % Source files
 addpath ../geometry
+addpath ../util/
 end

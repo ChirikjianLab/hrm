@@ -21,8 +21,10 @@ public:
 		double pos[3];
         Quaterniond q;
         double infla;
-        vector<Quaterniond> q_sample;
 	} Shape;
+
+    // Samples of rotations
+    vector<Quaterniond> q_sample;
 
 	// Number of points on boundary
     long n = 20, num = 400;

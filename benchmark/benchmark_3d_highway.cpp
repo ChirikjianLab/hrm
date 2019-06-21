@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
             q.x() = quat_sample[i][1];
             q.y() = quat_sample[i][2];
             q.z() = quat_sample[i][3];
-            robot.Shape.q_sample.push_back(q);
+            robot.q_sample.push_back(q);
         }
     }
 

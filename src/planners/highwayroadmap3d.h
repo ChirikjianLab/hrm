@@ -130,10 +130,8 @@ public:
 // functions
 private:
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
-    double vector_dist(vector<double> v1, vector<double> v2);
     unsigned int find_cell(vector<double> v);
     Mesh getMesh(MatrixXd, int);
-    virtual void midLayer(SuperQuadrics::shape);
     bool isPtinCFLine(vector<double>, vector<double>);
 
 public:
@@ -149,10 +147,12 @@ public:
     void connectOneLayer(cf_cell3D cell);
     void connectOnePlane(double tz, cf_cellYZ cellYZ);
     virtual void connectMultiLayer();
+    cf_cell3D midLayer(SuperQuadrics::shape);
     void search();
 
     SuperQuadrics::shape tfe(double[3], double[3], Quaterniond, Quaterniond);
     void sampleSO3();
+    double vector_dist(vector<double> v1, vector<double> v2);
 
     virtual ~highwayRoadmap3D();
 };
