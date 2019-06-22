@@ -38,11 +38,13 @@ vector<MatrixXd> multibodytree3D::minkSumSQ(SuperQuadrics S1, int k){
     Matrix3d R_base = Base.Shape.q.toRotationMatrix(), R_Link;
 
     // Minkowski sums for Links
+    Vector3d link_tc;
     for (size_t i=0; i<numLinks; i++) {
         R_Link = R_base * tf[i].block<3,3>(0,0); Quaterniond quat(R_Link);
         Link[i].Shape.q = quat;
+        link_tc = R_base * tf[i].block<3,1>(0,3);
 
-        Mink.push_back(S1.minkSum3D(Link[i].Shape,k));
+        Mink.push_back(S1.minkSum3D(Link[i].Shape,k).colwise() - link_tc);
     }
 
     return Mink;

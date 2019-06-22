@@ -1,3 +1,5 @@
+#include <iostream>
+#include <fstream>
 #include "hrm3d_multibody.h"
 
 hrm3d_multibody::hrm3d_multibody(multibodytree3D robot, vector< vector<double> > endpt,
@@ -19,6 +21,7 @@ void hrm3d_multibody::buildRoadmap(){
     time::point start = time::now();
 
     for(size_t i=0; i<N_layers; i++){
+        RobotM.Base.Shape.q = q_r[i];
         Robot.Shape.q = q_r[i];
 
         // boundary for obstacles and arenas
@@ -81,13 +84,41 @@ void hrm3d_multibody::connectMultiLayer(){
             n_2 = vtxId[0].layer;
 
             mid = tfe_multi(q_r[i], q_r[0]);
+
+//            //
+//            ofstream file_pose;
+//            file_pose.open("robot_pose_mid.csv");
+//            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' << q_r[i].y() << ',' << q_r[i].z() << endl <<
+//                         q_r[0].w() << ',' << q_r[0].x() << ',' << q_r[0].y() << ',' << q_r[0].z() << endl;
+//            file_pose.close();
+//            //
         }
         else{
             n_12 = n_1;
             n_2 = vtxId[i+1].layer;
 
             mid = tfe_multi(q_r[i], q_r[i+1]);
+
+//            //
+//            ofstream file_pose;
+//            file_pose.open("robot_pose_mid.csv");
+//            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' << q_r[i].y() << ',' << q_r[i].z() << endl <<
+//                         q_r[i+1].w() << ',' << q_r[i+1].x() << ',' << q_r[i+1].y() << ',' << q_r[i+1].z() << endl;
+//            file_pose.close();
+//            //
         }
+
+//        //
+//        ofstream file_mid;
+//        file_mid.open("mid_3d.csv");
+//        for(size_t i=0; i<mid.size(); i++) {
+//            file_mid << mid[i].Shape.a[0] << ',' << mid[i].Shape.a[1] << ',' << mid[i].Shape.a[2] << ',' <<
+//                        mid[i].Shape.pos[0] << ',' << mid[i].Shape.pos[1] << ',' << mid[i].Shape.pos[2] << ',' <<
+//                        mid[i].Shape.q.w() << ',' << mid[i].Shape.q.x() << ',' << mid[i].Shape.q.y() << ',' <<
+//                        mid[i].Shape.q.z() << endl;
+//        }
+//        file_mid.close();
+//        //
 
         for(size_t j=0; j<mid.size(); j++) mid_cell.push_back( midLayer(mid[j].Shape) );
 
