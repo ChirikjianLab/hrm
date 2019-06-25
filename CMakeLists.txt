@@ -67,6 +67,8 @@ set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/mesh_gen.h)
 
 set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.h)
+set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/highway/highway_multibody.h)
 
 # Sources
 set(SOURCE
@@ -88,6 +90,7 @@ set(MESH "${PROJECT_SOURCE_DIR}/include/mesh_gen.cpp")
 
 set(OMPL_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.cpp")
 set(HIGHWAY_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.cpp")
+set(HIGHWAY_MULTIBODY "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_multibody.cpp")
 
 # Executables
 add_executable(highwayRoadMap2D ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
@@ -125,3 +128,5 @@ add_executable(benchmark3D_OMPL ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_omp
 target_link_libraries(benchmark3D_OMPL "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRARIES}")
 
 add_executable(benchmark3D_HIGHWAY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_highway.cpp ${SOURCE} ${HIGHWAY_PLANNER})
+
+add_executable(benchmark3D_HRM_MULTIBODY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_hrm_multibody.cpp ${SOURCE} ${MULTIBODY_3D} ${HIGHWAY_MULTIBODY})

@@ -82,7 +82,14 @@ if ~isempty(path)
 end
 
 %% Validation
+disp('Validating path...')
 Graph.V = vtx';
-high3D = pathValid_3D_multiBody(robot, endPts, arena, obs, Graph, path+1);
+
+% Flip the path
+for i = 1:size(path,2)
+    path2(i) = 1 + path(end+1-i);
+end
+
+high3D = pathValid_3D_multiBody(robot, endPts, arena, obs, Graph, path2);
 high3D.validation();
 high3D.PlotPath();

@@ -1,11 +1,13 @@
-#include "highway/highway_planner.h"
+#include "benchmark/highway/highway_multibody.h"
+#include "src/planners/hrm3d_multibody.h"
+#include "include/parse2dcsvfile.h"
 
 using namespace Eigen;
 using namespace std;
 
 #define pi 3.1415926
 
-vector<SuperQuadrics> generateSQ(string file_name, int num){
+vector<SuperQuadrics> generateSQ(string file_name, double D){
     // Read config file
     inputFile file;
     vector<vector<double>> config = file.parse2DCsvFile(file_name);
@@ -25,7 +27,7 @@ vector<SuperQuadrics> generateSQ(string file_name, int num){
         obj[j].Shape.q.x() = config[j][9];
         obj[j].Shape.q.y() = config[j][10];
         obj[j].Shape.q.z() = config[j][11];
-        obj[j].n = num;
+        obj[j].n = D;
     }
 
     return obj;
@@ -39,7 +41,8 @@ int main(int argc, char ** argv){
 
     // Record planning time for N trials
     size_t N = size_t( atoi(argv[1]) );
-    int n = atoi(argv[2]),  N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
+    double n = atof(argv[2]);
+    int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
     vector< vector<double> > stat(N);
 
@@ -48,10 +51,16 @@ int main(int argc, char ** argv){
             arena_config = "../config/arena_config_3d.csv",
             obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = generateSQ(robot_config, n),
-            arena = generateSQ(arena_config, n),
+    vector<SuperQuadrics> robot_parts = generateSQ(robot_config, n);
+    vector<SuperQuadrics> arena = generateSQ(arena_config, n),
             obs = generateSQ(obs_config, n);
-    SuperQuadrics robot;
+
+    // Generate multibody tree for robot
+    multibodytree3D robot;
+    robot.addBase(robot_parts[0]);
+    for (size_t i=1; i<robot_parts.size(); i++) {
+        robot.addBody(robot_parts[i]);
+    }
 
     // Read predefined quaternions
     string quat_file = argv[6];
@@ -66,7 +75,7 @@ int main(int argc, char ** argv){
             q.x() = quat_sample[i][1];
             q.y() = quat_sample[i][2];
             q.z() = quat_sample[i][3];
-            robot.q_sample.push_back(q);
+            robot.Base.q_sample.push_back(q);
         }
     }
 
@@ -83,9 +92,9 @@ int main(int argc, char ** argv){
     option3D opt;
     opt.N_o = obs.size(); opt.N_s = arena.size();
     opt.N_layers = size_t(N_l); opt.N_dx = size_t(N_x); opt.N_dy = size_t(N_y);
-    opt.Lim = {arena[0].Shape.a[0]-robot.Shape.a[0],
-               arena[0].Shape.a[1]-robot.Shape.a[0],
-               arena[0].Shape.a[2]-robot.Shape.a[0]};
+    opt.Lim = {arena[0].Shape.a[0]-robot.Base.Shape.a[0],
+               arena[0].Shape.a[1]-robot.Base.Shape.a[0],
+               arena[0].Shape.a[2]-robot.Base.Shape.a[0]};
 
     // Store results
     ofstream file_time;
@@ -95,14 +104,14 @@ int main(int argc, char ** argv){
                  "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE" << "\n";
 
     for(size_t i=0; i<N; i++){
-        cout << "Number of trials: " << i << endl;
+        cout << "Number of trials: " << i+1 << endl;
 
         // Path planning using HighwayRoadmap3D
-        highway_planner high3D(robot, EndPts, arena, obs, opt);
+        hrm_multibody_planner high3D(robot, EndPts, arena, obs, opt);
         high3D.plan_graph();
         high3D.plan_search();
 
-        // Write results
+        // Store results
         file_time << high3D.flag << ',' << high3D.planTime.buildTime << ',' << high3D.planTime.searchTime << ',' <<
                      high3D.planTime.buildTime + high3D.planTime.searchTime << ',' <<
                      N_l << ',' << N_x << ',' << N_y << ',' <<

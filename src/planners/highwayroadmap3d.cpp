@@ -217,18 +217,10 @@ void highwayRoadmap3D::connectOneLayer(cf_cell3D cell){
                 I0 = N_v.line[i][j];
                 for(size_t k1=0; k1<cell.cellYZ[i+1].zM[j].size(); k1++){
                     I1 = N_v.line[i+1][j];
-                    if( ( (cell.cellYZ[i].zM[j][k0] > cell.cellYZ[i+1].zL[j][k1] &&
-                           cell.cellYZ[i].zM[j][k0] < cell.cellYZ[i+1].zU[j][k1]) &&
-                          (cell.cellYZ[i+1].zM[j][k1] > cell.cellYZ[i].zL[j][k0] &&
-                           cell.cellYZ[i+1].zM[j][k1] < cell.cellYZ[i].zU[j][k0]) ) &&
-                            ( (cell.cellYZ[i].zU[j][k0] > cell.cellYZ[i+1].zL[j][k1] &&
-                               cell.cellYZ[i].zU[j][k0] < cell.cellYZ[i+1].zU[j][k1]) ||
-                              (cell.cellYZ[i].zL[j][k0] > cell.cellYZ[i+1].zL[j][k1] &&
-                               cell.cellYZ[i].zL[j][k0] < cell.cellYZ[i+1].zU[j][k1]) ||
-                              (cell.cellYZ[i+1].zU[j][k1] > cell.cellYZ[i].zL[j][k0] &&
-                               cell.cellYZ[i+1].zU[j][k1] < cell.cellYZ[i].zU[j][k0]) ||
-                              (cell.cellYZ[i+1].zL[j][k1] > cell.cellYZ[i].zL[j][k0] &&
-                               cell.cellYZ[i+1].zL[j][k1] < cell.cellYZ[i].zU[j][k0]) ) ){
+                    if( cell.cellYZ[i].zM[j][k0] > cell.cellYZ[i+1].zL[j][k1] &&
+                        cell.cellYZ[i].zM[j][k0] < cell.cellYZ[i+1].zU[j][k1] &&
+                        cell.cellYZ[i+1].zM[j][k1] > cell.cellYZ[i].zL[j][k0] &&
+                        cell.cellYZ[i+1].zM[j][k1] < cell.cellYZ[i].zU[j][k0] ){
                         vtxEdge.edge.push_back(make_pair(I0+k0, I1+k1));
                         vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[I0+k0],
                                                               vtxEdge.vertex[I1+k1]) );
@@ -270,12 +262,10 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell){
             // Connect vertex btw adjacent cells
             if(i != CFcell.ty.size()-1){
                 for(size_t j2=0; j2<CFcell.zM[i+1].size(); j2++){
-                    if( ( (CFcell.zM[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zM[i][j1] <= CFcell.zU[i+1][j2]) &&
-                          (CFcell.zM[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zM[i+1][j2] <= CFcell.zU[i][j1]) ) &&
-                        ( (CFcell.zU[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zU[i][j1] <= CFcell.zU[i+1][j2]) ||
-                          (CFcell.zL[i][j1] >= CFcell.zL[i+1][j2] && CFcell.zL[i][j1] <= CFcell.zU[i+1][j2]) ||
-                          (CFcell.zU[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zU[i+1][j2] <= CFcell.zU[i][j1]) ||
-                          (CFcell.zL[i+1][j2] >= CFcell.zL[i][j1] && CFcell.zL[i+1][j2] <= CFcell.zU[i][j1]) ) ){
+                    if( CFcell.zM[i][j1] >= CFcell.zL[i+1][j2] &&
+                        CFcell.zM[i][j1] <= CFcell.zU[i+1][j2] &&
+                        CFcell.zM[i+1][j2] >= CFcell.zL[i][j1] &&
+                        CFcell.zM[i+1][j2] <= CFcell.zU[i][j1] ){
                         vtxEdge.edge.push_back(make_pair(N_0+j1, N_1+j2));
                         vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[N_0+j1],vtxEdge.vertex[N_1+j2]) );
                     }

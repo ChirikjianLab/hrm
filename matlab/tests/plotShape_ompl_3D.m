@@ -44,7 +44,7 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-[face, ~] = robotInit3D(vargin);
+[robot, ~] = robotInit3D(vargin);
 
 %% Path from OMPL
 % start and goal
@@ -70,10 +70,10 @@ for i = 1:size(path_prm,1)-1
         [path_prm(i,2) path_prm(i+1,2)],...
         [path_prm(i,3) path_prm(i+1,3)], 'b-', 'LineWidth', 2)
        
-        face.q = path_prm(i,4:7);
-        face.tc = path_prm(i,1:3)';
-        face.color = 'g';
-        face.PlotShape;
+        robot.Base.q = path_prm(i+1,4:7);
+        robot.Base.tc = path_prm(i+1,1:3)';
+        g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
+        robot.robotTF(g,1);
 end
 
 % for i = 1:size(state_prm,1)-1

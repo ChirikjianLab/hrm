@@ -13,7 +13,7 @@ private:
     vector<SuperQuadrics> mid;
     vector<cf_cell3D> mid_cell;
     vector<double> midVtx;
-    double N_step = 3;
+    double N_step = 2;
 
 public:
     multibodytree3D RobotM;
@@ -33,6 +33,7 @@ public:
 private:
     bool isCollisionFree(vector<double>, vector<double>);
     bool isPtInCFCell(cf_cell3D, vector<double>);
+    bool isPtInCFLine(cf_cell3D, vector<double>);
 };
 
 #endif // HRM3D_MULTIBODY_H

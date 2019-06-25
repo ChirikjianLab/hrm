@@ -15,10 +15,10 @@ void hrm3d_multibody::plan(){
 
 // Build the roadmap for multi-rigid-body planning
 void hrm3d_multibody::buildRoadmap(){
+    time::point start = time::now();
+
     // Samples from SO(3)
     sampleSO3();
-
-    time::point start = time::now();
 
     for(size_t i=0; i<N_layers; i++){
         RobotM.Base.Shape.q = q_r[i];
@@ -56,7 +56,7 @@ boundary3D hrm3d_multibody::boundaryGen(){
     // Minkowski boundary points
     vector<MatrixXd> bd_aux;
     for(size_t i=0; i<N_s; i++){
-        bd_aux = RobotM.minkSumSQ(Arena[i], 1);
+        bd_aux = RobotM.minkSumSQ(Arena[i], -1);
         for(size_t j=0; j<bd_aux.size(); j++) bd.bd_s.push_back(bd_aux[j]);
         bd_aux.clear();
     }
@@ -73,6 +73,8 @@ boundary3D hrm3d_multibody::boundaryGen(){
 void hrm3d_multibody::connectMultiLayer(){
     size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
     size_t start = 0;
+    int number = 0;
+    vector<double> V1, V2;
 
     for(size_t i=0; i<N_layers; i++){
         // Find vertex only in adjecent layers
@@ -125,20 +127,23 @@ void hrm3d_multibody::connectMultiLayer(){
         // Nearest vertex btw layers
         for(size_t m0=start; m0<n_1; m0++){
             for(size_t m1=n_12; m1<n_2; m1++){
-                if( fabs(vtxEdge.vertex[m0][0]-vtxEdge.vertex[m1][0]) <= 1e-8 &&
-                    fabs(vtxEdge.vertex[m0][1]-vtxEdge.vertex[m1][1]) <= 1e-8 &&
-                    fabs(vtxEdge.vertex[m0][2]-vtxEdge.vertex[m1][2]) <= 1 &&
-                    isCollisionFree(vtxEdge.vertex[m0],vtxEdge.vertex[m1]) ){
+                V1 = vtxEdge.vertex[m0]; V2 = vtxEdge.vertex[m1];
+
+                // Locate the nearest vertices
+                if( fabs(V1[0]-V2[0]) < 1e-8 && fabs(V1[1]-V2[1]) < 1e-8
+                        && isCollisionFree(V1,V2) ){
+
+                    number++;
+
                     // Middle vertex: trans = V1; rot = V2;
-                    midVtx = {vtxEdge.vertex[m0][0],vtxEdge.vertex[m0][1],vtxEdge.vertex[m0][2],
-                              vtxEdge.vertex[m1][3],vtxEdge.vertex[m1][4],vtxEdge.vertex[m1][5],vtxEdge.vertex[m1][6]};
+                    midVtx = {V1[0],V1[1],V1[2],V2[3],V2[4],V2[5],V2[6]};
                     vtxEdge.vertex.push_back(midVtx);
 
                     // Add new connections
                     vtxEdge.edge.push_back(make_pair(m0, n));
-                    vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[m0],midVtx) );
+                    vtxEdge.weight.push_back( vector_dist(V1,midVtx) );
                     vtxEdge.edge.push_back(make_pair(m1, n));
-                    vtxEdge.weight.push_back( vector_dist(vtxEdge.vertex[m1],midVtx) );
+                    vtxEdge.weight.push_back( vector_dist(V2,midVtx) );
                     n++;
 
                     // Continue from where it pauses
@@ -148,14 +153,21 @@ void hrm3d_multibody::connectMultiLayer(){
             }
         }
         start = n_1;
+
+        // Clear mid_cell;
+        mid_cell.clear();
     }
+
+    cout << number << endl;
 }
 
 
 bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2){
-    // Base: determine whether V1 is within any CF-Cell of midLayer
-    if(!isPtInCFCell(mid_cell[0], V1)) return false;
+    // Translation motion
+    // Both V1 and V2 are within any CF-Cell of midLayer
+    if(!isPtInCFLine(mid_cell[0], V1) || !isPtInCFLine(mid_cell[0], V2)) return false;
 
+    // Rotation motion
     // Link i: determine Vi=V+RobotM.tf{1:3,4} within CF-cell of midLayer
     Matrix3d R1 = Quaterniond(V1[3],V1[4],V1[5],V1[6]).toRotationMatrix(),
              R2 = Quaterniond(V2[3],V2[4],V2[5],V2[6]).toRotationMatrix();
@@ -164,11 +176,11 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2){
     Vector3d Vs;
 
     for(size_t i=0; i<RobotM.numLinks; i++){
-        for(size_t j=0; j<N_step; j++){
+        for(size_t j=0; j<=N_step; j++){
             d_axang.angle() = j*dt*axang.angle();
 
             Vs = Vector3d({V1[0],V1[1],V1[2]}) +
-                    R1*d_axang.toRotationMatrix()*RobotM.tf[i].block(0,3,3,1);
+                    R1*d_axang.toRotationMatrix()*RobotM.tf[i].block<3,1>(0,3);
 
             if(!isPtInCFCell(mid_cell[i+1], {Vs[0],Vs[1],Vs[2]})) return false;
         }
@@ -180,38 +192,66 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2){
 
 // Point in collision-free cell
 bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V){
-    for(size_t i=1; i<cell.tx.size(); i++) {
-        // Search for x-coord
-        if(cell.tx[i] < V[0]) continue;
+    bool flag1 = false, flag2 = false, flag3 = false, flag4 = false;
+    size_t i_x = 0, i_y = 0;
 
-        // Search for the current plane
-        cf_cellYZ cellX1 = cell.cellYZ[i], cellX2 = cell.cellYZ[i-1];
-        for(size_t j=1; j<cellX1.ty.size();  j++){
-            if(cellX1.ty[j] < V[1]) continue;
-
-            // Within the range of current sweep line
-            for(size_t k=0; k<cellX1.zM[j].size(); k++)
-                if((V[2] < cellX1.zL[j][k]) || (V[2] > cellX1.zU[j][k])) return false;
-            // Within the range of previous sweep line
-            for(size_t k=0; k<cellX1.zM[j-1].size(); k++)
-                if((V[2] < cellX1.zL[j-1][k]) || (V[2] > cellX1.zU[j-1][k])) return false;
-        }
-
-        // Search for the previou plane
-        for(size_t j=1; j<cellX2.ty.size();  j++){
-            if(cellX1.ty[j] < V[1]) continue;
-
-            // Within the range of current sweep line
-            for(size_t k=0; k<cellX2.zM[j].size(); k++)
-                if((V[2] < cellX2.zL[j][k]) || (V[2] > cellX2.zU[j][k])) return false;
-            // Within the range of previous sweep line
-            for(size_t k=0; k<cellX2.zM[j-1].size(); k++)
-                if((V[2] < cellX2.zL[j-1][k]) || (V[2] > cellX2.zU[j-1][k])) return false;
+    // Search for x-coord
+    for(size_t i=1; i<cell.tx.size(); i++){
+        if(cell.tx[i] >= V[0]){
+            i_x = i;
+            break;
         }
     }
+    if(i_x == 0) return false;
+
+    // Search for the current plane
+    cf_cellYZ cellX1 = cell.cellYZ[i_x];
+    for(size_t j=1; j<cellX1.ty.size();  j++){
+        if(cellX1.ty[j] >= V[1]){
+            i_y = j;
+            break;
+        }
+    }
+    if(i_y == 0) return false;
+
+    // Within the range of current sweep line
+    for(size_t k=0; k<cellX1.zM[i_y].size(); k++)
+        if((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) flag1 = true;
+    // Within the range of previous sweep line
+    for(size_t k=0; k<cellX1.zM[i_y-1].size(); k++)
+        if((V[2] >= cellX1.zL[i_y-1][k]) && (V[2] <= cellX1.zU[i_y-1][k])) flag2 = true;
+
+    // Search for the previou plane
+    cf_cellYZ cellX2 = cell.cellYZ[i_x-1];
+    // Within the range of current sweep line
+    for(size_t k=0; k<cellX2.zM[i_y].size(); k++)
+        if((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) flag3 = true;
+    // Within the range of previous sweep line
+    for(size_t k=0; k<cellX2.zM[i_y-1].size(); k++)
+        if((V[2] >= cellX2.zL[i_y-1][k]) && (V[2] <= cellX2.zU[i_y-1][k])) flag4 = true;
+
 
     // If within all the line segments
-    return true;
+    return (flag1 & flag2 & flag3 & flag4);
+}
+
+// Point in collision-free line segment
+bool hrm3d_multibody::isPtInCFLine(cf_cell3D cell, vector<double> V){
+    for(size_t i=0; i<cell.tx.size(); i++){
+        if(fabs(cell.tx[i]-V[0])>1e-5) continue;
+
+        for(size_t j=0; j<cell.cellYZ[i].ty.size(); j++) {
+            if(fabs(cell.cellYZ[i].ty[j]-V[1])>1e-5) continue;
+
+            for(size_t k=0; k<cell.cellYZ[i].zM[j].size(); k++)
+                if( (V[2] >= cell.cellYZ[i].zL[j][k]) &&
+                    (V[2] <= cell.cellYZ[i].zU[j][k]) ) return 1;
+
+            break;
+        }
+        break;
+    }
+    return 0;
 }
 
 
