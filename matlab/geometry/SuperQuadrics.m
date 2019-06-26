@@ -49,8 +49,8 @@ classdef SuperQuadrics
                 obj.eps   = val{4};
                 obj.N     = val{5};
                 obj.color = color;
-                [obj.omega, obj.eta] = meshgrid(0:pi/(obj.N-1):pi,...
-                    0:2*pi/(obj.N-1):2*pi); 
+                [obj.omega, obj.eta] = meshgrid(-1e-6:pi/(obj.N-1):pi+1e-6,...
+                    -1e-6:2*pi/(obj.N-1):2*pi+1e-6); 
                 
                 obj.infla = infla;
                 if infla > 0
@@ -79,8 +79,7 @@ classdef SuperQuadrics
             R1 = objSQ.par2rotm(objSQ.q);
             R2 = objE.par2rotm(objE.q);
             
-            r = min(objE.a);
-            Tinv = R2*diag(objE.a/r)*R2';
+            Tinv = R2*diag(objE.a)*R2';
             
             gradPhix = objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
                 .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos')/objSQ.a(1);
@@ -94,7 +93,7 @@ classdef SuperQuadrics
                 reshape(gradPhiz, 1, m*n)];
             
             % Closed-Form Minkowski Sum/Difference
-            X_eb = GetPoints(objSQ) + K*r*Tinv^2*R1*gradPhi ./...
+            X_eb = GetPoints(objSQ) + K*Tinv^2*R1*gradPhi ./...
                 sqrt(sum( (Tinv*R1*gradPhi).^2, 1 ));
         end
         

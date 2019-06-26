@@ -38,23 +38,21 @@ classdef MultiBodyTree3D < handle
         
         %% Transform the robot as a whole body
         function robotTF(obj, g, isplot)
-            robot_aux.Base = obj.Base;
-            robot_aux.Base.tc = g(1:3,4);
-            robot_aux.Base.q = rotm2quat(g(1:3,1:3));
+            obj.Base.tc = g(1:3,4);
+            obj.Base.q = rotm2quat(g(1:3,1:3));
             
             if isplot
-                robot_aux.Base.PlotShape;
+                obj.Base.PlotShape;
             end
             
-            robot_aux.Link = obj.Link;
             for i = 1:size(obj.Link,2)
                 g_Link = g * obj.tf{i};
                 
-                robot_aux.Link{i}.tc = g_Link(1:3,4);
-                robot_aux.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
+                obj.Link{i}.tc = g_Link(1:3,4);
+                obj.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
                 
                 if isplot
-                    robot_aux.Link{i}.PlotShape;
+                    obj.Link{i}.PlotShape;
                 end
             end
         end
@@ -66,12 +64,12 @@ classdef MultiBodyTree3D < handle
             
             % Mink sum for the base link
             Mink(:,:,1) = S1.MinkowskiSum_3D_ES(obj.Base,k);
-            R_base = expm(skew(obj.Base.q));
+            R_base = obj.par2rotm(obj.Base.q);
             
             % Mink sum for the other links
             for i = 1:size(obj.Link,2)
                 R_link = R_base * obj.tf{i}(1:3,1:3);
-                obj.Link{i}.q = vex(logm(R_link));
+                obj.Link{i}.q = rotm2quat(R_link);
                 
                 Mink(:,:,i+1) = S1.MinkowskiSum_3D_ES(obj.Link{i},k) -...
                     R_base*obj.tf{i}(1:3,4);

@@ -7,8 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 12;
-[ar, obs] = environment3D(opt);
+[ar, obs, endPts] = environment3D(12, 1);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); obstacle = zeros(size(obs,2),12);
@@ -30,7 +29,7 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-[Robot, endPts] = robotInit3D(vargin);
+Robot = robotInit3D(vargin);
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -45,3 +44,9 @@ end
 csvwrite(fullfile(outPath,'robot_config_3d.csv'), robot);
 csvwrite(fullfile(outPath,'endPts_3d.csv'), endPts');
 
+% plot the robot at start and goal configs
+g_start = [quat2rotm(endPts(4:7,1)'), endPts(1:3,1); zeros(1,3), 1];
+Robot.robotTF(g_start, 1);
+
+g_goal = [quat2rotm(endPts(4:7,2)'), endPts(1:3,2); zeros(1,3), 1];
+Robot.robotTF(g_goal, 1);

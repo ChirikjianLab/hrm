@@ -110,8 +110,8 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
 
     // Generate mesh for the boundaries
     vector<Mesh> P_s(N_cs), P_o(N_co);
-    for(size_t i=0; i<N_cs; i++)
-        P_s[i] = getMesh(bd_s[i], int(Arena[0].n));
+//    for(size_t i=0; i<N_cs; i++)
+//        P_s[i] = getMesh(bd_s[i], int(Arena[0].n));
     for(size_t i=0; i<N_co; i++)
         P_o[i] = getMesh(bd_o[i], int(Obs[0].n));
 
@@ -122,12 +122,12 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
         for(size_t j=0; j<N_dy; j++){
             VectorXd lineZ(6); lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
-            for(size_t m=0; m<N_cs; m++){
-                pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
-                if(pts_s.empty()) continue;
-                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
-                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
-            }
+//            for(size_t m=0; m<N_cs; m++){
+//                pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
+//                if(pts_s.empty()) continue;
+//                z_s_L(j,m) = min(pts_s[0](2), pts_s[1](2));
+//                z_s_R(j,m) = max(pts_s[0](2), pts_s[1](2));
+//            }
             for(size_t n=0; n<N_co; n++){
                 pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
                 if(pts_o.empty()) continue;
@@ -141,10 +141,10 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> b
         CF_cell.tx.push_back(tx[i]);
         CF_cell.cellYZ.push_back( cfLine(ty, z_s_L, z_s_R, z_o_L, z_o_R) );
 
-        z_s_L = MatrixXd::Constant(N_dy, N_cs, -Lim[2]);
-        z_s_R = MatrixXd::Constant(N_dy, N_cs, Lim[2]);
-        z_o_L = MatrixXd::Constant(N_dy, N_co, std::numeric_limits<double>::quiet_NaN());
-        z_o_R = MatrixXd::Constant(N_dy, N_co, std::numeric_limits<double>::quiet_NaN());
+//        z_s_L = MatrixXd::Constant(N_dy, N_cs, -Lim[2]);
+//        z_s_R = MatrixXd::Constant(N_dy, N_cs, Lim[2]);
+//        z_o_L = MatrixXd::Constant(N_dy, N_co, std::numeric_limits<double>::quiet_NaN());
+//        z_o_R = MatrixXd::Constant(N_dy, N_co, std::numeric_limits<double>::quiet_NaN());
     }
     return CF_cell;
 }

@@ -126,13 +126,14 @@ void hrm3d_multibody::connectMultiLayer(){
 
         // Nearest vertex btw layers
         for(size_t m0=start; m0<n_1; m0++){
+            V1 = vtxEdge.vertex[m0];
             for(size_t m1=n_12; m1<n_2; m1++){
-                V1 = vtxEdge.vertex[m0]; V2 = vtxEdge.vertex[m1];
+                V2 = vtxEdge.vertex[m1];
 
                 // Locate the nearest vertices
-                if( fabs(V1[0]-V2[0]) < 1e-8 && fabs(V1[1]-V2[1]) < 1e-8
-                        && isCollisionFree(V1,V2) ){
+                if( fabs(V1[0]-V2[0]) > 1e-8 || fabs(V1[1]-V2[1]) > 1e-8 ) continue;
 
+                if( isCollisionFree(V1,V2) ){
                     number++;
 
                     // Middle vertex: trans = V1; rot = V2;
@@ -232,7 +233,7 @@ bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V){
 
 
     // If within all the line segments
-    return (flag1 & flag2 & flag3 & flag4);
+    return (flag1 | flag2 | flag3 | flag4);
 }
 
 // Point in collision-free line segment
@@ -245,13 +246,13 @@ bool hrm3d_multibody::isPtInCFLine(cf_cell3D cell, vector<double> V){
 
             for(size_t k=0; k<cell.cellYZ[i].zM[j].size(); k++)
                 if( (V[2] >= cell.cellYZ[i].zL[j][k]) &&
-                    (V[2] <= cell.cellYZ[i].zU[j][k]) ) return 1;
+                    (V[2] <= cell.cellYZ[i].zU[j][k]) ) return true;
 
             break;
         }
         break;
     }
-    return 0;
+    return false;
 }
 
 
@@ -282,14 +283,13 @@ vector<SuperQuadrics> hrm3d_multibody::tfe_multi(Quaterniond q1, Quaterniond q2)
     }
     // else fit a TFE
     else{
-        double* ra; ra = robot.Base.Shape.a;
-        e_fitted.Shape = tfe(ra, ra, q1, q2);
+        e_fitted.Shape = tfe(robot.Base.Shape.a, robot.Base.Shape.a, q1, q2);
         tfe_obj.push_back(e_fitted);
 
         for(size_t i=0; i<robot.numLinks; i++) {
-            double* rb; rb = robot.Link[i].Shape.a;
-            R_link = robot.tf[i].block(0,0,3,3);
-            e_fitted.Shape = tfe(rb, rb, Quaterniond(R1 * R_link), Quaterniond(R2 * R_link));
+            R_link = robot.tf[i].block<3,3>(0,0);
+            e_fitted.Shape = tfe(robot.Link[i].Shape.a, robot.Link[i].Shape.a,
+                                 Quaterniond(R1 * R_link), Quaterniond(R2 * R_link));
             tfe_obj.push_back(e_fitted);
         }
     }

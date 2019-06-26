@@ -1,4 +1,4 @@
-function [arena, obs] = environment3D(opt)
+function [arena, obs, EndPts] = environment3D(opt, endpt_opt)
 %% Arena, Obstacles and start and goal points
 if opt == 11 % Superquadrics Sparse
     % set up the parameters of the environment
@@ -47,13 +47,13 @@ elseif opt == 12 % Superquadrics cluttered
     rb_o = [10 15 15 12 15  8 10];
     rc_o = [10  5 20  5 10 12  8];
     
-%     q_o  = pi* [[0.2, 0.1, 0, -0.7];...
-%         [0.13, 0.5, 0.1, -1.5];...
-%         [   0, -1.5, 0.2, 0.634];...
-%         [0.25, 0.3, -0.2, 0.2];...
-%         [ 0.6, 0.23, 0.5, 5.3];...
-%         [-0.3, -0.5, -0.1, -3.5];...
-%         [0.32, 0.25, 0.9, 2]];
+    %     q_o  = pi* [[0.2, 0.1, 0, -0.7];...
+    %         [0.13, 0.5, 0.1, -1.5];...
+    %         [   0, -1.5, 0.2, 0.634];...
+    %         [0.25, 0.3, -0.2, 0.2];...
+    %         [ 0.6, 0.23, 0.5, 5.3];...
+    %         [-0.3, -0.5, -0.1, -3.5];...
+    %         [0.32, 0.25, 0.9, 2]];
     
     q_o = pi*rand(size(ra_o,2), 4);
     
@@ -63,13 +63,13 @@ elseif opt == 12 % Superquadrics cluttered
     ty_o  = [-10  15 -25   0 20 -15  -5];
     tz_o  = [-20  15 -10   0  5 -15   5];
     
-%     eps_o = [[1.1;0.5],...
-%         [.8;1.2],...
-%         [1.4;0.5],...
-%         [.1;.9],...
-%         [1.2;1.0],...
-%         [1.4;.6],...
-%         [.1;.85]];
+    %     eps_o = [[1.1;0.5],...
+    %         [.8;1.2],...
+    %         [1.4;0.5],...
+    %         [.1;.9],...
+    %         [1.2;1.0],...
+    %         [1.4;.6],...
+    %         [.1;.85]];
     eps_o = 0.1+1.8*rand(2,size(ra_o,2));
     
 elseif opt == 13 % Superquadrics Maze
@@ -91,13 +91,13 @@ elseif opt == 13 % Superquadrics Maze
     
     q_o = [zeros(size(ra_o,2),1), ...
         ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
-%     q_o  = pi* [[0; 0; 0],...
-%         [0; 0; 0],...
-%         [0; 0; 0],...
-%         [0; 0; 0],...
-%         [0; 0; 0],...
-%         [0; 0; 0],...
-%         [0; 0; 0]];
+    %     q_o  = pi* [[0; 0; 0],...
+    %         [0; 0; 0],...
+    %         [0; 0; 0],...
+    %         [0; 0; 0],...
+    %         [0; 0; 0],...
+    %         [0; 0; 0],...
+    %         [0; 0; 0]];
     
     tx_o  = [-20 -20 -20 -20 40 40 40];
     ty_o  = [  0   0  25 -25  0  0  0];
@@ -120,7 +120,7 @@ elseif opt == 14 % Superquadrics Corridor
     q_s = [0,1,0,0];
     
     tc_s = [0;0;0];
-    eps_s = [0.2;0.2];
+    eps_s = [0.1;0.1];
     
     % Obstacles
     ra_o = [60 70 10 10];
@@ -134,10 +134,42 @@ elseif opt == 14 % Superquadrics Corridor
     ty_o  = [ 20 -20 -10  10];
     tz_o  = [  0   0   0   0];
     
-    eps_o = [[.1;.1],...
-        [.1;.1],...
+    eps_o = [[.2;.2],...
+        [.2;.2],...
         [.2;.2],...
         [.2;.2]];
+    
+elseif opt == 15
+        % Arena
+    ra_s = 70;
+    rb_s = 40;
+    rc_s = 30;
+    
+    q_s = [0,1,0,0];
+    
+    tc_s = [0;0;0];
+    eps_s = [0.1;0.1];
+    
+    % Obstacles
+    ra_o = [60 70 10 10 70 70  5  5];
+    rb_o = [20 20 30 30  5  5 40 40];
+    rc_o = [ 5  5 30 30 30 30 30 30];
+    
+    q_o = [zeros(size(ra_o,2),1), ...
+        ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
+    
+    tx_o  = [-10   0 -24  24   0  0 -65 65];
+    ty_o  = [ 20 -20 -10  10 -35 35   0  0];
+    tz_o  = [  0   0   0   0   0  0   0  0];
+    
+    eps_o = [[.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1]];
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -168,9 +200,9 @@ end
 %% == Plot obstacle(s), arena(s) =====
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal;
-for i = 1:N_s
-    arena(i).PlotShape;
-end
+% for i = 1:N_s
+%     arena(i).PlotShape;
+% end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:N_o
@@ -183,5 +215,32 @@ for i = 1:N_o
 end
 
 axis off
+
+
+%% start and goal configurations
+if endpt_opt == 1
+    tc_start = [-55; 20; -15];
+    tc_goal  = [ 53;-20; 10];
+    
+    q_start = pi * rand(1,4);
+    % q_start = pi * rand(3,1);
+    
+    q_goal = pi * rand(1,4);
+    % q_goal = pi * rand(3,1);
+elseif endpt_opt == 2
+    tc_start = [-52;-20;-15];
+    tc_goal  = [-52;-20; 15];
+    
+    q_start = [0,1,0,0];
+    q_goal = [pi,1,0,0];
+end
+
+q_start = q_start/norm(q_start);
+q_goal = q_goal/norm(q_goal);
+EndPts = [[tc_start; q_start'],[tc_goal; q_goal']];
+
+% plot the start and end configurations
+plot3(tc_start(1), tc_start(2), tc_start(3), 'c+', 'LineWidth', 2)
+plot3(tc_goal(1), tc_goal(2), tc_goal(3), 'gd', 'LineWidth', 2)
 
 end

@@ -39,8 +39,8 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
 //    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
 
-    eta = RowVectorXd::LinSpaced(n,-pi,pi).replicate(n,1);
-    omega = VectorXd::LinSpaced(n,-pi/2,pi/2).replicate(1,n);
+    eta = RowVectorXd::LinSpaced(n,-pi - 1e-4, pi + 1e-4).replicate(n,1);
+    omega = VectorXd::LinSpaced(n,-pi/2 - 1e-4, pi/2 + 1e-4).replicate(1,n);
     num = n*n;
 
     MatrixXd gradPhi(3,num);
@@ -51,8 +51,7 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
     MatrixXd R1 = Shape.q.toRotationMatrix(),
              R2 = shp_b.q.toRotationMatrix();
 
-    double r = fmin(a2,fmin(b2,c2));
-    DiagonalMatrix<double, 3> diag; diag.diagonal() = Array3d(a2/r,b2/r,c2/r);
+    DiagonalMatrix<double, 3> diag; diag.diagonal() = Array3d(a2,b2,c2);
 
     Matrix3d Tinv = R2 * diag * R2.transpose();
 
@@ -64,7 +63,7 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
     gradPhi.row(1) = gradPhiy;
     gradPhi.row(2) = gradPhiz;
 
-    return originShape() + (K*r*Tinv*Tinv*R1*gradPhi).cwiseQuotient
+    return originShape() + (K*Tinv*Tinv*R1*gradPhi).cwiseQuotient
             ( MatrixXd::Constant(3,1,1) * (Tinv*R1*gradPhi).colwise().norm() );
 }
 
