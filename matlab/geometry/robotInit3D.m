@@ -41,12 +41,14 @@ for i = 1:N_l
 end
 
 %% start and goal configurations
-tc_start = [-55; 20; -15];
+tc_start = [-55; -20; -15];
+% q_start = [0,1,0,0];
 q_start = pi * rand(1,4);
 q_start = q_start/norm(q_start);
 % q_start = pi * rand(3,1);
 
-tc_goal  = [ 53;-20; 10];
+tc_goal  = [55; -20; 15];
+% q_goal = [pi,1,0,0];
 q_goal = pi * rand(1,4);
 q_goal = q_goal/norm(q_goal);
 % q_goal = pi * rand(3,1);

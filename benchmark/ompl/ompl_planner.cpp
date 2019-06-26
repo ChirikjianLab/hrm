@@ -215,7 +215,7 @@ bool ompl_planner::isStateValid(const ob::State *state) const{
 
         //Checking collision against obstacles
         for(unsigned int i=0; i<obstacles.size(); i++){
-            bool aux = checkSeparation(rob, obj_robot[j], obstacles[i].Shape, obj_obs[i]);
+            bool aux = checkSeparation(rob, robot[j].Shape, obj_robot[j], obstacles[i].Shape, obj_obs[i]);
             if(!aux) return false;
         }
     }
@@ -223,11 +223,12 @@ bool ompl_planner::isStateValid(const ob::State *state) const{
 }
 
 //Returns true when separated and false when overlapping
-bool ompl_planner::checkSeparation(SuperQuadrics::shape robot, CollisionObject<double> obj_ellip,
+bool ompl_planner::checkSeparation(SuperQuadrics::shape robot, SuperQuadrics::shape r_, CollisionObject<double> obj_ellip,
                                    SuperQuadrics::shape obs, CollisionObject<double> obj_sq) const{
     // Ellipsoid object
-    obj_ellip.setRotation(robot.q.toRotationMatrix());
-    obj_ellip.setTranslation(fcl::Vector3d(robot.pos[0],robot.pos[1],robot.pos[2]));
+    obj_ellip.setRotation(robot.q.toRotationMatrix() * r_.q.toRotationMatrix());
+    obj_ellip.setTranslation(fcl::Vector3d(robot.pos[0],robot.pos[1],robot.pos[2]) +
+            robot.q.toRotationMatrix() * fcl::Vector3d(r_.pos[0],r_.pos[1],r_.pos[2]));
 
     // Mesh object for SQ
     obj_sq.setRotation(obs.q.toRotationMatrix());

@@ -72,7 +72,7 @@ public:
 
     bool plan(vector<double> start_, vector<double> goal_);
     bool isStateValid(const ob::State *state) const;
-    bool checkSeparation(SuperQuadrics::shape robot, CollisionObject<double> obj_ellip,
+    bool checkSeparation(SuperQuadrics::shape robot, SuperQuadrics::shape r_, CollisionObject<double> obj_ellip,
                          SuperQuadrics::shape obs, CollisionObject<double> obj_sq) const;
     bool compareStates(vector<double> goal_config, vector<double> last_config);
     void setCollisionObj();

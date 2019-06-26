@@ -10,10 +10,10 @@ ob = load(['../../config/', 'obs_config_3d.csv']);
 ar = load(['../../config/', 'arena_config_3d.csv']);
 
 % Plot
-for i = 1:size(ar,1)
-    arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
-        ar(i,4:5), 20}, 'w', 0);
-end
+% for i = 1:size(ar,1)
+%     arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
+%         ar(i,4:5), 20}, 'w', 0);
+% end
 
 for i = 1:size(ob,1)
     obs(i) = SuperQuadrics({ob(i,1:3), ob(i,9:12), ob(i,6:8)',...
@@ -22,9 +22,9 @@ end
 
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal;
-for i = 1:size(ar,1)
-    arena(i).PlotShape;
-end
+% for i = 1:size(ar,1)
+%     arena(i).PlotShape;
+% end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:size(ob,1)

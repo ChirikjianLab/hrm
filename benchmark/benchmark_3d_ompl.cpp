@@ -61,12 +61,13 @@ int main(int argc, char ** argv){
     for(size_t i=0; i<obs.size(); i++) obs_mesh.push_back( getMesh(obs[i]) );
 
     // Boundary
-    vector<double> b1 = {-arena[0].Shape.a[0]+robot[0].Shape.a[0],
-                         -arena[0].Shape.a[1]+robot[0].Shape.a[0],
-                         -arena[0].Shape.a[2]+robot[0].Shape.a[0]},
-            b2 = {arena[0].Shape.a[0]-robot[0].Shape.a[0],
-                  arena[0].Shape.a[1]-robot[0].Shape.a[0],
-                  arena[0].Shape.a[2]-robot[0].Shape.a[0]};
+    double f = 1.5;
+    vector<double> b1 = {-arena[0].Shape.a[0] + f * robot[0].Shape.a[0],
+                         -arena[0].Shape.a[1] + f * robot[0].Shape.a[0],
+                         -arena[0].Shape.a[2] + f * robot[0].Shape.a[0]},
+            b2 = {arena[0].Shape.a[0] - f * robot[0].Shape.a[0],
+                  arena[0].Shape.a[1] - f * robot[0].Shape.a[0],
+                  arena[0].Shape.a[2] - f * robot[0].Shape.a[0]};
 
     // Start and goal setup
     inputFile file;
@@ -81,21 +82,22 @@ int main(int argc, char ** argv){
     // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
     // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
     int id_plan = atoi(argv[3]), id_sample = atoi(argv[4]);
-    for (int m=0; m<id_plan; m++) {
-        for (int n=0; n<id_sample; n++) {
+    int m = id_plan, nn = id_sample;
+//    for (int m=0; m<id_plan; m++) {
+//        for (int n=0; n<id_sample; n++) {
             for(int i=0; i<N; i++){
                 cout << "Planner: " << m << endl;
-                cout << "Sampler: " << n << endl;
+                cout << "Sampler: " << nn << endl;
                 cout << "Num of trials: " << i << endl;
 
-                ompl_planner tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
+                ompl_planner tester(b1, b2, robot, arena, obs, obs_mesh, m, nn);
                 tester.plan(endPts[0], endPts[1]);
 
                 outfile << tester.id_planner << ',' << tester.id_sampler << ',' << tester.flag << ',' << tester.total_time << ',' <<
                            tester.nodes_graph <<","<< tester.edges_graph <<","<< tester.nodes_path <<","<< tester.valid_space << endl;
             }
-        }
-    }
+//        }
+//    }
     outfile.close();
 
     return 0;
