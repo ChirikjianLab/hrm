@@ -44,7 +44,7 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-[robot, ~] = robotInit3D(vargin);
+robot = robotInit3D(vargin);
 
 %% Results from C++
 % for i = 1:size(ar,1)*(robot.numLink+1)

@@ -40,12 +40,12 @@ elseif opt == 12 % Superquadrics cluttered
     %     q_s = [0;0;0];
     
     tc_s = [0;0;0];
-    eps_s = [0.2;0.2];
+    eps_s = [0.1;0.1];
     
     % Obstacles
     ra_o = [20 25  5 20 20 18 15];
     rb_o = [10 15 15 12 15  8 10];
-    rc_o = [10  5 20  5 10 12  8];
+    rc_o = [10  5 20 10 10 12  8];
     
     %     q_o  = pi* [[0.2, 0.1, 0, -0.7];...
     %         [0.13, 0.5, 0.1, -1.5];...
@@ -59,9 +59,9 @@ elseif opt == 12 % Superquadrics cluttered
     
     %     q_o  = pi* rand(3,size(ra_o,2));
     
-    tx_o  = [-32 -35  10 -10 30  45 -45];
-    ty_o  = [-10  15 -25   0 20 -15  -5];
-    tz_o  = [-20  15 -10   0  5 -15   5];
+    tx_o  = [-32 -35  10  0 30  45 -45];
+    ty_o  = [-10  15 -25 10 20 -15 -10];
+    tz_o  = [-20  15 -10  0  5 -15   5];
     
     %     eps_o = [[1.1;0.5],...
     %         [.8;1.2],...
@@ -124,20 +124,20 @@ elseif opt == 14 % Superquadrics Corridor
     
     % Obstacles
     ra_o = [60 70 10 10];
-    rb_o = [20 20 30 30];
+    rb_o = [20 20 25 25];
     rc_o = [ 5  5 30 30];
     
     q_o = [zeros(size(ra_o,2),1), ...
         ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
     
     tx_o  = [-10   0 -24  24];
-    ty_o  = [ 20 -20 -10  10];
+    ty_o  = [ 20 -20 -15  15];
     tz_o  = [  0   0   0   0];
     
-    eps_o = [[.2;.2],...
-        [.2;.2],...
-        [.2;.2],...
-        [.2;.2]];
+    eps_o = [[.1;.1],...
+        [.1;.1],...
+        [.1;.1],...
+        [.1;.1]];
     
 elseif opt == 15
         % Arena
@@ -200,9 +200,9 @@ end
 %% == Plot obstacle(s), arena(s) =====
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal;
-% for i = 1:N_s
-%     arena(i).PlotShape;
-% end
+for i = 1:N_s
+    arena(i).PlotShape;
+end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:N_o

@@ -71,6 +71,8 @@ boundary3D hrm3d_multibody::boundaryGen(){
 
 // Connect layers
 void hrm3d_multibody::connectMultiLayer(){
+    if(N_layers == 1) return;
+
     size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
     size_t start = 0;
     int number = 0;
@@ -81,7 +83,7 @@ void hrm3d_multibody::connectMultiLayer(){
         n_1 = vtxId[i].layer;
 
         // Construct the middle layer
-        if(i == N_layers-1){
+        if(i == N_layers-1 && N_layers != 2){
             n_12 = 0;
             n_2 = vtxId[0].layer;
 
@@ -164,6 +166,7 @@ void hrm3d_multibody::connectMultiLayer(){
 
 
 bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2){
+    bool status = false;
     // Translation motion
     // Both V1 and V2 are within any CF-Cell of midLayer
     if(!isPtInCFLine(mid_cell[0], V1) || !isPtInCFLine(mid_cell[0], V2)) return false;
@@ -183,17 +186,17 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2){
             Vs = Vector3d({V1[0],V1[1],V1[2]}) +
                     R1*d_axang.toRotationMatrix()*RobotM.tf[i].block<3,1>(0,3);
 
-            if(!isPtInCFCell(mid_cell[i+1], {Vs[0],Vs[1],Vs[2]})) return false;
+            status = isPtInCFCell(mid_cell[i+1], {Vs[0],Vs[1],Vs[2]});
         }
     }
 
-    return true;
+    return status;
 }
 
 
 // Point in collision-free cell
 bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V){
-    bool flag1 = false, flag2 = false, flag3 = false, flag4 = false;
+    bool flag_cell = false;
     size_t i_x = 0, i_y = 0;
 
     // Search for x-coord
@@ -217,23 +220,29 @@ bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V){
 
     // Within the range of current sweep line
     for(size_t k=0; k<cellX1.zM[i_y].size(); k++)
-        if((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) flag1 = true;
+        if((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) flag_cell = true;
+    if(!flag_cell) return false;
+    flag_cell = false;
     // Within the range of previous sweep line
     for(size_t k=0; k<cellX1.zM[i_y-1].size(); k++)
-        if((V[2] >= cellX1.zL[i_y-1][k]) && (V[2] <= cellX1.zU[i_y-1][k])) flag2 = true;
+        if((V[2] >= cellX1.zL[i_y-1][k]) && (V[2] <= cellX1.zU[i_y-1][k])) flag_cell = true;
+    if(!flag_cell) return false;
+    flag_cell = false;
 
     // Search for the previou plane
     cf_cellYZ cellX2 = cell.cellYZ[i_x-1];
     // Within the range of current sweep line
     for(size_t k=0; k<cellX2.zM[i_y].size(); k++)
-        if((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) flag3 = true;
+        if((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) flag_cell = true;
+    if(!flag_cell) return false;
+    flag_cell = false;
     // Within the range of previous sweep line
     for(size_t k=0; k<cellX2.zM[i_y-1].size(); k++)
-        if((V[2] >= cellX2.zL[i_y-1][k]) && (V[2] <= cellX2.zU[i_y-1][k])) flag4 = true;
-
+        if((V[2] >= cellX2.zL[i_y-1][k]) && (V[2] <= cellX2.zU[i_y-1][k])) flag_cell = true;
+    if(!flag_cell) return false;
 
     // If within all the line segments
-    return (flag1 | flag2 | flag3 | flag4);
+    return true;
 }
 
 // Point in collision-free line segment

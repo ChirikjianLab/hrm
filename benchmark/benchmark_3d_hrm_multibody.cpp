@@ -1,3 +1,7 @@
+#include <cstdlib>
+#include <stdlib.h>
+#include <ctime>
+
 #include "benchmark/highway/highway_multibody.h"
 #include "src/planners/hrm3d_multibody.h"
 #include "include/parse2dcsvfile.h"
