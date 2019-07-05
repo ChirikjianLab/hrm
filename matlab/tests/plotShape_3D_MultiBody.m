@@ -22,9 +22,9 @@ end
 
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal;
-for i = 1:size(ar,1)
-    arena(i).PlotShape;
-end
+% for i = 1:size(ar,1)
+%     arena(i).PlotShape;
+% end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:size(ob,1)

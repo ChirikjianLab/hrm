@@ -11,6 +11,7 @@ hrm3d_multibody::hrm3d_multibody(multibodytree3D robot, vector< vector<double> >
 void hrm3d_multibody::plan(){
     buildRoadmap();
     search();
+    planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
 // Build the roadmap for multi-rigid-body planning

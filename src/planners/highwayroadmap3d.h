@@ -122,7 +122,7 @@ public:
 
     struct Time{
     public:
-        double buildTime, searchTime;
+        double buildTime, searchTime, totalTime;
     } planTime;
 
     bool flag = false;

@@ -188,7 +188,7 @@ int main(int argc, char ** argv){
 
         stat[i] = {high3D.planTime.buildTime,
                    high3D.planTime.searchTime,
-                   high3D.planTime.buildTime + high3D.planTime.searchTime,
+                   high3D.planTime.totalTime,
                    double(high3D.vtxEdge.vertex.size()),
                    double(high3D.vtxEdge.edge.size()),
                    double(high3D.Paths.size()),
@@ -197,7 +197,7 @@ int main(int argc, char ** argv){
         // Planning Time and Path Cost
         cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
         cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
-        cout << "Total Planning Time: " << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+        cout << "Total Planning Time: " << high3D.planTime.totalTime << 's' << endl;
 
         cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size() << endl;
         cout << "Number of configurations in Path: " << high3D.Paths.size() <<  endl;

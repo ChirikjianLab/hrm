@@ -30,6 +30,7 @@ highwayRoadmap3D::highwayRoadmap3D(SuperQuadrics robot, vector< vector<double> >
 void highwayRoadmap3D::plan(){
     buildRoadmap();
     search();
+    planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
 void highwayRoadmap3D::buildRoadmap(){

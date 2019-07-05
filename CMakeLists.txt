@@ -51,25 +51,6 @@ IF (GMP_FOUND)
     ADD_DEFINITIONS( "-DHAS_GMP" )
 ENDIF()
 
-# Headers
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superellipse.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/superquadrics.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap2d.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap3d.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multibody.h)
-
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/planners/interval.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/ptinpoly.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/src/geometry/intersectlinemesh3d.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/parse2dcsvfile.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/include/mesh_gen.h)
-
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.h)
-set(HEADER_FILE_ONLY ${PROJECT_SOURCE_DIR}/benchmark/highway/highway_multibody.h)
-
 # Sources
 set(SOURCE
     "${PROJECT_SOURCE_DIR}/src/planners/highwayroadmap.cpp"
@@ -84,13 +65,15 @@ set(SOURCE
 
 set(MULTIBODY_3D
     "${PROJECT_SOURCE_DIR}/src/geometry/multibodytree3d.cpp"
-    "${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multibody.cpp")
+    "${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multibody.cpp"
+    "${PROJECT_SOURCE_DIR}/src/planners/hrm3d_multi_adaptive.cpp")
 
 set(MESH "${PROJECT_SOURCE_DIR}/include/mesh_gen.cpp")
 
 set(OMPL_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/ompl/ompl_planner.cpp")
 set(HIGHWAY_PLANNER "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_planner.cpp")
-set(HIGHWAY_MULTIBODY "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_multibody.cpp")
+set(HIGHWAY_MULTIBODY "${PROJECT_SOURCE_DIR}/benchmark/highway/highway_multibody.cpp"
+                      "${PROJECT_SOURCE_DIR}/benchmark/highway/hrm_multi_adaptive_planner.cpp")
 
 # Executables
 add_executable(highwayRoadMap2D ${PROJECT_SOURCE_DIR}/test/test.cpp ${SOURCE})
@@ -129,4 +112,7 @@ target_link_libraries(benchmark3D_OMPL "${OMPL}" "${FCL_LIBRARIES}" "${CCD_LIBRA
 
 add_executable(benchmark3D_HIGHWAY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_highway.cpp ${SOURCE} ${HIGHWAY_PLANNER})
 
-add_executable(benchmark3D_HRM_MULTIBODY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_hrm_multibody.cpp ${SOURCE} ${MULTIBODY_3D} ${HIGHWAY_MULTIBODY})
+add_executable(benchmark3D_HRM_MULTIBODY ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_hrm_multibody.cpp
+    ${SOURCE} ${MULTIBODY_3D} ${HIGHWAY_MULTIBODY})
+add_executable(benchmark3D_HRM_MULTI_ADAPTIVE ${PROJECT_SOURCE_DIR}/benchmark/benchmark_3d_hrm_multi_adaptive.cpp
+    ${SOURCE} ${MULTIBODY_3D} ${HIGHWAY_MULTIBODY})
