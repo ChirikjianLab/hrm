@@ -3,6 +3,9 @@
 
 #include "src/planners/hrm3d_multibody.h"
 
+using namespace std;
+#define pi 3.1415926
+
 class hrm3d_multi_adaptive : public hrm3d_multibody
 {
 public:
@@ -10,6 +13,7 @@ public:
                          vector<SuperQuadrics>, vector<SuperQuadrics>, option3D);
 
     void planPath(double);
+    void connectMultiLayer();
     virtual ~hrm3d_multi_adaptive();
 };
 

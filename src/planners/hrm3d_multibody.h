@@ -9,14 +9,12 @@ using namespace std;
 
 class hrm3d_multibody : public highwayRoadmap3D
 {
-private:
+public:
+    multibodytree3D RobotM;
     vector<SuperQuadrics> mid;
     vector<cf_cell3D> mid_cell;
     vector<double> midVtx;
     double N_step = 2;
-
-public:
-    multibodytree3D RobotM;
 
 public:
     hrm3d_multibody(multibodytree3D, vector< vector<double> >,
@@ -24,16 +22,14 @@ public:
     void plan();
     void buildRoadmap();
     boundary3D boundaryGen();
-    void connectMultiLayer();
+    virtual void connectMultiLayer();
 
     vector<SuperQuadrics> tfe_multi(Quaterniond, Quaterniond);
-
-    virtual ~hrm3d_multibody();
-
-private:
     bool isCollisionFree(vector<double>, vector<double>);
     bool isPtInCFCell(cf_cell3D, vector<double>);
     bool isPtInCFLine(cf_cell3D, vector<double>);
+
+    virtual ~hrm3d_multibody();
 };
 
 #endif // HRM3D_MULTIBODY_H
