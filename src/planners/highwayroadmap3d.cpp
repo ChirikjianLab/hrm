@@ -357,7 +357,7 @@ void highwayRoadmap3D::search(){
     Paths.push_back(int(idx_g));
     while(Paths[num] != int(idx_s) && num <= num_vtx){
         Paths.push_back( int(p[ size_t(Paths[num]) ]) );
-        Cost += d[ size_t(Paths[num]) ];
+        Cost += vtxEdge.weight[ size_t(Paths[num]) ];
         num++;
     }
     if(num == num_vtx+1) Paths.clear();

@@ -58,7 +58,9 @@ void hrm3d_multi_adaptive::connectMultiLayer(){
             V2 = vtxEdge.vertex[m1];
 
             // Locate the nearest vertices
-            if( fabs(V1[0]-V2[0]) > 1e-8 || fabs(V1[1]-V2[1]) > 1e-8 ) continue;
+            if( fabs(V1[0]-V2[0]) > 1e-8 ||
+                fabs(V1[1]-V2[1]) > 1e-8 ||
+                fabs(V1[2]-V2[2]) > 1 ) continue;
 
             if( isCollisionFree(V1,V2) ){
                 // Middle vertex: trans = V1; rot = V2;
