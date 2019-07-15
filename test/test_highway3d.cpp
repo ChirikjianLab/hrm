@@ -7,9 +7,9 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-#include <src/geometry/superquadrics.h>
-#include <src/planners/highwayroadmap3d.h>
-#include <include/parse2dcsvfile.h>
+#include "geometry/superquadrics.h"
+#include "planners/highwayroadmap3d.h"
+#include "util/parse2dcsvfile.h"
 
 using namespace Eigen;
 using namespace std;

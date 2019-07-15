@@ -9,7 +9,7 @@
 #include <boost/graph/astar_search.hpp>
 #include <ompl/util/Time.h>
 
-#include <src/geometry/superellipse.h>
+#include "../geometry/superellipse.h"
 
 using namespace std;
 using namespace boost;

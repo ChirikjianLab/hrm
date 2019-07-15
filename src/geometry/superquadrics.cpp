@@ -39,8 +39,8 @@ MatrixXd SuperQuadrics::minkSum3D(shape shp_b, int K){
 //    eta = sampleSE(1.0, Shape.a[2], Shape.eps[0], cur);
 //    omega = sampleSE(Shape.a[0], Shape.a[1], Shape.eps[1], cur);
 
-    eta = RowVectorXd::LinSpaced(n,-pi - 1e-4, pi + 1e-4).replicate(n,1);
-    omega = VectorXd::LinSpaced(n,-pi/2 - 1e-4, pi/2 + 1e-4).replicate(1,n);
+    eta = RowVectorXd::LinSpaced(n,-pi - 1e-3, pi + 1e-3).replicate(n,1);
+    omega = VectorXd::LinSpaced(n,-pi/2 - 1e-3, pi/2 + 1e-3).replicate(1,n);
     num = n*n;
 
     MatrixXd gradPhi(3,num);

@@ -35,7 +35,7 @@ void hrm3d_multi_adaptive::planPath(double timeLim){
 void hrm3d_multi_adaptive::connectMultiLayer(){
     if(N_layers == 1) return;
 
-    size_t n = vtxEdge.vertex.size(), start, n_1, n_2;
+    size_t start, n_1, n_2;
     vector<double> V1, V2;
 
     // Find vertex only in adjecent layers
@@ -63,16 +63,9 @@ void hrm3d_multi_adaptive::connectMultiLayer(){
                 fabs(V1[2]-V2[2]) > 1 ) continue;
 
             if( isCollisionFree(V1,V2) ){
-                // Middle vertex: trans = V1; rot = V2;
-                midVtx = {V1[0],V1[1],V1[2],V2[3],V2[4],V2[5],V2[6]};
-                vtxEdge.vertex.push_back(midVtx);
-
                 // Add new connections
-                vtxEdge.edge.push_back(make_pair(m0, n));
-                vtxEdge.weight.push_back( vector_dist(V1,midVtx) );
-                vtxEdge.edge.push_back(make_pair(m1, n));
-                vtxEdge.weight.push_back( vector_dist(V2,midVtx) );
-                n++;
+                vtxEdge.edge.push_back(make_pair(m0, m1));
+                vtxEdge.weight.push_back( vector_dist(V1,V2) );
                 break;
             }
         }
@@ -80,7 +73,6 @@ void hrm3d_multi_adaptive::connectMultiLayer(){
 
     // Clear mid_cell and update the number of vertices
     mid_cell.clear();
-    vtxId[N_layers-1].layer = vtxEdge.vertex.size();
 }
 
 hrm3d_multi_adaptive::~hrm3d_multi_adaptive(){};

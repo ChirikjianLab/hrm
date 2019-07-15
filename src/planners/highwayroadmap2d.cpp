@@ -1,8 +1,8 @@
 #include <iostream>
 #include <list>
 #include <random>
-#include <src/planners/highwayroadmap2d.h>
-#include <src/planners/interval.h>
+#include "highwayroadmap2d.h"
+#include "interval.h"
 #include <fstream>
 
 #define pi 3.1415926

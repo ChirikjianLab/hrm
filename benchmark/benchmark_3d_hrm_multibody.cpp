@@ -4,7 +4,7 @@
 
 #include "benchmark/highway/highway_multibody.h"
 #include "src/planners/hrm3d_multibody.h"
-#include "include/parse2dcsvfile.h"
+#include "util/parse2dcsvfile.h"
 
 using namespace Eigen;
 using namespace std;

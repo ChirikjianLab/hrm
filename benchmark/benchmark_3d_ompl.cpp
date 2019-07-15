@@ -14,7 +14,7 @@ EMesh getMesh(SuperQuadrics sq){
 vector<SuperQuadrics> generateSQ(string file_name, double D){
     // Read config file
     inputFile file;
-    vector<vector<double>> config = file.parse2DCsvFile(file_name);
+    vector< vector<double> > config = file.parse2DCsvFile(file_name);
 
     // Generate SQ object
     vector<SuperQuadrics> obj(config.size());

@@ -26,9 +26,9 @@
 #include <fstream>
 #include <string>
 
-#include <src/geometry/superquadrics.h>
-#include <include/parse2dcsvfile.h>
-#include <include/mesh_gen.h>
+#include "geometry/superquadrics.h"
+#include "util/parse2dcsvfile.h"
+#include "util/mesh_gen.h"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;

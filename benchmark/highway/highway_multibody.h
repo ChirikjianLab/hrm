@@ -10,9 +10,9 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-#include <src/geometry/multibodytree3d.h>
-#include <src/planners/hrm3d_multibody.h>
-#include <include/parse2dcsvfile.h>
+#include "geometry/multibodytree3d.h"
+#include "planners/hrm3d_multibody.h"
+#include "util/parse2dcsvfile.h"
 
 class hrm_multibody_planner : public hrm3d_multibody
 {

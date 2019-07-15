@@ -12,7 +12,7 @@
 #include <sstream>
 #include <string>
 
-#include "src/geometry/superquadrics.h"
+#include "geometry/superquadrics.h"
 
 using namespace std;
 

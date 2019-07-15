@@ -7,9 +7,9 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-#include <src/geometry/superellipse.h>
-#include <src/planners/highwayroadmap.h>
-#include <include/parse2dcsvfile.h>
+#include "geometry/superellipse.h"
+#include "planners/highwayroadmap.h"
+#include "util/parse2dcsvfile.h"
 
 using namespace Eigen;
 using namespace std;

@@ -7,11 +7,11 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-#include <src/geometry/superquadrics.h>
-#include <src/planners/hrm3d_multibody.h>
-#include <include/parse2dcsvfile.h>
+#include "geometry/superquadrics.h"
+#include "planners/hrm3d_multibody.h"
+#include "util/parse2dcsvfile.h"
 
-#include <src/geometry/multibodytree3d.h>
+#include "geometry/multibodytree3d.h"
 
 using namespace Eigen;
 using namespace std;

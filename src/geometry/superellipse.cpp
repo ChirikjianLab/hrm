@@ -2,7 +2,7 @@
 #include <math.h>
 #include <vector>
 
-#include <src/geometry/superellipse.h>
+#include "superellipse.h"
 
 using namespace Eigen;
 using namespace std;

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <list>
 #include <random>
-#include <src/planners/highwayroadmap.h>
-#include <src/planners/interval.h>
-#include <src/geometry/ptinpoly.h>
+#include "highwayroadmap.h"
+#include "interval.h"
+#include "geometry/ptinpoly.h"
 
 #include <fstream>
 
