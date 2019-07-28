@@ -189,7 +189,7 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2) {
   bool status = false;
   // Translation motion
   // Both V1 and V2 are within any CF-Cell of midLayer
-  if (!isPtInCFLine(mid_cell[0], V1) || !isPtInCFLine(mid_cell[0], V2)) {
+  if (!isPtInCFLine(mid_cell.at(0), V1) || !isPtInCFLine(mid_cell.at(0), V2)) {
     return false;
   }
 
@@ -201,14 +201,14 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2) {
   double dt = 1.0 / N_step;
   Vector3d Vs;
 
-  for (size_t i = 0; i < RobotM.numLinks; i++) {
-    for (size_t j = 0; j <= N_step; j++) {
+  for (size_t i = 0; i < RobotM.numLinks; ++i) {
+    for (size_t j = 0; j <= N_step; ++j) {
       d_axang.angle() = j * dt * axang.angle();
 
       Vs = Vector3d({V1[0], V1[1], V1[2]}) +
-           R1 * d_axang.toRotationMatrix() * RobotM.tf[i].block<3, 1>(0, 3);
+           R1 * d_axang.toRotationMatrix() * RobotM.tf.at(i).block<3, 1>(0, 3);
 
-      status = isPtInCFCell(mid_cell[i + 1], {Vs[0], Vs[1], Vs[2]});
+      status = isPtInCFCell(mid_cell.at(i+1), {Vs[0], Vs[1], Vs[2]});
     }
   }
 
@@ -292,19 +292,19 @@ bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V) {
 
 // Point in collision-free line segment
 bool hrm3d_multibody::isPtInCFLine(cf_cell3D cell, vector<double> V) {
-  for (size_t i = 0; i < cell.tx.size(); i++) {
-    if (fabs(cell.tx[i] - V[0]) > 1e-5) {
+  for (size_t i = 0; i < cell.tx.size(); ++i) {
+    if (fabs(cell.tx.at(i) - V.at(0)) > 1e-8) {
       continue;
     }
 
-    for (size_t j = 0; j < cell.cellYZ[i].ty.size(); j++) {
-      if (fabs(cell.cellYZ[i].ty[j] - V[1]) > 1e-5) {
+    for (size_t j = 0; j < cell.cellYZ.at(i).ty.size(); ++j) {
+      if (fabs(cell.cellYZ.at(i).ty.at(j) - V.at(1)) > 1e-8) {
         continue;
       }
 
-      for (size_t k = 0; k < cell.cellYZ[i].zM[j].size(); k++) {
-        if ((V[2] >= cell.cellYZ[i].zL[j][k]) &&
-            (V[2] <= cell.cellYZ[i].zU[j][k])) {
+      for (size_t k = 0; k < cell.cellYZ.at(i).zM.at(j).size(); ++k) {
+        if (!(V.at(2) < cell.cellYZ.at(i).zL.at(j)[k]) ||
+            (V.at(2) > cell.cellYZ.at(i).zU.at(j)[k])) {
           return true;
         }
       }

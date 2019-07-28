@@ -30,8 +30,14 @@ highwayRoadmap3D::highwayRoadmap3D(SuperQuadrics robot,
 }
 
 void highwayRoadmap3D::plan() {
+  time::point start = time::now();
   buildRoadmap();
+  planTime.buildTime = time::seconds(time::now() - start);
+
+  start = time::now();
   search();
+  planTime.searchTime = time::seconds(time::now() - start);
+
   planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
@@ -46,8 +52,6 @@ void highwayRoadmap3D::buildRoadmap() {
       mid.push_back(tfe(Robot.Shape.a, Robot.Shape.a, q_r[i], q_r[i + 1]));
     }
   }
-
-  time::point start = time::now();
 
   for (size_t i = 0; i < N_layers; i++) {
     Robot.Shape.q = q_r[i];
@@ -77,8 +81,6 @@ void highwayRoadmap3D::buildRoadmap() {
   connectMultiLayer();
   //    cout << "Connect btw different layers: " << time::seconds(time::now() -
   //    start) << 's' << endl;
-
-  planTime.buildTime = time::seconds(time::now() - start);
 }
 
 // ******************************************************************** //
@@ -359,8 +361,6 @@ void highwayRoadmap3D::connectMultiLayer() {
 // ******************************************************************** //
 
 void highwayRoadmap3D::search() {
-  time::point start = time::now();
-
   Vertex idx_s, idx_g, num;
 
   // Construct the roadmap
@@ -390,18 +390,19 @@ void highwayRoadmap3D::search() {
 
   // Record path and cost
   num = 0;
+  Cost = 0.0;
   Paths.push_back(int(idx_g));
   while (Paths[num] != int(idx_s) && num <= num_vtx) {
     Paths.push_back(int(p[size_t(Paths[num])]));
     Cost += vtxEdge.weight[size_t(Paths[num])];
     num++;
   }
-  if (num == num_vtx + 1)
+  if (num == num_vtx + 1) {
     Paths.clear();
-  if (Paths.size() > 0)
+  }
+  if (Paths.size() > 0) {
     flag = true;
-
-  planTime.searchTime = time::seconds(time::now() - start);
+  }
 }
 
 /************************************************************************************************/
@@ -493,12 +494,6 @@ bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2) {
 
 // Sampled rotations on SO(3), return a list of Quaternions
 void highwayRoadmap3D::sampleSO3() {
-  // Always generate C-layers with the orientation of the start and goal poses
-  q_r.push_back(
-      Quaterniond(Endpt[0][0], Endpt[0][1], Endpt[0][2], Endpt[0][3]));
-  q_r.push_back(
-      Quaterniond(Endpt[1][0], Endpt[1][1], Endpt[1][2], Endpt[1][3]));
-
   srand(unsigned(std::time(nullptr)));
   if (Robot.q_sample.empty()) {
     // Uniform random samples for Quaternions
@@ -519,13 +514,9 @@ unsigned int highwayRoadmap3D::find_cell(vector<double> v) {
   double d_min, d;
   unsigned int idx = 0;
 
-  d_min = vector_dist(
-      {v[0], v[1], v[2]},
-      {vtxEdge.vertex[0][0], vtxEdge.vertex[0][1], vtxEdge.vertex[0][2]});
+  d_min = numeric_limits<double>::infinity();
   for (unsigned int i = 0; i < vtxEdge.vertex.size(); i++) {
-    d = vector_dist(
-        {v[0], v[1], v[2]},
-        {vtxEdge.vertex[i][0], vtxEdge.vertex[i][1], vtxEdge.vertex[i][2]});
+    d = vector_dist(v, vtxEdge.vertex.at(i));
     if (d < d_min) {
       d_min = d;
       idx = i;
