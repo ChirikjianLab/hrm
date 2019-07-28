@@ -1,26 +1,22 @@
 #ifndef INTERVAL
 #define INTERVAL
 
-#include<vector>
-#include<bits/stdc++.h>
-#include<limits>
+#include <bits/stdc++.h>
+#include <limits>
+#include <vector>
 
 using namespace std;
 
-struct Interval{
-    double s;
-    double e;
+struct Interval {
+  double s;
+  double e;
 };
 
-class interval
-{
+class interval {
 public:
-    vector<Interval> Union(vector<Interval>& ins);
-    vector<Interval> Intersect(vector<Interval>& ins);
-    vector<Interval> Complement(vector<Interval>& outer, vector<Interval>& inner);
+  vector<Interval> Union(vector<Interval> &ins);
+  vector<Interval> Intersect(vector<Interval> &ins);
+  vector<Interval> Complement(vector<Interval> &outer, vector<Interval> &inner);
 };
-
-
 
 #endif // INTERVAL
-
