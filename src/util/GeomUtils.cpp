@@ -1,10 +1,13 @@
+#include "include/GeomUtils.h"
+
 // For almost uniform sampling //
 // Sampe angles
-std::vector<double> SuperQuadrics::sampleSE(double a, double b, double ep,
-                                            double D) {
-  std::vector<double> theta, ang;
+std::vector<double> sampleSE(double a, double b, double ep, double D) {
+  std::vector<double> theta;
+  std::vector<double> ang;
   theta.push_back(0.0);
-  size_t n = 0, max_iter = 1e5;
+  size_t n = 0;
+  size_t max_iter = 1e5;
 
   for (size_t i = 0; i < max_iter; i++) {
     if (theta[n] >= pi / 2) {
@@ -28,11 +31,10 @@ std::vector<double> SuperQuadrics::sampleSE(double a, double b, double ep,
   return ang;
 }
 
-double SuperQuadrics::updateTheta(double th, double a, double b, double ep,
-                                  double D) {
+double updateTheta(double th, double a, double b, double ep, double D) {
   double th_ep = 0.01, dth;
   if (th <= th_ep) {
-    dth = pow(D / b + pow(th, ep), 1 / ep) - th;
+    dth = pow(D / b + std::pow(th, ep), 1 / ep) - th;
   } else {
     if (pi / 2 - th <= th_ep) {
       dth = pow(D / a + pow(pi / 2 - th, ep), 1 / ep) - (pi / 2 - th);

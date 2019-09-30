@@ -1,47 +1,42 @@
-#include <chrono>
-#include <fstream>
-#include <iostream>
+#include "geometry/include/SuperEllipse.h"
+#include "planners/include/HighwayRoadMap.h"
+#include "util/include/Parse2dCsvFile.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+
+#include <chrono>
+#include <fstream>
+#include <iostream>
 #include <math.h>
 #include <vector>
-
-#include "geometry/superellipse.h"
-#include "planners/highwayroadmap.h"
-#include "util/parse2dcsvfile.h"
 
 using namespace Eigen;
 using namespace std;
 
 #define pi 3.1415926
 
-highwayRoadmap plan(unsigned int N_l, unsigned int N_y) {
+HighwayRoadMap plan(unsigned int N_l, unsigned int N_y) {
   // Number of points on the boundary
   int num = 50;
-  inputFile file;
 
   // Robot
   // Read robot config file
   string file_robConfig = "../config/robotConfig.csv";
-  vector<vector<double>> rob_config = file.parse2DCsvFile(file_robConfig);
+  vector<vector<double>> rob_config = parse2DCsvFile(file_robConfig);
 
   string file_robVtx = "../config/robotVtx.csv";
-  vector<vector<double>> rob_vtx = file.parse2DCsvFile(file_robVtx);
+  vector<vector<double>> rob_vtx = parse2DCsvFile(file_robVtx);
 
   string file_robInvMat = "../config/robotInvMat.csv";
-  vector<vector<double>> rob_InvMat = file.parse2DCsvFile(file_robInvMat);
+  vector<vector<double>> rob_InvMat = parse2DCsvFile(file_robInvMat);
 
   // Robot as a class of SuperEllipse
   vector<SuperEllipse> robot(rob_config.size());
   for (size_t j = 0; j < rob_config.size(); j++) {
-    robot[j].Shape.a[0] = rob_config[0][0];
-    robot[j].Shape.a[1] = rob_config[0][1];
-    robot[j].Shape.ang = rob_config[0][2];
-    robot[j].Shape.eps = rob_config[0][3];
-    robot[j].Shape.pos[0] = rob_config[0][4];
-    robot[j].Shape.pos[1] = rob_config[0][5];
-    robot[j].num = num;
+    robot.at(j) = SuperEllipse(
+        {rob_config[0][0], rob_config[0][1]}, rob_config[0][3],
+        {rob_config[0][4], rob_config[0][5]}, rob_config[0][2], num);
   }
 
   polyCSpace polyVtx;
@@ -51,13 +46,13 @@ highwayRoadmap plan(unsigned int N_l, unsigned int N_y) {
   // Environment
   // Read environment config file
   string file_arenaConfig = "../config/arenaConfig.csv";
-  vector<vector<double>> arena_config = file.parse2DCsvFile(file_arenaConfig);
+  vector<vector<double>> arena_config = parse2DCsvFile(file_arenaConfig);
 
   string file_obsConfig = "../config/obsConfig.csv";
-  vector<vector<double>> obs_config = file.parse2DCsvFile(file_obsConfig);
+  vector<vector<double>> obs_config = parse2DCsvFile(file_obsConfig);
 
   string file_endpt = "../config/endPts.csv";
-  vector<vector<double>> endPts = file.parse2DCsvFile(file_endpt);
+  vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
   vector<vector<double>> EndPts;
 
   EndPts.push_back(endPts[1]);
@@ -66,22 +61,14 @@ highwayRoadmap plan(unsigned int N_l, unsigned int N_y) {
   // Arena and Obstacles as class of SuperEllipse
   vector<SuperEllipse> arena(arena_config.size()), obs(obs_config.size());
   for (size_t j = 0; j < arena_config.size(); j++) {
-    arena[j].Shape.a[0] = arena_config[j][0];
-    arena[j].Shape.a[1] = arena_config[j][1];
-    arena[j].Shape.ang = arena_config[j][2];
-    arena[j].Shape.eps = arena_config[j][3];
-    arena[j].Shape.pos[0] = arena_config[j][4];
-    arena[j].Shape.pos[1] = arena_config[j][5];
-    arena[j].num = num;
+    arena.at(j) = SuperEllipse(
+        {arena_config[j][0], arena_config[j][1]}, arena_config[j][3],
+        {arena_config[j][4], arena_config[j][5]}, arena_config[j][2], num);
   }
   for (size_t j = 0; j < obs_config.size(); j++) {
-    obs[j].Shape.a[0] = obs_config[j][0];
-    obs[j].Shape.a[1] = obs_config[j][1];
-    obs[j].Shape.ang = obs_config[j][2];
-    obs[j].Shape.eps = obs_config[j][3];
-    obs[j].Shape.pos[0] = obs_config[j][4];
-    obs[j].Shape.pos[1] = obs_config[j][5];
-    obs[j].num = num;
+    obs.at(j) = SuperEllipse(
+        {obs_config[j][0], obs_config[j][1]}, obs_config[j][3],
+        {obs_config[j][4], obs_config[j][5]}, obs_config[j][2], num);
   }
 
   // Options
@@ -97,16 +84,16 @@ highwayRoadmap plan(unsigned int N_l, unsigned int N_y) {
   //****************//
   // Main Algorithm //
   //****************//
-  highwayRoadmap high(robot, polyVtx, EndPts, arena, obs, opt);
+  HighwayRoadMap high(robot, polyVtx, EndPts, arena, obs, opt);
   high.plan();
 
   // calculate original boundary points
   boundary bd_ori;
   for (size_t i = 0; i < opt.N_s; i++) {
-    bd_ori.bd_s.push_back(high.Arena[i].originShape());
+    bd_ori.bd_s.push_back(high.Arena.at(i).getOriginShape());
   }
   for (size_t i = 0; i < opt.N_o; i++) {
-    bd_ori.bd_o.push_back(high.Obs[i].originShape());
+    bd_ori.bd_o.push_back(high.Obs.at(i).getOriginShape());
   }
 
   // Output boundary and cell info
@@ -159,7 +146,7 @@ int main(int argc, char **argv) {
   // Record planning time for N trials
   int N = atoi(argv[1]), N_l = atoi(argv[2]), N_y = atoi(argv[3]);
   vector<double> time_stat[N];
-  highwayRoadmap high = plan(N_l, N_y);
+  HighwayRoadMap high = plan(N_l, N_y);
 
   for (int i = 0; i < N; i++) {
     high = plan(N_l, N_y);

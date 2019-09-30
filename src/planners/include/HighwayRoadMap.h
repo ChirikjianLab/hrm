@@ -1,6 +1,8 @@
 #ifndef HIGHWAYROADMAP_H
 #define HIGHWAYROADMAP_H
 
+#include "src/geometry/include/SuperEllipse.h"
+
 #include <algorithm>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
@@ -9,38 +11,35 @@
 #include <ompl/util/Time.h>
 #include <vector>
 
-#include "../geometry/superellipse.h"
-
-using namespace std;
-using namespace boost;
-using namespace ompl;
-
-typedef property<edge_weight_t, double> Weight;
-typedef adjacency_list<vecS, vecS, undirectedS, no_property, Weight> AdjGraph;
-typedef AdjGraph::vertex_descriptor Vertex;
-typedef AdjGraph::edge_descriptor edge_descriptor;
-typedef AdjGraph::vertex_iterator vertex_iterator;
-typedef vector<pair<int, int>> Edge;
-typedef property_map<AdjGraph, edge_weight_t>::type WeightMap;
+using Weight = boost::property<boost::edge_weight_t, double>;
+using AdjGraph =
+    boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+                          boost::no_property, Weight>;
+using Vertex = AdjGraph::vertex_descriptor;
+using edge_descriptor = AdjGraph::edge_descriptor;
+using vertex_iterator = AdjGraph::vertex_iterator;
+using Edge = std::vector<std::pair<int, int>>;
+using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 // cf_cell: collision-free points
 struct cf_cell {
 public:
-  vector<double> ty;
-  vector<vector<double>> xL;
-  vector<vector<double>> xU;
-  vector<vector<double>> xM;
+  std::vector<double> ty;
+  std::vector<std::vector<double>> xL;
+  std::vector<std::vector<double>> xU;
+  std::vector<std::vector<double>> xM;
 };
 
 // boundary: Minkowski boundary points for obstacles and arenas
 struct boundary {
 public:
-  vector<MatrixXd> bd_s, bd_o;
+  std::vector<Eigen::MatrixXd> bd_s;
+  std::vector<Eigen::MatrixXd> bd_o;
 
   // Seperated boundary points
   struct sepBd {
   public:
-    MatrixXd P_bd_L, P_bd_R;
+    Eigen::MatrixXd P_bd_L, P_bd_R;
     double max_y, min_y;
     double x_L, x_R;
   } P_bd;
@@ -49,8 +48,8 @@ public:
 // Parameters for the polyhedron local c-space
 struct polyCSpace {
 public:
-  vector<vector<double>> vertex;
-  vector<vector<double>> invMat;
+  std::vector<std::vector<double>> vertex;
+  std::vector<std::vector<double>> invMat;
 };
 
 struct option {
@@ -58,7 +57,7 @@ struct option {
   size_t N_layers, N_dy, sampleNum, N_o, N_s;
 };
 
-class highwayRoadmap {
+class HighwayRoadMap {
   // variables
   /*
   N_o       : number of obstacles;
@@ -82,22 +81,22 @@ private:
   double infla;
   size_t N_KCsample;
   double ang_r;
-  vector<size_t> N_v_layer;
+  std::vector<size_t> N_v_layer;
 
 public:
   // graph: vector of vertices, vector of connectable edges
   struct graph {
   public:
-    vector<vector<double>> vertex;
+    std::vector<std::vector<double>> vertex;
     Edge edge;
-    vector<double> weight;
+    std::vector<double> weight;
   } vtxEdge;
 
   AdjGraph Graph;
-  vector<SuperEllipse> Robot, Arena, Obs;
+  std::vector<SuperEllipse> Robot, Arena, Obs;
   double Cost = 0.0;
-  vector<vector<double>> Endpt;
-  vector<int> Paths;
+  std::vector<std::vector<double>> Endpt;
+  std::vector<int> Paths;
   polyCSpace polyVtx;
 
   struct Time {
@@ -107,22 +106,26 @@ public:
 
   // functions
 private:
-  boundary::sepBd separateBoundary(MatrixXd bd);
+  boundary::sepBd separateBoundary(Eigen::MatrixXd bd);
   boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
-  MatrixXd boundaryEnlarge(MatrixXd bd_o[], MatrixXd x_o, double ty[], int K);
+  Eigen::MatrixXd boundaryEnlarge(Eigen::MatrixXd bd_o[], Eigen::MatrixXd x_o,
+                                  double ty[], int K);
   cf_cell enhanceDecomp(cf_cell cell);
-  vector<double> addMidVtx(vector<double> vtx1, vector<double> vtx2);
-  double vector_dist(vector<double> v1, vector<double> v2);
-  unsigned int find_cell(vector<double> v);
+  std::vector<double> addMidVtx(std::vector<double> vtx1,
+                                std::vector<double> vtx2);
+  double vector_dist(std::vector<double> v1, std::vector<double> v2);
+  unsigned int find_cell(std::vector<double> v);
 
 public:
-  highwayRoadmap(vector<SuperEllipse> robot, polyCSpace polyVtx,
-                 vector<vector<double>> endpt, vector<SuperEllipse> arena,
-                 vector<SuperEllipse> obs, option opt);
+  HighwayRoadMap(std::vector<SuperEllipse> robot, polyCSpace polyVtx,
+                 std::vector<std::vector<double>> endpt,
+                 std::vector<SuperEllipse> arena, std::vector<SuperEllipse> obs,
+                 option opt);
   void plan();
   void buildRoadmap();
   boundary boundaryGen();
-  cf_cell rasterScan(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
+  cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
+                     std::vector<Eigen::MatrixXd> bd_o);
   void connectOneLayer(cf_cell cell);
   void connectMultiLayer();
   void search();

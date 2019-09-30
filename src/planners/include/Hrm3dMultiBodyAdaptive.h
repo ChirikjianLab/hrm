@@ -1,19 +1,19 @@
-#ifndef HRM3D_MULTI_ADAPTIVE_H
-#define HRM3D_MULTI_ADAPTIVE_H
+#ifndef HRM3DMULTIADAPTIVE_H
+#define HRM3DMULTIADAPTIVE_H
 
-#include "src/planners/hrm3d_multibody.h"
+#include "Hrm3dMultiBody.h"
 
-using namespace std;
 #define pi 3.1415926
 
-class hrm3d_multi_adaptive : public hrm3d_multibody {
+class Hrm3DMultiBodyAdaptive : public Hrm3DMultiBody {
 public:
-  hrm3d_multi_adaptive(multibodytree3D, vector<vector<double>>,
-                       vector<SuperQuadrics>, vector<SuperQuadrics>, option3D);
+  Hrm3DMultiBodyAdaptive(MultiBodyTree3D, std::vector<std::vector<double>>,
+                         std::vector<SuperQuadrics>, std::vector<SuperQuadrics>,
+                         option3D);
 
   void planPath(double);
   void connectMultiLayer();
-  virtual ~hrm3d_multi_adaptive();
+  virtual ~Hrm3DMultiBodyAdaptive();
 };
 
-#endif // HRM3D_MULTI_ADAPTIVE_H
+#endif // HRM3DMULTIADAPTIVE_H

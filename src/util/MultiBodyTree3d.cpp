@@ -1,56 +1,62 @@
-#include "multibodytree3d.h"
+#include "include/MultiBodyTree3d.h"
 
-void multibodytree3D::addBase(SuperQuadrics base) { Base = base; }
+MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(base) {}
 
-void multibodytree3D::addBody(SuperQuadrics link) {
+void MultiBodyTree3D::addBody(SuperQuadrics link) {
   // Add link
-  Link.push_back(link);
-  numLinks++;
+  link_.push_back(link);
+  numLinks_++;
 
   // Add tranformation related to Base
-  Matrix4d g;
+  Eigen::Matrix4d g;
   g.setIdentity();
-  g.block<3, 3>(0, 0) = link.Shape.q.toRotationMatrix();
-  g.block<3, 1>(0, 3) = Vector3d(link.Shape.pos);
-  tf.push_back(g);
+  g.block<3, 3>(0, 0) = link.getQuaternion().toRotationMatrix();
+  g.block<3, 1>(0, 3) = Eigen::Vector3d(link.getPosition());
+  tf_.push_back(g);
 }
 
-void multibodytree3D::robotTF(Matrix4d g) {
-  for (int i = 0; i < 3; i++) {
-    Base.Shape.pos[i] = g.row(3)[i];
-  }
-  Matrix3d mat = g.block<3, 3>(0, 0);
-  Quaterniond quat(mat);
-  Base.Shape.q = quat;
+void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
+  // Set transform of base
+  std::vector<double> pos(g.row(3).data(), g.row(3).data() + 3);
+  base_.setPosition(pos);
 
-  Matrix4d g_Link;
-  for (size_t i = 0; i < numLinks; i++) {
-    g_Link = g * tf[i];
-    for (int j = 0; j < 3; j++)
-      Link[i].Shape.pos[j] = g.row(3)[j];
-    mat = g_Link.block<3, 3>(0, 0);
-    Quaterniond quat(mat);
-    Link[i].Shape.q = quat;
+  Eigen::Matrix3d mat = g.block<3, 3>(0, 0);
+  Eigen::Quaterniond quat(mat);
+  base_.setQuaternion(quat);
+
+  // Set transform for each link
+  Eigen::Matrix4d gLink;
+  for (size_t i = 0; i < numLinks_; i++) {
+    gLink = g * tf_.at(i);
+
+    std::vector<double> posLink(gLink.row(3).data(), gLink.row(3).data() + 3);
+    link_.at(i).setPosition(posLink);
+
+    mat = gLink.block<3, 3>(0, 0);
+    Eigen::Quaterniond quat(mat);
+    link_.at(i).setQuaternion(quat);
   }
 }
 
-vector<MatrixXd> multibodytree3D::minkSumSQ(SuperQuadrics S1, int k) {
-  vector<MatrixXd> Mink;
+std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSumSQ(SuperQuadrics S1,
+                                                        int K) {
+  std::vector<Eigen::MatrixXd> mink;
 
   // Minkowski sums for Base
-  Mink.push_back(S1.minkSum3D(Base.Shape, k));
-  Matrix3d R_base = Base.Shape.q.toRotationMatrix(), R_Link;
+  mink.push_back(S1.getMinkSum3D(base_, K));
+  Eigen::Matrix3d RotBase = base_.getQuaternion().toRotationMatrix();
+  Eigen::Matrix3d RotLink;
 
   // Minkowski sums for Links
-  Vector3d link_tc;
-  for (size_t i = 0; i < numLinks; i++) {
-    R_Link = R_base * tf[i].block<3, 3>(0, 0);
-    Quaterniond quat(R_Link);
-    Link[i].Shape.q = quat;
-    link_tc = R_base * tf[i].block<3, 1>(0, 3);
+  Eigen::Vector3d linkTc;
+  for (size_t i = 0; i < numLinks_; i++) {
+    RotLink = RotBase * tf_.at(i).block<3, 3>(0, 0);
+    Eigen::Quaterniond quat(RotLink);
+    link_.at(i).setQuaternion(quat);
+    linkTc = RotBase * tf_.at(i).block<3, 1>(0, 3);
 
-    Mink.push_back(S1.minkSum3D(Link[i].Shape, k).colwise() - link_tc);
+    mink.emplace_back(S1.getMinkSum3D(link_.at(i), K).colwise() - linkTc);
   }
 
-  return Mink;
+  return mink;
 }

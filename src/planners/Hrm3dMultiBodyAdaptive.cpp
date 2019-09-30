@@ -1,23 +1,26 @@
-#include "hrm3d_multi_adaptive.h"
+#include "include/Hrm3dMultiBodyAdaptive.h"
 #include <iostream>
 
-hrm3d_multi_adaptive::hrm3d_multi_adaptive(multibodytree3D robot,
-                                           vector<vector<double>> endPts,
-                                           vector<SuperQuadrics> arena,
-                                           vector<SuperQuadrics> obs,
-                                           option3D opt)
-    : hrm3d_multibody::hrm3d_multibody(robot, endPts, arena, obs, opt) {}
+Hrm3DMultiBodyAdaptive::Hrm3DMultiBodyAdaptive(
+    MultiBodyTree3D robot, std::vector<std::vector<double>> endPts,
+    std::vector<SuperQuadrics> arena, std::vector<SuperQuadrics> obs,
+    option3D opt)
+    : Hrm3DMultiBody::Hrm3DMultiBody(robot, endPts, arena, obs, opt) {}
 
-void hrm3d_multi_adaptive::planPath(double timeLim) {
-  time::point start = time::now();
+void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
+  ompl::time::point start = ompl::time::now();
   // Iteratively add layers with random orientations
   srand(unsigned(std::time(nullptr)));
   do {
     // Update C-layers
     N_layers++;
-    q_r.push_back(Quaterniond::UnitRandom());
-    RobotM.Base.Shape.q = q_r[N_layers - 1];
-    Robot.Shape.q = RobotM.Base.Shape.q;
+    q_r.push_back(Eigen::Quaterniond::UnitRandom());
+
+    SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
+                          Robot.getPosition(), q_r.at(N_layers - 1), 20);
+    RobotM = MultiBodyTree3D(newBase);
+    Robot.setQuaternion(RobotM.getBase().getQuaternion());
+
     // boundary for obstacles and arenas
     boundary3D bd = boundaryGen();
     // collision-free cells, stored by tx, ty, zL, zU, zM
@@ -33,17 +36,17 @@ void hrm3d_multi_adaptive::planPath(double timeLim) {
     // Search for a path
     search();
 
-    planTime.totalTime = time::seconds(time::now() - start);
+    planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
   } while (!flag && planTime.totalTime < timeLim);
 }
 
-void hrm3d_multi_adaptive::connectMultiLayer() {
+void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
   if (N_layers == 1) {
     return;
   }
 
   size_t start, n_1, n_2;
-  vector<double> V1, V2;
+  std::vector<double> V1, V2;
 
   // Find vertex only in adjecent layers
   if (N_layers == 2) {
@@ -59,7 +62,7 @@ void hrm3d_multi_adaptive::connectMultiLayer() {
   // Middle layer TFE and cell
   mid = tfe_multi(q_r.at(N_layers - 2), q_r.at(N_layers - 1));
   for (size_t j = 0; j < mid.size(); ++j) {
-    mid_cell.push_back(midLayer(mid.at(j).Shape));
+    mid_cell.push_back(midLayer(mid.at(j)));
   }
 
   int nConnect = 0;
@@ -78,16 +81,16 @@ void hrm3d_multi_adaptive::connectMultiLayer() {
       if (isCollisionFree(V1, V2)) {
         nConnect++;
         // Add new connections
-        vtxEdge.edge.push_back(make_pair(m0, m1));
+        vtxEdge.edge.push_back(std::make_pair(m0, m1));
         vtxEdge.weight.push_back(vector_dist(V1, V2));
         break;
       }
     }
   }
 
-  cout << nConnect << endl;
+  std::cout << nConnect << std::endl;
   // Clear mid_cell and update the number of vertices
   mid_cell.clear();
 }
 
-hrm3d_multi_adaptive::~hrm3d_multi_adaptive(){};
+Hrm3DMultiBodyAdaptive::~Hrm3DMultiBodyAdaptive(){};

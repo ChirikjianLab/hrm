@@ -6,11 +6,6 @@
 #include <ompl/util/Time.h>
 #include <vector>
 
-using namespace std;
-
-class inputFile {
-public:
-  vector<vector<double>> parse2DCsvFile(string inputFileName);
-};
+std::vector<std::vector<double>> parse2DCsvFile(std::string inputFileName);
 
 #endif // PARSE2DCSVFILE_H

@@ -1,31 +1,32 @@
-#include "hrm3d_multibody.h"
+#include "include/Hrm3dMultiBody.h"
+
 #include <fstream>
 #include <iostream>
 
-hrm3d_multibody::hrm3d_multibody(multibodytree3D robot,
-                                 vector<vector<double>> endpt,
-                                 vector<SuperQuadrics> arena,
-                                 vector<SuperQuadrics> obs, option3D opt)
-    : highwayRoadmap3D::highwayRoadmap3D(robot.Base, endpt, arena, obs, opt) {
-  RobotM = robot;
-}
+Hrm3DMultiBody::Hrm3DMultiBody(MultiBodyTree3D robot,
+                               std::vector<std::vector<double>> endpt,
+                               std::vector<SuperQuadrics> arena,
+                               std::vector<SuperQuadrics> obs, option3D opt)
+    : HighwayRoadMap3D::HighwayRoadMap3D(robot.getBase(), endpt, arena, obs,
+                                         opt),
+      RobotM(robot.getBase()) {}
 
-void hrm3d_multibody::plan() {
+void Hrm3DMultiBody::plan() {
   buildRoadmap();
   search();
   planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
 // Build the roadmap for multi-rigid-body planning
-void hrm3d_multibody::buildRoadmap() {
-  time::point start = time::now();
+void Hrm3DMultiBody::buildRoadmap() {
+  ompl::time::point start = ompl::time::now();
 
   // Samples from SO(3)
   sampleSO3();
 
   for (size_t i = 0; i < N_layers; i++) {
-    RobotM.Base.Shape.q = q_r[i];
-    Robot.Shape.q = q_r[i];
+    RobotM.getBase().setQuaternion(q_r.at(i));
+    Robot.setQuaternion(q_r.at(i));
 
     // boundary for obstacles and arenas
     //        time::point start = time::now();
@@ -53,25 +54,25 @@ void hrm3d_multibody::buildRoadmap() {
   //    cout << "Connect btw different layers: " << time::seconds(time::now() -
   //    start) << 's' << endl;
 
-  planTime.buildTime = time::seconds(time::now() - start);
+  planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
 };
 
 // Minkowski Boundary
-boundary3D hrm3d_multibody::boundaryGen() {
+boundary3D Hrm3DMultiBody::boundaryGen() {
   boundary3D bd;
 
   // Minkowski boundary points
-  vector<MatrixXd> bd_aux;
+  std::vector<Eigen::MatrixXd> bd_aux;
   for (size_t i = 0; i < N_s; i++) {
-    bd_aux = RobotM.minkSumSQ(Arena[i], -1);
+    bd_aux = RobotM.minkSumSQ(Arena.at(i), -1);
     for (size_t j = 0; j < bd_aux.size(); j++)
-      bd.bd_s.push_back(bd_aux[j]);
+      bd.bd_s.push_back(bd_aux.at(j));
     bd_aux.clear();
   }
   for (size_t i = 0; i < N_o; i++) {
-    bd_aux = RobotM.minkSumSQ(Obs[i], 1);
+    bd_aux = RobotM.minkSumSQ(Obs.at(i), 1);
     for (size_t j = 0; j < bd_aux.size(); j++)
-      bd.bd_o.push_back(bd_aux[j]);
+      bd.bd_o.push_back(bd_aux.at(j));
     bd_aux.clear();
   }
 
@@ -79,7 +80,7 @@ boundary3D hrm3d_multibody::boundaryGen() {
 }
 
 // Connect layers
-void hrm3d_multibody::connectMultiLayer() {
+void Hrm3DMultiBody::connectMultiLayer() {
   if (N_layers == 1) {
     return;
   }
@@ -87,7 +88,7 @@ void hrm3d_multibody::connectMultiLayer() {
   size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
   size_t start = 0;
   int number = 0;
-  vector<double> V1, V2;
+  std::vector<double> V1, V2;
 
   for (size_t i = 0; i < N_layers; i++) {
     // Find vertex only in adjecent layers
@@ -142,7 +143,7 @@ void hrm3d_multibody::connectMultiLayer() {
     //        //
 
     for (size_t j = 0; j < mid.size(); j++) {
-      mid_cell.push_back(midLayer(mid[j].Shape));
+      mid_cell.emplace_back(midLayer(mid.at(j)));
     }
 
     // Nearest vertex btw layers
@@ -164,9 +165,9 @@ void hrm3d_multibody::connectMultiLayer() {
           vtxEdge.vertex.push_back(midVtx);
 
           // Add new connections
-          vtxEdge.edge.push_back(make_pair(m0, n));
+          vtxEdge.edge.push_back(std::make_pair(m0, n));
           vtxEdge.weight.push_back(vector_dist(V1, midVtx));
-          vtxEdge.edge.push_back(make_pair(m1, n));
+          vtxEdge.edge.push_back(std::make_pair(m1, n));
           vtxEdge.weight.push_back(vector_dist(V2, midVtx));
           n++;
 
@@ -182,10 +183,11 @@ void hrm3d_multibody::connectMultiLayer() {
     mid_cell.clear();
   }
 
-  cout << number << endl;
+  std::cout << number << std::endl;
 }
 
-bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2) {
+bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
+                                     std::vector<double> V2) {
   bool status = false;
   // Translation motion
   // Both V1 and V2 are within any CF-Cell of midLayer
@@ -195,20 +197,22 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2) {
 
   // Rotation motion
   // Link i: determine Vi=V+RobotM.tf{1:3,4} within CF-cell of midLayer
-  Matrix3d R1 = Quaterniond(V1[3], V1[4], V1[5], V1[6]).toRotationMatrix(),
-           R2 = Quaterniond(V2[3], V2[4], V2[5], V2[6]).toRotationMatrix();
-  AngleAxisd axang(R1.transpose() * R2), d_axang = axang;
+  Eigen::Matrix3d
+      R1 = Eigen::Quaterniond(V1[3], V1[4], V1[5], V1[6]).toRotationMatrix(),
+      R2 = Eigen::Quaterniond(V2[3], V2[4], V2[5], V2[6]).toRotationMatrix();
+  Eigen::AngleAxisd axang(R1.transpose() * R2), d_axang = axang;
   double dt = 1.0 / N_step;
-  Vector3d Vs;
+  Eigen::Vector3d Vs;
 
-  for (size_t i = 0; i < RobotM.numLinks; ++i) {
+  for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
     for (size_t j = 0; j <= N_step; ++j) {
       d_axang.angle() = j * dt * axang.angle();
 
-      Vs = Vector3d({V1[0], V1[1], V1[2]}) +
-           R1 * d_axang.toRotationMatrix() * RobotM.tf.at(i).block<3, 1>(0, 3);
+      Vs = Eigen::Vector3d({V1[0], V1[1], V1[2]}) +
+           R1 * d_axang.toRotationMatrix() *
+               RobotM.getTF().at(i).block<3, 1>(0, 3);
 
-      status = isPtInCFCell(mid_cell.at(i+1), {Vs[0], Vs[1], Vs[2]});
+      status = isPtInCFCell(mid_cell.at(i + 1), {Vs[0], Vs[1], Vs[2]});
     }
   }
 
@@ -216,7 +220,7 @@ bool hrm3d_multibody::isCollisionFree(vector<double> V1, vector<double> V2) {
 }
 
 // Point in collision-free cell
-bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V) {
+bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
   bool flag_cell = false;
   size_t i_x = 0, i_y = 0;
 
@@ -291,7 +295,7 @@ bool hrm3d_multibody::isPtInCFCell(cf_cell3D cell, vector<double> V) {
 }
 
 // Point in collision-free line segment
-bool hrm3d_multibody::isPtInCFLine(cf_cell3D cell, vector<double> V) {
+bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
   for (size_t i = 0; i < cell.tx.size(); ++i) {
     if (fabs(cell.tx.at(i) - V.at(0)) > 1e-8) {
       continue;
@@ -317,44 +321,48 @@ bool hrm3d_multibody::isPtInCFLine(cf_cell3D cell, vector<double> V) {
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
-vector<SuperQuadrics> hrm3d_multibody::tfe_multi(Quaterniond q1,
-                                                 Quaterniond q2) {
-  multibodytree3D robot = RobotM;
-  vector<SuperQuadrics> tfe_obj;
+std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
+                                                     Eigen::Quaterniond q2) {
+  MultiBodyTree3D robot = RobotM;
+  std::vector<SuperQuadrics> tfe_obj;
 
   // Two configurations
-  Matrix3d R1 = q1.toRotationMatrix(), R2 = q2.toRotationMatrix();
+  Eigen::Matrix3d R1 = q1.toRotationMatrix(), R2 = q2.toRotationMatrix();
 
   // Rotation axis and angle from R1 to R2
-  AngleAxisd axang(R1.transpose() * R2);
-  SuperQuadrics e_fitted;
-  Matrix3d R_link;
+  Eigen::AngleAxisd axang(R1.transpose() * R2);
+  Eigen::Matrix3d R_link;
 
   // Rotation angle > pi/2, fit a sphere
   if (fabs(axang.angle()) > pi / 2) {
-    double ra = max(robot.Base.Shape.a[0],
-                    max(robot.Base.Shape.a[1], robot.Base.Shape.a[2]));
-    e_fitted.Shape = {
-        {ra, ra, ra}, {1, 1}, {0, 0, 0}, Quaterniond::Identity(), 0};
+    double ra = std::fmax(robot.getBase().getSemiAxis().at(0),
+                          std::fmax(robot.getBase().getSemiAxis().at(1),
+                                    robot.getBase().getSemiAxis().at(2)));
+    SuperQuadrics e_fitted({ra, ra, ra}, {1, 1}, {0, 0, 0},
+                           Eigen::Quaterniond::Identity(), 20);
     tfe_obj.push_back(e_fitted);
 
-    for (size_t i = 0; i < robot.numLinks; i++) {
-      double rb = max(robot.Link[i].Shape.a[0],
-                      max(robot.Link[i].Shape.a[1], robot.Link[i].Shape.a[2]));
-      e_fitted.Shape = {
-          {rb, rb, rb}, {1, 1}, {0, 0, 0}, Quaterniond::Identity(), 0};
+    for (size_t i = 0; i < robot.getNumLinks(); i++) {
+      double rb =
+          std::fmax(robot.getLinks().at(i).getSemiAxis().at(0),
+                    std::fmax(robot.getLinks().at(i).getSemiAxis().at(1),
+                              robot.getLinks().at(i).getSemiAxis().at(2)));
+      e_fitted.setSemiAxis({rb, rb, rb});
       tfe_obj.push_back(e_fitted);
     }
   }
   // else fit a TFE
   else {
-    e_fitted.Shape = tfe(robot.Base.Shape.a, robot.Base.Shape.a, q1, q2);
+    SuperQuadrics e_fitted = tfe(robot.getBase().getSemiAxis(),
+                                 robot.getBase().getSemiAxis(), q1, q2);
     tfe_obj.push_back(e_fitted);
 
-    for (size_t i = 0; i < robot.numLinks; i++) {
-      R_link = robot.tf[i].block<3, 3>(0, 0);
-      e_fitted.Shape = tfe(robot.Link[i].Shape.a, robot.Link[i].Shape.a,
-                           Quaterniond(R1 * R_link), Quaterniond(R2 * R_link));
+    for (size_t i = 0; i < robot.getNumLinks(); i++) {
+      R_link = robot.getTF().at(i).block<3, 3>(0, 0);
+      e_fitted =
+          tfe(robot.getLinks().at(i).getSemiAxis(),
+              robot.getLinks().at(i).getSemiAxis(),
+              Eigen::Quaterniond(R1 * R_link), Eigen::Quaterniond(R2 * R_link));
       tfe_obj.push_back(e_fitted);
     }
   }
@@ -362,4 +370,4 @@ vector<SuperQuadrics> hrm3d_multibody::tfe_multi(Quaterniond q1,
   return tfe_obj;
 }
 
-hrm3d_multibody::~hrm3d_multibody(){};
+Hrm3DMultiBody::~Hrm3DMultiBody(){};

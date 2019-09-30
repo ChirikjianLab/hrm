@@ -1,21 +1,17 @@
+#include "include/HighwayRoadMap3d.h"
+
+#include <fstream>
 #include <iostream>
 #include <list>
 #include <random>
-#include <src/planners/highwayroadmap3d.h>
-#include <src/planners/interval.h>
-
-#include <fstream>
 
 #define pi 3.1415926
 
-highwayRoadmap3D::highwayRoadmap3D(SuperQuadrics robot,
-                                   vector<vector<double>> endpt,
-                                   vector<SuperQuadrics> arena,
-                                   vector<SuperQuadrics> obs, option3D opt) {
-  Robot = robot;
-  Endpt = endpt;
-  Arena = arena;
-  Obs = obs;
+HighwayRoadMap3D::HighwayRoadMap3D(SuperQuadrics robot,
+                                   std::vector<std::vector<double>> endpt,
+                                   std::vector<SuperQuadrics> arena,
+                                   std::vector<SuperQuadrics> obs, option3D opt)
+    : Robot(robot), Arena(arena), Obs(obs), Endpt(endpt) {
   N_o = opt.N_o;
   N_s = opt.N_s;
 
@@ -26,35 +22,37 @@ highwayRoadmap3D::highwayRoadmap3D(SuperQuadrics robot,
 
   Cost = 0;
 
-  cout << "Planning ..." << endl;
+  std::cout << "Planning ..." << std::endl;
 }
 
-void highwayRoadmap3D::plan() {
-  time::point start = time::now();
+void HighwayRoadMap3D::plan() {
+  ompl::time::point start = ompl::time::now();
   buildRoadmap();
-  planTime.buildTime = time::seconds(time::now() - start);
+  planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
 
-  start = time::now();
+  start = ompl::time::now();
   search();
-  planTime.searchTime = time::seconds(time::now() - start);
+  planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
 
   planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
-void highwayRoadmap3D::buildRoadmap() {
+void HighwayRoadMap3D::buildRoadmap() {
   // Samples from SO(3)
   sampleSO3();
   // Compute mid-layer TFE
   for (size_t i = 0; i < q_r.size(); i++) {
     if (i == N_layers - 1) {
-      mid.push_back(tfe(Robot.Shape.a, Robot.Shape.a, q_r[i], q_r[0]));
+      mid.push_back(
+          tfe(Robot.getSemiAxis(), Robot.getSemiAxis(), q_r.at(i), q_r.at(0)));
     } else {
-      mid.push_back(tfe(Robot.Shape.a, Robot.Shape.a, q_r[i], q_r[i + 1]));
+      mid.push_back(tfe(Robot.getSemiAxis(), Robot.getSemiAxis(), q_r.at(i),
+                        q_r.at(i + 1)));
     }
   }
 
   for (size_t i = 0; i < N_layers; i++) {
-    Robot.Shape.q = q_r[i];
+    Robot.setQuaternion(q_r.at(i));
 
     // boundary for obstacles and arenas
     //        time::point start = time::now();
@@ -85,15 +83,15 @@ void highwayRoadmap3D::buildRoadmap() {
 
 // ******************************************************************** //
 // Generate Minkowski boundary
-boundary3D highwayRoadmap3D::boundaryGen() {
+boundary3D HighwayRoadMap3D::boundaryGen() {
   boundary3D bd;
 
   // calculate Minkowski boundary points
   for (size_t i = 0; i < N_s; i++) {
-    bd.bd_s.push_back(Arena[i].minkSum3D(Robot.Shape, -1));
+    bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Robot, -1));
   }
   for (size_t i = 0; i < N_o; i++) {
-    bd.bd_o.push_back(Obs[i].minkSum3D(Robot.Shape, +1));
+    bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Robot, +1));
   }
 
   return bd;
@@ -103,22 +101,22 @@ boundary3D highwayRoadmap3D::boundaryGen() {
 // ******************************************************************** //
 // Generate collision-free vertices by Sweep Plane + Sweep Line process //
 
-cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s,
-                                       vector<MatrixXd> bd_o) {
+cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
+                                       std::vector<Eigen::MatrixXd> bd_o) {
   cf_cell3D CF_cell;
-  intersectLineMesh3d lineMesh;
-  vector<Vector3d> pts_s, pts_o;
+  IntersectLineMesh3d lineMesh;
+  std::vector<Eigen::Vector3d> pts_s, pts_o;
   size_t N_cs = bd_s.size(), N_co = bd_o.size();
 
-  MatrixXd z_s_L = MatrixXd::Constant(N_dy, N_cs, -Lim[2]),
-           z_s_R = MatrixXd::Constant(N_dy, N_cs, Lim[2]),
-           z_o_L = MatrixXd::Constant(N_dy, N_co,
-                                      std::numeric_limits<double>::quiet_NaN()),
-           z_o_R = MatrixXd::Constant(N_dy, N_co,
-                                      std::numeric_limits<double>::quiet_NaN());
+  Eigen::MatrixXd z_s_L = Eigen::MatrixXd::Constant(N_dy, N_cs, -Lim[2]),
+                  z_s_R = Eigen::MatrixXd::Constant(N_dy, N_cs, Lim[2]),
+                  z_o_L = Eigen::MatrixXd::Constant(
+                      N_dy, N_co, std::numeric_limits<double>::quiet_NaN()),
+                  z_o_R = Eigen::MatrixXd::Constant(
+                      N_dy, N_co, std::numeric_limits<double>::quiet_NaN());
 
   // Find intersection points for each sweep line
-  vector<double> tx(N_dx), ty(N_dy);
+  std::vector<double> tx(N_dx), ty(N_dy);
   double dx = 2 * Lim[0] / (N_dx - 1), dy = 2 * Lim[1] / (N_dy - 1);
   for (size_t i = 0; i < N_dx; i++) {
     tx[i] = -Lim[0] + i * dx;
@@ -128,12 +126,12 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s,
   }
 
   // Generate mesh for the boundaries
-  vector<Mesh> P_s(N_cs), P_o(N_co);
+  std::vector<Mesh> P_s(N_cs), P_o(N_co);
   for (size_t i = 0; i < N_cs; i++) {
-    P_s[i] = getMesh(bd_s[i], int(Arena[0].n));
+    P_s.at(i) = getMesh(bd_s[i], int(Arena.at(0).getNum()));
   }
   for (size_t i = 0; i < N_co; i++) {
-    P_o[i] = getMesh(bd_o[i], int(Obs[0].n));
+    P_o.at(i) = getMesh(bd_o[i], int(Obs.at(0).getNum()));
   }
 
   // Find intersections along each sweep line
@@ -141,22 +139,22 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s,
     //        time::point tstart = time::now();
 
     for (size_t j = 0; j < N_dy; j++) {
-      VectorXd lineZ(6);
+      Eigen::VectorXd lineZ(6);
       lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
       for (size_t m = 0; m < N_cs; m++) {
         pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
         if (pts_s.empty())
           continue;
-        z_s_L(j, m) = min(-Lim[2], min(pts_s[0](2), pts_s[1](2)));
-        z_s_R(j, m) = max(Lim[2], max(pts_s[0](2), pts_s[1](2)));
+        z_s_L(j, m) = std::fmin(-Lim[2], std::fmin(pts_s[0](2), pts_s[1](2)));
+        z_s_R(j, m) = std::fmax(Lim[2], std::fmax(pts_s[0](2), pts_s[1](2)));
       }
       for (size_t n = 0; n < N_co; n++) {
         pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
         if (pts_o.empty())
           continue;
-        z_o_L(j, n) = min(pts_o[0](2), pts_o[1](2));
-        z_o_R(j, n) = max(pts_o[0](2), pts_o[1](2));
+        z_o_L(j, n) = std::fmin(pts_o[0](2), pts_o[1](2));
+        z_o_R(j, n) = std::fmax(pts_o[0](2), pts_o[1](2));
       }
     }
     //        cout << "Intersect: " << time::seconds(time::now() - tstart) <<
@@ -166,36 +164,38 @@ cf_cell3D highwayRoadmap3D::sweepLineZ(vector<MatrixXd> bd_s,
     CF_cell.tx.push_back(tx[i]);
     CF_cell.cellYZ.push_back(cfLine(ty, z_s_L, z_s_R, z_o_L, z_o_R));
 
-    z_s_L = MatrixXd::Constant(N_dy, N_cs, -Lim[2]);
-    z_s_R = MatrixXd::Constant(N_dy, N_cs, Lim[2]);
-    z_o_L = MatrixXd::Constant(N_dy, N_co,
-                               std::numeric_limits<double>::quiet_NaN());
-    z_o_R = MatrixXd::Constant(N_dy, N_co,
-                               std::numeric_limits<double>::quiet_NaN());
+    z_s_L = Eigen::MatrixXd::Constant(N_dy, N_cs, -Lim[2]);
+    z_s_R = Eigen::MatrixXd::Constant(N_dy, N_cs, Lim[2]);
+    z_o_L = Eigen::MatrixXd::Constant(N_dy, N_co,
+                                      std::numeric_limits<double>::quiet_NaN());
+    z_o_R = Eigen::MatrixXd::Constant(N_dy, N_co,
+                                      std::numeric_limits<double>::quiet_NaN());
   }
   return CF_cell;
 }
 
 // Sweep Line process at each sweep plane
-cf_cellYZ highwayRoadmap3D::cfLine(vector<double> ty, MatrixXd x_s_L,
-                                   MatrixXd x_s_R, MatrixXd x_o_L,
-                                   MatrixXd x_o_R) {
+cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
+                                   Eigen::MatrixXd x_s_L, Eigen::MatrixXd x_s_R,
+                                   Eigen::MatrixXd x_o_L,
+                                   Eigen::MatrixXd x_o_R) {
   cf_cellYZ cellYZ;
 
-  interval op;
-  vector<Interval> cf_seg[N_dy], obs_seg, arena_seg, obs_merge, arena_inter;
-  vector<double> zL, zU, zM;
+  Interval op;
+  std::vector<Interval> cf_seg[N_dy], obs_seg, arena_seg, obs_merge,
+      arena_inter;
+  std::vector<double> zL, zU, zM;
   long N_cs = x_s_L.cols(), N_co = x_o_L.cols();
 
   // CF line segment for each ty
   for (size_t i = 0; i < N_dy; i++) {
     // Construct intervals at each sweep line
     for (size_t j = 0; j < N_cs; j++)
-      if (!isnan(x_s_L(i, j)) && !isnan(x_s_R(i, j))) {
+      if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_R(i, j))) {
         arena_seg.push_back({x_s_L(i, j), x_s_R(i, j)});
       }
     for (size_t j = 0; j < N_co; j++)
-      if (!isnan(x_o_L(i, j)) && !isnan(x_o_R(i, j))) {
+      if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_R(i, j))) {
         obs_seg.push_back({x_o_L(i, j), x_o_R(i, j)});
       }
 
@@ -203,9 +203,9 @@ cf_cellYZ highwayRoadmap3D::cfLine(vector<double> ty, MatrixXd x_s_L,
     cellYZ.ty.push_back(ty[i]);
 
     // cf-intervals at each line
-    obs_merge = op.Union(obs_seg);
-    arena_inter = op.Intersect(arena_seg);
-    cf_seg[i] = op.Complement(arena_inter, obs_merge);
+    obs_merge = op.unions(obs_seg);
+    arena_inter = op.intersects(arena_seg);
+    cf_seg[i] = op.complements(arena_inter, obs_merge);
 
     // x-coords
     for (size_t j = 0; j < cf_seg[i].size(); j++) {
@@ -232,7 +232,7 @@ cf_cellYZ highwayRoadmap3D::cfLine(vector<double> ty, MatrixXd x_s_L,
 
 // ******************************************************************** //
 // Connect vertices within one C-layer //
-void highwayRoadmap3D::connectOneLayer(cf_cell3D cell) {
+void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
   size_t I0 = 0, I1 = 0;
 
   N_v.line.clear();
@@ -251,7 +251,7 @@ void highwayRoadmap3D::connectOneLayer(cf_cell3D cell) {
               cell.cellYZ[i].zM[j][k0] < cell.cellYZ[i + 1].zU[j][k1] &&
               cell.cellYZ[i + 1].zM[j][k1] > cell.cellYZ[i].zL[j][k0] &&
               cell.cellYZ[i + 1].zM[j][k1] < cell.cellYZ[i].zU[j][k0]) {
-            vtxEdge.edge.push_back(make_pair(I0 + k0, I1 + k1));
+            vtxEdge.edge.push_back(std::make_pair(I0 + k0, I1 + k1));
             vtxEdge.weight.push_back(
                 vector_dist(vtxEdge.vertex[I0 + k0], vtxEdge.vertex[I1 + k1]));
           }
@@ -261,17 +261,18 @@ void highwayRoadmap3D::connectOneLayer(cf_cell3D cell) {
   }
 }
 
-void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
+void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
   size_t N_0 = 0, N_1 = 0;
 
   N_v.plane.clear();
   for (size_t i = 0; i < CFcell.ty.size(); i++) {
     N_v.plane.push_back(vtxEdge.vertex.size());
     for (size_t j = 0; j < CFcell.zM[i].size(); j++) {
-      // Construct a vector of vertex
-      vtxEdge.vertex.push_back({tx, CFcell.ty[i], CFcell.zM[i][j],
-                                Robot.Shape.q.w(), Robot.Shape.q.x(),
-                                Robot.Shape.q.y(), Robot.Shape.q.z()});
+      // Construct a std::vector of vertex
+      vtxEdge.vertex.push_back(
+          {tx, CFcell.ty[i], CFcell.zM[i][j], Robot.getQuaternion().w(),
+           Robot.getQuaternion().x(), Robot.getQuaternion().y(),
+           Robot.getQuaternion().z()});
     }
   }
 
@@ -285,8 +286,8 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
     for (size_t j1 = 0; j1 < CFcell.zM[i].size(); j1++) {
       // Connect vertex within one sweep line
       if (j1 != CFcell.zM[i].size() - 1) {
-        if (abs(CFcell.zU[i][j1] - CFcell.zL[i][j1 + 1]) < 1e-5) {
-          vtxEdge.edge.push_back(make_pair(N_0 + j1, N_0 + j1 + 1));
+        if (std::fabs(CFcell.zU[i][j1] - CFcell.zL[i][j1 + 1]) < 1e-5) {
+          vtxEdge.edge.push_back(std::make_pair(N_0 + j1, N_0 + j1 + 1));
           vtxEdge.weight.push_back(vector_dist(vtxEdge.vertex[N_0 + j1],
                                                vtxEdge.vertex[N_0 + j1 + 1]));
         }
@@ -298,7 +299,7 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
               CFcell.zM[i][j1] <= CFcell.zU[i + 1][j2] &&
               CFcell.zM[i + 1][j2] >= CFcell.zL[i][j1] &&
               CFcell.zM[i + 1][j2] <= CFcell.zU[i][j1]) {
-            vtxEdge.edge.push_back(make_pair(N_0 + j1, N_1 + j2));
+            vtxEdge.edge.push_back(std::make_pair(N_0 + j1, N_1 + j2));
             vtxEdge.weight.push_back(vector_dist(vtxEdge.vertex[N_0 + j1],
                                                  vtxEdge.vertex[N_1 + j2]));
           }
@@ -311,7 +312,7 @@ void highwayRoadmap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
 
 // ******************************************************************** //
 // Connect vertices within adjacent C-layers //
-void highwayRoadmap3D::connectMultiLayer() {
+void HighwayRoadMap3D::connectMultiLayer() {
   size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
   size_t start = 0;
 
@@ -343,9 +344,9 @@ void highwayRoadmap3D::connectMultiLayer() {
           vtxEdge.vertex.push_back(midVtx);
 
           // Add new connections
-          vtxEdge.edge.push_back(make_pair(m0, n));
+          vtxEdge.edge.push_back(std::make_pair(m0, n));
           vtxEdge.weight.push_back(vector_dist(vtxEdge.vertex[m0], midVtx));
-          vtxEdge.edge.push_back(make_pair(m1, n));
+          vtxEdge.edge.push_back(std::make_pair(m1, n));
           vtxEdge.weight.push_back(vector_dist(vtxEdge.vertex[m1], midVtx));
           n++;
 
@@ -360,7 +361,7 @@ void highwayRoadmap3D::connectMultiLayer() {
 }
 // ******************************************************************** //
 
-void highwayRoadmap3D::search() {
+void HighwayRoadMap3D::search() {
   Vertex idx_s, idx_g, num;
 
   // Construct the roadmap
@@ -383,10 +384,10 @@ void highwayRoadmap3D::search() {
                [this, idx_g](Vertex v) {
                  return vector_dist(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
                },
-               predecessor_map(
-                   make_iterator_property_map(p.begin(), get(vertex_index, g)))
+               predecessor_map(make_iterator_property_map(
+                                   p.begin(), get(boost::vertex_index, g)))
                    .distance_map(make_iterator_property_map(
-                       d.begin(), get(vertex_index, g))));
+                       d.begin(), get(boost::vertex_index, g))));
 
   // Record path and cost
   num = 0;
@@ -411,7 +412,7 @@ void highwayRoadmap3D::search() {
 /************************************************************************************************/
 
 // Make sure all connections between vertexes are within one convex cell
-cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell) {
+cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
   cf_cellYZ cell_new = cell;
 
   for (size_t i = 0; i < cell.ty.size() - 1; i++) {
@@ -455,20 +456,21 @@ cf_cellYZ highwayRoadmap3D::enhanceDecomp(cf_cellYZ cell) {
 }
 
 // Connect vertexes among different layers
-cf_cell3D highwayRoadmap3D::midLayer(SuperQuadrics::shape Ec) {
+cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
   boundary3D bd;
   // calculate Minkowski boundary points
   for (size_t i = 0; i < N_s; i++) {
-    bd.bd_s.push_back(Arena[i].minkSum3D(Ec, -1));
+    bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Ec, -1));
   }
   for (size_t i = 0; i < N_o; i++) {
-    bd.bd_o.push_back(Obs[i].minkSum3D(Ec, +1));
+    bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
   }
 
   return sweepLineZ(bd.bd_s, bd.bd_o);
 }
 
-bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2) {
+bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
+                                    std::vector<double> V2) {
   for (size_t i = 0; i < mid_cell.tx.size(); i++) {
     if (fabs(mid_cell.tx[i] - V1[0]) > 1e-8) {
       continue;
@@ -493,28 +495,28 @@ bool highwayRoadmap3D::isPtinCFLine(vector<double> V1, vector<double> V2) {
 }
 
 // Sampled rotations on SO(3), return a list of Quaternions
-void highwayRoadmap3D::sampleSO3() {
+void HighwayRoadMap3D::sampleSO3() {
   srand(unsigned(std::time(nullptr)));
-  if (Robot.q_sample.empty()) {
+  if (Robot.getQuatSamples().empty()) {
     // Uniform random samples for Quaternions
     for (size_t i = 0; i < N_layers; i++) {
-      q_r.push_back(Quaterniond::UnitRandom());
+      q_r.push_back(Eigen::Quaterniond::UnitRandom());
     }
   } else {
     // Pre-defined samples of Quaternions
-    N_layers = Robot.q_sample.size();
-    q_r = Robot.q_sample;
+    N_layers = Robot.getQuatSamples().size();
+    q_r = Robot.getQuatSamples();
   }
   N_layers += 2;
 }
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap
 // vertex
-unsigned int highwayRoadmap3D::find_cell(vector<double> v) {
+unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
   double d_min, d;
   unsigned int idx = 0;
 
-  d_min = numeric_limits<double>::infinity();
+  d_min = std::numeric_limits<double>::infinity();
   for (unsigned int i = 0; i < vtxEdge.vertex.size(); i++) {
     d = vector_dist(v, vtxEdge.vertex.at(i));
     if (d < d_min) {
@@ -525,9 +527,10 @@ unsigned int highwayRoadmap3D::find_cell(vector<double> v) {
   return idx;
 }
 
-// Compute Euclidean distance between two vectors
-double highwayRoadmap3D::vector_dist(vector<double> v1, vector<double> v2) {
-  vector<double> diff;
+// Compute Euclidean distance between two std::vectors
+double HighwayRoadMap3D::vector_dist(std::vector<double> v1,
+                                     std::vector<double> v2) {
+  std::vector<double> diff;
   for (size_t i = 0; i < v1.size(); i++) {
     diff.push_back(v1[i] - v2[i]);
   }
@@ -535,18 +538,18 @@ double highwayRoadmap3D::vector_dist(vector<double> v1, vector<double> v2) {
 }
 
 // Generate mesh info from a ordered vertex list, i.e. "surf"
-Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n) {
+Mesh HighwayRoadMap3D::getMesh(Eigen::MatrixXd bd, int n) {
   Mesh M;
   int Num = (n - 1) * (n - 1);
-  ArrayXd q((n - 1) * (n - 1));
+  Eigen::ArrayXd q((n - 1) * (n - 1));
   for (int i = 0; i < n - 1; i++) {
     q.segment(i * (n - 1), (n - 1)) =
-        ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
+        Eigen::ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
   }
 
   M.vertices = bd;
 
-  M.faces = MatrixXd::Zero(2 * Num, 3);
+  M.faces = Eigen::MatrixXd::Zero(2 * Num, 3);
   M.faces.block(0, 0, Num, 1) = q;
   M.faces.block(0, 1, Num, 1) = q + n;
   M.faces.block(0, 2, Num, 1) = q + n + 1;
@@ -559,36 +562,40 @@ Mesh highwayRoadmap3D::getMesh(MatrixXd bd, int n) {
 
 // Compute the Tightly-Fitted Ellipsoid enclosing two ellipsoids with the same
 // center
-SuperQuadrics::shape highwayRoadmap3D::tfe(double *a, double *b,
-                                           Quaterniond q_a, Quaterniond q_b) {
-  Matrix3d Ra = q_a.toRotationMatrix(), Rb = q_b.toRotationMatrix();
+SuperQuadrics HighwayRoadMap3D::tfe(std::vector<double> a,
+                                    std::vector<double> b,
+                                    Eigen::Quaterniond q_a,
+                                    Eigen::Quaterniond q_b) {
+  Eigen::Matrix3d Ra = q_a.toRotationMatrix(), Rb = q_b.toRotationMatrix();
 
   double r = fmin(b[0], fmin(b[1], b[2]));
-  DiagonalMatrix<double, 3> diag, diag_a, diag_c;
-  diag.diagonal() = Array3d(r / b[0], r / b[1], r / b[2]);
-  diag_a.diagonal() = Array3d(pow(a[0], -2), pow(a[1], -2), pow(a[2], -2));
+  Eigen::DiagonalMatrix<double, 3> diag, diag_a, diag_c;
+  diag.diagonal() = Eigen::Array3d(r / b[0], r / b[1], r / b[2]);
+  diag_a.diagonal() =
+      Eigen::Array3d(pow(a[0], -2), pow(a[1], -2), pow(a[2], -2));
 
   // Shrinking affine transformation
-  Matrix3d T = Rb * diag * Rb.transpose();
+  Eigen::Matrix3d T = Rb * diag * Rb.transpose();
 
   // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
-  Matrix3d Ap = T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
-  JacobiSVD<Matrix3d> svd(Ap, ComputeFullU | ComputeFullV);
-  Array3d a_p = svd.singularValues().array().pow(-0.5);
-  Array3d c_p = {max(a_p(0), r), max(a_p(1), r), max(a_p(2), r)};
+  Eigen::Matrix3d Ap =
+      T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
+  Eigen::JacobiSVD<Eigen::Matrix3d> svd(Ap, Eigen::ComputeFullU |
+                                                Eigen::ComputeFullV);
+  Eigen::Array3d a_p = svd.singularValues().array().pow(-0.5);
+  Eigen::Array3d c_p = {std::fmax(a_p(0), r), std::fmax(a_p(1), r),
+                        std::fmax(a_p(2), r)};
 
   // Stretch back
   diag_c.diagonal() = c_p.pow(-2);
-  Matrix3d C = T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
+  Eigen::Matrix3d C =
+      T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
   svd.compute(C);
-  Quaterniond q_c(svd.matrixU());
-  Array3d c = svd.singularValues().array().pow(-0.5);
+  Eigen::Quaterniond q_c(svd.matrixU());
+  Eigen::Array3d c = svd.singularValues().array().pow(-0.5);
 
-  return SuperQuadrics::shape({{c(0), c(1), c(2)},
-                               {1, 1},
-                               {0, 0, 0},
-                               {q_c.w(), q_c.x(), q_c.y(), q_c.z()},
-                               0});
+  return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0},
+                       {q_c.w(), q_c.x(), q_c.y(), q_c.z()}, 20);
 }
 
-highwayRoadmap3D::~highwayRoadmap3D(){};
+HighwayRoadMap3D::~HighwayRoadMap3D(){};

@@ -1,71 +1,71 @@
 #ifndef HIGHWAYROADMAP3D_H
 #define HIGHWAYROADMAP3D_H
 
-#include <algorithm>
+#include "src/geometry/include/SuperQuadrics.h"
+#include "src/util/include/IntersectLineMesh3d.h"
+#include "src/util/include/Interval.h"
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <limits>
 #include <ompl/util/Time.h>
+
+#include <algorithm>
+#include <limits>
 #include <vector>
 
-#include <src/geometry/intersectlinemesh3d.h>
-#include <src/geometry/superquadrics.h>
-
-using namespace std;
-using namespace boost;
-using namespace ompl;
-
-typedef property<edge_weight_t, double> Weight;
-typedef adjacency_list<vecS, vecS, undirectedS, no_property, Weight> AdjGraph;
-typedef AdjGraph::vertex_descriptor Vertex;
-typedef AdjGraph::edge_descriptor edge_descriptor;
-typedef AdjGraph::vertex_iterator vertex_iterator;
-typedef vector<pair<int, int>> Edge;
-typedef property_map<AdjGraph, edge_weight_t>::type WeightMap;
+using Weight = boost::property<boost::edge_weight_t, double>;
+using AdjGraph =
+    boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
+                          boost::no_property, Weight>;
+using Vertex = AdjGraph::vertex_descriptor;
+using edge_descriptor = AdjGraph::edge_descriptor;
+using vertex_iterator = AdjGraph::vertex_iterator;
+using Edge = std::vector<std::pair<int, int>>;
+using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 // cf_cell: collision-free points
 struct cf_cellYZ {
 public:
-  vector<double> ty;
-  vector<vector<double>> zL;
-  vector<vector<double>> zU;
-  vector<vector<double>> zM;
+  std::vector<double> ty;
+  std::vector<std::vector<double>> zL;
+  std::vector<std::vector<double>> zU;
+  std::vector<std::vector<double>> zM;
 };
 
 struct cf_cell3D {
-  vector<double> tx;
-  vector<cf_cellYZ> cellYZ;
+  std::vector<double> tx;
+  std::vector<cf_cellYZ> cellYZ;
 };
 
 // boundary: Minkowski boundary points for obstacles and arenas
 struct boundary3D {
 public:
-  vector<MatrixXd> bd_s, bd_o;
+  std::vector<Eigen::MatrixXd> bd_s, bd_o;
 
   // Seperated boundary points
   struct sepBd {
   public:
-    MatrixXd P_bd_L, P_bd_R;
+    Eigen::MatrixXd P_bd_L, P_bd_R;
   } P_bd;
 
   struct sepZ {
   public:
-    MatrixXd z_L, z_R;
+    Eigen::MatrixXd z_L, z_R;
   };
 };
 
 struct Mesh {
-  MatrixXd vertices;
-  MatrixXd faces;
+  Eigen::MatrixXd vertices;
+  Eigen::MatrixXd faces;
 };
 
 struct option3D {
   size_t N_layers, N_dx, N_dy, N_o, N_s;
-  vector<double> Lim;
+  std::vector<double> Lim;
 };
 
-class highwayRoadmap3D {
+class HighwayRoadMap3D {
   // variables
   /*
   N_o       : number of obstacles;
@@ -84,40 +84,40 @@ class highwayRoadmap3D {
   planTime  : planning time: roadmap building time and path search time
   */
 private:
-  vector<SuperQuadrics::shape> mid;
+  std::vector<SuperQuadrics> mid;
   cf_cell3D mid_cell;
-  vector<double> midVtx;
+  std::vector<double> midVtx;
 
 public:
   // Parameters for the roadmap
   size_t N_o, N_s, N_dx, N_dy, N_layers;
-  vector<double> Lim;
-  vector<Quaterniond> q_r;
+  std::vector<double> Lim;
+  std::vector<Eigen::Quaterniond> q_r;
 
   struct vertexIdx {
   public:
     size_t layer;
-    vector<size_t> plane;
-    vector<vector<size_t>> line;
+    std::vector<size_t> plane;
+    std::vector<std::vector<size_t>> line;
   } N_v;
 
   // graph: vector of vertices, vector of connectable edges
   struct graph {
   public:
-    vector<vector<double>> vertex;
+    std::vector<std::vector<double>> vertex;
     Edge edge;
-    vector<double> weight;
+    std::vector<double> weight;
   } vtxEdge;
 
   // Vertex index info
-  vector<vertexIdx> vtxId;
+  std::vector<vertexIdx> vtxId;
 
   AdjGraph Graph;
   SuperQuadrics Robot;
-  vector<SuperQuadrics> Arena, Obs;
+  std::vector<SuperQuadrics> Arena, Obs;
   double Cost = 0.0;
-  vector<vector<double>> Endpt;
-  vector<int> Paths;
+  std::vector<std::vector<double>> Endpt;
+  std::vector<int> Paths;
 
   struct Time {
   public:
@@ -129,31 +129,34 @@ public:
   // functions
 private:
   cf_cellYZ enhanceDecomp(cf_cellYZ cell);
-  unsigned int find_cell(vector<double> v);
-  Mesh getMesh(MatrixXd, int);
-  bool isPtinCFLine(vector<double>, vector<double>);
+  unsigned int find_cell(std::vector<double> v);
+  Mesh getMesh(Eigen::MatrixXd, int);
+  bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
 public:
-  highwayRoadmap3D(SuperQuadrics robot, vector<vector<double>> endpt,
-                   vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                   option3D opt);
+  HighwayRoadMap3D(SuperQuadrics robot, std::vector<std::vector<double>> endpt,
+                   std::vector<SuperQuadrics> arena,
+                   std::vector<SuperQuadrics> obs, option3D opt);
   virtual void plan();
   virtual void buildRoadmap();
   virtual boundary3D boundaryGen();
-  cf_cell3D sweepLineZ(vector<MatrixXd> bd_s, vector<MatrixXd> bd_o);
-  cf_cellYZ cfLine(vector<double> ty, MatrixXd x_s_L, MatrixXd x_s_R,
-                   MatrixXd x_o_L, MatrixXd x_o_R);
+  cf_cell3D sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
+                       std::vector<Eigen::MatrixXd> bd_o);
+  cf_cellYZ cfLine(std::vector<double> ty, Eigen::MatrixXd x_s_L,
+                   Eigen::MatrixXd x_s_R, Eigen::MatrixXd x_o_L,
+                   Eigen::MatrixXd x_o_R);
   void connectOneLayer(cf_cell3D cell);
   void connectOnePlane(double tz, cf_cellYZ cellYZ);
   virtual void connectMultiLayer();
-  cf_cell3D midLayer(SuperQuadrics::shape);
+  cf_cell3D midLayer(SuperQuadrics);
   void search();
 
-  SuperQuadrics::shape tfe(double[3], double[3], Quaterniond, Quaterniond);
+  SuperQuadrics tfe(std::vector<double>, std::vector<double>,
+                    Eigen::Quaterniond, Eigen::Quaterniond);
   void sampleSO3();
-  double vector_dist(vector<double> v1, vector<double> v2);
+  double vector_dist(std::vector<double> v1, std::vector<double> v2);
 
-  virtual ~highwayRoadmap3D();
+  virtual ~HighwayRoadMap3D();
 };
 
 #endif // HIGHWAYROADMAP3D_H

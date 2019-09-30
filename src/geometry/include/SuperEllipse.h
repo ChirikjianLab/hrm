@@ -15,12 +15,21 @@ public:
    * \param pose     : SE(2) pose of the ellipse [x,y,\theta]
    */
   SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
-               const std::vector<double> &pose, const int num);
+               const std::vector<double> &position, const double angle,
+               const long num);
+  SuperEllipse(const SuperEllipse &shape);
 
 public:
   std::vector<double> getSemiAxis() const noexcept { return semiAxis_; }
   double getEpsilon() const noexcept { return epsilon_; }
-  std::vector<double> getPose() const noexcept { return pose_; }
+  std::vector<double> getPosition() const noexcept { return position_; }
+  double getAngle() const noexcept { return angle_; }
+  long getNum() const noexcept { return num_; }
+
+  void setSemiAxis(const std::vector<double> &newSemiAxis);
+  void setEpsilon(const double newEpsilon);
+  void setPosition(const std::vector<double> &newPosition);
+  void setAngle(const double newAngle);
 
   /*
    * Compute and return the boundary points of the origianl SuperEllipse
@@ -40,12 +49,13 @@ private:
   double expFun(const double th, const double p, const bool func) const;
 
 private:
-  const std::vector<double> &semiAxis_;
-  const double epsilon_;
-  const std::vector<double> &pose_;
+  std::vector<double> semiAxis_;
+  double epsilon_;
+  std::vector<double> position_;
+  double angle_;
 
   // Number of points on boundary
-  const int num_;
+  long num_;
 };
 
 #endif // SUPERELLIPSE_H

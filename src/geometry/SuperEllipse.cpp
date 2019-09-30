@@ -9,8 +9,21 @@
 
 SuperEllipse::SuperEllipse(const std::vector<double> &semiAxis,
                            const double epsilon,
-                           const std::vector<double> &pose, const int num)
-    : semiAxis_(semiAxis), epsilon_(epsilon), pose_(pose), num_(num) {}
+                           const std::vector<double> &position,
+                           const double angle, const long num)
+    : semiAxis_(semiAxis), epsilon_(epsilon), position_(position),
+      angle_(angle), num_(num) {}
+
+void SuperEllipse::setSemiAxis(const std::vector<double> &newSemiAxis) {
+  semiAxis_ = newSemiAxis;
+}
+void SuperEllipse::setEpsilon(const double newEpsilon) {
+  epsilon_ = newEpsilon;
+}
+void SuperEllipse::setPosition(const std::vector<double> &newPosition) {
+  position_ = newPosition;
+}
+void SuperEllipse::setAngle(const double newAngle) { angle_ = newAngle; }
 
 // Get the points on the boundary of original shape
 Eigen::MatrixXd SuperEllipse::getOriginShape() const {
@@ -25,12 +38,12 @@ Eigen::MatrixXd SuperEllipse::getOriginShape() const {
     x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, 0);
     x(1, 0) = semiAxis_.at(1) * expFun(th, epsilon_, 1);
 
-    C(0, i) = pose_.at(0);
-    C(1, i) = pose_.at(1);
+    C(0, i) = position_.at(0);
+    C(1, i) = position_.at(1);
     X(0, i) = x(0, 0);
     X(1, i) = x(1, 0);
   }
-  X = Eigen::Rotation2Dd(pose_.at(2)).matrix() * X + C;
+  X = Eigen::Rotation2Dd(angle_).matrix() * X + C;
 
   return X;
 }
@@ -48,11 +61,11 @@ Eigen::MatrixXd SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
 
   const double a1 = semiAxis_.at(0);
   const double b1 = semiAxis_.at(1);
-  const double th1 = pose_.at(2);
+  const double th1 = angle_;
   const double eps1 = epsilon_;
   const double a2 = shapeB.getSemiAxis().at(0);
   const double b2 = shapeB.getSemiAxis().at(1);
-  const double th2 = shapeB.getSemiAxis().at(2);
+  const double th2 = shapeB.getAngle();
 
   // Error if the second object is not an ellipse
   if (shapeB.getEpsilon() != 1.0) {

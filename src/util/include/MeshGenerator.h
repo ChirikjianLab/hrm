@@ -1,6 +1,8 @@
 #ifndef MESH_GENERATOR_H
 #define MESH_GENENATOR_H
 
+#include "src/geometry/include/SuperQuadrics.h"
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Triangulation_3.h>
 #include <fcl/fcl.h>
@@ -11,10 +13,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "geometry/superquadrics.h"
-
-using namespace std;
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Triangulation = CGAL::Triangulation_3<K>;

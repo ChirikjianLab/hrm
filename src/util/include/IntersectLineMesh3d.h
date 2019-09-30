@@ -5,15 +5,14 @@
 #include <Eigen/Geometry>
 #include <vector>
 
-using namespace std;
-using namespace Eigen;
-
 class IntersectLineMesh3d {
 public:
-  vector<Vector3d> intersect(VectorXd line, Matrix3Xd vertices,
-                             MatrixX3d faces);
-  vector<Vector3d> intersect_mat(VectorXd line, Matrix3Xd vertices,
-                                 MatrixX3d faces);
+  std::vector<Eigen::Vector3d> intersect(Eigen::VectorXd line,
+                                         Eigen::Matrix3Xd vertices,
+                                         Eigen::MatrixX3d faces);
+  std::vector<Eigen::Vector3d> intersect_mat(Eigen::VectorXd line,
+                                             Eigen::Matrix3Xd vertices,
+                                             Eigen::MatrixX3d faces);
 };
 
 #endif // INTERSECTLINEMESH3D_H

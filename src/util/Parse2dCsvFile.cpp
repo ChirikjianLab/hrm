@@ -1,30 +1,30 @@
-#include "parse2dcsvfile.h"
+#include "include/Parse2dCsvFile.h"
 
-vector<vector<double>> inputFile::parse2DCsvFile(string inputFileName) {
-  vector<vector<double>> data;
-  ifstream inputFile(inputFileName);
+std::vector<std::vector<double>> parse2DCsvFile(std::string inputFileName) {
+  std::vector<std::vector<double>> data;
+  std::ifstream inputFile(inputFileName);
   int l = 0;
 
   while (inputFile) {
     l++;
-    string s;
+    std::string s;
     if (!getline(inputFile, s)) {
       break;
     }
     if (s[0] != '#') {
-      istringstream ss(s);
-      vector<double> record;
+      std::istringstream ss(s);
+      std::vector<double> record;
 
       while (ss) {
-        string line;
+        std::string line;
         if (!getline(ss, line, ',')) {
           break;
         }
         try {
-          record.push_back(stof(line));
+          record.emplace_back(stof(line));
         } catch (const std::invalid_argument e) {
-          cout << "NaN found in file " << inputFileName << " line " << l
-               << endl;
+          std::cout << "NaN found in file " << inputFileName << " line " << l
+                    << std::endl;
           e.what();
         }
       }
@@ -34,8 +34,8 @@ vector<vector<double>> inputFile::parse2DCsvFile(string inputFileName) {
   }
 
   if (!inputFile.eof()) {
-    cerr << "Could not read file " << inputFileName << "\n";
-    __throw_invalid_argument("File not found.");
+    std::cerr << "Could not read file " << inputFileName << "\n";
+    std::__throw_invalid_argument("File not found.");
   }
 
   return data;

@@ -1,10 +1,10 @@
-#include "intersectlinemesh3d.h"
+#include "include/IntersectLineMesh3d.h"
 #include <iostream>
 
-vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line,
-                                                Matrix3Xd vertices,
-                                                MatrixX3d faces) {
-  vector<Vector3d> points;
+std::vector<Eigen::Vector3d>
+IntersectLineMesh3d::intersect(Eigen::VectorXd line, Eigen::Matrix3Xd vertices,
+                               Eigen::MatrixX3d faces) {
+  std::vector<Eigen::Vector3d> points;
 
   if (line(0) > vertices.row(0).maxCoeff() ||
       line(0) < vertices.row(0).minCoeff()) {
@@ -17,7 +17,7 @@ vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line,
 
   double tol = 1e-12;
 
-  Vector3d t0, u, v, n, pt;
+  Eigen::Vector3d t0, u, v, n, pt;
   double a, b, uu, uv, vv, wu, wv, D, s, t;
 
   /*
@@ -102,10 +102,9 @@ vector<Vector3d> intersectLineMesh3d::intersect(VectorXd line,
   return points;
 }
 
-vector<Vector3d> intersectLineMesh3d::intersect_mat(VectorXd line,
-                                                    Matrix3Xd vertices,
-                                                    MatrixX3d faces) {
-  vector<Vector3d> points;
+std::vector<Eigen::Vector3d> IntersectLineMesh3d::intersect_mat(
+    Eigen::VectorXd line, Eigen::Matrix3Xd vertices, Eigen::MatrixX3d faces) {
+  std::vector<Eigen::Vector3d> points;
 
   if (line(0) > vertices.row(0).maxCoeff() ||
       line(0) < vertices.row(0).minCoeff()) {
@@ -118,11 +117,11 @@ vector<Vector3d> intersectLineMesh3d::intersect_mat(VectorXd line,
 
   double tol = 1e-12;
 
-  Matrix3Xd t0 = MatrixXd::Constant(3, faces.rows(), 1), u = t0, v = t0, n = t0,
-            pt = t0;
-  RowVectorXd a, b, uu, uv, vv, wu, wv, D, s, t;
+  Eigen::Matrix3Xd t0 = Eigen::MatrixXd::Constant(3, faces.rows(), 1), u = t0,
+                   v = t0, n = t0, pt = t0;
+  Eigen::RowVectorXd a, b, uu, uv, vv, wu, wv, D, s, t;
 
-  RowVectorXd Valid, ind1, ind2;
+  Eigen::RowVectorXd Valid, ind1, ind2;
 
   for (int i = 0; i < faces.rows(); i++) {
     // find triangle edge vectors

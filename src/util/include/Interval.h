@@ -5,18 +5,15 @@
 #include <limits>
 #include <vector>
 
-using namespace std;
+class Interval {
+public:
+  std::vector<Interval> unions(std::vector<Interval> &ins);
+  std::vector<Interval> intersects(std::vector<Interval> &ins);
+  std::vector<Interval> complements(std::vector<Interval> &outer,
+                                    std::vector<Interval> &inner);
 
-struct Interval {
   double s;
   double e;
-};
-
-class interval {
-public:
-  vector<Interval> Union(vector<Interval> &ins);
-  vector<Interval> Intersect(vector<Interval> &ins);
-  vector<Interval> Complement(vector<Interval> &outer, vector<Interval> &inner);
 };
 
 #endif // INTERVAL

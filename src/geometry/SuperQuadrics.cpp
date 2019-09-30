@@ -6,15 +6,32 @@
 #define pi 3.1415926
 #define sgn(v) (((v) < 0) ? -1 : ((v) > 0))
 
-SuperQuadrics::SuperQuadrics(const std::vector<double> &semiAxis,
-                             const std::vector<double> &epsilon,
-                             const std::vector<double> &position,
-                             const Eigen::Quaterniond &quat, const int num)
+SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
+                             std::vector<double> epsilon,
+                             std::vector<double> position,
+                             Eigen::Quaterniond quat, const int num)
     : semiAxis_(semiAxis), epsilon_(epsilon), position_(position), quat_(quat),
       num_(num) {
   eta_ = Eigen::RowVectorXd::LinSpaced(num_, -pi, pi).replicate(num_, 1);
   omega_ = Eigen::VectorXd::LinSpaced(num_, -pi / 2, pi / 2).replicate(1, num_);
   Num_ = num_ * num_;
+}
+
+void SuperQuadrics::setSemiAxis(const std::vector<double> &newSemiAxis) {
+  semiAxis_ = newSemiAxis;
+}
+void SuperQuadrics::setEpsilon(const std::vector<double> &newEpsilon) {
+  epsilon_ = newEpsilon;
+}
+void SuperQuadrics::setPosition(const std::vector<double> &newPosition) {
+  position_ = newPosition;
+}
+void SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
+  quat_ = newQuat;
+}
+void SuperQuadrics::setQuatSamples(
+    const std::vector<Eigen::Quaterniond> qSample) {
+  qSample_ = qSample;
 }
 
 // Get the points on the boundary of original shape

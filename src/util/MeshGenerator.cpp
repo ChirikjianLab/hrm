@@ -1,4 +1,4 @@
-#include "mesh_gen.h"
+#include "include/MeshGenerator.h"
 
 MeshGenerator::MeshGenerator() {}
 
@@ -65,10 +65,10 @@ EMesh MeshGenerator::getMesh(ParametricPoints points_) {
 
 ParametricPoints MeshGenerator::getBoundary3D(SuperQuadrics obj) {
   ParametricPoints X;
-  for (int i = 0; i < obj.num; i++) {
-    X.x.push_back(obj.originShape()(0, i));
-    X.y.push_back(obj.originShape()(1, i));
-    X.z.push_back(obj.originShape()(2, i));
+  for (int i = 0; i < obj.getNum(); i++) {
+    X.x.push_back(obj.getOriginShape()(0, i));
+    X.y.push_back(obj.getOriginShape()(1, i));
+    X.z.push_back(obj.getOriginShape()(2, i));
   }
   return X;
 }

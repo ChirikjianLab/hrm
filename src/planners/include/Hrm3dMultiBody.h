@@ -1,34 +1,36 @@
-#ifndef HRM3D_MULTIBODY_H
-#define HRM3D_MULTIBODY_H
+#ifndef HRM3DMULTIBODY_H
+#define HRM3DMULTIBODY_H
 
-#include <src/geometry/multibodytree3d.h>
-#include <src/planners/highwayroadmap3d.h>
+#include "HighwayRoadMap3d.h"
+#include "src/util/include/MultiBodyTree3d.h"
 
-using namespace std;
 #define pi 3.1415926
 
-class hrm3d_multibody : public highwayRoadmap3D {
-public:
-  multibodytree3D RobotM;
-  vector<SuperQuadrics> mid;
-  vector<cf_cell3D> mid_cell;
-  vector<double> midVtx;
-  double N_step = 2;
+class Hrm3DMultiBody : public HighwayRoadMap3D {
 
 public:
-  hrm3d_multibody(multibodytree3D, vector<vector<double>>,
-                  vector<SuperQuadrics>, vector<SuperQuadrics>, option3D);
+  Hrm3DMultiBody(MultiBodyTree3D, std::vector<std::vector<double>>,
+                 std::vector<SuperQuadrics>, std::vector<SuperQuadrics>,
+                 option3D);
+  virtual ~Hrm3DMultiBody();
+
+public:
   void plan();
   void buildRoadmap();
   boundary3D boundaryGen();
   virtual void connectMultiLayer();
 
-  vector<SuperQuadrics> tfe_multi(Quaterniond, Quaterniond);
-  bool isCollisionFree(vector<double>, vector<double>);
-  bool isPtInCFCell(cf_cell3D, vector<double>);
-  bool isPtInCFLine(cf_cell3D, vector<double>);
+  std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond, Eigen::Quaterniond);
+  bool isCollisionFree(std::vector<double>, std::vector<double>);
+  bool isPtInCFCell(cf_cell3D, std::vector<double>);
+  bool isPtInCFLine(cf_cell3D, std::vector<double>);
 
-  virtual ~hrm3d_multibody();
+public:
+  MultiBodyTree3D RobotM;
+  std::vector<SuperQuadrics> mid;
+  std::vector<cf_cell3D> mid_cell;
+  std::vector<double> midVtx;
+  double N_step = 2;
 };
 
-#endif // HRM3D_MULTIBODY_H
+#endif // HRM3DMULTIBODY_H

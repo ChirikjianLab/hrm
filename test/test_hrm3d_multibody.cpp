@@ -1,17 +1,16 @@
+#include "geometry/include/SuperQuadrics.h"
+#include "planners/include/Hrm3dMultiBody.h"
+#include "util/include/MultiBodyTree3d.h"
+#include "util/include/Parse2dCsvFile.h"
 #include <chrono>
-#include <fstream>
-#include <iostream>
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+
+#include <fstream>
+#include <iostream>
 #include <math.h>
 #include <vector>
-
-#include "geometry/superquadrics.h"
-#include "planners/hrm3d_multibody.h"
-#include "util/parse2dcsvfile.h"
-
-#include "geometry/multibodytree3d.h"
 
 using namespace Eigen;
 using namespace std;
@@ -20,47 +19,40 @@ using namespace std;
 
 vector<SuperQuadrics> generateSQ(string file_name, double D) {
   // Read config file
-  inputFile file;
-  vector<vector<double>> config = file.parse2DCsvFile(file_name);
+  vector<vector<double>> config = parse2DCsvFile(file_name);
 
   // Generate SQ object
   vector<SuperQuadrics> obj(config.size());
   for (size_t j = 0; j < config.size(); j++) {
-    obj[j].Shape.a[0] = config[j][0];
-    obj[j].Shape.a[1] = config[j][1];
-    obj[j].Shape.a[2] = config[j][2];
-    obj[j].Shape.eps[0] = config[j][3];
-    obj[j].Shape.eps[1] = config[j][4];
-    obj[j].Shape.pos[0] = config[j][5];
-    obj[j].Shape.pos[1] = config[j][6];
-    obj[j].Shape.pos[2] = config[j][7];
-    obj[j].Shape.q.w() = config[j][8];
-    obj[j].Shape.q.x() = config[j][9];
-    obj[j].Shape.q.y() = config[j][10];
-    obj[j].Shape.q.z() = config[j][11];
-    obj[j].n = D;
+    obj.at(j) = SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+                              {config[j][3], config[j][4]},
+                              {config[j][5], config[j][6], config[j][7]},
+                              Eigen::Quaterniond(config[j][8], config[j][9],
+                                                 config[j][10], config[j][11]),
+                              int(D));
   }
 
   return obj;
 }
 
-hrm3d_multibody plan(multibodytree3D robot, vector<vector<double>> EndPts,
-                     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                     int N_l, int N_x, int N_y) {
+Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
+                    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
+                    int N_l, int N_x, int N_y) {
   option3D opt;
   opt.N_o = obs.size();
   opt.N_s = arena.size();
   opt.N_layers = size_t(N_l);
   opt.N_dx = size_t(N_x);
   opt.N_dy = size_t(N_y);
-  opt.Lim = {arena[0].Shape.a[0] - robot.Base.Shape.a[0],
-             arena[0].Shape.a[1] - robot.Base.Shape.a[0],
-             arena[0].Shape.a[2] - robot.Base.Shape.a[0]};
+  opt.Lim = {
+      arena.at(0).getSemiAxis().at(0) - robot.getBase().getSemiAxis().at(0),
+      arena.at(0).getSemiAxis().at(1) - robot.getBase().getSemiAxis().at(0),
+      arena.at(0).getSemiAxis().at(2) - robot.getBase().getSemiAxis().at(0)};
 
   //****************//
   // Main Algorithm //
   //****************//
-  hrm3d_multibody high3D(robot, EndPts, arena, obs, opt);
+  Hrm3DMultiBody high3D(robot, EndPts, arena, obs, opt);
 
   // TEST: Minkowski boundary
   boundary3D bd_mink = high3D.boundaryGen();
@@ -150,8 +142,7 @@ int main(int argc, char **argv) {
                         obs = generateSQ(obs_config, n);
 
   // Generate multibody tree for robot
-  multibodytree3D robot;
-  robot.addBase(robot_parts[0]);
+  MultiBodyTree3D robot(robot_parts[0]);
   for (size_t i = 1; i < robot_parts.size(); i++) {
     robot.addBody(robot_parts[i]);
   }
@@ -161,8 +152,7 @@ int main(int argc, char **argv) {
   if (quat_file.compare("0") == 0)
     cout << "Will generate uniform random rotations from SO(3)" << endl;
   else {
-    inputFile q_file;
-    vector<vector<double>> quat_sample = q_file.parse2DCsvFile(quat_file);
+    vector<vector<double>> quat_sample = parse2DCsvFile(quat_file);
 
     for (size_t i = 0; i < quat_sample.size(); i++) {
       Quaterniond q;
@@ -175,15 +165,14 @@ int main(int argc, char **argv) {
   }
 
   // Start and goal setup
-  inputFile file;
   string file_endpt = "../config/endPts_3d.csv";
-  vector<vector<double>> endPts = file.parse2DCsvFile(file_endpt);
+  vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
   vector<vector<double>> EndPts;
 
   EndPts.push_back(endPts[0]);
   EndPts.push_back(endPts[1]);
 
-  hrm3d_multibody high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
+  Hrm3DMultiBody high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
   // Planning Time and Path Cost
   cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
   cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
