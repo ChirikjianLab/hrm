@@ -8,7 +8,7 @@
 using namespace std;
 using namespace Eigen;
 
-class intersectLineMesh3d {
+class IntersectLineMesh3d {
 public:
   vector<Vector3d> intersect(VectorXd line, Matrix3Xd vertices,
                              MatrixX3d faces);
