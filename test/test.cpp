@@ -32,11 +32,11 @@ HighwayRoadMap plan(unsigned int N_l, unsigned int N_y) {
   vector<vector<double>> rob_InvMat = parse2DCsvFile(file_robInvMat);
 
   // Robot as a class of SuperEllipse
-  vector<SuperEllipse> robot(rob_config.size());
+  vector<SuperEllipse> robot;
   for (size_t j = 0; j < rob_config.size(); j++) {
-    robot.at(j) = SuperEllipse(
+    robot.emplace_back(SuperEllipse(
         {rob_config[0][0], rob_config[0][1]}, rob_config[0][3],
-        {rob_config[0][4], rob_config[0][5]}, rob_config[0][2], num);
+        {rob_config[0][4], rob_config[0][5]}, rob_config[0][2], num));
   }
 
   polyCSpace polyVtx;
@@ -59,16 +59,18 @@ HighwayRoadMap plan(unsigned int N_l, unsigned int N_y) {
   EndPts.push_back(endPts[2]);
 
   // Arena and Obstacles as class of SuperEllipse
-  vector<SuperEllipse> arena(arena_config.size()), obs(obs_config.size());
+  vector<SuperEllipse> arena;
   for (size_t j = 0; j < arena_config.size(); j++) {
-    arena.at(j) = SuperEllipse(
+    arena.emplace_back(SuperEllipse(
         {arena_config[j][0], arena_config[j][1]}, arena_config[j][3],
-        {arena_config[j][4], arena_config[j][5]}, arena_config[j][2], num);
+        {arena_config[j][4], arena_config[j][5]}, arena_config[j][2], num));
   }
+
+  vector<SuperEllipse> obs;
   for (size_t j = 0; j < obs_config.size(); j++) {
-    obs.at(j) = SuperEllipse(
+    obs.emplace_back(SuperEllipse(
         {obs_config[j][0], obs_config[j][1]}, obs_config[j][3],
-        {obs_config[j][4], obs_config[j][5]}, obs_config[j][2], num);
+        {obs_config[j][4], obs_config[j][5]}, obs_config[j][2], num));
   }
 
   // Options

@@ -1,7 +1,7 @@
 #ifndef HIGHWAYROADMAP_H
 #define HIGHWAYROADMAP_H
 
-#include "src/geometry/include/SuperEllipse.h"
+#include "geometry/include/SuperEllipse.h"
 
 #include <algorithm>
 #include <boost/graph/adjacency_list.hpp>

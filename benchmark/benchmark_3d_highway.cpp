@@ -1,4 +1,5 @@
-#include "highway/highway_planner.h"
+#include "highway/include/highway_planner.h"
+#include "util/include/Parse2dCsvFile.h"
 
 using namespace Eigen;
 using namespace std;
@@ -7,25 +8,18 @@ using namespace std;
 
 vector<SuperQuadrics> generateSQ(string file_name, int num) {
   // Read config file
-  inputFile file;
-  vector<vector<double>> config = file.parse2DCsvFile(file_name);
+  vector<vector<double>> config = parse2DCsvFile(file_name);
 
   // Generate SQ object
-  vector<SuperQuadrics> obj(config.size());
+  vector<SuperQuadrics> obj;
   for (size_t j = 0; j < config.size(); j++) {
-    obj[j].Shape.a[0] = config[j][0];
-    obj[j].Shape.a[1] = config[j][1];
-    obj[j].Shape.a[2] = config[j][2];
-    obj[j].Shape.eps[0] = config[j][3];
-    obj[j].Shape.eps[1] = config[j][4];
-    obj[j].Shape.pos[0] = config[j][5];
-    obj[j].Shape.pos[1] = config[j][6];
-    obj[j].Shape.pos[2] = config[j][7];
-    obj[j].Shape.q.w() = config[j][8];
-    obj[j].Shape.q.x() = config[j][9];
-    obj[j].Shape.q.y() = config[j][10];
-    obj[j].Shape.q.z() = config[j][11];
-    obj[j].n = num;
+    obj.emplace_back(
+        SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+                      {config[j][3], config[j][4]},
+                      {config[j][5], config[j][6], config[j][7]},
+                      Eigen::Quaterniond(config[j][8], config[j][9],
+                                         config[j][10], config[j][11]),
+                      num));
   }
 
   return obj;
@@ -54,30 +48,30 @@ int main(int argc, char **argv) {
   vector<SuperQuadrics> robot_aux = generateSQ(robot_config, n),
                         arena = generateSQ(arena_config, n),
                         obs = generateSQ(obs_config, n);
-  SuperQuadrics robot;
+  SuperQuadrics robot = robot_aux[0];
 
   // Read predefined quaternions
   string quat_file = argv[6];
   if (quat_file.compare("0") == 0) {
     cout << "Will generate uniform random rotations from SO(3)" << endl;
   } else {
-    inputFile q_file;
-    vector<vector<double>> quat_sample = q_file.parse2DCsvFile(quat_file);
+    vector<vector<double>> quat_sample = parse2DCsvFile(quat_file);
 
+    vector<Quaterniond> q_sample;
     for (size_t i = 0; i < quat_sample.size(); i++) {
       Quaterniond q;
       q.w() = quat_sample[i][0];
       q.x() = quat_sample[i][1];
       q.y() = quat_sample[i][2];
       q.z() = quat_sample[i][3];
-      robot.q_sample.push_back(q);
+      q_sample.emplace_back(q);
     }
+    robot.setQuatSamples(q_sample);
   }
 
   // Start and goal setup
-  inputFile file;
   string file_endpt = "../config/endPts_3d.csv";
-  vector<vector<double>> endPts = file.parse2DCsvFile(file_endpt);
+  vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
   vector<vector<double>> EndPts;
 
   EndPts.push_back(endPts[0]);
@@ -90,9 +84,9 @@ int main(int argc, char **argv) {
   opt.N_layers = size_t(N_l);
   opt.N_dx = size_t(N_x);
   opt.N_dy = size_t(N_y);
-  opt.Lim = {arena[0].Shape.a[0] - robot.Shape.a[0],
-             arena[0].Shape.a[1] - robot.Shape.a[0],
-             arena[0].Shape.a[2] - robot.Shape.a[0]};
+  opt.Lim = {arena.at(0).getSemiAxis().at(0) - robot.getSemiAxis().at(0),
+             arena.at(0).getSemiAxis().at(1) - robot.getSemiAxis().at(0),
+             arena.at(0).getSemiAxis().at(2) - robot.getSemiAxis().at(0)};
 
   // Store results
   ofstream file_time;

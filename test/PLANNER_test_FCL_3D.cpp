@@ -1,3 +1,7 @@
+#include "geometry/include/SuperQuadrics.h"
+#include "util/include/MeshGenerator.h"
+#include "util/include/Parse2dCsvFile.h"
+
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/geometric/SimpleSetup.h>
@@ -9,23 +13,15 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/util/PPM.h>
 
-//#include <fcl/fcl.h>
-//#include <fcl/geometry/shape/ellipsoid.h>
-//#include <fcl/narrowphase/collision_object.h>
-//#include <fcl/narrowphase/collision.h>
-
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+
 #include <fstream>
 #include <iostream>
 #include <math.h>
 #include <ompl/config.h>
 #include <string>
 #include <vector>
-
-#include "geometry/superquadrics.h"
-#include "util/mesh_gen.h"
-#include "util/parse2dcsvfile.h"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;

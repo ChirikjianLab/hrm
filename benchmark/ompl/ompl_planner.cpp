@@ -1,4 +1,4 @@
-#include "ompl_planner.h"
+#include "include/ompl_planner.h"
 
 ob::ValidStateSamplerPtr
 allocUniformStateSampler(const ob::SpaceInformation *si) {
@@ -255,21 +255,21 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
 bool ompl_planner::isStateValid(const ob::State *state) const {
   bool res = true;
   for (unsigned int j = 0; j < robot.size(); j++) {
-    SuperQuadrics::shape rob = robot[j].Shape;
-    rob.pos[0] = state->as<ob::SE3StateSpace::StateType>()->getX();
-    rob.pos[1] = state->as<ob::SE3StateSpace::StateType>()->getY();
-    rob.pos[2] = state->as<ob::SE3StateSpace::StateType>()->getZ();
+    SuperQuadrics rob = robot[j];
+    rob.setPosition({state->as<ob::SE3StateSpace::StateType>()->getX(),
+                     state->as<ob::SE3StateSpace::StateType>()->getY(),
+                     state->as<ob::SE3StateSpace::StateType>()->getZ()});
 
-    rob.q =
+    rob.setQuaternion(
         Quaterniond(state->as<ob::SE3StateSpace::StateType>()->rotation().w,
                     state->as<ob::SE3StateSpace::StateType>()->rotation().x,
                     state->as<ob::SE3StateSpace::StateType>()->rotation().y,
-                    state->as<ob::SE3StateSpace::StateType>()->rotation().z);
+                    state->as<ob::SE3StateSpace::StateType>()->rotation().z));
 
     // Checking collision against obstacles
     for (unsigned int i = 0; i < obstacles.size(); i++) {
-      bool aux = checkSeparation(rob, robot[j].Shape, obj_robot[j],
-                                 obstacles[i].Shape, obj_obs[i]);
+      bool aux = checkSeparation(rob, robot[j], obj_robot[j], obstacles[i],
+                                 obj_obs[i]);
       if (!aux)
         return false;
     }
@@ -278,21 +278,25 @@ bool ompl_planner::isStateValid(const ob::State *state) const {
 }
 
 // Returns true when separated and false when overlapping
-bool ompl_planner::checkSeparation(SuperQuadrics::shape robot,
-                                   SuperQuadrics::shape r_,
+bool ompl_planner::checkSeparation(SuperQuadrics robot, SuperQuadrics r_,
                                    CollisionObject<double> obj_ellip,
-                                   SuperQuadrics::shape obs,
+                                   SuperQuadrics obs,
                                    CollisionObject<double> obj_sq) const {
   // Ellipsoid object
-  obj_ellip.setRotation(robot.q.toRotationMatrix() * r_.q.toRotationMatrix());
+  obj_ellip.setRotation(robot.getQuaternion().toRotationMatrix() *
+                        r_.getQuaternion().toRotationMatrix());
   obj_ellip.setTranslation(
-      fcl::Vector3d(robot.pos[0], robot.pos[1], robot.pos[2]) +
-      robot.q.toRotationMatrix() *
-          fcl::Vector3d(r_.pos[0], r_.pos[1], r_.pos[2]));
+      fcl::Vector3d(robot.getPosition().at(0), robot.getPosition().at(1),
+                    robot.getPosition().at(2)) +
+      robot.getQuaternion().toRotationMatrix() *
+          fcl::Vector3d(r_.getPosition().at(0), r_.getPosition().at(1),
+                        r_.getPosition().at(2)));
 
   // Mesh object for SQ
-  obj_sq.setRotation(obs.q.toRotationMatrix());
-  obj_sq.setTranslation(fcl::Vector3d(obs.pos[0], obs.pos[1], obs.pos[2]));
+  obj_sq.setRotation(obs.getQuaternion().toRotationMatrix());
+  obj_sq.setTranslation(fcl::Vector3d(obs.getPosition().at(0),
+                                      obs.getPosition().at(1),
+                                      obs.getPosition().at(2)));
 
   fcl::CollisionRequest<double> request;
   fcl::CollisionResult<double> result;
@@ -314,8 +318,9 @@ bool ompl_planner::compareStates(vector<double> goal_config,
 
 void ompl_planner::setCollisionObj() {
   for (size_t i = 0; i < robot.size(); i++) {
-    GeometryPtr_t ellip(new fcl::Ellipsoidd(
-        robot[i].Shape.a[0], robot[i].Shape.a[1], robot[i].Shape.a[2]));
+    GeometryPtr_t ellip(new fcl::Ellipsoidd(robot.at(i).getSemiAxis().at(0),
+                                            robot.at(i).getSemiAxis().at(1),
+                                            robot.at(i).getSemiAxis().at(2)));
     obj_robot.push_back(fcl::CollisionObjectd(ellip));
   }
 

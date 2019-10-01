@@ -11,7 +11,7 @@ void MultiBodyTree3D::addBody(SuperQuadrics link) {
   Eigen::Matrix4d g;
   g.setIdentity();
   g.block<3, 3>(0, 0) = link.getQuaternion().toRotationMatrix();
-  g.block<3, 1>(0, 3) = Eigen::Vector3d(link.getPosition());
+  g.block<3, 1>(0, 3) = Eigen::Vector3d(link.getPosition().data());
   tf_.push_back(g);
 }
 

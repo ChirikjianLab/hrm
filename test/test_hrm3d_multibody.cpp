@@ -22,14 +22,15 @@ vector<SuperQuadrics> generateSQ(string file_name, double D) {
   vector<vector<double>> config = parse2DCsvFile(file_name);
 
   // Generate SQ object
-  vector<SuperQuadrics> obj(config.size());
+  vector<SuperQuadrics> obj;
   for (size_t j = 0; j < config.size(); j++) {
-    obj.at(j) = SuperQuadrics({config[j][0], config[j][1], config[j][2]},
-                              {config[j][3], config[j][4]},
-                              {config[j][5], config[j][6], config[j][7]},
-                              Eigen::Quaterniond(config[j][8], config[j][9],
-                                                 config[j][10], config[j][11]),
-                              int(D));
+    obj.emplace_back(
+        SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+                      {config[j][3], config[j][4]},
+                      {config[j][5], config[j][6], config[j][7]},
+                      Eigen::Quaterniond(config[j][8], config[j][9],
+                                         config[j][10], config[j][11]),
+                      int(D)));
   }
 
   return obj;
@@ -127,7 +128,7 @@ int main(int argc, char **argv) {
 
   // Record planning time for N trials
   size_t N = size_t(atoi(argv[1]));
-  double n = atof(argv[2]);
+  int n = atoi(argv[2]);
   int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
   vector<vector<double>> stat(N);
@@ -141,27 +142,29 @@ int main(int argc, char **argv) {
   vector<SuperQuadrics> arena = generateSQ(arena_config, n),
                         obs = generateSQ(obs_config, n);
 
-  // Generate multibody tree for robot
-  MultiBodyTree3D robot(robot_parts[0]);
-  for (size_t i = 1; i < robot_parts.size(); i++) {
-    robot.addBody(robot_parts[i]);
-  }
-
   // Read predefined quaternions
   string quat_file = argv[6];
-  if (quat_file.compare("0") == 0)
+  if (quat_file.compare("0") == 0) {
     cout << "Will generate uniform random rotations from SO(3)" << endl;
-  else {
+  } else {
     vector<vector<double>> quat_sample = parse2DCsvFile(quat_file);
 
+    vector<Quaterniond> q_sample;
     for (size_t i = 0; i < quat_sample.size(); i++) {
       Quaterniond q;
       q.w() = quat_sample[i][0];
       q.x() = quat_sample[i][1];
       q.y() = quat_sample[i][2];
       q.z() = quat_sample[i][3];
-      robot.Base.q_sample.push_back(q);
+      q_sample.emplace_back(q);
     }
+    robot_parts.at(0).setQuatSamples(q_sample);
+  }
+
+  // Generate multibody tree for robot
+  MultiBodyTree3D robot(robot_parts[0]);
+  for (size_t i = 1; i < robot_parts.size(); i++) {
+    robot.addBody(robot_parts[i]);
   }
 
   // Start and goal setup

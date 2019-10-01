@@ -4,20 +4,14 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-/* Parameters of superquadrics
-a   : semi-axes length
-eps : epsilon
-pos : position of the center
-q   : Quaternion parameterization for rotations, order: q={w,x,y,z}
-*/
-struct shape {
-  double a[3];
-  double eps[2];
-  double pos[3];
-  Eigen::Quaterniond q;
-};
-
 class SuperQuadrics {
+  /* Parameters of superquadrics
+  a   : semi-axes length
+  eps : epsilon
+  pos : position of the center
+  q   : Quaternion parameterization for rotations, order: q={w,x,y,z}
+  */
+
 public:
   SuperQuadrics(std::vector<double> semiAxis, std::vector<double> epsilon,
                 std::vector<double> position, Eigen::Quaterniond quat,

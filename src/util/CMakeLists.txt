@@ -1,7 +1,7 @@
-add_library(UTIL GeomUtils.cpp
-                 IntersectLineMesh3d.cpp
+add_library(UTIL IntersectLineMesh3d.cpp
                  Interval.cpp
                  MeshGenerator.cpp
                  MultiBodyTree3d.cpp
                  Parse2dCsvFile.cpp
                  PointInPoly.cpp)
+target_link_libraries(UTIL GEOM)

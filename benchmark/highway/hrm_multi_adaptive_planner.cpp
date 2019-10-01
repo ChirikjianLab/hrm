@@ -1,9 +1,11 @@
-#include "hrm_multi_adaptive_planner.h"
+#include "include/hrm_multi_adaptive_planner.h"
+
+using namespace std;
 
 hrm_multi_adaptive_planner::hrm_multi_adaptive_planner(
-    multibodytree3D robot, vector<vector<double>> EndPts,
+    MultiBodyTree3D robot, vector<vector<double>> EndPts,
     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt)
-    : hrm3d_multi_adaptive(robot, EndPts, arena, obs, opt) {}
+    : Hrm3DMultiBodyAdaptive(robot, EndPts, arena, obs, opt) {}
 
 void hrm_multi_adaptive_planner::plan_path() {
   // Highway algorithm

@@ -17,7 +17,7 @@ public:
   SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
                const std::vector<double> &position, const double angle,
                const long num);
-  SuperEllipse(const SuperEllipse &shape);
+  //  SuperEllipse(const SuperEllipse &shape);
 
 public:
   std::vector<double> getSemiAxis() const noexcept { return semiAxis_; }

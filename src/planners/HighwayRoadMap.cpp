@@ -1,6 +1,6 @@
 #include "include/HighwayRoadMap.h"
-#include "src/util/include/Interval.h"
-#include "src/util/include/PointInPoly.h"
+#include "util/include/Interval.h"
+#include "util/include/PointInPoly.h"
 #include <iostream>
 #include <list>
 #include <random>
@@ -61,11 +61,11 @@ void HighwayRoadMap::buildRoadmap() {
 }
 
 boundary HighwayRoadMap::boundaryGen() {
-  std::vector<SuperEllipse> robot_infla(Robot.size());
+  std::vector<SuperEllipse> robot_infla;
   boundary bd;
 
   for (size_t num_r = 0; num_r < Robot.size(); num_r++) {
-    robot_infla.at(num_r) = SuperEllipse(Robot.at(num_r));
+    robot_infla.at(num_r) = Robot.at(num_r);
     // Enlarge the robot
     robot_infla.at(num_r).setSemiAxis(
         {robot_infla.at(num_r).getSemiAxis().at(0) * (1 + infla),

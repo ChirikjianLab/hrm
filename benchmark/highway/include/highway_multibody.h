@@ -1,24 +1,22 @@
 #ifndef HIGHWAY_MULTIBODY_H
 #define HIGHWAY_MULTIBODY_H
 
+#include "planners/include/Hrm3dMultiBody.h"
+#include "util/include/MultiBodyTree3d.h"
+#include "util/include/Parse2dCsvFile.h"
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
-
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
 #include <math.h>
 #include <vector>
 
-#include "geometry/multibodytree3d.h"
-#include "planners/hrm3d_multibody.h"
-#include "util/parse2dcsvfile.h"
-
-class hrm_multibody_planner : public hrm3d_multibody {
+class hrm_multibody_planner : public Hrm3DMultiBody {
 public:
-  hrm_multibody_planner(multibodytree3D robot, vector<vector<double>> EndPts,
-                        vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                        option3D opt);
+  hrm_multibody_planner(MultiBodyTree3D robot,
+                        std::vector<std::vector<double>> EndPts,
+                        std::vector<SuperQuadrics> arena,
+                        std::vector<SuperQuadrics> obs, option3D opt);
   void plan_graph();
   void plan_search();
 };

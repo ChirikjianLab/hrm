@@ -1,10 +1,9 @@
-#include "ompl/ompl_planner.h"
+#include "ompl/include/ompl_planner.h"
 
 EMesh getMesh(SuperQuadrics sq) {
-  sq.Shape.q.setIdentity();
-  sq.Shape.pos[0] = 0.0;
-  sq.Shape.pos[1] = 0.0;
-  sq.Shape.pos[2] = 0.0;
+  Eigen::Quaterniond quat;
+  sq.setQuaternion(quat.setIdentity());
+  sq.setPosition({0.0, 0.0, 0.0});
 
   EMesh M;
   MeshGenerator MeshGen;
@@ -13,28 +12,22 @@ EMesh getMesh(SuperQuadrics sq) {
   return M;
 }
 
-vector<SuperQuadrics> generateSQ(string file_name, double D) {
+vector<SuperQuadrics> generateSQ(string file_name, int num) {
   // Read config file
-  inputFile file;
-  vector<vector<double>> config = file.parse2DCsvFile(file_name);
+  vector<vector<double>> config = parse2DCsvFile(file_name);
 
   // Generate SQ object
-  vector<SuperQuadrics> obj(config.size());
+  vector<SuperQuadrics> obj;
   for (size_t j = 0; j < config.size(); j++) {
-    obj[j].Shape.a[0] = config[j][0];
-    obj[j].Shape.a[1] = config[j][1];
-    obj[j].Shape.a[2] = config[j][2];
-    obj[j].Shape.eps[0] = config[j][3];
-    obj[j].Shape.eps[1] = config[j][4];
-    obj[j].Shape.pos[0] = config[j][5];
-    obj[j].Shape.pos[1] = config[j][6];
-    obj[j].Shape.pos[2] = config[j][7];
-    obj[j].Shape.q.w() = config[j][8];
-    obj[j].Shape.q.x() = config[j][9];
-    obj[j].Shape.q.y() = config[j][10];
-    obj[j].Shape.q.z() = config[j][11];
-    obj[j].n = long(D);
+    obj.emplace_back(
+        SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+                      {config[j][3], config[j][4]},
+                      {config[j][5], config[j][6], config[j][7]},
+                      Eigen::Quaterniond(config[j][8], config[j][9],
+                                         config[j][10], config[j][11]),
+                      num));
   }
+
   return obj;
 }
 
@@ -48,7 +41,7 @@ int main(int argc, char **argv) {
 
   // Record planning time for N trials
   int N = atoi(argv[1]);
-  double n = atof(argv[2]);
+  int n = atoi(argv[2]);
 
   vector<vector<double>> time_stat;
 
@@ -63,22 +56,27 @@ int main(int argc, char **argv) {
   // Obstacle mesh
   vector<EMesh> obs_mesh;
   for (size_t i = 0; i < obs.size(); i++) {
-    obs_mesh.push_back(getMesh(obs[i]));
+    obs_mesh.emplace_back(getMesh(obs.at(i)));
   }
 
   // Boundary
   double f = 1.5;
-  vector<double> b1 = {-arena[0].Shape.a[0] + f * robot[0].Shape.a[0],
-                       -arena[0].Shape.a[1] + f * robot[0].Shape.a[0],
-                       -arena[0].Shape.a[2] + f * robot[0].Shape.a[0]},
-                 b2 = {arena[0].Shape.a[0] - f * robot[0].Shape.a[0],
-                       arena[0].Shape.a[1] - f * robot[0].Shape.a[0],
-                       arena[0].Shape.a[2] - f * robot[0].Shape.a[0]};
+  vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
+                           f * robot.at(0).getSemiAxis().at(0),
+                       -arena.at(0).getSemiAxis().at(1) +
+                           f * robot.at(0).getSemiAxis().at(0),
+                       -arena.at(0).getSemiAxis().at(2) +
+                           f * robot.at(0).getSemiAxis().at(0)},
+                 b2 = {arena.at(0).getSemiAxis().at(0) -
+                           f * robot.at(0).getSemiAxis().at(0),
+                       arena.at(0).getSemiAxis().at(1) -
+                           f * robot.at(0).getSemiAxis().at(0),
+                       arena.at(0).getSemiAxis().at(2) -
+                           f * robot.at(0).getSemiAxis().at(0)};
 
   // Start and goal setup
-  inputFile file;
   string file_endpt = "../config/endPts_3d.csv";
-  vector<vector<double>> endPts = file.parse2DCsvFile(file_endpt);
+  vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
 
   std::ofstream outfile;
   outfile.open("time3D_ompl.csv");

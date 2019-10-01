@@ -1,6 +1,10 @@
 #ifndef OMPL_PLANNER_H
 #define OMPL_PLANNER_H
 
+#include "geometry/include/SuperQuadrics.h"
+#include "util/include/MeshGenerator.h"
+#include "util/include/Parse2dCsvFile.h"
+
 #include <ompl/base/SpaceInformation.h>
 #include <ompl/base/samplers/BridgeTestValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
@@ -25,10 +29,6 @@
 #include <ompl/config.h>
 #include <string>
 #include <vector>
-
-#include "geometry/superquadrics.h"
-#include "util/mesh_gen.h"
-#include "util/parse2dcsvfile.h"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -71,9 +71,8 @@ public:
 
   bool plan(vector<double> start_, vector<double> goal_);
   bool isStateValid(const ob::State *state) const;
-  bool checkSeparation(SuperQuadrics::shape robot, SuperQuadrics::shape r_,
-                       CollisionObject<double> obj_ellip,
-                       SuperQuadrics::shape obs,
+  bool checkSeparation(SuperQuadrics robot, SuperQuadrics r_,
+                       CollisionObject<double> obj_ellip, SuperQuadrics obs,
                        CollisionObject<double> obj_sq) const;
   bool compareStates(vector<double> goal_config, vector<double> last_config);
   void setCollisionObj();

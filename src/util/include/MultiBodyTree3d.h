@@ -8,7 +8,6 @@
 class MultiBodyTree3D {
 public:
   MultiBodyTree3D(SuperQuadrics base);
-  MultiBodyTree3D(const MultiBodyTree3D &multiBody);
 
 public:
   SuperQuadrics getBase() const noexcept { return base_; }

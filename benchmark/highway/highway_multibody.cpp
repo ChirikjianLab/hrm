@@ -1,11 +1,13 @@
-#include "highway_multibody.h"
+#include "include/highway_multibody.h"
 
-hrm_multibody_planner::hrm_multibody_planner(multibodytree3D robot,
+using namespace std;
+
+hrm_multibody_planner::hrm_multibody_planner(MultiBodyTree3D robot,
                                              vector<vector<double>> EndPts,
                                              vector<SuperQuadrics> arena,
                                              vector<SuperQuadrics> obs,
                                              option3D opt)
-    : hrm3d_multibody(robot, EndPts, arena, obs, opt) {}
+    : Hrm3DMultiBody(robot, EndPts, arena, obs, opt) {}
 
 void hrm_multibody_planner::plan_graph() {
   // Highway algorithm

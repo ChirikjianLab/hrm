@@ -7,6 +7,6 @@
 #include <eigen3/Eigen/Geometry>
 #include <vector>
 
-bool isPtInPoly(polyCSpace polyVtx, vector<double> pt);
+bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt);
 
 #endif // PTINPOLY_H

@@ -1,10 +1,12 @@
-#include "highway_planner.h"
+#include "include/highway_planner.h"
+
+using namespace std;
 
 highway_planner::highway_planner(SuperQuadrics robot,
                                  vector<vector<double>> EndPts,
                                  vector<SuperQuadrics> arena,
                                  vector<SuperQuadrics> obs, option3D opt)
-    : highwayRoadmap3D(robot, EndPts, arena, obs, opt) {}
+    : HighwayRoadMap3D(robot, EndPts, arena, obs, opt) {}
 
 void highway_planner::plan_graph() {
   // Highway algorithm

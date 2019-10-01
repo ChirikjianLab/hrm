@@ -56,11 +56,11 @@ void HighwayRoadMap2D::buildRoadmap() {
 }
 
 boundary HighwayRoadMap2D::boundaryGen() {
-  std::vector<SuperEllipse> robot_infla(Robot.size());
+  std::vector<SuperEllipse> robot_infla;
   boundary bd;
 
   for (size_t num_r = 0; num_r < Robot.size(); num_r++) {
-    robot_infla.at(num_r) = SuperEllipse(Robot.at(num_r));
+    robot_infla.at(num_r) = Robot.at(num_r);
     // Enlarge the robot
     robot_infla.at(num_r).setSemiAxis(
         {robot_infla.at(num_r).getSemiAxis().at(0) * (1 + infla),
