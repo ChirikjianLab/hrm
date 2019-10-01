@@ -7,19 +7,25 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 ## Status
 ### Highway RoadMap planner
 1. SE(2) single rigid body finished: 
-(1) Fixed number of layers and sweep lines.
-(2) Layer connections using KC ("src/planners/highwayroadmap.cpp") and TFE ("src/planners/highwayroadmap2d.cpp").
+- Fixed number of layers and sweep lines.
+- Layer connections using KC ("src/planners/HighwayRoadMap.cpp") and TFE ("src/planners/HighwayRoadMap2d.cpp").
 
 2. SE(3) single/multi rigid body in progress:
-(1) Single body ("src/planners/highwayroadmap3d.cpp"): fixed number of layers and sweep lines.
-(2) Multi body: fixed ("src/planners/hrm3d_multibody.cpp") / adaptive ("src/planners/hrm3d_multi_adaptive.cpp") number of layers, fixed sweep lines.
-(3) Layer connections using TFE.
+- Single body ("src/planners/HighwayRoadMap3d.cpp"): fixed number of layers and sweep lines.
+- Multi body: fixed ("src/planners/Hrm3DMultiBody.cpp") / adaptive ("src/planners/Hrm3DMultiBodyAdaptive.cpp") number of layers, fixed sweep lines.
+- Layer connections using TFE.
 
 ### OMPL sampled-based planners
 1. SE(2) single rigid body
+
 2. SE(3) single/multi rigid body
 
-## Plans
+## TODO
+### Benchmark in different scenerios
+- Sparse map
+- Cluttered map
+- Narrow passage with different window size
+
 ### Articulated body
 1. Extend to multi-link articulated robot
 
