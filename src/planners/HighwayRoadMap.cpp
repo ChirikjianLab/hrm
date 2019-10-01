@@ -65,7 +65,7 @@ boundary HighwayRoadMap::boundaryGen() {
   boundary bd;
 
   for (size_t num_r = 0; num_r < Robot.size(); num_r++) {
-    robot_infla.at(num_r) = Robot.at(num_r);
+    robot_infla.emplace_back(Robot.at(num_r));
     // Enlarge the robot
     robot_infla.at(num_r).setSemiAxis(
         {robot_infla.at(num_r).getSemiAxis().at(0) * (1 + infla),
