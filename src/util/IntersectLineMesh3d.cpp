@@ -21,11 +21,11 @@ IntersectLineMesh3d::intersect(Eigen::VectorXd line, Eigen::Matrix3Xd vertices,
   double a, b, uu, uv, vv, wu, wv, D, s, t;
 
   /*
-    \brief Specifially for vertical sweep lines, first do a quick check
-           according to x and y coord
-  */
-  // If the x or y coordinates of the vertical sweep line is out of range of the
-  // triangle, directly ignore
+   * \brief Specifially for vertical sweep lines, first do a quick check
+   *        according to x and y coord:
+   * If the x or y coordinates of the vertical sweep line is out of range of the
+   * triangle, directly ignore
+   */
   for (int i = 0; i < faces.rows(); i++) {
     // ignore the face that is out of range
     if (line(0) < fmin(vertices(0, int(faces(i, 0))),
@@ -57,7 +57,7 @@ IntersectLineMesh3d::intersect(Eigen::VectorXd line, Eigen::Matrix3Xd vertices,
     // vector between triangle origin and line origin
     a = -n.dot(line.head(3) - t0);
     b = n.dot(line.tail(3));
-    if (!((fabs(b) > tol) && (n.norm() > tol))) {
+    if (!((std::fabs(b) > tol) && (n.norm() > tol))) {
       continue;
     }
 

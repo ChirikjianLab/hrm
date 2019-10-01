@@ -26,6 +26,7 @@ classdef pathValid_3D_multiBody < handle
         %% Post operation for found path, collision checking along path
         function valid = validation(Obj)
             % Do collision checking along the found path to validate.
+            collision = false;
             for i = 1:size(Obj.Paths,2)-1
                 idx1 = Obj.Paths(i);
                 idx2 = Obj.Paths(i+1);

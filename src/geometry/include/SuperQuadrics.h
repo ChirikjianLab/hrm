@@ -24,6 +24,7 @@ public:
   std::vector<double> getPosition() const noexcept { return position_; }
   Eigen::Quaterniond getQuaternion() const noexcept { return quat_; }
   long getNum() const noexcept { return Num_; }
+  long getNumParam() const noexcept { return num_; }
   std::vector<Eigen::Quaterniond> getQuatSamples() const noexcept {
     return qSample_;
   }

@@ -55,16 +55,18 @@ void HighwayRoadMap3D::buildRoadmap() {
     Robot.setQuaternion(q_r.at(i));
 
     // boundary for obstacles and arenas
-    //        time::point start = time::now();
+    //    ompl::time::point start = ompl::time::now();
     boundary3D bd = boundaryGen();
-    //        cout << "Boundary: " << time::seconds(time::now() - start) << 's'
-    //        << endl;
+    //    std::cout << "Boundary: " << ompl::time::seconds(ompl::time::now() -
+    //    start)
+    //              << 's' << std::endl;
 
     // collision-free cells, stored by tx, ty, zL, zU, zM
-    //        start = time::now();
+    //    start = ompl::time::now();
     cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
-    //        cout << "Sweep line: " << time::seconds(time::now() - start) <<
-    //        's' << endl;
+    //    std::cout << "Sweep line: "
+    //              << ompl::time::seconds(ompl::time::now() - start) << 's'
+    //              << std::endl;
 
     // construct adjacency matrix for one layer
     //        start = time::now();
@@ -128,10 +130,10 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
   // Generate mesh for the boundaries
   std::vector<Mesh> P_s(N_cs), P_o(N_co);
   for (size_t i = 0; i < N_cs; i++) {
-    P_s.at(i) = getMesh(bd_s[i], int(Arena.at(0).getNum()));
+    P_s.at(i) = getMesh(bd_s[i], int(Arena.at(0).getNumParam()));
   }
   for (size_t i = 0; i < N_co; i++) {
-    P_o.at(i) = getMesh(bd_o[i], int(Obs.at(0).getNum()));
+    P_o.at(i) = getMesh(bd_o[i], int(Obs.at(0).getNumParam()));
   }
 
   // Find intersections along each sweep line
@@ -507,7 +509,6 @@ void HighwayRoadMap3D::sampleSO3() {
     N_layers = Robot.getQuatSamples().size();
     q_r = Robot.getQuatSamples();
   }
-  N_layers += 2;
 }
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap

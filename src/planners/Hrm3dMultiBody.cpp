@@ -153,7 +153,8 @@ void Hrm3DMultiBody::connectMultiLayer() {
         V2 = vtxEdge.vertex[m1];
 
         // Locate the nearest vertices
-        if (fabs(V1[0] - V2[0]) > 1e-8 || fabs(V1[1] - V2[1]) > 1e-8) {
+        if (std::fabs(V1[0] - V2[0]) > 1e-8 ||
+            std::fabs(V1[1] - V2[1]) > 1e-8) {
           continue;
         }
 
