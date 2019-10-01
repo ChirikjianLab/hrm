@@ -4,4 +4,3 @@ add_library(UTIL IntersectLineMesh3d.cpp
                  MultiBodyTree3d.cpp
                  Parse2dCsvFile.cpp
                  PointInPoly.cpp)
-target_link_libraries(UTIL GEOM)

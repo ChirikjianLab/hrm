@@ -14,7 +14,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 
 # Packages
-find_library(OMPL ompl REQUIRED)
+find_library(OMPL REQUIRED)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -24,6 +24,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 find_package(FCL REQUIRED)
 IF (FCL_FOUND)
     include_directories(${FCL_INCLUDE_DIR})
+    link_libraries(${FCL_LIBRARIES})
     ADD_DEFINITIONS( "-DHAS_FCL" )
 ENDIF()
 
@@ -36,6 +37,7 @@ ENDIF()
 find_package(CCD REQUIRED)
 IF (CCD_FOUND)
     INCLUDE_DIRECTORIES(${CDD_INCLUDE_DIR})
+    link_libraries(${CCD_LIBRARIES})
     ADD_DEFINITIONS( "-DHAS_CCD" )
 ENDIF()
 
