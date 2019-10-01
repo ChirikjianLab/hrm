@@ -1,4 +1,4 @@
-function robot = robotInit3D(vargin)
+function robot = robotInit3D(vargin, isSingleBody)
 % == Construct Robot and Plot Start and Goal Poses ==
 % Construct object of robot using union of SuperQuadrics objects
 % C-space: SE(3)
@@ -17,11 +17,17 @@ eps_r = [1;1];
 ra_l = [10 10];
 rb_l = [ 5  5];
 rc_l = [ 4  4];
-N_l = length(ra_l);
+
+if isSingleBody
+    N_l = 0;
+else
+    N_l = length(ra_l);
+end
+
 
 q_l = [axang2quat([0,1,0,pi/2]);
-       axang2quat([0,0,1,-pi/2])];
-    
+    axang2quat([0,0,1,-pi/2])];
+
 tx_l  = [-10 10];
 ty_l  = [  0  6];
 tz_l  = [  6  0];

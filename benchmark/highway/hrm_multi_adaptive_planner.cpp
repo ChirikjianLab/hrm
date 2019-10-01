@@ -9,7 +9,9 @@ hrm_multi_adaptive_planner::hrm_multi_adaptive_planner(
 
 void hrm_multi_adaptive_planner::plan_path() {
   // Highway algorithm
+  auto start = ompl::time::now();
   planPath(60);
+  planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
 
   // Planning Time
   cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;

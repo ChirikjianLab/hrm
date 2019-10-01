@@ -179,8 +179,7 @@ int main(int argc, char **argv) {
   // Planning Time and Path Cost
   cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
   cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
-  cout << "Total Planning Time: "
-       << high3D.planTime.buildTime + high3D.planTime.searchTime << 's' << endl;
+  cout << "Total Planning Time: " << high3D.planTime.totalTime << 's' << endl;
 
   cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size()
        << endl;

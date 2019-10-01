@@ -11,7 +11,9 @@ hrm_multibody_planner::hrm_multibody_planner(MultiBodyTree3D robot,
 
 void hrm_multibody_planner::plan_graph() {
   // Highway algorithm
+  auto start = ompl::time::now();
   buildRoadmap();
+  planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
 
   // Building Time
   cout << "Roadmap build time: " << planTime.buildTime << "s" << endl;
@@ -37,12 +39,15 @@ void hrm_multibody_planner::plan_graph() {
 }
 
 void hrm_multibody_planner::plan_search() {
+  auto start = ompl::time::now();
   search();
+  planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
 
   // Path Time
   cout << "Path search time: " << planTime.searchTime << "s" << endl;
-  cout << "Total Planning Time: " << planTime.buildTime + planTime.searchTime
-       << 's' << endl;
+
+  planTime.totalTime = planTime.buildTime + planTime.searchTime;
+  cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
 
   cout << "Number of configurations in Path: " << Paths.size() << endl;
   cout << "Cost: " << Cost << endl;

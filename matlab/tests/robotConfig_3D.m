@@ -29,7 +29,7 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-Robot = robotInit3D(vargin);
+Robot = robotInit3D(vargin, 0);
 
 %% Store robot info as .csv files
 % Robot configuration

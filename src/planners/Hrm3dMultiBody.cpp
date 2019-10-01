@@ -9,23 +9,33 @@ Hrm3DMultiBody::Hrm3DMultiBody(MultiBodyTree3D robot,
                                std::vector<SuperQuadrics> obs, option3D opt)
     : HighwayRoadMap3D::HighwayRoadMap3D(robot.getBase(), endpt, arena, obs,
                                          opt),
-      RobotM(robot.getBase()) {}
+      RobotM(robot) {}
 
 void Hrm3DMultiBody::plan() {
+  ompl::time::point start = ompl::time::now();
   buildRoadmap();
+  planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
+
+  start = ompl::time::now();
   search();
+  planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
+
   planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
 
 // Build the roadmap for multi-rigid-body planning
 void Hrm3DMultiBody::buildRoadmap() {
-  ompl::time::point start = ompl::time::now();
-
   // Samples from SO(3)
   sampleSO3();
 
+  // Get the current Transformation
+  Eigen::Matrix4d tf;
+  tf.setIdentity();
+
   for (size_t i = 0; i < N_layers; i++) {
-    RobotM.getBase().setQuaternion(q_r.at(i));
+    // Set rotation matrix to robot
+    tf.block<3, 3>(0, 0) = q_r.at(i).toRotationMatrix();
+    RobotM.robotTF(tf);
     Robot.setQuaternion(q_r.at(i));
 
     // boundary for obstacles and arenas
@@ -53,8 +63,6 @@ void Hrm3DMultiBody::buildRoadmap() {
   connectMultiLayer();
   //    cout << "Connect btw different layers: " << time::seconds(time::now() -
   //    start) << 's' << endl;
-
-  planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
 };
 
 // Minkowski Boundary

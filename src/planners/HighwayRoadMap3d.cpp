@@ -318,6 +318,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
   size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
   size_t start = 0;
 
+  int num = 0;
   for (size_t i = 0; i < N_layers; i++) {
     // Find vertex only in adjecent layers
     n_1 = vtxId[i].layer;
@@ -352,6 +353,8 @@ void HighwayRoadMap3D::connectMultiLayer() {
           vtxEdge.weight.push_back(vector_dist(vtxEdge.vertex[m1], midVtx));
           n++;
 
+          num++;
+
           // Continue from where it pauses
           n_12 = m1;
           break;
@@ -360,6 +363,8 @@ void HighwayRoadMap3D::connectMultiLayer() {
     }
     start = n_1;
   }
+
+  std::cout << num << std::endl;
 }
 // ******************************************************************** //
 

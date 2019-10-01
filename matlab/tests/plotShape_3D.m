@@ -10,10 +10,10 @@ ob = load(['../../config/', 'obs_config_3d.csv']);
 ar = load(['../../config/', 'arena_config_3d.csv']);
 
 % Plot
-% for i = 1:size(ar,1)
-%     arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
-%         ar(i,4:5), 20}, 'w', 0);
-% end
+for i = 1:size(ar,1)
+    arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
+        ar(i,4:5), 20}, 'w', 0);
+end
 
 for i = 1:size(ob,1)
     obs(i) = SuperQuadrics({ob(i,1:3), ob(i,9:12), ob(i,6:8)',...
@@ -44,7 +44,7 @@ disp('Robot Configurations...');
 vargin.opt = 'rotation';
 vargin.Hhc3D_path = '../include/Hhc_3D.mat';
 
-robot = robotInit3D(vargin);
+robot = robotInit3D(vargin, 1);
 
 %% Results from C++
 % for i = 1:size(ar,1)*(robot.numLink+1)
@@ -76,26 +76,26 @@ robot = robotInit3D(vargin);
 %     plotSurf(Obs_mink{i}, 'y')
 % end
 
-% cells
-cf_seg = load([loadPath, 'cell_3d.csv']);
-for i = 1:size(cf_seg,1)
-    plot3([cf_seg(i,1), cf_seg(i,1)],...
-          [cf_seg(i,2), cf_seg(i,2)],...
-          [cf_seg(i,3), cf_seg(i,5)], 'r');
-    plot3(cf_seg(i,1), cf_seg(i,2), cf_seg(i,4), 'k.')
-end
-
-% vertex and connections
+% % cells
+% cf_seg = load([loadPath, 'cell_3d.csv']);
+% for i = 1:size(cf_seg,1)
+%     plot3([cf_seg(i,1), cf_seg(i,1)],...
+%           [cf_seg(i,2), cf_seg(i,2)],...
+%           [cf_seg(i,3), cf_seg(i,5)], 'r');
+%     plot3(cf_seg(i,1), cf_seg(i,2), cf_seg(i,4), 'k.')
+% end
+% 
+% % vertex and connections
 vtx = load([loadPath, 'vertex3D.csv']);
 edge = load([loadPath, 'edge3D.csv']);
-
-plot3(vtx(:,1), vtx(:,2), vtx(:,3),'k.');
-edge = edge+1;
-for i = 1:size(edge,1)
-    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-        [vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-end
+% 
+% plot3(vtx(:,1), vtx(:,2), vtx(:,3),'k.');
+% edge = edge+1;
+% for i = 1:size(edge,1)
+%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+%         [vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+% end
 
 % start and goal
 endPts = load(['../../config/', 'endPts_3d.csv']);
@@ -128,6 +128,20 @@ if ~isempty(path)
     end
 end
 
+%% Validation
+disp('Validating path...')
+Graph.V = vtx';
+
+% Flip the path
+for i = 1:size(path,2)
+    path2(i) = 1 + path(end+1-i);
+end
+
+high3D = pathValid_3D_multiBody(robot, endPts, arena, obs, Graph, path2);
+high3D.validation();
+high3D.PlotPath();
+
+%% Plot surface
 function plotSurf(X,c)
 num = sqrt(size(X,2));
 
