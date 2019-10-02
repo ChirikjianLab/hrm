@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 #include <unsupported/Eigen/Polynomials>
+#include <vector>
 
 class SuperEllipse {
 public:

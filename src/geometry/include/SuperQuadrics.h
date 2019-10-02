@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <vector>
 
 class SuperQuadrics {
   /* Parameters of superquadrics
