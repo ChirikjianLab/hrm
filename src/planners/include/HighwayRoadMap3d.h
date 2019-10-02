@@ -5,10 +5,10 @@
 #include "src/util/include/IntersectLineMesh3d.h"
 #include "src/util/include/Interval.h"
 
+#include <ompl/util/Time.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <ompl/util/Time.h>
 
 #include <algorithm>
 #include <limits>
@@ -26,7 +26,6 @@ using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 // cf_cell: collision-free points
 struct cf_cellYZ {
-public:
   std::vector<double> ty;
   std::vector<std::vector<double>> zL;
   std::vector<std::vector<double>> zU;
@@ -40,17 +39,14 @@ struct cf_cell3D {
 
 // boundary: Minkowski boundary points for obstacles and arenas
 struct boundary3D {
-public:
   std::vector<Eigen::MatrixXd> bd_s, bd_o;
 
   // Seperated boundary points
   struct sepBd {
-  public:
     Eigen::MatrixXd P_bd_L, P_bd_R;
   } P_bd;
 
   struct sepZ {
-  public:
     Eigen::MatrixXd z_L, z_R;
   };
 };
@@ -83,19 +79,19 @@ class HighwayRoadMap3D {
   Path      : valid path of motions;
   planTime  : planning time: roadmap building time and path search time
   */
-private:
+ private:
   std::vector<SuperQuadrics> mid;
   cf_cell3D mid_cell;
   std::vector<double> midVtx;
 
-public:
+ public:
   // Parameters for the roadmap
   size_t N_o, N_s, N_dx, N_dy, N_layers;
   std::vector<double> Lim;
   std::vector<Eigen::Quaterniond> q_r;
 
   struct vertexIdx {
-  public:
+   public:
     size_t layer;
     std::vector<size_t> plane;
     std::vector<std::vector<size_t>> line;
@@ -103,7 +99,7 @@ public:
 
   // graph: vector of vertices, vector of connectable edges
   struct graph {
-  public:
+   public:
     std::vector<std::vector<double>> vertex;
     Edge edge;
     std::vector<double> weight;
@@ -120,20 +116,20 @@ public:
   std::vector<int> Paths;
 
   struct Time {
-  public:
+   public:
     double buildTime, searchTime, totalTime;
   } planTime;
 
   bool flag = false;
 
   // functions
-private:
+ private:
   cf_cellYZ enhanceDecomp(cf_cellYZ cell);
   unsigned int find_cell(std::vector<double> v);
   Mesh getMesh(Eigen::MatrixXd, int);
   bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
-public:
+ public:
   HighwayRoadMap3D(SuperQuadrics robot, std::vector<std::vector<double>> endpt,
                    std::vector<SuperQuadrics> arena,
                    std::vector<SuperQuadrics> obs, option3D opt);
@@ -159,4 +155,4 @@ public:
   virtual ~HighwayRoadMap3D();
 };
 
-#endif // HIGHWAYROADMAP3D_H
+#endif  // HIGHWAYROADMAP3D_H

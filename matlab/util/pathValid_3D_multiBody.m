@@ -136,8 +136,8 @@ classdef pathValid_3D_multiBody < handle
             % Robot at Start and Goal points
             for i = 1:2
                 Obj.RobotM.Base.tc = Obj.EndPts(1:3,i);
-                Obj.RobotM.Base.q = Obj.EndPts(4:6,i);
-                g = [expm(skew(Obj.RobotM.Base.q)), Obj.RobotM.Base.tc; zeros(1,3), 1];
+                Obj.RobotM.Base.q = Obj.EndPts(4:end,i);
+                g = [quat2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc; zeros(1,3), 1];
                 
                 Obj.RobotM.robotTF(g, 1);
             end

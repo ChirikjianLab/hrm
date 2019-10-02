@@ -146,15 +146,13 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
 
       for (size_t m = 0; m < N_cs; m++) {
         pts_s = lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
-        if (pts_s.empty())
-          continue;
+        if (pts_s.empty()) continue;
         z_s_L(j, m) = std::fmin(-Lim[2], std::fmin(pts_s[0](2), pts_s[1](2)));
         z_s_R(j, m) = std::fmax(Lim[2], std::fmax(pts_s[0](2), pts_s[1](2)));
       }
       for (size_t n = 0; n < N_co; n++) {
         pts_o = lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
-        if (pts_o.empty())
-          continue;
+        if (pts_o.empty()) continue;
         z_o_L(j, n) = std::fmin(pts_o[0](2), pts_o[1](2));
         z_o_R(j, n) = std::fmax(pts_o[0](2), pts_o[1](2));
       }
@@ -586,8 +584,8 @@ SuperQuadrics HighwayRoadMap3D::tfe(std::vector<double> a,
   // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
   Eigen::Matrix3d Ap =
       T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
-  Eigen::JacobiSVD<Eigen::Matrix3d> svd(Ap, Eigen::ComputeFullU |
-                                                Eigen::ComputeFullV);
+  Eigen::JacobiSVD<Eigen::Matrix3d> svd(
+      Ap, Eigen::ComputeFullU | Eigen::ComputeFullV);
   Eigen::Array3d a_p = svd.singularValues().array().pow(-0.5);
   Eigen::Array3d c_p = {std::fmax(a_p(0), r), std::fmax(a_p(1), r),
                         std::fmax(a_p(2), r)};
