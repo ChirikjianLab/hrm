@@ -6,13 +6,13 @@
 #include <vector>
 
 class IntersectLineMesh3d {
-public:
-  std::vector<Eigen::Vector3d> intersect(Eigen::VectorXd line,
-                                         Eigen::Matrix3Xd vertices,
-                                         Eigen::MatrixX3d faces);
-  std::vector<Eigen::Vector3d> intersect_mat(Eigen::VectorXd line,
-                                             Eigen::Matrix3Xd vertices,
-                                             Eigen::MatrixX3d faces);
+  public:
+    std::vector<Eigen::Vector3d> intersect(Eigen::VectorXd line,
+                                           Eigen::Matrix3Xd vertices,
+                                           Eigen::MatrixX3d faces);
+    std::vector<Eigen::Vector3d> intersect_mat(Eigen::VectorXd line,
+                                               Eigen::Matrix3Xd vertices,
+                                               Eigen::MatrixX3d faces);
 };
 
-#endif // INTERSECTLINEMESH3D_H
+#endif  // INTERSECTLINEMESH3D_H

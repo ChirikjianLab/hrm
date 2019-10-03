@@ -9,4 +9,4 @@
 
 bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt);
 
-#endif // PTINPOLY_H
+#endif  // PTINPOLY_H

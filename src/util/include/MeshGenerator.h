@@ -7,9 +7,9 @@
 #include <CGAL/Triangulation_3.h>
 #include <fcl/fcl.h>
 
+#include <math.h>
 #include <fstream>
 #include <iostream>
-#include <math.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,21 +27,21 @@ using Finite_cells_iterator = Triangulation::Finite_cells_iterator;
 using Point_3 = K::Point_3;
 
 struct EMesh {
-  std::vector<fcl::Vector3d> vertices;
-  std::vector<fcl::Triangle> triangles;
+    std::vector<fcl::Vector3d> vertices;
+    std::vector<fcl::Triangle> triangles;
 };
 
 struct ParametricPoints {
-  std::vector<double> x;
-  std::vector<double> y;
-  std::vector<double> z;
+    std::vector<double> x;
+    std::vector<double> y;
+    std::vector<double> z;
 };
 
 class MeshGenerator {
-public:
-  MeshGenerator();
-  EMesh getMesh(ParametricPoints points_);
-  ParametricPoints getBoundary3D(SuperQuadrics obj);
+  public:
+    MeshGenerator();
+    EMesh getMesh(ParametricPoints points_);
+    ParametricPoints getBoundary3D(SuperQuadrics obj);
 };
 
-#endif // MESH_GENERATOR_H
+#endif  // MESH_GENERATOR_H
