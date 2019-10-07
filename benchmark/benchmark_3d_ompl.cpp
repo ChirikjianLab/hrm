@@ -1,36 +1,5 @@
 #include "ompl/include/ompl_planner.h"
 
-EMesh getMesh(SuperQuadrics sq) {
-    Eigen::Quaterniond quat;
-    sq.setQuaternion(quat.setIdentity());
-    sq.setPosition({0.0, 0.0, 0.0});
-
-    EMesh M;
-    MeshGenerator MeshGen;
-    ParametricPoints pts = MeshGen.getBoundary3D(sq);
-    M = MeshGen.getMesh(pts);
-    return M;
-}
-
-vector<SuperQuadrics> generateSQ(string file_name, int num) {
-    // Read config file
-    vector<vector<double>> config = parse2DCsvFile(file_name);
-
-    // Generate SQ object
-    vector<SuperQuadrics> obj;
-    for (size_t j = 0; j < config.size(); j++) {
-        obj.emplace_back(
-            SuperQuadrics({config[j][0], config[j][1], config[j][2]},
-                          {config[j][3], config[j][4]},
-                          {config[j][5], config[j][6], config[j][7]},
-                          Eigen::Quaterniond(config[j][8], config[j][9],
-                                             config[j][10], config[j][11]),
-                          num));
-    }
-
-    return obj;
-}
-
 int main(int argc, char **argv) {
     if (argc != 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
@@ -47,17 +16,18 @@ int main(int argc, char **argv) {
     vector<vector<double>> time_stat;
 
     // Read and setup environment config
-    string robot_config = "../config/robot_config_3d.csv",
-           arena_config = "../config/arena_config_3d.csv",
-           obs_config = "../config/obs_config_3d.csv";
-    vector<SuperQuadrics> robot = generateSQ(robot_config, n),
-                          arena = generateSQ(arena_config, n),
-                          obs = generateSQ(obs_config, n);
+    string robot_config = "../config/robot_config_3d.csv";
+    string arena_config = "../config/arena_config_3d.csv";
+    string obs_config = "../config/obs_config_3d.csv";
+
+    vector<SuperQuadrics> robot = getSQFromCsv(robot_config, n);
+    vector<SuperQuadrics> arena = getSQFromCsv(arena_config, n);
+    vector<SuperQuadrics> obs = getSQFromCsv(obs_config, n);
 
     // Obstacle mesh
     vector<EMesh> obs_mesh;
     for (size_t i = 0; i < obs.size(); i++) {
-        obs_mesh.emplace_back(getMesh(obs.at(i)));
+        obs_mesh.emplace_back(getMeshFromSQ(obs.at(i)));
     }
 
     // Boundary

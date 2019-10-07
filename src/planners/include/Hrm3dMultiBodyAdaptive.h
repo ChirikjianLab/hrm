@@ -3,8 +3,6 @@
 
 #include "Hrm3dMultiBody.h"
 
-#define pi 3.1415926
-
 class Hrm3DMultiBodyAdaptive : public Hrm3DMultiBody {
   public:
     Hrm3DMultiBodyAdaptive(MultiBodyTree3D, std::vector<std::vector<double>>,

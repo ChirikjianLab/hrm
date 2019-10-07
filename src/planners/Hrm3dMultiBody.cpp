@@ -355,7 +355,7 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     Eigen::Matrix3d R_link;
 
     // Rotation angle > pi/2, fit a sphere
-    if (fabs(axang.angle()) > pi / 2) {
+    if (std::fabs(axang.angle()) > pi / 2.0) {
         double ra = std::fmax(robot.getBase().getSemiAxis().at(0),
                               std::fmax(robot.getBase().getSemiAxis().at(1),
                                         robot.getBase().getSemiAxis().at(2)));

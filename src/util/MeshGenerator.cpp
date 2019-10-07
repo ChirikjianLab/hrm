@@ -1,13 +1,22 @@
 #include "include/MeshGenerator.h"
 
-MeshGenerator::MeshGenerator() {}
+EMesh getMeshFromSQ(SuperQuadrics sq) {
+    Eigen::Quaterniond quat;
+    sq.setQuaternion(quat.setIdentity());
+    sq.setPosition({0.0, 0.0, 0.0});
 
-EMesh MeshGenerator::getMesh(ParametricPoints points_) {
+    EMesh M;
+    ParametricPoints pts = getBoundary3D(sq);
+    M = getMesh(pts);
+    return M;
+}
+
+EMesh getMesh(const ParametricPoints& points) {
     EMesh res;
 
     std::list<Point> L;
-    for (size_t i = 0; i < points_.x.size(); i++) {
-        L.push_front(Point(points_.x[i], points_.y[i], points_.z[i]));
+    for (size_t i = 0; i < points.x.size(); i++) {
+        L.push_front(Point(points.x[i], points.y[i], points.z[i]));
     }
     Triangulation T(L.begin(), L.end());
     assert(T.is_valid());
@@ -60,15 +69,37 @@ EMesh MeshGenerator::getMesh(ParametricPoints points_) {
             ++cit;
         }
     }
+
     return res;
 }
 
-ParametricPoints MeshGenerator::getBoundary3D(SuperQuadrics obj) {
+ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
     ParametricPoints X;
     for (int i = 0; i < obj.getNum(); i++) {
         X.x.push_back(obj.getOriginShape()(0, i));
         X.y.push_back(obj.getOriginShape()(1, i));
         X.z.push_back(obj.getOriginShape()(2, i));
     }
+
     return X;
+}
+
+std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
+                                        const int num) {
+    // Read config file
+    std::vector<std::vector<double>> config = parse2DCsvFile(file_name);
+
+    // Generate SQ object
+    std::vector<SuperQuadrics> obj;
+    for (size_t j = 0; j < config.size(); j++) {
+        obj.emplace_back(
+            SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+                          {config[j][3], config[j][4]},
+                          {config[j][5], config[j][6], config[j][7]},
+                          Eigen::Quaterniond(config[j][8], config[j][9],
+                                             config[j][10], config[j][11]),
+                          num));
+    }
+
+    return obj;
 }

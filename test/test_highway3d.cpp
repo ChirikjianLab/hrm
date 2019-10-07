@@ -1,5 +1,6 @@
 #include "geometry/include/SuperQuadrics.h"
 #include "planners/include/HighwayRoadMap3d.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <eigen3/Eigen/Dense>
@@ -15,25 +16,6 @@ using namespace Eigen;
 using namespace std;
 
 #define pi 3.1415926
-
-vector<SuperQuadrics> generateSQ(string file_name, double D) {
-    // Read config file
-    vector<vector<double>> config = parse2DCsvFile(file_name);
-
-    // Generate SQ object
-    vector<SuperQuadrics> obj;
-    for (size_t j = 0; j < config.size(); j++) {
-        obj.emplace_back(
-            SuperQuadrics({config[j][0], config[j][1], config[j][2]},
-                          {config[j][3], config[j][4]},
-                          {config[j][5], config[j][6], config[j][7]},
-                          Eigen::Quaterniond(config[j][8], config[j][9],
-                                             config[j][10], config[j][11]),
-                          int(D)));
-    }
-
-    return obj;
-}
 
 HighwayRoadMap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
                       vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
@@ -143,7 +125,7 @@ int main(int argc, char **argv) {
 
     // Record planning time for N trials
     size_t N = size_t(atoi(argv[1]));
-    double n = atof(argv[2]);
+    int n = atoi(argv[2]);
     int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
     vector<vector<double>> stat(N);
@@ -153,9 +135,9 @@ int main(int argc, char **argv) {
            arena_config = "../config/arena_config_3d.csv",
            obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = generateSQ(robot_config, n),
-                          arena = generateSQ(arena_config, n),
-                          obs = generateSQ(obs_config, n);
+    vector<SuperQuadrics> robot_aux = getSQFromCsv(robot_config, n),
+                          arena = getSQFromCsv(arena_config, n),
+                          obs = getSQFromCsv(obs_config, n);
     SuperQuadrics robot = robot_aux[0];
 
     // Read predefined quaternions

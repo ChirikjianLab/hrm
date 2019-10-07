@@ -1,6 +1,7 @@
 #ifndef MESH_GENERATOR_H
 #define MESH_GENENATOR_H
 
+#include "Parse2dCsvFile.h"
 #include "src/geometry/include/SuperQuadrics.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -37,11 +38,25 @@ struct ParametricPoints {
     std::vector<double> z;
 };
 
-class MeshGenerator {
-  public:
-    MeshGenerator();
-    EMesh getMesh(ParametricPoints points_);
-    ParametricPoints getBoundary3D(SuperQuadrics obj);
-};
+/*
+ * \brief get mesh info from SuperQuadrics class
+ */
+EMesh getMeshFromSQ(SuperQuadrics sq);
+
+/*
+ * \brief get mesh info from 3D point cloud
+ */
+EMesh getMesh(const ParametricPoints& points);
+
+/*
+ * \brief get 3D point cloud from SuperQuadric class
+ */
+ParametricPoints getBoundary3D(const SuperQuadrics& obj);
+
+/*
+ * \brief Generate SuperQuadrics class from configuration .csv file
+ */
+std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
+                                        const int num);
 
 #endif  // MESH_GENERATOR_H

@@ -4,7 +4,7 @@
 #include "HighwayRoadMap3d.h"
 #include "src/util/include/MultiBodyTree3d.h"
 
-#define pi 3.1415926
+const double pi = 3.1415926;
 
 class Hrm3DMultiBody : public HighwayRoadMap3D {
   public:
