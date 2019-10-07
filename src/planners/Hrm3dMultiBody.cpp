@@ -21,6 +21,10 @@ void Hrm3DMultiBody::plan() {
     planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
 
     planTime.totalTime = planTime.buildTime + planTime.searchTime;
+
+    // Retrieve coordinates of solved path
+    solutionPathInfo.solvedPath = getSolutionPath();
+    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(10);
 }
 
 // Build the roadmap for multi-rigid-body planning
@@ -38,35 +42,14 @@ void Hrm3DMultiBody::buildRoadmap() {
         RobotM.robotTF(tf);
         Robot.setQuaternion(q_r.at(i));
 
-        // boundary for obstacles and arenas
-        //        time::point start = time::now();
         boundary3D bd = boundaryGen();
-        //        cout << "Boundary: " << time::seconds(time::now() - start) <<
-        //        's'
-        //        << endl;
-
-        // collision-free cells, stored by tx, ty, zL, zU, zM
-        //        start = time::now();
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
-        //        cout << "Sweep line: " << time::seconds(time::now() - start)
-        //        <<
-        //        's' << endl;
-
-        // construct adjacency matrix for one layer
-        //        start = time::now();
         connectOneLayer(CFcell);
-        //        cout << "Connect within one layer: " <<
-        //        time::seconds(time::now()
-        //        - start) << 's' << endl;
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
     }
-    //    time::point start = time::now();
     connectMultiLayer();
-    //    cout << "Connect btw different layers: " << time::seconds(time::now()
-    //    -
-    //    start) << 's' << endl;
 };
 
 // Minkowski Boundary
@@ -77,14 +60,16 @@ boundary3D Hrm3DMultiBody::boundaryGen() {
     std::vector<Eigen::MatrixXd> bd_aux;
     for (size_t i = 0; i < N_s; i++) {
         bd_aux = RobotM.minkSumSQ(Arena.at(i), -1);
-        for (size_t j = 0; j < bd_aux.size(); j++)
+        for (size_t j = 0; j < bd_aux.size(); j++) {
             bd.bd_s.push_back(bd_aux.at(j));
+        }
         bd_aux.clear();
     }
     for (size_t i = 0; i < N_o; i++) {
         bd_aux = RobotM.minkSumSQ(Obs.at(i), 1);
-        for (size_t j = 0; j < bd_aux.size(); j++)
+        for (size_t j = 0; j < bd_aux.size(); j++) {
             bd.bd_o.push_back(bd_aux.at(j));
+        }
         bd_aux.clear();
     }
 
@@ -99,7 +84,6 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
     size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
     size_t start = 0;
-    int number = 0;
     std::vector<double> V1, V2;
 
     for (size_t i = 0; i < N_layers; i++) {
@@ -176,8 +160,6 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 }
 
                 if (isCollisionFree(V1, V2)) {
-                    number++;
-
                     // Middle vertex: trans = V1; rot = V2;
                     midVtx = {V1[0], V1[1], V1[2], V2[3], V2[4], V2[5], V2[6]};
                     vtxEdge.vertex.push_back(midVtx);
@@ -187,6 +169,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
                     vtxEdge.weight.push_back(vector_dist(V1, midVtx));
                     vtxEdge.edge.push_back(std::make_pair(m1, n));
                     vtxEdge.weight.push_back(vector_dist(V2, midVtx));
+
                     n++;
 
                     // Continue from where it pauses
@@ -200,8 +183,6 @@ void Hrm3DMultiBody::connectMultiLayer() {
         // Clear mid_cell;
         mid_cell.clear();
     }
-
-    std::cout << number << std::endl;
 }
 
 bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,

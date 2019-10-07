@@ -10,8 +10,6 @@
 using namespace Eigen;
 using namespace std;
 
-#define pi 3.1415926
-
 int main(int argc, char **argv) {
     if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
@@ -104,8 +102,8 @@ int main(int argc, char **argv) {
                   << high3D.planTime.buildTime + high3D.planTime.searchTime
                   << ',' << N_l << ',' << N_x << ',' << N_y << ','
                   << high3D.vtxEdge.vertex.size() << ','
-                  << high3D.vtxEdge.edge.size() << ',' << high3D.Paths.size()
-                  << "\n";
+                  << high3D.vtxEdge.edge.size() << ','
+                  << high3D.solutionPathInfo.PathId.size() << "\n";
     }
     file_time.close();
 

@@ -18,8 +18,9 @@ void hrm_multi_adaptive_planner::plan_path() {
 
     cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
     cout << "Number of C-layers: " << N_layers << endl;
-    cout << "Number of configurations in Path: " << Paths.size() << endl;
-    cout << "Cost: " << Cost << endl;
+    cout << "Number of configurations in Path: "
+         << solutionPathInfo.PathId.size() << endl;
+    cout << "Cost: " << solutionPathInfo.Cost << endl;
 
     // Write the output to .csv files
     ofstream file_vtx;
@@ -42,10 +43,20 @@ void hrm_multi_adaptive_planner::plan_path() {
 
     ofstream file_paths;
     file_paths.open("paths3D.csv");
-    if (~Paths.empty()) {
-        for (size_t i = 0; i < Paths.size(); i++) {
-            file_paths << Paths[i] << ' ';
+    if (~solutionPathInfo.PathId.empty()) {
+        for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
+            file_paths << solutionPathInfo.PathId[i] << ' ';
         }
     }
     file_paths.close();
+
+    ofstream file_path;
+    file_path.open("solutionPath3D.csv");
+    vector<vector<double>> path = getSolutionPath();
+    for (size_t i = 0; i < path.size(); i++) {
+        file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2] << ' '
+                  << path[i][3] << ' ' << path[i][4] << ' ' << path[i][5] << ' '
+                  << path[i][6] << "\n";
+    }
+    file_path.close();
 }

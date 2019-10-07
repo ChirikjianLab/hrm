@@ -156,29 +156,18 @@ int main(int argc, char **argv) {
     EndPts.push_back(endPts[0]);
     EndPts.push_back(endPts[1]);
 
-    Hrm3DMultiBody high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
-    // Planning Time and Path Cost
-    cout << "Roadmap build time: " << high3D.planTime.buildTime << "s" << endl;
-    cout << "Path search time: " << high3D.planTime.searchTime << "s" << endl;
-    cout << "Total Planning Time: " << high3D.planTime.totalTime << 's' << endl;
-
-    cout << "Number of valid configurations: " << high3D.vtxEdge.vertex.size()
-         << endl;
-    cout << "Number of configurations in Path: " << high3D.Paths.size() << endl;
-    cout << "Cost: " << high3D.Cost << endl;
-
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i << endl;
 
         // Path planning using HighwayRoadmap3D
-        high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
+        Hrm3DMultiBody high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
 
         stat[i] = {high3D.planTime.buildTime,
                    high3D.planTime.searchTime,
                    high3D.planTime.totalTime,
                    double(high3D.vtxEdge.vertex.size()),
                    double(high3D.vtxEdge.edge.size()),
-                   double(high3D.Paths.size()),
+                   double(high3D.solutionPathInfo.PathId.size()),
                    double(high3D.flag)};
 
         // Planning Time and Path Cost
@@ -191,39 +180,49 @@ int main(int argc, char **argv) {
 
         cout << "Number of valid configurations: "
              << high3D.vtxEdge.vertex.size() << endl;
-        cout << "Number of configurations in Path: " << high3D.Paths.size()
-             << endl;
-        cout << "Cost: " << high3D.Cost << endl;
-    }
+        cout << "Number of configurations in Path: "
+             << high3D.solutionPathInfo.PathId.size() << endl;
+        cout << "Cost: " << high3D.solutionPathInfo.Cost << endl;
 
-    // Write the output to .csv files
-    ofstream file_vtx;
-    file_vtx.open("vertex3D.csv");
-    vector<vector<double>> vtx = high3D.vtxEdge.vertex;
-    for (size_t i = 0; i < vtx.size(); i++) {
-        file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
-                 << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' '
-                 << vtx[i][6] << "\n";
-    }
-    file_vtx.close();
-
-    ofstream file_edge;
-    file_edge.open("edge3D.csv");
-    vector<pair<int, int>> edge = high3D.vtxEdge.edge;
-    for (size_t i = 0; i < edge.size(); i++) {
-        file_edge << edge[i].first << ' ' << edge[i].second << "\n";
-    }
-    file_edge.close();
-
-    ofstream file_paths;
-    file_paths.open("paths3D.csv");
-    vector<int> paths = high3D.Paths;
-    if (~paths.empty()) {
-        for (size_t i = 0; i < paths.size(); i++) {
-            file_paths << paths[i] << ' ';
+        // Write the output to .csv files
+        ofstream file_vtx;
+        file_vtx.open("vertex3D.csv");
+        vector<vector<double>> vtx = high3D.vtxEdge.vertex;
+        for (size_t i = 0; i < vtx.size(); i++) {
+            file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
+                     << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' '
+                     << vtx[i][6] << "\n";
         }
+        file_vtx.close();
+
+        ofstream file_edge;
+        file_edge.open("edge3D.csv");
+        vector<pair<int, int>> edge = high3D.vtxEdge.edge;
+        for (size_t i = 0; i < edge.size(); i++) {
+            file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+        }
+        file_edge.close();
+
+        ofstream file_pathId;
+        file_pathId.open("paths3D.csv");
+        vector<int> paths = high3D.solutionPathInfo.PathId;
+        if (~paths.empty()) {
+            for (size_t i = 0; i < paths.size(); i++) {
+                file_pathId << paths[i] << ' ';
+            }
+        }
+        file_pathId.close();
+
+        ofstream file_path;
+        file_path.open("solutionPath3D.csv");
+        vector<vector<double>> path = high3D.solutionPathInfo.solvedPath;
+        for (size_t i = 0; i < path.size(); i++) {
+            file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2]
+                      << ' ' << path[i][3] << ' ' << path[i][4] << ' '
+                      << path[i][5] << ' ' << path[i][6] << "\n";
+        }
+        file_path.close();
     }
-    file_paths.close();
 
     // Store results
     ofstream file_time;

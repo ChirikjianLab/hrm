@@ -81,8 +81,8 @@ int main(int argc, char **argv) {
         file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','
                   << high3D.N_layers << ',' << N_x << ',' << N_y << ','
                   << high3D.vtxEdge.vertex.size() << ','
-                  << high3D.vtxEdge.edge.size() << ',' << high3D.Paths.size()
-                  << "\n";
+                  << high3D.vtxEdge.edge.size() << ','
+                  << high3D.solutionPathInfo.PathId.size() << "\n";
     }
     file_time.close();
 

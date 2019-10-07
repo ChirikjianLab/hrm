@@ -86,6 +86,11 @@ class HighwayRoadMap3D {
 
   public:
     // Parameters for the roadmap
+    SuperQuadrics Robot;
+    std::vector<SuperQuadrics> Arena;
+    std::vector<SuperQuadrics> Obs;
+    std::vector<std::vector<double>> Endpt;
+
     size_t N_o, N_s, N_dx, N_dy, N_layers;
     std::vector<double> Lim;
     std::vector<Eigen::Quaterniond> q_r;
@@ -108,12 +113,13 @@ class HighwayRoadMap3D {
     // Vertex index info
     std::vector<vertexIdx> vtxId;
 
-    AdjGraph Graph;
-    SuperQuadrics Robot;
-    std::vector<SuperQuadrics> Arena, Obs;
-    double Cost = 0.0;
-    std::vector<std::vector<double>> Endpt;
-    std::vector<int> Paths;
+    // Solution info
+    struct SolutionPathInfo {
+        std::vector<int> PathId;
+        std::vector<std::vector<double>> solvedPath;
+        std::vector<std::vector<double>> interpolatedPath;
+        double Cost = 0.0;
+    } solutionPathInfo;
 
     struct Time {
       public:
@@ -123,37 +129,121 @@ class HighwayRoadMap3D {
     bool flag = false;
 
     // functions
-  private:
-    cf_cellYZ enhanceDecomp(cf_cellYZ cell);
-    unsigned int find_cell(std::vector<double> v);
-    Mesh getMesh(Eigen::MatrixXd, int);
-    bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
   public:
     HighwayRoadMap3D(SuperQuadrics robot,
                      std::vector<std::vector<double>> endpt,
                      std::vector<SuperQuadrics> arena,
                      std::vector<SuperQuadrics> obs, option3D opt);
+    virtual ~HighwayRoadMap3D();
+
+  public:
+    /*
+     * \brief main function for planning
+     */
     virtual void plan();
+
+    /*
+     * \brief main function for building the roadmap
+     */
     virtual void buildRoadmap();
+
+    /*
+     * \brief compute Minkowski sum boundary
+     */
     virtual boundary3D boundaryGen();
+
+    /*
+     * \brief sweep-line process for cell decomposition, vertical lines parallel
+     * to z-axis
+     * \param bd_s, bd_o Minkowski boundry of obstacles and arenas
+     * \return collision-free cells info
+     */
     cf_cell3D sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                          std::vector<Eigen::MatrixXd> bd_o);
-    cf_cellYZ cfLine(std::vector<double> ty, Eigen::MatrixXd x_s_L,
-                     Eigen::MatrixXd x_s_R, Eigen::MatrixXd x_o_L,
-                     Eigen::MatrixXd x_o_R);
+
+    /*
+     * \brief subroutine for generating collision-free vertices on the yz-plane
+     * \param ty a vector of incremented y-coordinates
+     * \param z_s_L, z_s_U, z_o_L, z_o_U upper(U) and lower(L) z-coordinates of
+     * the intersection for arena(s) and obstacles(o), size = num of
+     * y-coordinates X num of objects
+     * \return collision-free cells info
+     */
+    cf_cellYZ cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
+                     Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
+                     Eigen::MatrixXd z_o_U);
+
+    /*
+     * \brief connect within one C-layer
+     */
     void connectOneLayer(cf_cell3D cell);
+
+    /*
+     * \brief subroutine to first connect vertices within on
+     * sweep-plane(vertical to x-axis)
+     */
     void connectOnePlane(double tz, cf_cellYZ cellYZ);
+
+    /*
+     * \brief connect within adjacent C-layers, using the idea of "middle
+     * C-layer"
+     */
     virtual void connectMultiLayer();
+
+    /*
+     * \brief subroutine to first construct the middle C-layer
+     */
     cf_cell3D midLayer(SuperQuadrics);
+
+    /*
+     * \brief graph search using a-star algorithm
+     */
     void search();
 
+    /*
+     * \brief get the resulting solved path and the interpolated one
+     */
+    std::vector<std::vector<double>> getSolutionPath();
+    std::vector<std::vector<double>> getInterpolatedSolutionPath(int num);
+
+    /*
+     * \brief compute "tightly-fitted ellipsoid"
+     */
     SuperQuadrics tfe(std::vector<double>, std::vector<double>,
                       Eigen::Quaterniond, Eigen::Quaterniond);
+
+    /*
+     * \brief uniform random sample SO(3)
+     */
     void sampleSO3();
+
+    /*
+     * \brief compute Euclidean distance between two vectors
+     */
     double vector_dist(std::vector<double> v1, std::vector<double> v2);
 
-    virtual ~HighwayRoadMap3D();
+  private:
+    /*
+     * \brief enhanced cell decomposition, connect vertices within one
+     * collision-free line segment
+     */
+    cf_cellYZ enhanceDecomp(cf_cellYZ cell);
+
+    /*
+     * \brief find the closest cell a pose lie on
+     */
+    unsigned int find_cell(std::vector<double> v);
+
+    /*
+     * \brief get mesh info from a ordered vertex list
+     */
+    Mesh getMesh(Eigen::MatrixXd, int);
+
+    /*
+     * \brief query whether a point is within a collision-free line segment
+     */
+    bool isPtinCFLine(std::vector<double>, std::vector<double>);
 };
 
 #endif  // HIGHWAYROADMAP3D_H

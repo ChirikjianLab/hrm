@@ -12,7 +12,7 @@ ar = load(['../../config/', 'arena_config_3d.csv']);
 % Plot
 for i = 1:size(ar,1)
     arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
-        ar(i,4:5), 20}, 'w', 0);
+        ar(i,4:5), 20}, 'none', 0);
 end
 
 for i = 1:size(ob,1)
@@ -59,25 +59,19 @@ plot3(start(1), start(2), start(3), 'ro', 'LineWidth', 3);
 plot3(goal(1), goal(2), goal(3), 'gd', 'LineWidth', 3);
 
 % shortest path
-path = load([loadPath, 'paths3D.csv']);
+pathId = load([loadPath, 'paths3D.csv']) + 1;
+path = load([loadPath, 'solutionPath3D.csv']);
 
 if ~isempty(path)
-    plot3([start(1) vtx(path(end)+1,1)],...
-        [start(2) vtx(path(end)+1,2)],...
-        [start(3) vtx(path(end)+1,3)], 'r', 'LineWidth', 2)
-    plot3([goal(1) vtx(path(1)+1,1)],...
-        [goal(2) vtx(path(1)+1,2)],...
-        [goal(3) vtx(path(1)+1,3)], 'g', 'LineWidth', 2)
+    for i = 1:size(path,1)-1
+        plot3([path(i,1) path(i+1,1)],...
+            [path(i,2) path(i+1,2)],...
+            [path(i,3) path(i+1,3)], 'c', 'LineWidth', 2)
 
-    for i = 1:size(path,2)-1
-        plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-            [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-            [vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'c', 'LineWidth', 2)
-
-        robot.Base.q = vtx(path(i)+1,4:7);
-        robot.Base.tc = vtx(path(i)+1,1:3)';
+        robot.Base.q = path(i,4:7);
+        robot.Base.tc = path(i,1:3)';
         g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
-%         robot.robotTF(g,1);
+        robot.robotTF(g,1);
     end
 end
 
@@ -85,11 +79,6 @@ end
 disp('Validating path...')
 Graph.V = vtx';
 
-% Flip the path
-for i = 1:size(path,2)
-    path2(i) = 1 + path(end+1-i);
-end
-
-high3D = pathValid_3D_multiBody(robot, endPts, arena, obs, Graph, path2);
+high3D = pathValid_3D_multiBody(robot, arena, obs, path);
 high3D.validation();
 high3D.PlotPath();

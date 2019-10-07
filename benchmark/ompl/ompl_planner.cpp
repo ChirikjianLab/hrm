@@ -320,7 +320,7 @@ bool ompl_planner::compareStates(vector<double> goal_config,
                                  vector<double> last_config) {
     bool res = true;
     for (size_t i = 0; i < 7; i++) {
-        if (abs(last_config[i] - goal_config[i]) > 0.1) {
+        if (std::fabs(last_config[i] - goal_config[i]) > 0.1) {
             res = false;
         }
     }
