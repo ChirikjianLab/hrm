@@ -8,10 +8,10 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 - [OMPL](https://ompl.kavrakilab.org/installation.html): Open Motion Planning Library for sample-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl): Flexible Collision Library for collision detection
 - [CCD](https://github.com/danfis/libccd): Required dependency for FCL
-- CGAL: Mesh generation as a pre-process
+- [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
 - GMP: Required dependency for CGAL
 - Eigen
-- Boost
+- [Boost](https://www.boost.org/)
 
 ## Testing Instructions
 ### Generate configuration files
