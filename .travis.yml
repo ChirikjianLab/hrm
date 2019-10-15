@@ -1,1 +1,13 @@
-language: c++
+language: cpp
+dist: bionic
+git: 
+    depth: 4
+before_script:
+    mkdir -p build
+    cd build
+    cmake ../HighwayRoadMap
+    make
+notifications:
+    email:
+        on_success: change
+        on_failure: always
