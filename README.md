@@ -5,13 +5,22 @@ A paradigm for robot motion planning based on parameterizations of the free spac
 We develop a motion planning algorithm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). Full algorithm is developed in Matlab and benchmark code is written in C++. The algorithms for both SE(2) and SE(3) rigid body planning problems have been developed and compared with sampled-based planners from OMPL. The benchmark results show that our proposed method outperforms the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problem.
 
 ## Dependencies
-- OMPL: Open Motion Planning Library for sample-based planners
-- FCL: Flexible Collision Library for collision detection
-- CCD: Required dependency for FCL
-- CGAL: Mesh generation as a pre-process
+- [OMPL](https://ompl.kavrakilab.org/installation.html): Open Motion Planning Library for sample-based planners
+- [FCL](https://github.com/flexible-collision-library/fcl): Flexible Collision Library for collision detection
+- [CCD](https://github.com/danfis/libccd): Required dependency for FCL
+- [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
 - GMP: Required dependency for CGAL
 - Eigen
-- Boost
+- [Boost](https://www.boost.org/)
+- [cmake-format] 
+    ```
+    sudo pip3 install cmake-format==0.4.5
+    ```
+- [clang-format]
+    ```
+    sudo apt install clang
+
+    ```
 
 ## Testing Instructions
 ### Generate configuration files
