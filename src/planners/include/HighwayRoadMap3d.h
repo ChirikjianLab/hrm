@@ -72,6 +72,8 @@ class HighwayRoadMap3D {
     N_layers  : number of C-layers;
     q_r       : sampled orientations (Quaternion) of the robot;
     N_v_layer : number of vertex in each layer;
+    N_step    : number of interpolated orientations between two vertices at
+                different C-layers, default = 3
 
     graph     : a structure consisting of vertex and edges;
     Cost      : cost of the searched path;
@@ -94,6 +96,7 @@ class HighwayRoadMap3D {
     size_t N_o, N_s, N_dx, N_dy, N_layers;
     std::vector<double> Lim;
     std::vector<Eigen::Quaterniond> q_r;
+    int N_step = 3;
 
     struct vertexIdx {
       public:
@@ -208,10 +211,21 @@ class HighwayRoadMap3D {
     std::vector<std::vector<double>> getInterpolatedSolutionPath(int num);
 
     /*
-     * \brief compute "tightly-fitted ellipsoid"
+     * \brief compute "tightly-fitted concentric ellipsoid" that encloses
+     * multiple ellipsoids
      */
-    SuperQuadrics tfe(std::vector<double>, std::vector<double>,
-                      Eigen::Quaterniond, Eigen::Quaterniond);
+    SuperQuadrics tfe(const std::vector<double>& a,
+                      const Eigen::Quaterniond& q_a,
+                      const Eigen::Quaterniond& q_b, const int N_step);
+
+    /*
+     * \brief compute "minimum volume concentric ellipsoid" that encloses two
+     * concentric ellipsoids
+     */
+    SuperQuadrics mvce(const std::vector<double>& a,
+                       const std::vector<double>& b,
+                       const Eigen::Quaterniond& q_a,
+                       const Eigen::Quaterniond& q_b);
 
     /*
      * \brief uniform random sample SO(3)
@@ -226,7 +240,8 @@ class HighwayRoadMap3D {
   private:
     /*
      * \brief enhanced cell decomposition, connect vertices within one
-     * collision-free line segment
+     * collision-free line segment, all connections between vertexes are within
+     * one convex cell
      */
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
 

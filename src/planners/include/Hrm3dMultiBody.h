@@ -30,7 +30,6 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     std::vector<SuperQuadrics> mid;
     std::vector<cf_cell3D> mid_cell;
     std::vector<double> midVtx;
-    double N_step = 2;
 };
 
 #endif  // HRM3DMULTIBODY_H

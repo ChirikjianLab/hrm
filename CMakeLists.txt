@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.0)
 project(highwayRoadMap)
 
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
@@ -14,9 +15,14 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 
 # Packages
-find_library(OMPL REQUIRED)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+#find_library(OMPL REQUIRED)
+
+find_package(OMPL REQUIRED)
+IF (OMPL_FOUND)
+    include_directories(${OMPL_INCLUDE_DIR})
+    link_libraries(${OMPL_LIBRARIES})
+    ADD_DEFINITIONS( "-DHAS_OMPL" )
+ENDIF()
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
