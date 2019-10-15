@@ -139,14 +139,9 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
 
     cout << "Planning..." << endl;
     ob::PlannerStatus solved = ss_->solve(60);
-
     if (!solved) {
         flag = false;
-        return false;
-    } else if (total_time < 60) {
-        flag = true;
-    } else {
-        flag = false;
+        return flag;
     }
 
     /*Getting times*/
@@ -159,9 +154,114 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
     nodes_graph = pd.numVertices();
     edges_graph = pd.numEdges();
 
+    // Store all the valid states
+    ofstream file_state;
+    const ob::State *state;
+    file_state.open("ompl_state3d.csv");
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        state = pd.getVertex(i).getState()->as<ob::State>();
+        file_state << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->getY() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->getZ() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().w
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().x
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().y
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().z
+                   << "\n";
+    }
+    file_state.close();
+
+    // Store all the valid edges
+    ofstream file_edge;
+    file_edge.open("ompl_edge3d.csv");
+    vector<vector<unsigned int>> edge(pd.numVertices());
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        pd.getEdges(i, edge[i]);
+        for (unsigned int j = 0; j < edge[i].size(); j++)
+            file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+    }
+    file_edge.close();
+
     nodes_path = ss_->getSolutionPath().getStates().size();
     valid_space = ss_->getSpaceInformation()->probabilityOfValidState(1000);
-    return true;
+
+    bool aux_flag = false;
+    if (solved) {
+        //        cout << "Found solution:" << endl;
+        // print the path to screen
+        //        ss_->getSolutionPath().print(cout);
+        // Storing solution in a file
+        const vector<ob::State *> &states = ss_->getSolutionPath().getStates();
+        ob::State *state;
+        ofstream file_traj;
+        file_traj.open("ompl_path3d.csv");
+        for (size_t i = 0; i < states.size(); ++i) {
+            state = states[i]->as<ob::State>();
+            file_traj << state->as<ob::SE3StateSpace::StateType>()->getX()
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->getY()
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->getZ()
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->rotation().w
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->rotation().x
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->rotation().y
+                      << ","
+                      << state->as<ob::SE3StateSpace::StateType>()->rotation().z
+                      << "\n";
+        }
+        file_traj.close();
+
+        vector<double> final_conf;
+        state = states.back()->as<ob::State>();
+        final_conf.resize(7);
+        final_conf[0] = state->as<ob::SE3StateSpace::StateType>()->getX();
+        final_conf[1] = state->as<ob::SE3StateSpace::StateType>()->getY();
+        final_conf[2] = state->as<ob::SE3StateSpace::StateType>()->getZ();
+        final_conf[3] = state->as<ob::SE3StateSpace::StateType>()->rotation().w;
+        final_conf[4] = state->as<ob::SE3StateSpace::StateType>()->rotation().x;
+        final_conf[5] = state->as<ob::SE3StateSpace::StateType>()->rotation().y;
+        final_conf[6] = state->as<ob::SE3StateSpace::StateType>()->rotation().z;
+
+        aux_flag = compareStates(goal_, final_conf);
+
+        // Smooth path
+        ss_->getSolutionPath().interpolate(50);
+
+        // print the path to screen
+        // ss_->getSolutionPath().printAsMatrix(std::cout);
+        // Storing solution in a file
+        const vector<ob::State *> &s_states =
+            ss_->getSolutionPath().getStates();
+
+        ofstream file_smooth_traj;
+        file_smooth_traj.open("ompl_smooth_path3d.csv");
+        for (size_t i = 0; i < s_states.size(); ++i) {
+            state = s_states[i]->as<ob::State>();
+            file_smooth_traj
+                << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
+                << state->as<ob::SE3StateSpace::StateType>()->getY() << ","
+                << state->as<ob::SE3StateSpace::StateType>()->getZ() << ","
+                << state->as<ob::SE3StateSpace::StateType>()->rotation().w
+                << ","
+                << state->as<ob::SE3StateSpace::StateType>()->rotation().x
+                << ","
+                << state->as<ob::SE3StateSpace::StateType>()->rotation().y
+                << ","
+                << state->as<ob::SE3StateSpace::StateType>()->rotation().z
+                << "\n";
+        }
+        file_smooth_traj.close();
+        flag = int(aux_flag);
+        if (total_time >= 100) flag = false;
+        return true;
+    }
+    return false;
 }
 
 bool ompl_planner::isStateValid(const ob::State *state) const {

@@ -205,7 +205,7 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
     Eigen::Vector3d Vs;
 
     for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-        for (size_t j = 0; j <= N_step; ++j) {
+        for (size_t j = 0; j <= size_t(N_step); ++j) {
             d_axang.angle() = j * dt * axang.angle();
 
             Vs = Eigen::Vector3d({V1[0], V1[1], V1[2]}) +
@@ -355,16 +355,15 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     }
     // else fit a TFE
     else {
-        SuperQuadrics e_fitted = tfe(robot.getBase().getSemiAxis(),
-                                     robot.getBase().getSemiAxis(), q1, q2);
+        SuperQuadrics e_fitted =
+            tfe(robot.getBase().getSemiAxis(), q1, q2, N_step);
         tfe_obj.push_back(e_fitted);
 
         for (size_t i = 0; i < robot.getNumLinks(); i++) {
             R_link = robot.getTF().at(i).block<3, 3>(0, 0);
             e_fitted = tfe(robot.getLinks().at(i).getSemiAxis(),
-                           robot.getLinks().at(i).getSemiAxis(),
                            Eigen::Quaterniond(R1 * R_link),
-                           Eigen::Quaterniond(R2 * R_link));
+                           Eigen::Quaterniond(R2 * R_link), N_step);
             tfe_obj.push_back(e_fitted);
         }
     }
