@@ -19,7 +19,6 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 - [clang-format]
     ```
     sudo apt install clang
-
     ```
 
 ## Testing Instructions
