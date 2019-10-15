@@ -14,8 +14,7 @@ using namespace std;
 int main(int argc, char **argv) {
     if (argc != 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of "
-                "sweep planes 4) Num of sweep lines"
+                "of sweep planes 4) Num of sweep lines"
              << endl;
         return 1;
     }

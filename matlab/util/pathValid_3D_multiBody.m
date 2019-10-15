@@ -21,88 +21,43 @@ classdef pathValid_3D_multiBody < handle
         %% ------------------ Plan Validation --------------------
         %% Post operation for found path, collision checking along path
         function valid = validation(Obj)
-            % Do collision checking along the found path to validate.
+            % Do collision checking for each vertex to validate.
             for i = 1:size(Obj.Paths,1)-1
-                collision = Obj.IsEdgeInCollision3D(Obj.Paths(i,:)',...
-                    Obj.Paths(i+1,:)', 1);
+                g_i = [quat2rotm(Obj.Paths(i,4:end)), Obj.Paths(i,1:3)';
+                    0,0,0,1];
+                Obj.RobotM.robotTF(g_i,1);
                 
-                if collision
-                    valid = false;
-                    disp('Collision!');
-                    break;
+                % surface for obstacles
+                for j = 1:length(Obj.Obs)
+                    obsSurf(j) = Obj.Obs(j).GetSurf;
+                end
+                
+                % robot base
+                robotSurf(1) = Obj.RobotM.Base.GetSurf;
+                
+                % robot links
+                for k = 1:Obj.RobotM.numLink
+                    robotSurf(k+1) = Obj.RobotM.Link{k}.GetSurf;
+                end
+                
+                % collision detection
+                for j = 1:length(Obj.Obs)
+                    for k = 1:length(robotSurf)
+                        if GJK(robotSurf(k),obsSurf(j),20)
+                            valid = false;
+                            disp(['Collision at Vertex #:', num2str(i),...
+                                '  Pose: ',num2str(Obj.Paths(i,:))]);
+                            return;
+                        end
+                    end
                 end
             end
             
             if ~collision
                 valid = true;
+                Obj.ValidPath = [Obj.ValidPath, Obj.Paths(:,i)];
                 disp('Path is Valid!')
             end
-        end
-        
-        %% Check edge collisions
-        function collision = IsEdgeInCollision3D(Obj, V1, V2, res)
-            collision = 0;
-            robot = Obj.RobotM;
-            
-            c_steps = Obj.getInterpolatedPoses(V1, V2, res);
-            n_step = size(c_steps,2);
-            
-            % Check if the robot hits the obstacle or arena, step by step
-            obs = Obj.Obs;
-            for j = 1:length(obs)
-                obsSurf(j) = obs(j).GetSurf;
-            end
-            
-            for i = 1:n_step
-                g_step = [quat2rotm(c_steps(4:end,i)'), c_steps(1:3,i);
-                    0,0,0,1];
-                robot.robotTF(g_step,1);
-                % robot base
-                robotSurf(1) = robot.Base.GetSurf;
-                
-                % robot links
-                for k = 1:robot.numLink
-                    robotSurf(k+1) = robot.Link{k}.GetSurf;
-                end
-                
-                % collision detection
-                for j = 1:length(obs)
-                    for k = 1:length(robotSurf)
-                        collision = GJK(robotSurf(k),obsSurf(j),20);
-                        if collision, return; end
-                    end
-                end
-                
-                Obj.ValidPath = [Obj.ValidPath, c_steps(:,i)];
-            end
-        end
-        
-        %% Move the robot from one pose to another
-        % Primitive follows: first rotate, then translate
-        function V_steps = getInterpolatedPoses(Obj, V1, V2, res)
-            n_step = floor(norm(V1-V2) / res);
-            V_steps = nan(size(Obj.Paths,2), n_step);
-            
-            % rotate
-            n_step_rot = floor(n_step/3);
-            V_steps(1:3,1:n_step_rot) = V1(1:3)*ones(1,n_step_rot);
-            
-            R1 = quat2rotm(V1(4:end)'); R2 = quat2rotm(V2(4:end)');
-            axang = rotm2axang(R1'*R2);
-            th_step = linspace(0,axang(4),n_step_rot);
-            for i = 1:length(th_step)
-                R_new = R1*axang2rotm([axang(1:3), th_step(i)]);
-                V_steps(4:end,i) = rotm2quat(R_new);
-            end
-                
-            % translate
-            n_step_tran = n_step-n_step_rot;
-            for i = 1:3
-                V_steps(i,n_step_rot+1:n_step) = linspace(V1(i),V2(i),...
-                    n_step_tran);
-            end
-            V_steps(4:end,n_step_rot+1:n_step) = V2(4:end)*ones(1,...
-                n_step_tran);
         end
         
         %% --------------- Plot the Valid Path ----------------------------
@@ -124,7 +79,7 @@ classdef pathValid_3D_multiBody < handle
             for i = 1:size(Obj.ValidPath,2)
                 Obj.RobotM.Base.tc = Obj.ValidPath(1:3,i);
                 Obj.RobotM.Base.q = Obj.ValidPath(4:end,i);
-                g = [quat2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc; 
+                g = [quat2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc;
                     zeros(1,3), 1];
                 
                 Obj.RobotM.robotTF(g, 1);

@@ -13,7 +13,8 @@ using namespace std;
 int main(int argc, char **argv) {
     if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of layers 4) Num of sweep planes 5) Num of sweep lines"
+                "of layers 4) Num of sweep planes 5) Num of sweep lines 6) "
+                "Pre-defined quaternions (if no, enter 0)"
              << endl;
         return 1;
     }
@@ -43,14 +44,12 @@ int main(int argc, char **argv) {
 
         vector<Quaterniond> q_sample;
         for (size_t i = 0; i < quat_sample.size(); i++) {
-            Quaterniond q;
-            q.w() = quat_sample[i][0];
-            q.x() = quat_sample[i][1];
-            q.y() = quat_sample[i][2];
-            q.z() = quat_sample[i][3];
+            Quaterniond q(quat_sample[i][0], quat_sample[i][1],
+                          quat_sample[i][2], quat_sample[i][3]);
             q_sample.emplace_back(q);
         }
         robot_parts.at(0).setQuatSamples(q_sample);
+        N_l = static_cast<int>(q_sample.size());
     }
 
     // Generate multibody tree for robot
