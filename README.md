@@ -12,6 +12,15 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 - GMP: Required dependency for CGAL
 - Eigen
 - [Boost](https://www.boost.org/)
+- [cmake-format] 
+    ```
+    sudo pip3 install cmake-format==0.4.5
+    ```
+- [clang-format]
+    ```
+    sudo apt install clang
+
+    ```
 
 ## Testing Instructions
 ### Generate configuration files
