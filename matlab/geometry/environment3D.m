@@ -72,7 +72,7 @@ elseif opt == 13 % Superquadrics Maze
     ty_o  = [  0 -20  10 -10  20 -30 30];
     tz_o  = [-30   0   0   0  20 -20 20];
     
-    eps_o = 0.1*ones(2,size(ra_o,2));
+    eps_o = 0.2*ones(2,size(ra_o,2));
     
 elseif opt == 14 % Superquadrics Corridor
     % Arena

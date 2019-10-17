@@ -51,13 +51,12 @@ classdef pathValid_3D_multiBody < handle
                         end
                     end
                 end
+                
+                Obj.ValidPath = [Obj.ValidPath, Obj.Paths(i,:)'];
             end
             
-            if ~collision
-                valid = true;
-                Obj.ValidPath = [Obj.ValidPath, Obj.Paths(:,i)];
-                disp('Path is Valid!')
-            end
+            valid = true;
+            disp('Path is Valid!')
         end
         
         %% --------------- Plot the Valid Path ----------------------------

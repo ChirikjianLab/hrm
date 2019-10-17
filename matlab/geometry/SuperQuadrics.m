@@ -198,7 +198,7 @@ classdef SuperQuadrics
         end
         
         %% ---------------------------------------------------------------%
-        function PlotShape(objSQ)  
+        function PlotShape(objSQ)
             % Plot the superquadrics given the No. of points and fill color
             pnt = GetPoints(objSQ);
             
@@ -209,7 +209,7 @@ classdef SuperQuadrics
             Z = reshape(pnt(3,:), m, n);
             
             surf(X, Y, Z, 'FaceColor', objSQ.color, 'EdgeColor', 'none',...
-                'FaceAlpha',0.3);
+                'FaceAlpha',0.5);
         end
         
         %% ---------------------------------------------------------------%
