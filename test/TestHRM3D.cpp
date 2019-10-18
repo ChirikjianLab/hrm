@@ -115,8 +115,8 @@ HighwayRoadMap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
 int main(int argc, char **argv) {
     if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of "
-                "layers 4) Num of sweep planes 5) Num of sweep lines"
+                "of layers 4) Num of sweep planes 5) Num of sweep lines 6) "
+                "Pre-defined quaternions (if no, enter 0)"
              << endl;
         return 1;
     }

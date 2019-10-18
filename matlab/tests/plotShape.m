@@ -4,11 +4,11 @@ initAddpath;
 loadPath = '../../bin/';
 X_ori = load([loadPath, 'bd_ori.csv']);
 X = load([loadPath, 'bd.csv']);
-X_obs = load([loadPath, 'bd_obs.csv']);
-X_arena = load([loadPath, 'bd_arena.csv']);
-Y = load([loadPath, 'bd_ty.csv']);
+% X_obs = load([loadPath, 'bd_obs.csv']);
+% X_arena = load([loadPath, 'bd_arena.csv']);
+% Y = load([loadPath, 'bd_ty.csv']);
 
-X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
+% X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
 
 cf_seg = load([loadPath, 'cell.csv']);
 
@@ -23,7 +23,7 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 22;
+opt = 21;
 [ar, obs, pts] = environment(opt);
 
 sc = 20;
