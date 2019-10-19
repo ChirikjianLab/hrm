@@ -1,38 +1,43 @@
-add_executable(benchmark3D_OMPL benchmark_3d_ompl.cpp)
-target_link_libraries(benchmark3D_OMPL UTIL
-                                       SOURCE_3D
-                                       OMPL_BENCH
-                                       GEOM
-                                       ${OMPL}
-                                       ${FCL_LIBRARIES}
-                                       ${CCD_LIBRARIES})
+add_executable(BenchOMPL3D BenchOMPL3D.cpp)
+target_link_libraries(BenchOMPL3D
+                      UTIL
+                      SOURCE_3D
+                      OMPL_BENCH
+                      GEOM
+                      ${OMPL}
+                      ${FCL_LIBRARIES}
+                      ${CCD_LIBRARIES})
 
-add_executable(benchmark3D_HIGHWAY benchmark_3d_highway.cpp)
-target_link_libraries(benchmark3D_HIGHWAY UTIL
-                                          SOURCE_3D
-                                          HIGHWAY_BENCH
-                                          GEOM
-                                          ${OMPL}
-                                          ${FCL_LIBRARIES}
-                                          ${CCD_LIBRARIES})
+add_executable(BenchHRM3D BenchHRM3D.cpp)
+target_link_libraries(BenchHRM3D
+                      UTIL
+                      SOURCE_3D
+                      HIGHWAY_BENCH
+                      GEOM
+                      ${OMPL}
+                      ${FCL_LIBRARIES}
+                      ${CCD_LIBRARIES})
 
-add_executable(benchmark3D_HRM_MULTIBODY benchmark_3d_hrm_multibody.cpp)
-target_link_libraries(benchmark3D_HRM_MULTIBODY UTIL
-                                                SOURCE_3D
-                                                HIGHWAY_BENCH
-                                                GEOM
-                                                ${OMPL}
-                                                ${FCL_LIBRARIES}
-                                                ${CCD_LIBRARIES})
+add_executable(BenchHRM3DMultiBody BenchHRM3DMultiBody.cpp)
+target_link_libraries(BenchHRM3DMultiBody
+                      UTIL
+                      SOURCE_3D
+                      HIGHWAY_BENCH
+                      GEOM
+                      ${OMPL}
+                      ${FCL_LIBRARIES}
+                      ${CCD_LIBRARIES})
 
-add_executable(benchmark3D_HRM_MULTI_ADAPTIVE benchmark_3d_hrm_multi_adaptive.cpp)
-target_link_libraries(benchmark3D_HRM_MULTI_ADAPTIVE UTIL
-                                                     SOURCE_3D
-                                                     HIGHWAY_BENCH
-                                                     GEOM
-                                                     ${OMPL}
-                                                     ${FCL_LIBRARIES}
-                                                     ${CCD_LIBRARIES})
+add_executable(BenchHRM3DAdaptive
+               BenchHRM3DAdaptive.cpp)
+target_link_libraries(BenchHRM3DAdaptive
+                      UTIL
+                      SOURCE_3D
+                      HIGHWAY_BENCH
+                      GEOM
+                      ${OMPL}
+                      ${FCL_LIBRARIES}
+                      ${CCD_LIBRARIES})
 
 add_subdirectory(highway)
 add_subdirectory(ompl)

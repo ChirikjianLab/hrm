@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
     int id_plan = atoi(argv[3]), id_sample = atoi(argv[4]);
     //    int m = id_plan, nn = id_sample;
-    for (int m = 1; m < id_plan; m++) {
+    for (int m = 0; m < id_plan; m++) {
         for (int n = 0; n < id_sample; n++) {
             for (int i = 0; i < N; i++) {
                 cout << "Planner: " << m << endl;

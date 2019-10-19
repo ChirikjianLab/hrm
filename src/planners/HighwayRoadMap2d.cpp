@@ -281,7 +281,9 @@ void HighwayRoadMap2D::connectMultiLayer() {
                 if (d <= 0.1 && isPtinCFLine(v1, v2)) {
                     // Middle vertex: trans = V1; rot = V2;
                     midVtx = {
-                        v1[0], v1[1], v2[2],
+                        v1[0],
+                        v1[1],
+                        v2[2],
                     };
                     vtxEdge.vertex.push_back(midVtx);
 

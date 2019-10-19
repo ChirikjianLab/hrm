@@ -134,7 +134,6 @@ Graph.V = vtx';
 
 high3D = pathValid_3D_multiBody(robot, arena, obs, path);
 high3D.validation();
-high3D.PlotPath();
 
 %% Plot surface
 function plotSurf(X,c)

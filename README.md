@@ -12,6 +12,14 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
 - GMP: Required dependency for CGAL
 - Eigen
 - [Boost](https://www.boost.org/)
+- [cmake-format] 
+    ```
+    sudo pip3 install cmake-format==0.4.5
+    ```
+- [clang-format]
+    ```
+    sudo apt install clang
+    ```
 
 ## Testing Instructions
 ### Generate configuration files
@@ -19,16 +27,16 @@ Configuration files are all stored in "/config" folder, including (3D cases as a
 
 ### Running tests
 Testing files are located in "/test" folder:
-- 2D case (single body): "/test/test.cpp"
-- 3D case (sinlge body): "/test/test_highway3d.cpp"
-- 3D case (multi body): "/test/test_hrm3d_multibody.cpp"
+- 2D case (single body): "/test/TestHRM2D.cpp"
+- 3D case (sinlge body): "/test/TestHRM3D.cpp"
+- 3D case (multi body): "/test/TestHRM3DMultiBody.cpp"
 
 ### Benchmarks
 Benchmark files are stored in "/benchmark" folder:
-- 3D OMPL planners: "/benchmark/benchmark_3d_ompl.cpp", 
-- 3D Highway single body: "/benchmark/benchmark_3d_highway.cpp"
-- 3D Highway multi body: "/benchmark/benchmark_3d_hrm_multibody.cpp"
-- 3D Highway multi body with adaptive C-layers updates: "/benchmark/benchmark_3d_hrm_multi_adaptive.cpp"
+- 3D OMPL planners: "/benchmark/BenchOMPL3D.cpp", 
+- 3D Highway single body: "/benchmark/BenchHRM3D.cpp"
+- 3D Highway multi body: "/benchmark/BenchHRM3DMultiBody.cpp"
+- 3D Highway multi body with adaptive C-layers updates: "/benchmark/BenchHRM3DAdaptive.cpp"
 
 ### Visualizations
 After running test or benchmark files, parameters for visualization will be generated in the "/bin" folder. Visualization scripts are all in Matlab:
@@ -43,7 +51,7 @@ After running test or benchmark files, parameters for visualization will be gene
 - Fixed number of layers and sweep lines.
 - Layer connections using KC ("src/planners/HighwayRoadMap.cpp") and TFE ("src/planners/HighwayRoadMap2d.cpp").
 
-2. SE(3) single/multi rigid body in progress:
+2. SE(3) single/multi rigid body finished:
 - Single body ("src/planners/HighwayRoadMap3d.cpp"): fixed number of layers and sweep lines.
 - Multi body: fixed ("src/planners/Hrm3DMultiBody.cpp") / adaptive ("src/planners/Hrm3DMultiBodyAdaptive.cpp") number of layers, fixed sweep lines.
 - Layer connections using TFE.
@@ -53,12 +61,12 @@ After running test or benchmark files, parameters for visualization will be gene
 
 2. SE(3) single/multi rigid body
 
-## TODO
 ### Benchmark in different scenerios
 - Sparse map
 - Cluttered map
-- Narrow passage with different window size
+- Maze map
 
+## TODO
 ### Articulated body
 1. Extend to multi-link articulated robot
 

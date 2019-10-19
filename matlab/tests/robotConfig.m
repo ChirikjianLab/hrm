@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 22;
+opt = 21;
 [ar, obs, pts] = environment(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -15,17 +15,17 @@ arena = zeros(size(ar,2),6); obstacle = zeros(size(obs,2),6);
 vol_arena = 0; vol_obs = 0;
 for i = 1:size(ar,2)
     arena(i,:) = [ar.ra,ar.rb,ar.ang,ar.eps,ar.tx,ar.ty];
-    vol_arena = vol_arena + vol_sq(ar.ra, ar.rb, ar.eps);
+%     vol_arena = vol_arena + vol_sq(ar.ra, ar.rb, ar.eps);
 end
 
 for i = 1:size(obs,2)
     obstacle(i,:) = [obs(i).ra,obs(i).rb,obs(i).ang,...
         obs(i).eps,obs(i).tx,obs(i).ty];
-    vol_obs = vol_obs + vol_sq(obs(i).ra, obs(i).rb, obs(i).eps);
+%     vol_obs = vol_obs + vol_sq(obs(i).ra, obs(i).rb, obs(i).eps);
 end
 
 % Relative volume
-rel_vol = 1-vol_obs/vol_arena
+% rel_vol = 1-vol_obs/vol_arena
 
 % End points
 % Boundary limits
