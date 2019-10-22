@@ -3,12 +3,10 @@
 #include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
-#include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
 #include <math.h>
 #include <chrono>
-#include <fstream>
 #include <iostream>
 #include <vector>
 
