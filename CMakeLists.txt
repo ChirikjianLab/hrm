@@ -1,9 +1,13 @@
-# Specify the minimum version for CMake
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(highwayRoadMap)
+project(highwayRoadMap LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 14)
+
+# Specify the minimum version for CMake
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -14,8 +18,14 @@ include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 
+add_compile_options(
+        -Wall
+        -Wextra
+        -Wold-style-cast
+        -Woverloaded-virtual
+)
+
 # Packages
-#find_library(OMPL REQUIRED)
 
 find_package(OMPL REQUIRED)
 IF (OMPL_FOUND)

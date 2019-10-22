@@ -1,7 +1,6 @@
 #include "include/SuperQuadrics.h"
 #include "util/include/ExponentialFunction.h"
 
-#include <math.h>
 #include <iostream>
 
 #define pi 3.1415926

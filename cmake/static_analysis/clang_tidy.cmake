@@ -1,0 +1,1 @@
+find_program(CLANG_TIDY_COMMAND NAMES clang-tidy-6.0 DOC "Path to clang-tidy executable")

@@ -16,8 +16,8 @@ class SuperEllipse {
      * \param pose     : SE(2) pose of the ellipse [x,y,\theta]
      */
 
-    SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
-                 const std::vector<double> &position, const double angle,
+    SuperEllipse(const std::vector<double>& semiAxis, const double epsilon,
+                 const std::vector<double>& position, const double angle,
                  const long num);
 
   public:

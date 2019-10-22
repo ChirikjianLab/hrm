@@ -20,6 +20,10 @@ We develop a motion planning algorithm based on the closed-form Minkowski sum an
     ```
     sudo apt install clang
     ```
+- [Cppcheck]
+    ```
+    sudo apt install cppcheck
+    ```
 
 ## Testing Instructions
 ### Generate configuration files
