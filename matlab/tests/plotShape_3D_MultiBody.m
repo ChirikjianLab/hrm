@@ -12,7 +12,7 @@ ar = load(['../../config/', 'arena_config_3d.csv']);
 % Plot
 for i = 1:size(ar,1)
     arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
-        ar(i,4:5), 20}, 'none', 0);
+        ar(i,4:5), 20}, 'w', 0);
 end
 
 for i = 1:size(ob,1)

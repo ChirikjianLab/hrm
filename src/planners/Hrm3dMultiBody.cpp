@@ -82,9 +82,12 @@ void Hrm3DMultiBody::connectMultiLayer() {
         return;
     }
 
-    size_t n = vtxEdge.vertex.size(), n_1, n_12, n_2;
+    size_t n_1;
+    size_t n_12;
+    size_t n_2;
     size_t start = 0;
-    std::vector<double> V1, V2;
+    std::vector<double> V1;
+    std::vector<double> V2;
 
     for (size_t i = 0; i < N_layers; i++) {
         // Find vertex only in adjecent layers
@@ -160,17 +163,9 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 }
 
                 if (isCollisionFree(V1, V2)) {
-                    // Middle vertex: trans = V1; rot = V2;
-                    midVtx = {V1[0], V1[1], V1[2], V2[3], V2[4], V2[5], V2[6]};
-                    vtxEdge.vertex.push_back(midVtx);
-
-                    // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, n));
-                    vtxEdge.weight.push_back(vector_dist(V1, midVtx));
-                    vtxEdge.edge.push_back(std::make_pair(m1, n));
-                    vtxEdge.weight.push_back(vector_dist(V2, midVtx));
-
-                    n++;
+                    // Add connections
+                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
+                    vtxEdge.weight.push_back(vector_dist(V1, V2));
 
                     // Continue from where it pauses
                     n_12 = m1;

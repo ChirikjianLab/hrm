@@ -1,64 +1,52 @@
+#include <chrono>
 #include "geometry/include/SuperQuadrics.h"
-#include "planners/include/HighwayRoadMap3d.h"
+#include "planners/include/Hrm3dMultiBody.h"
 #include "util/include/MeshGenerator.h"
+#include "util/include/MultiBodyTree3d.h"
 #include "util/include/Parse2dCsvFile.h"
 
+#include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
 #include <math.h>
-#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <vector>
 
 using namespace Eigen;
 using namespace std;
 
-HighwayRoadMap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
-                      vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                      int N_l, int N_x, int N_y) {
+Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
+                    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
+                    int N_l, int N_x, int N_y) {
     option3D opt;
     opt.N_o = obs.size();
     opt.N_s = arena.size();
     opt.N_layers = size_t(N_l);
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-    opt.Lim = {arena.at(0).getSemiAxis().at(0) - robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(1) - robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(2) - robot.getSemiAxis().at(0)};
+    opt.Lim = {
+        arena.at(0).getSemiAxis().at(0) - robot.getBase().getSemiAxis().at(0),
+        arena.at(0).getSemiAxis().at(1) - robot.getBase().getSemiAxis().at(0),
+        arena.at(0).getSemiAxis().at(2) - robot.getBase().getSemiAxis().at(0)};
 
     //****************//
     // Main Algorithm //
     //****************//
-    HighwayRoadMap3D high3D(robot, EndPts, arena, obs, opt);
+    Hrm3DMultiBody high3D(robot, EndPts, arena, obs, opt);
 
     // TEST: Minkowski boundary
     boundary3D bd_mink = high3D.boundaryGen();
 
     // write to .csv file
     boundary3D bd_ori;
-    for (size_t i = 0; i < arena.size(); i++) {
-        bd_ori.bd_s.push_back(arena.at(0).getOriginShape());
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("arena_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_s[i] << "\n";
-        file_ori_bd.close();
-
+    for (size_t i = 0; i < bd_mink.bd_s.size(); i++) {
         ofstream file_bd;
         file_bd.open("arena_mink_3d_" + to_string(i) + ".csv");
         file_bd << bd_mink.bd_s[i] << "\n";
         file_bd.close();
     }
-    for (size_t i = 0; i < obs.size(); i++) {
-        bd_ori.bd_o.push_back(obs.at(0).getOriginShape());
-
-        // write to .csv file
-        ofstream file_ori_bd;
-        file_ori_bd.open("obs_3d_" + to_string(i) + ".csv");
-        file_ori_bd << bd_ori.bd_o[i] << "\n";
-        file_ori_bd.close();
-
+    for (size_t i = 0; i < bd_mink.bd_o.size(); i++) {
         ofstream file_bd;
         file_bd.open("obs_mink_3d_" + to_string(i) + ".csv");
         file_bd << bd_mink.bd_o[i] << "\n";
@@ -113,8 +101,8 @@ HighwayRoadMap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
 int main(int argc, char **argv) {
     if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of "
-                "layers 4) Num of sweep planes 5) Num of sweep lines"
+                "of layers 4) Num of sweep planes 5) Num of sweep lines 6) "
+                "Pre-defined quaternions (if no, enter 0)"
              << endl;
         return 1;
     }
@@ -127,14 +115,13 @@ int main(int argc, char **argv) {
     vector<vector<double>> stat(N);
 
     // Read and setup environment config
-    string robot_config = "../config/robot_config_3d.csv",
-           arena_config = "../config/arena_config_3d.csv",
-           obs_config = "../config/obs_config_3d.csv";
+    string robot_config = "../config/robot_config_3d.csv";
+    string arena_config = "../config/arena_config_3d.csv";
+    string obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = getSQFromCsv(robot_config, n),
-                          arena = getSQFromCsv(arena_config, n),
-                          obs = getSQFromCsv(obs_config, n);
-    SuperQuadrics robot = robot_aux[0];
+    vector<SuperQuadrics> robot_parts = getSQFromCsv(robot_config, n);
+    vector<SuperQuadrics> arena = getSQFromCsv(arena_config, n);
+    vector<SuperQuadrics> obs = getSQFromCsv(obs_config, n);
 
     // Read predefined quaternions
     string quat_file = argv[6];
@@ -152,7 +139,13 @@ int main(int argc, char **argv) {
             q.z() = quat_sample[i][3];
             q_sample.emplace_back(q);
         }
-        robot.setQuatSamples(q_sample);
+        robot_parts.at(0).setQuatSamples(q_sample);
+    }
+
+    // Generate multibody tree for robot
+    MultiBodyTree3D robot(robot_parts[0]);
+    for (size_t i = 1; i < robot_parts.size(); i++) {
+        robot.addBody(robot_parts[i]);
     }
 
     // Start and goal setup
@@ -167,12 +160,11 @@ int main(int argc, char **argv) {
         cout << "Number of trials: " << i << endl;
 
         // Path planning using HighwayRoadmap3D
-        HighwayRoadMap3D high3D =
-            plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
+        Hrm3DMultiBody high3D = plan(robot, EndPts, arena, obs, N_l, N_x, N_y);
 
         stat[i] = {high3D.planTime.buildTime,
                    high3D.planTime.searchTime,
-                   high3D.planTime.buildTime + high3D.planTime.searchTime,
+                   high3D.planTime.totalTime,
                    double(high3D.vtxEdge.vertex.size()),
                    double(high3D.vtxEdge.edge.size()),
                    double(high3D.solutionPathInfo.PathId.size()),
@@ -183,8 +175,7 @@ int main(int argc, char **argv) {
              << endl;
         cout << "Path search time: " << high3D.planTime.searchTime << "s"
              << endl;
-        cout << "Total Planning Time: "
-             << high3D.planTime.buildTime + high3D.planTime.searchTime << 's'
+        cout << "Total Planning Time: " << high3D.planTime.totalTime << 's'
              << endl;
 
         cout << "Number of valid configurations: "
@@ -235,7 +226,7 @@ int main(int argc, char **argv) {
 
     // Store results
     ofstream file_time;
-    file_time.open("time_high3D.csv");
+    file_time.open("time_high3D_multiBody.csv");
     file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
               << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
               << "N_Y" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
