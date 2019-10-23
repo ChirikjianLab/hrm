@@ -21,7 +21,6 @@ include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 add_compile_options(
         -Wall
         -Wextra
-        -Wold-style-cast
         -Woverloaded-virtual
 )
 

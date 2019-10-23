@@ -35,7 +35,6 @@ void HighwayRoadMap3D::plan() {
 
     // Retrieve coordinates of solved path
     solutionPathInfo.solvedPath = getSolutionPath();
-    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(10);
 
     planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
@@ -433,10 +432,6 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
 
     return path;
 }
-
-// TODO: Interpolate the solution path
-std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
-    int num) {}
 
 /************************************************************************/
 /*************************  Private Functions ***************************/

@@ -36,7 +36,6 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
 
     // Retrieve coordinates of solved path
     solutionPathInfo.solvedPath = getSolutionPath();
-    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(10);
 }
 
 void Hrm3DMultiBodyAdaptive::connectMultiLayer() {

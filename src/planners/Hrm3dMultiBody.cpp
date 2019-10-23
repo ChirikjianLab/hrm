@@ -24,7 +24,6 @@ void Hrm3DMultiBody::plan() {
 
     // Retrieve coordinates of solved path
     solutionPathInfo.solvedPath = getSolutionPath();
-    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(10);
 }
 
 // Build the roadmap for multi-rigid-body planning
