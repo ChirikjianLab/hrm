@@ -43,8 +43,14 @@ void HighwayRoadMap::buildRoadmap() {
     double dr = pi / (N_layers - 1);
     graph multiGraph;
 
+    // Setup rotation angles
+    std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        Robot.at(0).setAngle(dr * i + rand() * 0.01 / RAND_MAX);
+        theta.push_back(dr * i + rand() * 0.01 / RAND_MAX);
+    }
+
+    for (size_t i = 0; i < N_layers; ++i) {
+        Robot.at(0).setAngle(theta.at(i));
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -259,14 +265,13 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
 
 void HighwayRoadMap::connectMultiLayer() {
     size_t n, n_11, n_12, n_2;
-    double d;
     size_t start = 0;
     std::vector<double> midVtx;
     std::vector<double> v1, v2;
 
     n = vtxEdge.vertex.size();
 
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < N_layers - 1; ++i) {
         // Find vertex only in adjecent layers
         n_11 = N_v_layer[i];
         n_2 = N_v_layer[i + 1];
@@ -280,12 +285,12 @@ void HighwayRoadMap::connectMultiLayer() {
                 v1[2] = 0.0;
                 n_12 = 0;
             }
+
             for (size_t m2 = n_12; m2 < n_2; ++m2) {
                 v2 = vtxEdge.vertex[m2];
-                d = pow((v1[0] - v2[0]), 2.0) + pow((v1[1] - v2[1]), 2.0);
-                if (d <= 0.1) {
-                    midVtx = addMidVtx(v1, v2);
-                }
+
+                // Judge connectivity using Kinematics of Containment
+                midVtx = addMidVtx(v1, v2);
                 if (!midVtx.empty()) {
                     vtxEdge.vertex.push_back(midVtx);
 
@@ -311,8 +316,9 @@ void HighwayRoadMap::search() {
     AdjGraph g(num_vtx);
 
     for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
-        add_edge(size_t(vtxEdge.edge[i].first), size_t(vtxEdge.edge[i].second),
-                 Weight(vtxEdge.weight[i]), g);
+        boost::add_edge(size_t(vtxEdge.edge[i].first),
+                        size_t(vtxEdge.edge[i].second),
+                        Weight(vtxEdge.weight[i]), g);
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
@@ -322,13 +328,13 @@ void HighwayRoadMap::search() {
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
     std::vector<double> d(num_vertices(g));
-    astar_search(
+    boost::astar_search(
         g, idx_s,
         [this, idx_g](Vertex v) {
             return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
         },
-        predecessor_map(
-            make_iterator_property_map(p.begin(), get(boost::vertex_index, g)))
+        boost::predecessor_map(boost::make_iterator_property_map(
+                                   p.begin(), get(boost::vertex_index, g)))
             .distance_map(make_iterator_property_map(
                 d.begin(), get(boost::vertex_index, g))));
 

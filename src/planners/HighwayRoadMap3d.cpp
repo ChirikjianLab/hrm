@@ -399,13 +399,13 @@ void HighwayRoadMap3D::search() {
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
     std::vector<double> d(num_vertices(g));
-    astar_search(
+    boost::astar_search(
         g, idx_s,
         [this, idx_g](Vertex v) {
             return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
         },
-        predecessor_map(
-            make_iterator_property_map(p.begin(), get(boost::vertex_index, g)))
+        boost::predecessor_map(boost::make_iterator_property_map(
+                                   p.begin(), get(boost::vertex_index, g)))
             .distance_map(make_iterator_property_map(
                 d.begin(), get(boost::vertex_index, g))));
 

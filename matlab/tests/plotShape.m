@@ -7,7 +7,7 @@ X = load([loadPath, 'bd.csv']);
 % X_obs = load([loadPath, 'bd_obs.csv']);
 % X_arena = load([loadPath, 'bd_arena.csv']);
 % Y = load([loadPath, 'bd_ty.csv']);
-
+% 
 % X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
 
 cf_seg = load([loadPath, 'cell.csv']);
@@ -64,21 +64,21 @@ end
 %     plot(X_arena(1:N_dy,i),Y,'.')
 %     plot(X_arena(N_dy+1:N_dy*2,i),Y,'.')
 % end
-% 
-% % cells
-% for i = 1:size(cf_seg,1)
-%     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-%         plot(cf_seg(i,3), cf_seg(i,1),'k.')
-% end
+
+% cells
+for i = 1:size(cf_seg,1)
+    plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
+        plot(cf_seg(i,3), cf_seg(i,1),'k.')
+end
 
 % vertex and connections
-% plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-% edge = edge+1;
-% for i = 1:size(edge,1)
-%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-% end
+plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
+edge = edge+1;
+for i = 1:size(edge,1)
+    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+end
 
 % shortest path
 plot3([start(1) vtx(path(end)+1,1)],...
