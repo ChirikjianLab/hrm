@@ -43,7 +43,7 @@ void HighwayRoadMap::buildRoadmap() {
     double dr = pi / (N_layers - 1);
     graph multiGraph;
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         Robot.at(0).setAngle(dr * i + rand() * 0.01 / RAND_MAX);
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
@@ -64,7 +64,7 @@ boundary HighwayRoadMap::boundaryGen() {
     std::vector<SuperEllipse> robot_infla;
     boundary bd;
 
-    for (size_t num_r = 0; num_r < Robot.size(); num_r++) {
+    for (size_t num_r = 0; num_r < Robot.size(); ++num_r) {
         robot_infla.emplace_back(Robot.at(num_r));
         // Enlarge the robot
         robot_infla.at(num_r).setSemiAxis(
@@ -72,11 +72,11 @@ boundary HighwayRoadMap::boundaryGen() {
              robot_infla.at(num_r).getSemiAxis().at(1) * (1 + infla)});
 
         // calculate Minkowski boundary points
-        for (size_t i = 0; i < N_s; i++) {
+        for (size_t i = 0; i < N_s; ++i) {
             bd.bd_s.emplace_back(
                 Arena.at(i).getMinkSum2D(robot_infla.at(num_r), -1));
         }
-        for (size_t i = 0; i < N_o; i++) {
+        for (size_t i = 0; i < N_o; ++i) {
             bd.bd_o.emplace_back(
                 Obs.at(i).getMinkSum2D(robot_infla.at(num_r), +1));
         }
@@ -102,12 +102,12 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     std::vector<double> xL, xU, xM;
 
     // Separate boundaries of Arenas and Obstacles into two parts
-    for (size_t i = 0; i < N_s; i++) {
+    for (size_t i = 0; i < N_s; ++i) {
         P_bd_s[i] = separateBoundary(bd_s[i]);
         bd_s_L[i] = P_bd_s[i].P_bd_L;
         bd_s_R[i] = P_bd_s[i].P_bd_R;
     }
-    for (size_t i = 0; i < N_o; i++) {
+    for (size_t i = 0; i < N_o; ++i) {
         P_bd_o[i] = separateBoundary(bd_o[i]);
         bd_o_L[i] = P_bd_o[i].P_bd_L;
         bd_o_R[i] = P_bd_o[i].P_bd_R;
@@ -115,17 +115,17 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
     // Find closest points for each raster scan line
     double ty[N_dy], dy = (P_bd_s[0].max_y - P_bd_s[0].min_y) / (N_dy - 1);
-    for (size_t i = 0; i < N_dy; i++) {
+    for (size_t i = 0; i < N_dy; ++i) {
         // y-coordinate of each sweep line
         ty[i] = P_bd_s[0].min_y + i * dy;
         // x-coordinate of the intersection btw sweep line and arenas
-        for (size_t j = 0; j < N_s; j++) {
+        for (size_t j = 0; j < N_s; ++j) {
             x_bd_s[i][j] = closestPt(P_bd_s[j], ty[i]);
             x_s_L(i, j) = x_bd_s[i][j].x_L;
             x_s_R(i, j) = x_bd_s[i][j].x_R;
         }
         // x-coordinate of the intersection btw sweep line and obstacles
-        for (size_t j = 0; j < N_o; j++) {
+        for (size_t j = 0; j < N_o; ++j) {
             x_bd_o[i][j] = closestPt(P_bd_o[j], ty[i]);
             x_o_L(i, j) = x_bd_o[i][j].x_L;
             x_o_R(i, j) = x_bd_o[i][j].x_R;
@@ -160,13 +160,13 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     //    file_arena.close();
 
     // CF line segment for each ty
-    for (size_t i = 0; i < N_dy; i++) {
+    for (size_t i = 0; i < N_dy; ++i) {
         // Construct intervals at each sweep line
-        for (size_t j = 0; j < N_s; j++)
+        for (size_t j = 0; j < N_s; ++j)
             if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_R(i, j))) {
                 arena_seg.push_back({x_s_L(i, j), x_s_R(i, j)});
             }
-        for (size_t j = 0; j < N_o; j++)
+        for (size_t j = 0; j < N_o; ++j)
             if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_R(i, j))) {
                 obs_seg.push_back({x_o_L(i, j), x_o_R(i, j)});
             }
@@ -180,7 +180,7 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
         cf_seg[i] = op.complements(arena_inter, obs_merge);
 
         // x-coords
-        for (size_t j = 0; j < cf_seg[i].size(); j++) {
+        for (size_t j = 0; j < cf_seg[i].size(); ++j) {
             xL.push_back(cf_seg[i][j].s);
             xU.push_back(cf_seg[i][j].e);
             xM.push_back((cf_seg[i][j].s + cf_seg[i][j].e) / 2.0);
@@ -207,19 +207,19 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
     std::vector<unsigned int> N_v_line;
     unsigned int N_0 = 0, N_1 = 0;
 
-    for (size_t i = 0; i < CFcell.ty.size(); i++) {
+    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_v_line.push_back(vtxEdge.vertex.size());
 
-        for (size_t j = 0; j < CFcell.xM[i].size(); j++) {
+        for (size_t j = 0; j < CFcell.xM[i].size(); ++j) {
             // Construct a vector of vertex
             vtxEdge.vertex.push_back(
                 {CFcell.xM[i][j], CFcell.ty[i], Robot.at(0).getAngle()});
         }
     }
-    for (size_t i = 0; i < CFcell.ty.size(); i++) {
+    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_0 = N_v_line[i];
         N_1 = N_v_line[i + 1];
-        for (size_t j1 = 0; j1 < CFcell.xM[i].size(); j1++) {
+        for (size_t j1 = 0; j1 < CFcell.xM[i].size(); ++j1) {
             // Connect vertex within one sweep line
             if (j1 != CFcell.xM[i].size() - 1) {
                 if (std::fabs(CFcell.xU[i][j1] - CFcell.xL[i][j1 + 1]) < 1e-5) {
@@ -232,7 +232,7 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
             }
             // Connect vertex btw adjacent cells
             if (i != CFcell.ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell.xM[i + 1].size(); j2++) {
+                for (size_t j2 = 0; j2 < CFcell.xM[i + 1].size(); ++j2) {
                     if (((CFcell.xM[i][j1] > CFcell.xL[i + 1][j2] &&
                           CFcell.xM[i][j1] < CFcell.xU[i + 1][j2]) ||
                          (CFcell.xM[i + 1][j2] > CFcell.xL[i][j1] &&
@@ -266,13 +266,13 @@ void HighwayRoadMap::connectMultiLayer() {
 
     n = vtxEdge.vertex.size();
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         // Find vertex only in adjecent layers
         n_11 = N_v_layer[i];
         n_2 = N_v_layer[i + 1];
 
         // Nearest vertex btw layers
-        for (size_t m = start; m < n_11; m++) {
+        for (size_t m = start; m < n_11; ++m) {
             v1 = vtxEdge.vertex[m];
             n_12 = n_11;
             if (i == N_layers - 1) {
@@ -280,7 +280,7 @@ void HighwayRoadMap::connectMultiLayer() {
                 v1[2] = 0.0;
                 n_12 = 0;
             }
-            for (size_t m2 = n_12; m2 < n_2; m2++) {
+            for (size_t m2 = n_12; m2 < n_2; ++m2) {
                 v2 = vtxEdge.vertex[m2];
                 d = pow((v1[0] - v2[0]), 2.0) + pow((v1[1] - v2[1]), 2.0);
                 if (d <= 0.1) {
@@ -310,7 +310,7 @@ void HighwayRoadMap::search() {
     size_t num_vtx = vtxEdge.vertex.size();
     AdjGraph g(num_vtx);
 
-    for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
+    for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
         add_edge(size_t(vtxEdge.edge[i].first), size_t(vtxEdge.edge[i].second),
                  Weight(vtxEdge.weight[i]), g);
     }
@@ -409,17 +409,17 @@ Eigen::MatrixXd HighwayRoadMap::boundaryEnlarge(Eigen::MatrixXd bd_o[],
     double d;
 
     // Initialize x_o_Ex as NaN matrix
-    for (size_t j = 0; j < N_o; j++) {
-        for (size_t i = 0; i < N_dy; i++) {
+    for (Eigen::Index j = 0; j < N_o; ++j) {
+        for (Eigen::Index i = 0; i < N_dy; ++i) {
             x_o_Ex(i, j) = std::numeric_limits<double>::quiet_NaN();
         }
     }
 
     // Compute tangent line and enlarge the boundary
-    for (size_t j = 0; j < N_o; j++) {
+    for (Eigen::Index j = 0; j < N_o; ++j) {
         int count = 0;
 
-        for (size_t i = 0; i < N_dy - 1; i++) {
+        for (Eigen::Index i = 0; i < N_dy - 1; ++i) {
             double dist = 0, phi;
 
             if (std::isnan(x_o(i, j)) || std::isnan(x_o(i + 1, j))) {
@@ -432,7 +432,7 @@ Eigen::MatrixXd HighwayRoadMap::boundaryEnlarge(Eigen::MatrixXd bd_o[],
             // Search for farthest point to the line segment def by two
             // intersecting
             // points
-            for (size_t k = 0; k < sizeof(bd_o[j]); k++) {
+            for (Eigen::Index k = 0; k < bd_o[j].size(); k++) {
                 double p[2] = {bd_o[j](0, k), bd_o[j](1, k)};
 
                 if ((p[1] > ty[i]) && (p[1] < ty[i + 1])) {
@@ -469,9 +469,9 @@ cf_cell HighwayRoadMap::enhanceDecomp(cf_cell cell) {
     // Make sure all connections between vertexes are within one convex cell
     cf_cell cell_new = cell;
 
-    for (size_t i = 0; i < cell.ty.size() - 1; i++) {
-        for (size_t j1 = 0; j1 < cell.xM[i].size(); j1++) {
-            for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); j2++) {
+    for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); ++j2) {
                 if (cell_new.xM[i][j1] < cell_new.xL[i + 1][j2] &&
                     cell_new.xU[i][j1] >= cell_new.xL[i + 1][j2]) {
                     cell_new.xU[i].push_back(cell_new.xL[i + 1][j2]);
@@ -521,7 +521,7 @@ std::vector<double> HighwayRoadMap::addMidVtx(std::vector<double> vtx1,
         pt.clear();
         pt1.clear();
         pt2.clear();
-        for (size_t i = 0; i < vtx1.size(); i++) {
+        for (size_t i = 0; i < vtx1.size(); ++i) {
             pt.push_back((rand() * (vtx1[i] - vtx2[i])) / RAND_MAX + vtx2[i]);
             pt1.push_back(pt[i] - vtx1[i]);
             pt2.push_back(pt[i] - vtx2[i]);
@@ -546,7 +546,7 @@ unsigned int HighwayRoadMap::find_cell(std::vector<double> v) {
     unsigned int idx = 0;
 
     d_min = vector_dist(v, vtxEdge.vertex[0]);
-    for (unsigned int i = 0; i < vtxEdge.vertex.size(); i++) {
+    for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
         d = vector_dist(v, vtxEdge.vertex[i]);
         if (d < d_min) {
             d_min = d;
@@ -560,7 +560,7 @@ unsigned int HighwayRoadMap::find_cell(std::vector<double> v) {
 double HighwayRoadMap::vector_dist(std::vector<double> v1,
                                    std::vector<double> v2) {
     std::vector<double> diff;
-    for (size_t i = 0; i < v1.size(); i++) {
+    for (size_t i = 0; i < v1.size(); ++i) {
         diff.push_back(v1[i] - v2[i]);
     }
     return sqrt(inner_product(diff.begin(), diff.end(), diff.begin(), 0.0));

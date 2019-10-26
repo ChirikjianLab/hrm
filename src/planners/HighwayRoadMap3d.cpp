@@ -43,7 +43,7 @@ void HighwayRoadMap3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
     // Compute mid-layer TFE
-    for (size_t i = 0; i < q_r.size(); i++) {
+    for (size_t i = 0; i < q_r.size(); ++i) {
         if (i == N_layers - 1) {
             mid.push_back(
                 tfe(Robot.getSemiAxis(), q_r.at(i), q_r.at(0), N_step));
@@ -53,7 +53,7 @@ void HighwayRoadMap3D::buildRoadmap() {
         }
     }
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         Robot.setQuaternion(q_r.at(i));
 
         // boundary for obstacles and arenas
@@ -77,10 +77,10 @@ boundary3D HighwayRoadMap3D::boundaryGen() {
     boundary3D bd;
 
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; i++) {
+    for (size_t i = 0; i < N_s; ++i) {
         bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Robot, -1));
     }
-    for (size_t i = 0; i < N_o; i++) {
+    for (size_t i = 0; i < N_o; ++i) {
         bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Robot, +1));
     }
 
@@ -114,31 +114,31 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
     // Find intersection points for each sweep line
     std::vector<double> tx(N_dx), ty(N_dy);
     double dx = 2 * Lim[0] / (N_dx - 1), dy = 2 * Lim[1] / (N_dy - 1);
-    for (size_t i = 0; i < N_dx; i++) {
+    for (size_t i = 0; i < N_dx; ++i) {
         tx[i] = -Lim[0] + i * dx;
     }
-    for (size_t i = 0; i < N_dy; i++) {
+    for (size_t i = 0; i < N_dy; ++i) {
         ty[i] = -Lim[1] + i * dy;
     }
 
     // Generate mesh for the boundaries
     std::vector<Mesh> P_s(N_cs), P_o(N_co);
-    for (size_t i = 0; i < N_cs; i++) {
+    for (size_t i = 0; i < N_cs; ++i) {
         P_s.at(i) = getMesh(bd_s[i], int(Arena.at(0).getNumParam()));
     }
-    for (size_t i = 0; i < N_co; i++) {
+    for (size_t i = 0; i < N_co; ++i) {
         P_o.at(i) = getMesh(bd_o[i], int(Obs.at(0).getNumParam()));
     }
 
     // Find intersections along each sweep line
-    for (size_t i = 0; i < N_dx; i++) {
+    for (size_t i = 0; i < N_dx; ++i) {
         //        time::point tstart = time::now();
 
-        for (size_t j = 0; j < N_dy; j++) {
+        for (size_t j = 0; j < N_dy; ++j) {
             Eigen::VectorXd lineZ(6);
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
-            for (size_t m = 0; m < N_cs; m++) {
+            for (size_t m = 0; m < N_cs; ++m) {
                 pts_s =
                     lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
                 if (pts_s.empty()) continue;
@@ -147,7 +147,7 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                 z_s_U(long(j), long(m)) =
                     std::fmax(Lim[2], std::fmax(pts_s[0](2), pts_s[1](2)));
             }
-            for (size_t n = 0; n < N_co; n++) {
+            for (size_t n = 0; n < N_co; ++n) {
                 pts_o =
                     lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
                 if (pts_o.empty()) continue;
@@ -235,12 +235,12 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     size_t I0 = 0, I1 = 0;
 
     N_v.line.clear();
-    for (size_t i = 0; i < cell.tx.size(); i++) {
+    for (size_t i = 0; i < cell.tx.size(); ++i) {
         connectOnePlane(cell.tx[i], cell.cellYZ[i]);
     }
 
-    for (size_t i = 0; i < cell.tx.size() - 1; i++) {
-        for (size_t j = 0; j < cell.cellYZ[i].ty.size(); j++) {
+    for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
+        for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
             // Connect vertex btw adjacent planes, only connect with same ty
             for (size_t k0 = 0; k0 < cell.cellYZ[i].zM[j].size(); k0++) {
                 I0 = N_v.line[i][j];
@@ -270,9 +270,9 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
     size_t N_0 = 0, N_1 = 0;
 
     N_v.plane.clear();
-    for (size_t i = 0; i < CFcell.ty.size(); i++) {
+    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_v.plane.push_back(vtxEdge.vertex.size());
-        for (size_t j = 0; j < CFcell.zM[i].size(); j++) {
+        for (size_t j = 0; j < CFcell.zM[i].size(); ++j) {
             // Construct a std::vector of vertex
             vtxEdge.vertex.push_back(
                 {tx, CFcell.ty[i], CFcell.zM[i][j], Robot.getQuaternion().w(),
@@ -285,10 +285,10 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
     N_v.line.push_back(N_v.plane);
     N_v.layer = vtxEdge.vertex.size();
 
-    for (size_t i = 0; i < CFcell.ty.size(); i++) {
+    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_0 = N_v.plane[i];
         N_1 = N_v.plane[i + 1];
-        for (size_t j1 = 0; j1 < CFcell.zM[i].size(); j1++) {
+        for (size_t j1 = 0; j1 < CFcell.zM[i].size(); ++j1) {
             // Connect vertex within one sweep line
             if (j1 != CFcell.zM[i].size() - 1) {
                 if (std::fabs(CFcell.zU[i][j1] - CFcell.zL[i][j1 + 1]) < 1e-5) {
@@ -302,7 +302,7 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
 
             // Connect vertex btw adjacent cells
             if (i != CFcell.ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell.zM[i + 1].size(); j2++) {
+                for (size_t j2 = 0; j2 < CFcell.zM[i + 1].size(); ++j2) {
                     if (CFcell.zM[i][j1] >= CFcell.zL[i + 1][j2] &&
                         CFcell.zM[i][j1] <= CFcell.zU[i + 1][j2] &&
                         CFcell.zM[i + 1][j2] >= CFcell.zL[i][j1] &&
@@ -328,7 +328,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
     size_t n_2;
     size_t start = 0;
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         // Find vertex only in adjecent layers
         n_1 = vtxId[i].layer;
 
@@ -343,8 +343,8 @@ void HighwayRoadMap3D::connectMultiLayer() {
         mid_cell = midLayer(mid[i]);
 
         // Nearest vertex btw layers
-        for (size_t m0 = start; m0 < n_1; m0++) {
-            for (size_t m1 = n_12; m1 < n_2; m1++) {
+        for (size_t m0 = start; m0 < n_1; ++m0) {
+            for (size_t m1 = n_12; m1 < n_2; ++m1) {
                 if (std::fabs(vtxEdge.vertex[m0][0] - vtxEdge.vertex[m1][0]) <=
                         1e-8 &&
                     std::fabs(vtxEdge.vertex[m0][1] - vtxEdge.vertex[m1][1]) <=
@@ -373,7 +373,7 @@ void HighwayRoadMap3D::search() {
     size_t num_vtx = vtxEdge.vertex.size();
     AdjGraph g(num_vtx);
 
-    for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
+    for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
         add_edge(size_t(vtxEdge.edge[i].first), size_t(vtxEdge.edge[i].second),
                  Weight(vtxEdge.weight[i]), g);
     }
@@ -441,9 +441,9 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
 cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
     cf_cellYZ cell_new = cell;
 
-    for (size_t i = 0; i < cell.ty.size() - 1; i++) {
-        for (size_t j1 = 0; j1 < cell.zM[i].size(); j1++) {
-            for (size_t j2 = 0; j2 < cell.zM[i + 1].size(); j2++) {
+    for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < cell.zM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < cell.zM[i + 1].size(); ++j2) {
                 if (cell_new.zM[i][j1] < cell_new.zL[i + 1][j2] &&
                     cell_new.zU[i][j1] >= cell_new.zL[i + 1][j2]) {
                     cell_new.zU[i].push_back(cell_new.zL[i + 1][j2]);
@@ -485,10 +485,10 @@ cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
 cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     boundary3D bd;
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; i++) {
+    for (size_t i = 0; i < N_s; ++i) {
         bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Ec, -1));
     }
-    for (size_t i = 0; i < N_o; i++) {
+    for (size_t i = 0; i < N_o; ++i) {
         bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
     }
 
@@ -497,17 +497,17 @@ cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
 
 bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
                                     std::vector<double> V2) {
-    for (size_t i = 0; i < mid_cell.tx.size(); i++) {
+    for (size_t i = 0; i < mid_cell.tx.size(); ++i) {
         if (fabs(mid_cell.tx[i] - V1[0]) > 1e-8) {
             continue;
         }
 
-        for (size_t j = 0; j < mid_cell.cellYZ[i].ty.size(); j++) {
+        for (size_t j = 0; j < mid_cell.cellYZ[i].ty.size(); ++j) {
             if (fabs(mid_cell.cellYZ[i].ty[j] - V1[1]) > 1e-8) {
                 continue;
             }
 
-            for (size_t k = 0; k < mid_cell.cellYZ[i].zM[j].size(); k++) {
+            for (size_t k = 0; k < mid_cell.cellYZ[i].zM[j].size(); ++k) {
                 if ((V1[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
                     (V1[2] <= mid_cell.cellYZ[i].zU[j][k]) &&
                     (V2[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
@@ -525,7 +525,7 @@ void HighwayRoadMap3D::sampleSO3() {
     srand(unsigned(std::time(nullptr)));
     if (Robot.getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
-        for (size_t i = 0; i < N_layers; i++) {
+        for (size_t i = 0; i < N_layers; ++i) {
             q_r.push_back(Eigen::Quaterniond::UnitRandom());
         }
     } else {
@@ -542,7 +542,7 @@ unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
     unsigned int idx = 0;
 
     d_min = std::numeric_limits<double>::infinity();
-    for (unsigned int i = 0; i < vtxEdge.vertex.size(); i++) {
+    for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
         d = vector_dist(v, vtxEdge.vertex.at(i));
         if (d < d_min) {
             d_min = d;
@@ -556,7 +556,7 @@ unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
 double HighwayRoadMap3D::vector_dist(std::vector<double> v1,
                                      std::vector<double> v2) {
     std::vector<double> diff;
-    for (size_t i = 0; i < v1.size(); i++) {
+    for (size_t i = 0; i < v1.size(); ++i) {
         diff.push_back(v1[i] - v2[i]);
     }
     return sqrt(inner_product(diff.begin(), diff.end(), diff.begin(), 0.0));
@@ -567,7 +567,7 @@ Mesh HighwayRoadMap3D::getMesh(Eigen::MatrixXd bd, int n) {
     Mesh M;
     int Num = (n - 1) * (n - 1);
     Eigen::ArrayXd q((n - 1) * (n - 1));
-    for (int i = 0; i < n - 1; i++) {
+    for (int i = 0; i < n - 1; ++i) {
         q.segment(i * (n - 1), (n - 1)) =
             Eigen::ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
     }

@@ -35,7 +35,7 @@ void Hrm3DMultiBody::buildRoadmap() {
     Eigen::Matrix4d tf;
     tf.setIdentity();
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         // Set rotation matrix to robot
         tf.block<3, 3>(0, 0) = q_r.at(i).toRotationMatrix();
         RobotM.robotTF(tf);
@@ -57,16 +57,16 @@ boundary3D Hrm3DMultiBody::boundaryGen() {
 
     // Minkowski boundary points
     std::vector<Eigen::MatrixXd> bd_aux;
-    for (size_t i = 0; i < N_s; i++) {
+    for (size_t i = 0; i < N_s; ++i) {
         bd_aux = RobotM.minkSumSQ(Arena.at(i), -1);
-        for (size_t j = 0; j < bd_aux.size(); j++) {
+        for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.bd_s.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
-    for (size_t i = 0; i < N_o; i++) {
+    for (size_t i = 0; i < N_o; ++i) {
         bd_aux = RobotM.minkSumSQ(Obs.at(i), 1);
-        for (size_t j = 0; j < bd_aux.size(); j++) {
+        for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.bd_o.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
@@ -88,7 +88,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
     std::vector<double> V1;
     std::vector<double> V2;
 
-    for (size_t i = 0; i < N_layers; i++) {
+    for (size_t i = 0; i < N_layers; ++i) {
         // Find vertex only in adjecent layers
         n_1 = vtxId[i].layer;
 
@@ -145,14 +145,14 @@ void Hrm3DMultiBody::connectMultiLayer() {
         //        file_mid.close();
         //        //
 
-        for (size_t j = 0; j < mid.size(); j++) {
+        for (size_t j = 0; j < mid.size(); ++j) {
             mid_cell.emplace_back(midLayer(mid.at(j)));
         }
 
         // Nearest vertex btw layers
-        for (size_t m0 = start; m0 < n_1; m0++) {
+        for (size_t m0 = start; m0 < n_1; ++m0) {
             V1 = vtxEdge.vertex[m0];
-            for (size_t m1 = n_12; m1 < n_2; m1++) {
+            for (size_t m1 = n_12; m1 < n_2; ++m1) {
                 V2 = vtxEdge.vertex[m1];
 
                 // Locate the nearest vertices
@@ -219,7 +219,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     size_t i_x = 0, i_y = 0;
 
     // Search for x-coord
-    for (size_t i = 1; i < cell.tx.size(); i++) {
+    for (size_t i = 1; i < cell.tx.size(); ++i) {
         if (cell.tx[i] >= V[0]) {
             i_x = i;
             break;
@@ -231,7 +231,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
 
     // Search for the current plane
     cf_cellYZ cellX1 = cell.cellYZ[i_x];
-    for (size_t j = 1; j < cellX1.ty.size(); j++) {
+    for (size_t j = 1; j < cellX1.ty.size(); ++j) {
         if (cellX1.ty[j] >= V[1]) {
             i_y = j;
             break;
@@ -242,7 +242,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     }
 
     // Within the range of current sweep line
-    for (size_t k = 0; k < cellX1.zM[i_y].size(); k++) {
+    for (size_t k = 0; k < cellX1.zM[i_y].size(); ++k) {
         if ((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) {
             flag_cell = true;
         }
@@ -252,7 +252,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     }
     flag_cell = false;
     // Within the range of previous sweep line
-    for (size_t k = 0; k < cellX1.zM[i_y - 1].size(); k++) {
+    for (size_t k = 0; k < cellX1.zM[i_y - 1].size(); ++k) {
         if ((V[2] >= cellX1.zL[i_y - 1][k]) &&
             (V[2] <= cellX1.zU[i_y - 1][k])) {
             flag_cell = true;
@@ -266,7 +266,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     // Search for the previou plane
     cf_cellYZ cellX2 = cell.cellYZ[i_x - 1];
     // Within the range of current sweep line
-    for (size_t k = 0; k < cellX2.zM[i_y].size(); k++) {
+    for (size_t k = 0; k < cellX2.zM[i_y].size(); ++k) {
         if ((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) {
             flag_cell = true;
         }
@@ -276,7 +276,7 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     }
     flag_cell = false;
     // Within the range of previous sweep line
-    for (size_t k = 0; k < cellX2.zM[i_y - 1].size(); k++) {
+    for (size_t k = 0; k < cellX2.zM[i_y - 1].size(); ++k) {
         if ((V[2] >= cellX2.zL[i_y - 1][k]) &&
             (V[2] <= cellX2.zU[i_y - 1][k])) {
             flag_cell = true;
@@ -338,7 +338,7 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
                                Eigen::Quaterniond::Identity(), 20);
         tfe_obj.push_back(e_fitted);
 
-        for (size_t i = 0; i < robot.getNumLinks(); i++) {
+        for (size_t i = 0; i < robot.getNumLinks(); ++i) {
             double rb = std::fmax(
                 robot.getLinks().at(i).getSemiAxis().at(0),
                 std::fmax(robot.getLinks().at(i).getSemiAxis().at(1),
@@ -353,7 +353,7 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
             tfe(robot.getBase().getSemiAxis(), q1, q2, N_step);
         tfe_obj.push_back(e_fitted);
 
-        for (size_t i = 0; i < robot.getNumLinks(); i++) {
+        for (size_t i = 0; i < robot.getNumLinks(); ++i) {
             R_link = robot.getTF().at(i).block<3, 3>(0, 0);
             e_fitted = tfe(robot.getLinks().at(i).getSemiAxis(),
                            Eigen::Quaterniond(R1 * R_link),
