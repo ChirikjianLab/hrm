@@ -81,6 +81,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         return;
     }
 
+    size_t n = vtxEdge.vertex.size();
     size_t n_1;
     size_t n_12;
     size_t n_2;
@@ -162,9 +163,23 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 }
 
                 if (isCollisionFree(V1, V2)) {
-                    // Add connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
+                    // Middle vertex: trans = V1; rot = V2;
+                    midVtx = {vtxEdge.vertex[m0][0], vtxEdge.vertex[m0][1],
+                              vtxEdge.vertex[m0][2], vtxEdge.vertex[m1][3],
+                              vtxEdge.vertex[m1][4], vtxEdge.vertex[m1][5],
+                              vtxEdge.vertex[m1][6]};
+                    vtxEdge.vertex.push_back(midVtx);
+
+                    // Add new connections
+                    vtxEdge.edge.push_back(std::make_pair(m0, n));
+                    vtxEdge.weight.push_back(
+                        vectorEuclidean(vtxEdge.vertex[m0], midVtx));
+
+                    vtxEdge.edge.push_back(std::make_pair(m1, n));
+                    vtxEdge.weight.push_back(
+                        vectorEuclidean(vtxEdge.vertex[m1], midVtx));
+
+                    n++;
 
                     // Continue from where it pauses
                     n_12 = m1;
