@@ -46,10 +46,10 @@ void HighwayRoadMap3D::buildRoadmap() {
     for (size_t i = 0; i < q_r.size(); ++i) {
         if (i == N_layers - 1) {
             mid.push_back(
-                tfe(Robot.getSemiAxis(), q_r.at(i), q_r.at(0), N_step));
+                getTFE3D(Robot.getSemiAxis(), q_r.at(i), q_r.at(0), N_step));
         } else {
-            mid.push_back(
-                tfe(Robot.getSemiAxis(), q_r.at(i), q_r.at(i + 1), N_step));
+            mid.push_back(getTFE3D(Robot.getSemiAxis(), q_r.at(i),
+                                   q_r.at(i + 1), N_step));
         }
     }
 
@@ -587,69 +587,6 @@ Mesh HighwayRoadMap3D::getMesh(Eigen::MatrixXd bd, int n) {
     M.faces.block(Num, 2, Num, 1) = q + n + 1;
 
     return M;
-}
-
-SuperQuadrics HighwayRoadMap3D::tfe(const std::vector<double>& a,
-                                    const Eigen::Quaterniond& q_a,
-                                    const Eigen::Quaterniond& q_b,
-                                    const int N_step) {
-    Eigen::Matrix3d Ra = q_a.toRotationMatrix();
-    Eigen::Matrix3d Rb = q_b.toRotationMatrix();
-
-    // Interpolate orientations
-    Eigen::AngleAxisd axang(Ra.transpose() * Rb);
-    Eigen::AngleAxisd d_axang = axang;
-    double dt = 1.0 / N_step;
-    Eigen::Vector3d Vs;
-
-    // Iteratively compute MVCE and update
-    SuperQuadrics enclosedEllipsoid = mvce(a, a, q_a, q_b);
-    for (size_t i = 1; i < size_t(N_step); ++i) {
-        d_axang.angle() = i * dt * axang.angle();
-
-        enclosedEllipsoid =
-            mvce(a, enclosedEllipsoid.getSemiAxis(),
-                 Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()),
-                 enclosedEllipsoid.getQuaternion());
-    }
-
-    return enclosedEllipsoid;
-}
-
-SuperQuadrics HighwayRoadMap3D::mvce(const std::vector<double>& a,
-                                     const std::vector<double>& b,
-                                     const Eigen::Quaterniond& q_a,
-                                     const Eigen::Quaterniond& q_b) {
-    Eigen::Matrix3d Ra = q_a.toRotationMatrix(), Rb = q_b.toRotationMatrix();
-
-    double r = fmin(b[0], fmin(b[1], b[2]));
-    Eigen::DiagonalMatrix<double, 3> diag, diag_a, diag_c;
-    diag.diagonal() = Eigen::Array3d(r / b[0], r / b[1], r / b[2]);
-    diag_a.diagonal() =
-        Eigen::Array3d(pow(a[0], -2), pow(a[1], -2), pow(a[2], -2));
-
-    // Shrinking affine transformation
-    Eigen::Matrix3d T = Rb * diag * Rb.transpose();
-
-    // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
-    Eigen::Matrix3d Ap =
-        T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
-    Eigen::JacobiSVD<Eigen::Matrix3d> svd(
-        Ap, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Eigen::Array3d a_p = svd.singularValues().array().pow(-0.5);
-    Eigen::Array3d c_p = {std::fmax(a_p(0), r), std::fmax(a_p(1), r),
-                          std::fmax(a_p(2), r)};
-
-    // Stretch back
-    diag_c.diagonal() = c_p.pow(-2);
-    Eigen::Matrix3d C =
-        T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
-    svd.compute(C);
-    Eigen::Quaterniond q_c(svd.matrixU());
-    Eigen::Array3d c = svd.singularValues().array().pow(-0.5);
-
-    return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0},
-                         {q_c.w(), q_c.x(), q_c.y(), q_c.z()}, 20);
 }
 
 HighwayRoadMap3D::~HighwayRoadMap3D(){};

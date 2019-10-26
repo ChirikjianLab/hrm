@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP3D_H
 
 #include "src/geometry/include/SuperQuadrics.h"
+#include "src/geometry/include/TightFitEllipsoid.h"
 #include "src/util/include/IntersectLineMesh3d.h"
 #include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
@@ -210,23 +211,6 @@ class HighwayRoadMap3D {
      */
     std::vector<std::vector<double>> getSolutionPath();
     std::vector<std::vector<double>> getInterpolatedSolutionPath(int num);
-
-    /*
-     * \brief compute "tightly-fitted concentric ellipsoid" that encloses
-     * multiple ellipsoids
-     */
-    SuperQuadrics tfe(const std::vector<double>& a,
-                      const Eigen::Quaterniond& q_a,
-                      const Eigen::Quaterniond& q_b, const int N_step);
-
-    /*
-     * \brief compute "minimum volume concentric ellipsoid" that encloses two
-     * concentric ellipsoids
-     */
-    SuperQuadrics mvce(const std::vector<double>& a,
-                       const std::vector<double>& b,
-                       const Eigen::Quaterniond& q_a,
-                       const Eigen::Quaterniond& q_b);
 
     /*
      * \brief uniform random sample SO(3)

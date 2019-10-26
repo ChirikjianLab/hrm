@@ -38,8 +38,28 @@ void HighwayRoadMap2D::buildRoadmap() {
     double dr = pi / (N_layers - 1);
     graph multiGraph;
 
+    // Setup rotation angles
+    std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        Robot.at(0).setAngle(dr * i + rand() * 0.01 / RAND_MAX);
+        theta.push_back(dr * i + rand() * 0.01 / RAND_MAX);
+    }
+
+    // Compute mid-layer TFE
+    for (size_t i = 0; i < N_layers - 1; ++i) {
+        if (i == N_layers - 1) {
+            mid.push_back(getMVCE2D(Robot.at(0).getSemiAxis(),
+                                    Robot.at(0).getSemiAxis(), theta.at(i),
+                                    theta.at(0)));
+        } else {
+            mid.push_back(getMVCE2D(Robot.at(0).getSemiAxis(),
+                                    Robot.at(0).getSemiAxis(), theta.at(i),
+                                    theta.at(i + 1)));
+        }
+    }
+
+    for (size_t i = 0; i < N_layers; ++i) {
+        Robot.at(0).setAngle(theta.at(i));
+
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -548,35 +568,4 @@ unsigned int HighwayRoadMap2D::find_cell(std::vector<double> v) {
     }
 
     return idx;
-}
-
-SuperEllipse HighwayRoadMap2D::tfe(double *a, double *b) {
-    Eigen::Matrix2d Ra = Eigen::Rotation2Dd(a[2]).matrix(),
-                    Rb = Eigen::Rotation2Dd(b[2]).matrix();
-
-    double r = fmin(b[0], b[1]);
-    Eigen::DiagonalMatrix<double, 2> diag, diag_a, diag_c;
-    diag.diagonal() = Eigen::Array2d(r / b[0], r / b[1]);
-    diag_a.diagonal() = Eigen::Array2d(pow(a[0], -2), pow(a[1], -2));
-
-    // Shrinking affine transformation
-    Eigen::Matrix2d T = Rb * diag * Rb.transpose();
-
-    // In shrunk space, fit ellipsoid Cp to sphere Bp and ellipsoid Ap
-    Eigen::Matrix2d Ap =
-        T.inverse() * (Ra * diag_a * Ra.transpose()) * T.inverse();
-    Eigen::JacobiSVD<Eigen::Matrix2d> svd(
-        Ap, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Eigen::Array2d a_p = svd.singularValues().array().pow(-0.5);
-    Eigen::Array2d c_p = {std::max(a_p(0), r), std::max(a_p(1), r)};
-
-    // Stretch back
-    diag_c.diagonal() = c_p.pow(-2);
-    Eigen::Matrix2d C =
-        T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
-    svd.compute(C);
-    double ang_c = acos(svd.matrixU()(0, 0));
-    Eigen::Array2d c = svd.singularValues().array().pow(-0.5);
-
-    return SuperEllipse({c(0), c(1)}, 1, {0, 0}, ang_c, 50);
 }

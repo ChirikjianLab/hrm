@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP_H
 
 #include "src/geometry/include/SuperEllipse.h"
+#include "src/geometry/include/TightFitEllipsoid.h"
 #include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
@@ -114,7 +115,6 @@ class HighwayRoadMap2D {
     unsigned int find_cell(std::vector<double> v);
     void midLayer(SuperEllipse Ec);
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
-    SuperEllipse tfe(double[3], double[3]);
 
   public:
     HighwayRoadMap2D(std::vector<SuperEllipse> robot,

@@ -365,14 +365,14 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     // else fit a TFE
     else {
         SuperQuadrics e_fitted =
-            tfe(robot.getBase().getSemiAxis(), q1, q2, N_step);
+            getTFE3D(robot.getBase().getSemiAxis(), q1, q2, N_step);
         tfe_obj.push_back(e_fitted);
 
         for (size_t i = 0; i < robot.getNumLinks(); ++i) {
             R_link = robot.getTF().at(i).block<3, 3>(0, 0);
-            e_fitted = tfe(robot.getLinks().at(i).getSemiAxis(),
-                           Eigen::Quaterniond(R1 * R_link),
-                           Eigen::Quaterniond(R2 * R_link), N_step);
+            e_fitted = getTFE3D(robot.getLinks().at(i).getSemiAxis(),
+                                Eigen::Quaterniond(R1 * R_link),
+                                Eigen::Quaterniond(R2 * R_link), N_step);
             tfe_obj.push_back(e_fitted);
         }
     }
