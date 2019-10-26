@@ -4,6 +4,7 @@
 #include "src/geometry/include/SuperQuadrics.h"
 #include "src/util/include/IntersectLineMesh3d.h"
 #include "src/util/include/Interval.h"
+#include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
 #include <boost/graph/adjacency_list.hpp>
@@ -231,11 +232,6 @@ class HighwayRoadMap3D {
      * \brief uniform random sample SO(3)
      */
     void sampleSO3();
-
-    /*
-     * \brief compute Euclidean distance between two vectors
-     */
-    double vector_dist(std::vector<double> v1, std::vector<double> v2);
 
   private:
     /*

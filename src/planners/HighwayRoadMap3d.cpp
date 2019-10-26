@@ -257,7 +257,7 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
                             cell.cellYZ[i].zU[j][k0]) {
                         vtxEdge.edge.push_back(
                             std::make_pair(I0 + k0, I1 + k1));
-                        vtxEdge.weight.push_back(vector_dist(
+                        vtxEdge.weight.push_back(vectorEuclidean(
                             vtxEdge.vertex[I0 + k0], vtxEdge.vertex[I1 + k1]));
                     }
                 }
@@ -295,8 +295,8 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
                     vtxEdge.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
                     vtxEdge.weight.push_back(
-                        vector_dist(vtxEdge.vertex[N_0 + j1],
-                                    vtxEdge.vertex[N_0 + j1 + 1]));
+                        vectorEuclidean(vtxEdge.vertex[N_0 + j1],
+                                        vtxEdge.vertex[N_0 + j1 + 1]));
                 }
             }
 
@@ -310,8 +310,8 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
                         vtxEdge.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         vtxEdge.weight.push_back(
-                            vector_dist(vtxEdge.vertex[N_0 + j1],
-                                        vtxEdge.vertex[N_1 + j2]));
+                            vectorEuclidean(vtxEdge.vertex[N_0 + j1],
+                                            vtxEdge.vertex[N_1 + j2]));
                     }
                 }
             }
@@ -352,8 +352,8 @@ void HighwayRoadMap3D::connectMultiLayer() {
                     isPtinCFLine(vtxEdge.vertex[m0], vtxEdge.vertex[m1])) {
                     // Add connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(
-                        vector_dist(vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
+                    vtxEdge.weight.push_back(vectorEuclidean(
+                        vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -388,7 +388,7 @@ void HighwayRoadMap3D::search() {
     astar_search(
         g, idx_s,
         [this, idx_g](Vertex v) {
-            return vector_dist(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
+            return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
         },
         predecessor_map(
             make_iterator_property_map(p.begin(), get(boost::vertex_index, g)))
@@ -543,23 +543,13 @@ unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
 
     d_min = std::numeric_limits<double>::infinity();
     for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
-        d = vector_dist(v, vtxEdge.vertex.at(i));
+        d = vectorEuclidean(v, vtxEdge.vertex.at(i));
         if (d < d_min) {
             d_min = d;
             idx = i;
         }
     }
     return idx;
-}
-
-// Compute Euclidean distance between two std::vectors
-double HighwayRoadMap3D::vector_dist(std::vector<double> v1,
-                                     std::vector<double> v2) {
-    std::vector<double> diff;
-    for (size_t i = 0; i < v1.size(); ++i) {
-        diff.push_back(v1[i] - v2[i]);
-    }
-    return sqrt(inner_product(diff.begin(), diff.end(), diff.begin(), 0.0));
 }
 
 // Generate mesh info from a ordered vertex list, i.e. "surf"

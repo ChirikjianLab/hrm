@@ -1,5 +1,6 @@
 add_library(UTIL
             ExponentialFunction.cpp
+            DistanceMetric.cpp
             IntersectLineMesh3d.cpp
             Interval.cpp
             MeshGenerator.cpp

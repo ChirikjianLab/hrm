@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP_H
 
 #include "geometry/include/SuperEllipse.h"
+#include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
 #include <algorithm>
@@ -113,7 +114,6 @@ class HighwayRoadMap {
     cf_cell enhanceDecomp(cf_cell cell);
     std::vector<double> addMidVtx(std::vector<double> vtx1,
                                   std::vector<double> vtx2);
-    double vector_dist(std::vector<double> v1, std::vector<double> v2);
     unsigned int find_cell(std::vector<double> v);
 
   public:

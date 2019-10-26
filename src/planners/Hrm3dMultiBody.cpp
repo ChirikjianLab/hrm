@@ -164,7 +164,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 if (isCollisionFree(V1, V2)) {
                     // Add connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vector_dist(V1, V2));
+                    vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
                     // Continue from where it pauses
                     n_12 = m1;

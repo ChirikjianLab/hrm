@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP_H
 
 #include "src/geometry/include/SuperEllipse.h"
+#include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
 #include <boost/graph/adjacency_list.hpp>
@@ -110,7 +111,6 @@ class HighwayRoadMap2D {
     Eigen::MatrixXd boundaryEnlarge(Eigen::MatrixXd bd_o[], Eigen::MatrixXd x_o,
                                     double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
-    double vector_dist(std::vector<double> v1, std::vector<double> v2);
     unsigned int find_cell(std::vector<double> v);
     void midLayer(SuperEllipse Ec);
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);

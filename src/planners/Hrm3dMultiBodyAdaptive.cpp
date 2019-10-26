@@ -79,7 +79,7 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
             if (isCollisionFree(V1, V2)) {
                 // Add new connections
                 vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                vtxEdge.weight.push_back(vector_dist(V1, V2));
+                vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
                 break;
             }
         }

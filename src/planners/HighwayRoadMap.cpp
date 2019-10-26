@@ -226,8 +226,8 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
                     vtxEdge.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
                     vtxEdge.weight.push_back(
-                        vector_dist(vtxEdge.vertex[N_0 + j1],
-                                    vtxEdge.vertex[N_0 + j1 + 1]));
+                        vectorEuclidean(vtxEdge.vertex[N_0 + j1],
+                                        vtxEdge.vertex[N_0 + j1 + 1]));
                 }
             }
             // Connect vertex btw adjacent cells
@@ -248,8 +248,8 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
                         vtxEdge.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         vtxEdge.weight.push_back(
-                            vector_dist(vtxEdge.vertex[N_0 + j1],
-                                        vtxEdge.vertex[N_1 + j2]));
+                            vectorEuclidean(vtxEdge.vertex[N_0 + j1],
+                                            vtxEdge.vertex[N_1 + j2]));
                     }
                 }
             }
@@ -290,9 +290,9 @@ void HighwayRoadMap::connectMultiLayer() {
                     vtxEdge.vertex.push_back(midVtx);
 
                     vtxEdge.edge.push_back(std::make_pair(m, n));
-                    vtxEdge.weight.push_back(vector_dist(v1, midVtx));
+                    vtxEdge.weight.push_back(vectorEuclidean(v1, midVtx));
                     vtxEdge.edge.push_back(std::make_pair(m2, n));
-                    vtxEdge.weight.push_back(vector_dist(v2, midVtx));
+                    vtxEdge.weight.push_back(vectorEuclidean(v2, midVtx));
                     n++;
                     break;
                 }
@@ -325,7 +325,7 @@ void HighwayRoadMap::search() {
     astar_search(
         g, idx_s,
         [this, idx_g](Vertex v) {
-            return vector_dist(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
+            return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
         },
         predecessor_map(
             make_iterator_property_map(p.begin(), get(boost::vertex_index, g)))
@@ -545,9 +545,9 @@ unsigned int HighwayRoadMap::find_cell(std::vector<double> v) {
     double d_min, d;
     unsigned int idx = 0;
 
-    d_min = vector_dist(v, vtxEdge.vertex[0]);
+    d_min = vectorEuclidean(v, vtxEdge.vertex[0]);
     for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
-        d = vector_dist(v, vtxEdge.vertex[i]);
+        d = vectorEuclidean(v, vtxEdge.vertex[i]);
         if (d < d_min) {
             d_min = d;
             idx = i;
@@ -555,13 +555,4 @@ unsigned int HighwayRoadMap::find_cell(std::vector<double> v) {
     }
 
     return idx;
-}
-
-double HighwayRoadMap::vector_dist(std::vector<double> v1,
-                                   std::vector<double> v2) {
-    std::vector<double> diff;
-    for (size_t i = 0; i < v1.size(); ++i) {
-        diff.push_back(v1[i] - v2[i]);
-    }
-    return sqrt(inner_product(diff.begin(), diff.end(), diff.begin(), 0.0));
 }
