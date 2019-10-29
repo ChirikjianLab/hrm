@@ -53,59 +53,30 @@ struct polyCSpace {
     std::vector<std::vector<double>> invMat;
 };
 
-struct option {
+struct param {
     double infla;
     size_t N_layers, N_dy, sampleNum, N_o, N_s;
+    polyCSpace polyVtx;
 };
 
 class HighwayRoadMap {
-    // variables
-    /*
-    N_o       : number of obstacles;
-    N_s       : number of arenas;
-    N_dy      : number of sweep lines in each C-layer;
-    infla     : inflation factor for the robot;
-    N_layers  : number of C-layers;
-    N_KCsample: number of samples for searching in the intersection between two
-    local c-space; ang_r     : sampled orientations of the robot; N_v_layer :
-    number of vertex in each layer;
-
-    graph     : a structure consisting of vertex and edges;
-    Cost      : cost of the searched path;
-    Endpt     : start and goal configurations;
-    Path      : valid path of motions;
-    polyVtx   : descriptions of polyhedron local c-space
-    planTime  : planning time: roadmap building time and path search time
-    */
-  private:
-    unsigned int N_o, N_s, N_dy, N_layers;
-    double infla;
-    size_t N_KCsample;
-    double ang_r;
-    std::vector<size_t> N_v_layer;
+  public:
+    HighwayRoadMap(const SuperEllipse& robot,
+                   const std::vector<std::vector<double>>& endpt,
+                   const std::vector<SuperEllipse>& arena,
+                   const std::vector<SuperEllipse>& obs, const param& param);
+    virtual ~HighwayRoadMap();
 
   public:
-    // graph: vector of vertices, vector of connectable edges
-    struct graph {
-      public:
-        std::vector<std::vector<double>> vertex;
-        Edge edge;
-        std::vector<double> weight;
-    } vtxEdge;
+    virtual void plan();
+    virtual void buildRoadmap();
+    virtual boundary boundaryGen();
+    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
+                       std::vector<Eigen::MatrixXd> bd_o);
+    void connectOneLayer(cf_cell cell);
+    virtual void connectMultiLayer();
+    void search();
 
-    AdjGraph Graph;
-    std::vector<SuperEllipse> Robot, Arena, Obs;
-    double Cost = 0.0;
-    std::vector<std::vector<double>> Endpt;
-    std::vector<int> Paths;
-    polyCSpace polyVtx;
-
-    struct Time {
-      public:
-        double buildTime, searchTime;
-    } planTime;
-
-    // functions
   private:
     boundary::sepBd separateBoundary(Eigen::MatrixXd bd);
     boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
@@ -116,19 +87,57 @@ class HighwayRoadMap {
                                   std::vector<double> vtx2);
     unsigned int find_cell(std::vector<double> v);
 
+    /* \brief Variables
+     * N_o       : number of obstacles;
+     * N_s       : number of arenas;
+     * N_dy      : number of sweep lines in each C-layer;
+     * infla     : inflation factor for the robot;
+     * N_layers  : number of C-layers;
+     * N_KCsample: number of samples for searching in the intersection between
+     * two local c-space;
+     * ang_r     : sampled orientations of the robot;
+     * N_v_layer : number of vertex in each layer;
+
+     * graph     : a structure consisting of vertex and edges;
+     * Cost      : cost of the searched path;
+     * Endpt     : start and goal configurations;
+     * Path      : valid path of motions;
+     * polyVtx   : descriptions of polyhedron local c-space
+     * planTime  : planning time: roadmap building time and path search time
+     */
   public:
-    HighwayRoadMap(std::vector<SuperEllipse> robot, polyCSpace polyVtx,
-                   std::vector<std::vector<double>> endpt,
-                   std::vector<SuperEllipse> arena,
-                   std::vector<SuperEllipse> obs, option opt);
-    void plan();
-    void buildRoadmap();
-    boundary boundaryGen();
-    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                       std::vector<Eigen::MatrixXd> bd_o);
-    void connectOneLayer(cf_cell cell);
-    void connectMultiLayer();
-    void search();
+    SuperEllipse Robot;
+    std::vector<SuperEllipse> Arena, Obs;
+    std::vector<std::vector<double>> Endpt;
+
+    // graph: vector of vertices, vector of connectable edges
+    struct graph {
+      public:
+        std::vector<std::vector<double>> vertex;
+        Edge edge;
+        std::vector<double> weight;
+    } vtxEdge;
+
+    AdjGraph Graph;
+
+    double Cost = 0.0;
+    std::vector<int> Paths;
+    polyCSpace polyVtx;
+
+    struct Time {
+      public:
+        double buildTime, searchTime;
+    } planTime;
+
+  protected:
+    size_t N_o;
+    size_t N_s;
+    size_t N_dy;
+    size_t N_layers;
+    double infla;
+    size_t N_KCsample;
+    double ang_r;
+    std::vector<size_t> N_v_layer;
 };
 
 #endif  // HIGHWAYROADMAP_H

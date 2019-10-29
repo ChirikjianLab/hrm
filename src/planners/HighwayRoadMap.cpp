@@ -9,24 +9,25 @@
 
 #define pi 3.1415926
 
-HighwayRoadMap::HighwayRoadMap(std::vector<SuperEllipse> robot,
-                               polyCSpace vtxMat,
-                               std::vector<std::vector<double>> endpt,
-                               std::vector<SuperEllipse> arena,
-                               std::vector<SuperEllipse> obs, option opt)
-    : Robot(robot), Arena(arena), Obs(obs), Endpt(endpt) {
-    N_o = opt.N_o;
-    N_s = opt.N_s;
+HighwayRoadMap::HighwayRoadMap(const SuperEllipse& robot,
+                               const std::vector<std::vector<double>>& endpt,
+                               const std::vector<SuperEllipse>& arena,
+                               const std::vector<SuperEllipse>& obs,
+                               const param& param)
+    : Robot(robot),
+      Arena(arena),
+      Obs(obs),
+      Endpt(endpt),
+      Cost(0.0),
+      polyVtx(param.polyVtx),
+      N_o(param.N_o),
+      N_s(param.N_s),
+      N_dy(param.N_dy),
+      N_layers(param.N_layers),
+      infla(param.infla),
+      N_KCsample(param.sampleNum) {}
 
-    polyVtx = vtxMat;
-
-    infla = opt.infla;
-    N_layers = opt.N_layers;
-    N_dy = opt.N_dy;
-    N_KCsample = opt.sampleNum;
-
-    Cost = 0;
-}
+HighwayRoadMap::~HighwayRoadMap(){};
 
 void HighwayRoadMap::plan() {
     ompl::time::point start = ompl::time::now();
@@ -41,7 +42,6 @@ void HighwayRoadMap::plan() {
 void HighwayRoadMap::buildRoadmap() {
     // angle steps
     double dr = pi / (N_layers - 1);
-    graph multiGraph;
 
     // Setup rotation angles
     std::vector<double> theta;
@@ -50,7 +50,7 @@ void HighwayRoadMap::buildRoadmap() {
     }
 
     for (size_t i = 0; i < N_layers; ++i) {
-        Robot.at(0).setAngle(theta.at(i));
+        Robot.setAngle(theta.at(i));
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -67,25 +67,19 @@ void HighwayRoadMap::buildRoadmap() {
 }
 
 boundary HighwayRoadMap::boundaryGen() {
-    std::vector<SuperEllipse> robot_infla;
+    SuperEllipse robot_infla = Robot;
     boundary bd;
 
-    for (size_t num_r = 0; num_r < Robot.size(); ++num_r) {
-        robot_infla.emplace_back(Robot.at(num_r));
-        // Enlarge the robot
-        robot_infla.at(num_r).setSemiAxis(
-            {robot_infla.at(num_r).getSemiAxis().at(0) * (1 + infla),
-             robot_infla.at(num_r).getSemiAxis().at(1) * (1 + infla)});
+    // Enlarge the robot
+    robot_infla.setSemiAxis({robot_infla.getSemiAxis().at(0) * (1 + infla),
+                             robot_infla.getSemiAxis().at(1) * (1 + infla)});
 
-        // calculate Minkowski boundary points
-        for (size_t i = 0; i < N_s; ++i) {
-            bd.bd_s.emplace_back(
-                Arena.at(i).getMinkSum2D(robot_infla.at(num_r), -1));
-        }
-        for (size_t i = 0; i < N_o; ++i) {
-            bd.bd_o.emplace_back(
-                Obs.at(i).getMinkSum2D(robot_infla.at(num_r), +1));
-        }
+    // calculate Minkowski boundary points
+    for (size_t i = 0; i < N_s; ++i) {
+        bd.bd_s.emplace_back(Arena.at(i).getMinkSum2D(robot_infla, -1));
+    }
+    for (size_t i = 0; i < N_o; ++i) {
+        bd.bd_o.emplace_back(Obs.at(i).getMinkSum2D(robot_infla, +1));
     }
 
     return bd;
@@ -213,15 +207,18 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
     std::vector<unsigned int> N_v_line;
     unsigned int N_0 = 0, N_1 = 0;
 
+    // Append new vertex to vertex list
     for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_v_line.push_back(vtxEdge.vertex.size());
 
         for (size_t j = 0; j < CFcell.xM[i].size(); ++j) {
             // Construct a vector of vertex
             vtxEdge.vertex.push_back(
-                {CFcell.xM[i][j], CFcell.ty[i], Robot.at(0).getAngle()});
+                {CFcell.xM[i][j], CFcell.ty[i], Robot.getAngle()});
         }
     }
+
+    // Add connections to edge list
     for (size_t i = 0; i < CFcell.ty.size(); ++i) {
         N_0 = N_v_line[i];
         N_1 = N_v_line[i + 1];
@@ -239,18 +236,10 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
             // Connect vertex btw adjacent cells
             if (i != CFcell.ty.size() - 1) {
                 for (size_t j2 = 0; j2 < CFcell.xM[i + 1].size(); ++j2) {
-                    if (((CFcell.xM[i][j1] > CFcell.xL[i + 1][j2] &&
-                          CFcell.xM[i][j1] < CFcell.xU[i + 1][j2]) ||
-                         (CFcell.xM[i + 1][j2] > CFcell.xL[i][j1] &&
-                          CFcell.xM[i + 1][j2] < CFcell.xU[i][j1])) &&
-                        ((CFcell.xU[i][j1] > CFcell.xL[i + 1][j2] &&
-                          CFcell.xU[i][j1] < CFcell.xU[i + 1][j2]) ||
-                         (CFcell.xL[i][j1] > CFcell.xL[i + 1][j2] &&
-                          CFcell.xL[i][j1] < CFcell.xU[i + 1][j2]) ||
-                         (CFcell.xU[i + 1][j2] > CFcell.xL[i][j1] &&
-                          CFcell.xU[i + 1][j2] < CFcell.xU[i][j1]) ||
-                         (CFcell.xL[i + 1][j2] > CFcell.xL[i][j1] &&
-                          CFcell.xL[i + 1][j2] < CFcell.xU[i][j1]))) {
+                    if (((CFcell.xM[i][j1] >= CFcell.xL[i + 1][j2] &&
+                          CFcell.xM[i][j1] <= CFcell.xU[i + 1][j2]) &&
+                         (CFcell.xM[i + 1][j2] >= CFcell.xL[i][j1] &&
+                          CFcell.xM[i + 1][j2] <= CFcell.xU[i][j1]))) {
                         vtxEdge.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         vtxEdge.weight.push_back(
@@ -264,27 +253,30 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
 }
 
 void HighwayRoadMap::connectMultiLayer() {
-    size_t n, n_11, n_12, n_2;
+    size_t n = vtxEdge.vertex.size();
+    size_t n_11;
+    size_t n_12;
+    size_t n_2;
     size_t start = 0;
+
+    std::vector<double> v1;
+    std::vector<double> v2;
     std::vector<double> midVtx;
-    std::vector<double> v1, v2;
 
-    n = vtxEdge.vertex.size();
-
-    for (size_t i = 0; i < N_layers - 1; ++i) {
+    for (size_t i = 0; i < N_layers; ++i) {
         // Find vertex only in adjecent layers
         n_11 = N_v_layer[i];
-        n_2 = N_v_layer[i + 1];
+        if (i != N_layers - 1) {
+            n_2 = N_v_layer[i + 1];
+            n_12 = n_11;
+        } else {
+            n_2 = N_v_layer[0];
+            n_12 = 0;
+        }
 
         // Nearest vertex btw layers
         for (size_t m = start; m < n_11; ++m) {
             v1 = vtxEdge.vertex[m];
-            n_12 = n_11;
-            if (i == N_layers - 1) {
-                n_2 = N_v_layer[0];
-                v1[2] = 0.0;
-                n_12 = 0;
-            }
 
             for (size_t m2 = n_12; m2 < n_2; ++m2) {
                 v2 = vtxEdge.vertex[m2];
@@ -520,7 +512,6 @@ std::vector<double> HighwayRoadMap::addMidVtx(std::vector<double> vtx1,
     // roadmap
     std::vector<double> midVtx, pt, pt1, pt2;
     bool flag;
-    midVtx.clear();
 
     for (size_t iter = 0; iter < N_KCsample; iter++) {
         pt.clear();

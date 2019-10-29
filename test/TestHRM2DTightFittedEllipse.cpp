@@ -1,5 +1,5 @@
 #include "geometry/include/SuperEllipse.h"
-#include "planners/include/HighwayRoadMap.h"
+#include "planners/include/HighwayRoadMap2d.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <eigen3/Eigen/Dense>
@@ -16,11 +16,11 @@ using namespace std;
 
 #define pi 3.1415926
 
-HighwayRoadMap plan(const SuperEllipse& robot,
-                    const std::vector<std::vector<double>>& EndPts,
-                    const std::vector<SuperEllipse>& arena,
-                    const std::vector<SuperEllipse>& obs, const param& par) {
-    HighwayRoadMap high(robot, EndPts, arena, obs, par);
+HighwayRoadMap2D plan(const SuperEllipse& robot,
+                      const std::vector<std::vector<double>>& EndPts,
+                      const std::vector<SuperEllipse>& arena,
+                      const std::vector<SuperEllipse>& obs, const param& par) {
+    HighwayRoadMap2D high(robot, EndPts, arena, obs, par);
     high.plan();
 
     // calculate original boundary points
@@ -93,20 +93,10 @@ int main(int argc, char** argv) {
     string file_robConfig = "../config/robotConfig.csv";
     vector<vector<double>> rob_config = parse2DCsvFile(file_robConfig);
 
-    string file_robVtx = "../config/robotVtx.csv";
-    vector<vector<double>> rob_vtx = parse2DCsvFile(file_robVtx);
-
-    string file_robInvMat = "../config/robotInvMat.csv";
-    vector<vector<double>> rob_InvMat = parse2DCsvFile(file_robInvMat);
-
     // Robot as a class of SuperEllipse
     SuperEllipse robot({rob_config[0][0], rob_config[0][1]}, rob_config[0][3],
                        {rob_config[0][4], rob_config[0][5]}, rob_config[0][2],
                        num);
-
-    polyCSpace polyVtx;
-    polyVtx.vertex = rob_vtx;
-    polyVtx.invMat = rob_InvMat;
 
     // Environment
     // Read environment config file
@@ -140,17 +130,14 @@ int main(int argc, char** argv) {
 
     // Parameters
     param par;
-    par.infla = rob_config[0][6];
     par.N_layers = static_cast<size_t>(N_l);
     par.N_dy = static_cast<size_t>(N_y);
-    par.sampleNum = 10;
     par.N_o = obs.size();
     par.N_s = arena.size();
-    par.polyVtx = polyVtx;
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {
-        HighwayRoadMap high = plan(robot, EndPts, arena, obs, par);
+        HighwayRoadMap2D high = plan(robot, EndPts, arena, obs, par);
 
         time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
                              high.planTime.buildTime + high.planTime.searchTime,

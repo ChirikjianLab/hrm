@@ -64,77 +64,6 @@ struct option3D {
 };
 
 class HighwayRoadMap3D {
-    // variables
-    /*
-    N_o       : number of obstacles;
-    N_s       : number of arenas;
-    N_dx      : number of sweep planes within one C-layer;
-    N_dy      : number of sweep lines within one sweep plane;
-    Lim       : planning bound limit;
-    N_layers  : number of C-layers;
-    q_r       : sampled orientations (Quaternion) of the robot;
-    N_v_layer : number of vertex in each layer;
-    N_step    : number of interpolated orientations between two vertices at
-                different C-layers, default = 3
-
-    graph     : a structure consisting of vertex and edges;
-    Cost      : cost of the searched path;
-    Endpt     : start and goal configurations;
-    Path      : valid path of motions;
-    planTime  : planning time: roadmap building time and path search time
-    */
-  private:
-    std::vector<SuperQuadrics> mid;
-    cf_cell3D mid_cell;
-    std::vector<double> midVtx;
-
-  public:
-    // Parameters for the roadmap
-    SuperQuadrics Robot;
-    std::vector<SuperQuadrics> Arena;
-    std::vector<SuperQuadrics> Obs;
-    std::vector<std::vector<double>> Endpt;
-
-    size_t N_o, N_s, N_dx, N_dy, N_layers;
-    std::vector<double> Lim;
-    std::vector<Eigen::Quaterniond> q_r;
-    int N_step = 3;
-
-    struct vertexIdx {
-      public:
-        size_t layer;
-        std::vector<size_t> plane;
-        std::vector<std::vector<size_t>> line;
-    } N_v;
-
-    // graph: vector of vertices, vector of connectable edges
-    struct graph {
-      public:
-        std::vector<std::vector<double>> vertex;
-        Edge edge;
-        std::vector<double> weight;
-    } vtxEdge;
-
-    // Vertex index info
-    std::vector<vertexIdx> vtxId;
-
-    // Solution info
-    struct SolutionPathInfo {
-        std::vector<int> PathId;
-        std::vector<std::vector<double>> solvedPath;
-        std::vector<std::vector<double>> interpolatedPath;
-        double Cost = 0.0;
-    } solutionPathInfo;
-
-    struct Time {
-      public:
-        double buildTime, searchTime, totalTime;
-    } planTime;
-
-    bool flag = false;
-
-    // functions
-
   public:
     HighwayRoadMap3D(SuperQuadrics robot,
                      std::vector<std::vector<double>> endpt,
@@ -239,6 +168,75 @@ class HighwayRoadMap3D {
      * \brief query whether a point is within a collision-free line segment
      */
     bool isPtinCFLine(std::vector<double>, std::vector<double>);
+
+    /*
+     * \brief Variables
+     * N_o       : number of obstacles;
+     * N_s       : number of arenas;
+     * N_dx      : number of sweep planes within one C-layer;
+     * N_dy      : number of sweep lines within one sweep plane;
+     * Lim       : planning bound limit;
+     * N_layers  : number of C-layers;
+     * q_r       : sampled orientations (Quaternion) of the robot;
+     * N_v_layer : number of vertex in each layer;
+     * N_step    : number of interpolated orientations between two vertices at
+                different C-layers, default = 3
+
+     * graph     : a structure consisting of vertex and edges;
+     * Cost      : cost of the searched path;
+     * Endpt     : start and goal configurations;
+     * Path      : valid path of motions;
+     * planTime  : planning time: roadmap building time and path search time
+     */
+  public:
+    SuperQuadrics Robot;
+    std::vector<SuperQuadrics> Arena;
+    std::vector<SuperQuadrics> Obs;
+    std::vector<std::vector<double>> Endpt;
+
+    // Parameters for the roadmap
+    size_t N_o, N_s, N_dx, N_dy, N_layers;
+    std::vector<double> Lim;
+    std::vector<Eigen::Quaterniond> q_r;
+    int N_step = 3;
+
+    struct vertexIdx {
+      public:
+        size_t layer;
+        std::vector<size_t> plane;
+        std::vector<std::vector<size_t>> line;
+    } N_v;
+
+    // graph: vector of vertices, vector of connectable edges
+    struct graph {
+      public:
+        std::vector<std::vector<double>> vertex;
+        Edge edge;
+        std::vector<double> weight;
+    } vtxEdge;
+
+    // Vertex index info
+    std::vector<vertexIdx> vtxId;
+
+    // Solution info
+    struct SolutionPathInfo {
+        std::vector<int> PathId;
+        std::vector<std::vector<double>> solvedPath;
+        std::vector<std::vector<double>> interpolatedPath;
+        double Cost = 0.0;
+    } solutionPathInfo;
+
+    struct Time {
+      public:
+        double buildTime, searchTime, totalTime;
+    } planTime;
+
+    bool flag = false;
+
+  private:
+    std::vector<SuperQuadrics> mid;
+    cf_cell3D mid_cell;
+    std::vector<double> midVtx;
 };
 
 #endif  // HIGHWAYROADMAP3D_H
