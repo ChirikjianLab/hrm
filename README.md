@@ -31,7 +31,8 @@ Configuration files are all stored in "/config" folder, including (3D cases as a
 
 ### Running tests
 Testing files are located in "/test" folder:
-- 2D case (single body): "/test/TestHRM2D.cpp"
+- 2D case (single body, Kinematics of Containment): "/test/TestHRM2D.cpp"
+- 2D case (single body, Tighly-fitted Ellipsoid): "/test/TestHRM2DTightFittedEllipse.cpp"
 - 3D case (sinlge body): "/test/TestHRM3D.cpp"
 - 3D case (multi body): "/test/TestHRM3DMultiBody.cpp"
 
@@ -51,11 +52,11 @@ After running test or benchmark files, parameters for visualization will be gene
 
 ## Status
 ### Highway RoadMap planner
-1. SE(2) single rigid body finished: 
+1. SE(2) single rigid body cases: 
 - Fixed number of layers and sweep lines.
 - Layer connections using KC ("src/planners/HighwayRoadMap.cpp") and TFE ("src/planners/HighwayRoadMap2d.cpp").
 
-2. SE(3) single/multi rigid body finished:
+2. SE(3) single/multi rigid body cases:
 - Single body ("src/planners/HighwayRoadMap3d.cpp"): fixed number of layers and sweep lines.
 - Multi body: fixed ("src/planners/Hrm3DMultiBody.cpp") / adaptive ("src/planners/Hrm3DMultiBodyAdaptive.cpp") number of layers, fixed sweep lines.
 - Layer connections using TFE.
@@ -63,7 +64,8 @@ After running test or benchmark files, parameters for visualization will be gene
 ### OMPL sampled-based planners
 1. SE(2) single rigid body
 
-2. SE(3) single/multi rigid body
+2. SE(3) single/multi rigid body:
+- Benchmark: "/benchmark/BenchOMPL3D.cpp"
 
 ### Benchmark in different scenerios
 - Sparse map
@@ -71,9 +73,6 @@ After running test or benchmark files, parameters for visualization will be gene
 - Maze map
 
 ## TODO
-### Articulated body
-1. Extend to multi-link articulated robot
-
 ### Demo
 1. Verify the algorithm in real robot, i.e. project the NAO humanoid robot to the plane, and plan a trajectory.
 
