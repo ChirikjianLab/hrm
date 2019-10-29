@@ -58,10 +58,10 @@ boundary HighwayRoadMap2D::boundaryGen() {
     boundary bd;
 
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; ++i) {
+    for (size_t i = 0; i < size_t(N_s); ++i) {
         bd.bd_s.emplace_back(Arena.at(i).getMinkSum2D(Robot, -1));
     }
-    for (size_t i = 0; i < N_o; ++i) {
+    for (size_t i = 0; i < size_t(N_o); ++i) {
         bd.bd_o.emplace_back(Obs.at(i).getMinkSum2D(Robot, +1));
     }
 
@@ -128,10 +128,10 @@ void HighwayRoadMap2D::connectMultiLayer() {
 void HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
     boundary bd;
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; ++i) {
+    for (size_t i = 0; i < size_t(N_s); ++i) {
         bd.bd_s.push_back(Arena.at(i).getMinkSum2D(Ec, -1));
     }
-    for (size_t i = 0; i < N_o; ++i) {
+    for (size_t i = 0; i < size_t(N_o); ++i) {
         bd.bd_o.push_back(Obs.at(i).getMinkSum2D(Ec, +1));
     }
 

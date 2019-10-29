@@ -23,8 +23,8 @@ figure; hold on; axis equal;
 %% environment
 disp('Environment Initialization...')
 
-opt = 21;
-[ar, obs, pts] = environment(opt);
+% opt = 21;
+% [ar, obs, pts] = environment(opt);
 
 sc = 20;
 % start and goal
@@ -33,17 +33,19 @@ goal = endPts(3,:)';
 plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
 plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
 
-
-
 % original
-for i = 1:2:size(X_ori,1)-1
-    plot(X_ori(i,:),X_ori(i+1,:),'b');
+for i = size(X_ori,1)-1
+    plot(X_ori(i,:),X_ori(i+1,:),'k');
 end
 
-% Mink
-for i = 1:2:size(X,1)-1
-    plot(X(i,:),X(i+1,:),'k.');
+for i = 1:2:size(X_ori,1)-3
+    patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
 end
+
+% % Mink
+% for i = 1:2:size(X,1)-1
+%     plot(X(i,:),X(i+1,:),'k.');
+% end
 
 %% raster scan
 % N_dy = size(X_obs)/2;
@@ -64,21 +66,21 @@ end
 %     plot(X_arena(1:N_dy,i),Y,'.')
 %     plot(X_arena(N_dy+1:N_dy*2,i),Y,'.')
 % end
-
-% cells
-for i = 1:size(cf_seg,1)
-    plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-        plot(cf_seg(i,3), cf_seg(i,1),'k.')
-end
-
-% vertex and connections
-plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-edge = edge+1;
-for i = 1:size(edge,1)
-    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-end
+% 
+% % cells
+% for i = 1:size(cf_seg,1)
+%     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
+%         plot(cf_seg(i,3), cf_seg(i,1),'k.')
+% end
+% 
+% % vertex and connections
+% plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
+% edge = edge+1;
+% for i = 1:size(edge,1)
+%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+% end
 
 % shortest path
 plot3([start(1) vtx(path(end)+1,1)],...
@@ -93,6 +95,28 @@ for i = 1:size(path,2)-1
         [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
         sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'c', 'LineWidth', 2)
 end
+
+% Robot motions
+configPath = '../../config/';
+robot = load([configPath, 'robotConfig.csv']);
+rob = SuperEllipse([robot(1:3),robot(5:6),robot(4),50], 'g', 0);
+
+rob.ang = start(3);
+rob.tx = start(1);
+rob.ty = start(2);
+rob.PlotShape();
+% plotEllipse(robot(1:2), start, 'k');
+for i = 1:size(path,2)-1 
+    rob.ang = vtx(path(i)+1,3);
+    rob.tx = vtx(path(i)+1,1);
+    rob.ty = vtx(path(i)+1,2);
+    rob.PlotShape();
+%     plotEllipse(robot(1:2), vtx(path(i)+1,:)', 'b')
+end
+rob.ang = goal(3);
+rob.tx = goal(1);
+rob.ty = goal(2);
+rob.PlotShape();
 
 %% Path for PRM
 % path_prm = load([loadPath, 'prm_path.csv']);

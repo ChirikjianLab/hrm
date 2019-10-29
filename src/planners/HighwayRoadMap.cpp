@@ -102,12 +102,12 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     std::vector<double> xL, xU, xM;
 
     // Separate boundaries of Arenas and Obstacles into two parts
-    for (size_t i = 0; i < N_s; ++i) {
+    for (size_t i = 0; i < size_t(N_s); ++i) {
         P_bd_s[i] = separateBoundary(bd_s[i]);
         bd_s_L[i] = P_bd_s[i].P_bd_L;
         bd_s_R[i] = P_bd_s[i].P_bd_R;
     }
-    for (size_t i = 0; i < N_o; ++i) {
+    for (size_t i = 0; i < size_t(N_o); ++i) {
         P_bd_o[i] = separateBoundary(bd_o[i]);
         bd_o_L[i] = P_bd_o[i].P_bd_L;
         bd_o_R[i] = P_bd_o[i].P_bd_R;
@@ -115,17 +115,17 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
     // Find closest points for each raster scan line
     double ty[N_dy], dy = (P_bd_s[0].max_y - P_bd_s[0].min_y) / (N_dy - 1);
-    for (size_t i = 0; i < N_dy; ++i) {
+    for (Eigen::Index i = 0; i < N_dy; ++i) {
         // y-coordinate of each sweep line
         ty[i] = P_bd_s[0].min_y + i * dy;
         // x-coordinate of the intersection btw sweep line and arenas
-        for (size_t j = 0; j < N_s; ++j) {
+        for (Eigen::Index j = 0; j < N_s; ++j) {
             x_bd_s[i][j] = closestPt(P_bd_s[j], ty[i]);
             x_s_L(i, j) = x_bd_s[i][j].x_L;
             x_s_R(i, j) = x_bd_s[i][j].x_R;
         }
         // x-coordinate of the intersection btw sweep line and obstacles
-        for (size_t j = 0; j < N_o; ++j) {
+        for (Eigen::Index j = 0; j < N_o; ++j) {
             x_bd_o[i][j] = closestPt(P_bd_o[j], ty[i]);
             x_o_L(i, j) = x_bd_o[i][j].x_L;
             x_o_R(i, j) = x_bd_o[i][j].x_R;
@@ -160,13 +160,13 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     //    file_arena.close();
 
     // CF line segment for each ty
-    for (size_t i = 0; i < N_dy; ++i) {
+    for (Eigen::Index i = 0; i < N_dy; ++i) {
         // Construct intervals at each sweep line
-        for (size_t j = 0; j < N_s; ++j)
+        for (Eigen::Index j = 0; j < N_s; ++j)
             if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_R(i, j))) {
                 arena_seg.push_back({x_s_L(i, j), x_s_R(i, j)});
             }
-        for (size_t j = 0; j < N_o; ++j)
+        for (Eigen::Index j = 0; j < N_o; ++j)
             if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_R(i, j))) {
                 obs_seg.push_back({x_o_L(i, j), x_o_R(i, j)});
             }
@@ -209,7 +209,7 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
 
     // Append new vertex to vertex list
     for (size_t i = 0; i < CFcell.ty.size(); ++i) {
-        N_v_line.push_back(vtxEdge.vertex.size());
+        N_v_line.push_back(uint(vtxEdge.vertex.size()));
 
         for (size_t j = 0; j < CFcell.xM[i].size(); ++j) {
             // Construct a vector of vertex

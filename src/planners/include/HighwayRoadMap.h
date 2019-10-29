@@ -130,9 +130,9 @@ class HighwayRoadMap {
     } planTime;
 
   protected:
-    size_t N_o;
-    size_t N_s;
-    size_t N_dy;
+    Eigen::Index N_o;
+    Eigen::Index N_s;
+    Eigen::Index N_dy;
     size_t N_layers;
     double infla;
     size_t N_KCsample;
