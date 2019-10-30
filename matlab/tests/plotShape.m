@@ -70,7 +70,7 @@ end
 % % cells
 % for i = 1:size(cf_seg,1)
 %     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-%         plot(cf_seg(i,3), cf_seg(i,1),'k.')
+%         plot(cf_seg(i,3), cf_seg(i,1),'k*')
 % end
 % 
 % % vertex and connections

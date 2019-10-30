@@ -75,11 +75,11 @@ boundary HighwayRoadMap::boundaryGen() {
                              robot_infla.getSemiAxis().at(1) * (1 + infla)});
 
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; ++i) {
-        bd.bd_s.emplace_back(Arena.at(i).getMinkSum2D(robot_infla, -1));
+    for (size_t i = 0; i < size_t(N_s); ++i) {
+        bd.bd_s.emplace_back(Arena[i].getMinkSum2D(robot_infla, -1));
     }
-    for (size_t i = 0; i < N_o; ++i) {
-        bd.bd_o.emplace_back(Obs.at(i).getMinkSum2D(robot_infla, +1));
+    for (size_t i = 0; i < size_t(N_o); ++i) {
+        bd.bd_o.emplace_back(Obs[i].getMinkSum2D(robot_infla, +1));
     }
 
     return bd;
@@ -114,21 +114,22 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     }
 
     // Find closest points for each raster scan line
-    double ty[N_dy], dy = (P_bd_s[0].max_y - P_bd_s[0].min_y) / (N_dy - 1);
+    double ty[N_dy];
+    double dy = (P_bd_s[0].max_y - P_bd_s[0].min_y) / (N_dy - 1);
     for (Eigen::Index i = 0; i < N_dy; ++i) {
         // y-coordinate of each sweep line
         ty[i] = P_bd_s[0].min_y + i * dy;
         // x-coordinate of the intersection btw sweep line and arenas
         for (Eigen::Index j = 0; j < N_s; ++j) {
             x_bd_s[i][j] = closestPt(P_bd_s[j], ty[i]);
-            x_s_L(i, j) = x_bd_s[i][j].x_L;
-            x_s_R(i, j) = x_bd_s[i][j].x_R;
+            x_s_L(i, j) = std::fmin(x_bd_s[i][j].x_L, x_bd_s[i][j].x_R);
+            x_s_R(i, j) = std::fmax(x_bd_s[i][j].x_L, x_bd_s[i][j].x_R);
         }
         // x-coordinate of the intersection btw sweep line and obstacles
         for (Eigen::Index j = 0; j < N_o; ++j) {
             x_bd_o[i][j] = closestPt(P_bd_o[j], ty[i]);
-            x_o_L(i, j) = x_bd_o[i][j].x_L;
-            x_o_R(i, j) = x_bd_o[i][j].x_R;
+            x_o_L(i, j) = std::fmin(x_bd_o[i][j].x_L, x_bd_o[i][j].x_R);
+            x_o_R(i, j) = std::fmax(x_bd_o[i][j].x_L, x_bd_o[i][j].x_R);
         }
     }
 

@@ -39,30 +39,6 @@ using namespace fcl;
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 class ompl_planner {
-    // Variables
-  public:
-    typedef Matrix<double, 4, 1> Vector4d;
-
-    og::SimpleSetupPtr ss_;
-    vector<SuperQuadrics> arena;
-    vector<SuperQuadrics> robot;
-    vector<SuperQuadrics> obstacles;
-    vector<EMesh> obs_mesh;
-
-    vector<fcl::CollisionObject<double>> obj_robot, obj_obs;
-
-    unsigned int nodes_graph;
-    unsigned int edges_graph;
-    //    int total_random;
-    unsigned long nodes_path;
-    int flag;
-    //    double astar_time;
-    //    double construct_time;
-    double total_time;
-    double valid_space;
-    int id_planner, id_sampler;
-
-    // functions
   public:
     ompl_planner(vector<double> lowBound, vector<double> highBound,
                  vector<SuperQuadrics> robot_, vector<SuperQuadrics> arena_,
@@ -76,6 +52,30 @@ class ompl_planner {
                          CollisionObject<double> obj_sq) const;
     bool compareStates(vector<double> goal_config, vector<double> last_config);
     void setCollisionObj();
+
+    // Variables
+  public:
+    typedef Matrix<double, 4, 1> Vector4d;
+
+    og::SimpleSetupPtr ss_;
+    vector<SuperQuadrics> arena;
+    vector<SuperQuadrics> robot;
+    vector<SuperQuadrics> obstacles;
+    vector<EMesh> obs_mesh;
+
+    vector<fcl::CollisionObject<double>> obj_robot, obj_obs;
+
+    unsigned int numCheckedNodes;
+    unsigned int numValidNodes;
+    unsigned int numGraphNodes;
+    unsigned int numGraphEdges;
+    unsigned long numPathNodes;
+
+    int flag;
+    double totalTime;
+    double validSpace;
+    int id_planner;
+    int id_sampler;
 };
 
 #endif  // OMPL_PLANNER_H

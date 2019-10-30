@@ -1,4 +1,4 @@
-function [arena, obs, EndPts] = environment(opt)
+function [arena, obs, EndPts] = environment2D(opt)
 %% Arena, Obstacles and start and goal points
 if opt == 11 % Ellipse Sparse
     % set up the parameters of the environment
@@ -56,7 +56,7 @@ elseif opt == 13 % Ellipse Maze
     P_start = [-42;-26; 0; 0; 0];
     P_goal  = [ 42; 26; 0; 0; 0];
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif opt == 21 % Superellipse Sparse
     % set up the parameters of the environment
     ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
@@ -127,7 +127,8 @@ elseif opt == 24 % Superellipse cluttered
     
     P_start = [-55;-25; 0; 0; 0];
     P_goal  = [ 60; 26; pi/3; 0; 0];
-    
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif opt == 31 % MultiBody Sparse
     % set up the parameters of the environment
     ra_s = 70; rb_s = 40; ang_s = 0; % superquadric arena(s)
@@ -152,24 +153,57 @@ elseif opt == 32 % MultiBody cluttered
     eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [20 20  5 20 15 15  5];
-    rb_o  = [ 5  5 15  5  5  6 10];
-    ang_o = [-pi/4 pi/6 0 0 -pi/20 pi/4 0];
+    ra_o  = [   20   20  5 20    15   25  5];
+    rb_o  = [    5    5 14  5     5   10 10];
+    ang_o = [-pi/4 pi/6  0  0 -pi/6 pi/4  0];
     
-    tx_o     = [-32 -40   5 10 30  45 -15];
+    tx_o     = [-35 -40   5 10 30  45 -15];
     ty_o     = [-18  20 -25  8 28 -15   3];
-    eps_o    = [1.1  .8  .4 .1 .1  1.4  .1];
+    eps_o    = [1.1  .8  .4 .1 .1  1.4 .1];
     
     P_start = [-55;-25; 0; 0; 0];
     P_goal  = [ 60; 26; pi/3; 0; 0];
+    
+elseif opt == 33 % Multibody maze
+    ra_s = 70; rb_s = 40; ang_s = 0;
+    tx_s = 0; ty_s = 0;
+    eps_s = 0.1;
+    
+    ra_o  = [ 8  8  8  8 48  8 20];
+    rb_o  = [30 25 25 26  8 25  8];
+    ang_o = [ 0  0  0  0  0  0  0];
+    
+    tx_o     = [-62 -34  -6  22  22  52 -34];
+    ty_o     = [-10  15 -15  -2  32 -15 -32];
+    eps_o    = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
+    
+    P_start = [-60; 30; 0; 0; 0];
+    P_goal  = [ 66;-30; pi/2; 0; 0];
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif opt == 41 % Nao robot cluttered
+    ra_s = 150/2; rb_s = 120/2; ang_s = 0;
+    tx_s = 0; ty_s = 0;
+    eps_s = 0.1;
+    
+    ra_o  = [  17    20    25     30   35    20]/2;
+    rb_o  = [  16    14    25     14   16    14]/2;
+    ang_o = [pi/5 -pi/7 pi/14 pi/2.5 pi/2 -pi/4];
+    
+    tx_o     = [-62 -30   5 -20  20  50];
+    ty_o     = [-10 -15 -40  40   0  45];
+    eps_o    = [0.1 0.1 0.1 0.1 0.1 0.1];
+    
+    P_start = [-55; 35; -pi; 0; 0];
+    P_goal  = [ 56;-35; -pi*3/4; 0; 0];
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Nb = 50;   % # of pnts on the superelliptical arena
-Ns = 300;  % # of pnts on the superelliptical obs(tacles)
+Nb = 300;  % # of pnts on the superelliptical obs(tacles)
+Ns = 300;  % # of pnts on the superelliptical arena
 
 %% == construct SuperEllipse objects for the arena and obstacles
 for i = 1:N_s

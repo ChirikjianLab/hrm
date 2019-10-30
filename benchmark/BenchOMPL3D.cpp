@@ -52,13 +52,14 @@ int main(int argc, char **argv) {
     outfile.open("time3D_ompl.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
-            << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << endl;
+            << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
+            << "CHECKED_NODES" << ',' << "VALID_NODES" << endl;
 
     // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
     // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
     int id_plan = atoi(argv[3]), id_sample = atoi(argv[4]);
     //    int m = id_plan, nn = id_sample;
-    for (int m = 0; m < id_plan; m++) {
+    for (int m = 5; m < id_plan; m++) {
         for (int n = 0; n < id_sample; n++) {
             for (int i = 0; i < N; i++) {
                 cout << "Planner: " << m << endl;
@@ -69,10 +70,11 @@ int main(int argc, char **argv) {
                 tester.plan(endPts[0], endPts[1]);
 
                 outfile << tester.id_planner << ',' << tester.id_sampler << ','
-                        << tester.flag << ',' << tester.total_time << ','
-                        << tester.nodes_graph << "," << tester.edges_graph
-                        << "," << tester.nodes_path << "," << tester.valid_space
-                        << endl;
+                        << tester.flag << ',' << tester.totalTime << ','
+                        << tester.numGraphNodes << "," << tester.numGraphEdges
+                        << "," << tester.numPathNodes << ","
+                        << tester.validSpace << ',' << tester.numCheckedNodes
+                        << ',' << tester.numValidNodes << endl;
             }
         }
     }

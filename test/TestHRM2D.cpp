@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     vector<vector<double>> time_stat;
 
     // Number of points on the boundary
-    int num = 50;
+    int num = 300;
 
     // Robot
     // Read robot config file

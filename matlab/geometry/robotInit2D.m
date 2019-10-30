@@ -1,4 +1,4 @@
-function robot = robotInit(opt, infla)
+function robot = robotInit2D(opt, infla)
 %% == Construct Robot and Plot Start and Goal Poses ==
 
 % Construct object of robot using SuperEllipse objects
@@ -35,4 +35,10 @@ elseif opt == 3
     robot.addBody(link2,2);
     robot.addBody(link3,3);
     robot.addBody(link4,4);
+
+% Nao robot, silhouette
+elseif opt == 4
+    robot = SuperEllipse([35/2,25/2,0,0,0,1,50], 'g', infla);
+    
+%     robot = MultiBodyTree2D(base, 0);
 end

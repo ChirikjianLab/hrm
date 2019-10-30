@@ -143,7 +143,7 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
     if (!solved) {
         flag = false;
         return false;
-    } else if (total_time < 60) {
+    } else if (totalTime < 60) {
         flag = true;
     } else {
         flag = false;
@@ -151,16 +151,26 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
 
     /*Getting times*/
     // flag = int(solved.operator bool());
-    total_time = ss_->getLastPlanComputationTime();
+    totalTime = ss_->getLastPlanComputationTime();
 
     // Getting graph info
     ob::PlannerData pd(ss_->getSpaceInformation());
     ss_->getPlannerData(pd);
-    nodes_graph = pd.numVertices();
-    edges_graph = pd.numEdges();
 
-    nodes_path = ss_->getSolutionPath().getStates().size();
-    valid_space = ss_->getSpaceInformation()->probabilityOfValidState(1000);
+    // Number of nodes and edges in graph
+    numGraphNodes = pd.numVertices();
+    numGraphEdges = pd.numEdges();
+
+    // Total number of checked and valid motions
+    numCheckedNodes =
+        pd.getSpaceInformation()->getMotionValidator()->getCheckedMotionCount();
+    numValidNodes =
+        pd.getSpaceInformation()->getMotionValidator()->getValidMotionCount();
+
+    // Number of nodes in solved path
+    numPathNodes = ss_->getSolutionPath().getStates().size();
+    validSpace = ss_->getSpaceInformation()->probabilityOfValidState(1000);
+
     return true;
 }
 
