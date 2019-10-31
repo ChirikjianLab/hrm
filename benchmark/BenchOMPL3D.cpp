@@ -1,9 +1,10 @@
 #include "ompl/include/ompl_planner.h"
 
-int main(int argc, char **argv) {
-    if (argc != 5) {
+int main(int argc, char** argv) {
+    if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
-                "Planner 4) Sampler"
+                "Planner start ID 4) Planner end ID 5) Sampler start ID 6) "
+                "Sampler end ID"
              << endl;
         return 1;
     }
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
     }
 
     // Boundary
-    double f = 1.5;
+    const double f = 1.5;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +
@@ -46,7 +47,7 @@ int main(int argc, char **argv) {
 
     // Start and goal setup
     string file_endpt = "../config/endPts_3d.csv";
-    vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
+    const vector<vector<double>>& endPts = parse2DCsvFile(file_endpt);
 
     std::ofstream outfile;
     outfile.open("time3D_ompl.csv");
@@ -57,10 +58,13 @@ int main(int argc, char **argv) {
 
     // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
     // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
-    int id_plan = atoi(argv[3]), id_sample = atoi(argv[4]);
-    //    int m = id_plan, nn = id_sample;
-    for (int m = 5; m < id_plan; m++) {
-        for (int n = 0; n < id_sample; n++) {
+    const int id_plan_start = atoi(argv[3]);
+    const int id_plan_end = atoi(argv[4]);
+    const int id_sample_start = atoi(argv[5]);
+    const int id_sample_end = atoi(argv[6]);
+
+    for (int m = id_plan_start; m <= id_plan_end; m++) {
+        for (int n = id_sample_start; n <= id_sample_end; n++) {
             for (int i = 0; i < N; i++) {
                 cout << "Planner: " << m << endl;
                 cout << "Sampler: " << n << endl;
@@ -75,6 +79,9 @@ int main(int argc, char **argv) {
                         << "," << tester.numPathNodes << ","
                         << tester.validSpace << ',' << tester.numCheckedNodes
                         << ',' << tester.numValidNodes << endl;
+
+                tester.getVertexEdgeInfo();
+                tester.getPathInfo();
             }
         }
     }

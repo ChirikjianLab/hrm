@@ -27,9 +27,16 @@ using Point = Triangulation::Point;
 using Finite_cells_iterator = Triangulation::Finite_cells_iterator;
 using Point_3 = K::Point_3;
 
+// Mesh as a structure of vertices and triangles
 struct EMesh {
     std::vector<fcl::Vector3d> vertices;
     std::vector<fcl::Triangle> triangles;
+};
+
+// Mesh with vertices and faces stored in MatrixXd format
+struct MeshMatrix {
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXd faces;
 };
 
 struct ParametricPoints {
@@ -58,5 +65,10 @@ ParametricPoints getBoundary3D(const SuperQuadrics& obj);
  */
 std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
                                         const int num);
+
+ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat);
+
+MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
+                                   const int n);
 
 #endif  // MESH_GENERATOR_H

@@ -14,9 +14,10 @@ SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
       position_(position),
       quat_(quat),
       num_(num) {
-    eta_ = Eigen::RowVectorXd::LinSpaced(num_, -pi, pi).replicate(num_, 1);
-    omega_ =
-        Eigen::VectorXd::LinSpaced(num_, -pi / 2, pi / 2).replicate(1, num_);
+    eta_ = Eigen::RowVectorXd::LinSpaced(num_, -1e-6, pi + 1e-6)
+               .replicate(num_, 1);
+    omega_ = Eigen::VectorXd::LinSpaced(num_, -1e-6, 2 * pi / 2.0 + 1e-6)
+                 .replicate(1, num_);
     Num_ = num_ * num_;
 }
 

@@ -27,14 +27,14 @@ figure; hold on; axis equal;
 % end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
-for i = 1:size(ob,1)
-    obs(i).PlotShape;
-    
-    is = num2str(i);
-    box on;
-    text(ob(i,6),ob(i,7),ob(i,8), is, 'Color', [1 1 1]);
-    axis equal
-end
+% for i = 1:size(ob,1)
+%     obs(i).PlotShape;
+%     
+%     is = num2str(i);
+%     box on;
+%     text(ob(i,6),ob(i,7),ob(i,8), is, 'Color', [1 1 1]);
+%     axis equal
+% end
 
 axis off
 
@@ -88,14 +88,14 @@ robot = robotInit3D(vargin, 1);
 % % vertex and connections
 vtx = load([loadPath, 'vertex3D.csv']);
 edge = load([loadPath, 'edge3D.csv']);
-% 
-% plot3(vtx(:,1), vtx(:,2), vtx(:,3),'k.');
-% edge = edge+1;
-% for i = 1:size(edge,1)
-%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-%         [vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-% end
+
+plot3(vtx(:,1), vtx(:,2), vtx(:,3),'k.');
+edge = edge+1;
+for i = 1:size(edge,1)
+    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+        [vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+end
 
 % start and goal
 endPts = load(['../../config/', 'endPts_3d.csv']);

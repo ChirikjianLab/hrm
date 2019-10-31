@@ -122,12 +122,16 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
     }
 
     // Generate mesh for the boundaries
-    std::vector<Mesh> P_s(N_cs), P_o(N_co);
+    std::vector<MeshMatrix> P_s(N_cs);
+    std::vector<MeshMatrix> P_o(N_co);
+
     for (size_t i = 0; i < N_cs; ++i) {
-        P_s.at(i) = getMesh(bd_s[i], int(Arena.at(0).getNumParam()));
+        P_s.at(i) =
+            getMeshFromParamSurface(bd_s.at(i), int(Arena.at(0).getNumParam()));
     }
     for (size_t i = 0; i < N_co; ++i) {
-        P_o.at(i) = getMesh(bd_o[i], int(Obs.at(0).getNumParam()));
+        P_o.at(i) =
+            getMeshFromParamSurface(bd_o.at(i), int(Obs.at(0).getNumParam()));
     }
 
     // Find intersections along each sweep line
@@ -139,8 +143,7 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
             for (size_t m = 0; m < N_cs; ++m) {
-                pts_s =
-                    lineMesh.intersect(lineZ, P_s[m].vertices, P_s[m].faces);
+                pts_s = lineMesh.intersect(lineZ, P_s[m]);
                 if (pts_s.empty()) continue;
                 z_s_L(long(j), long(m)) =
                     std::fmin(-Lim[2], std::fmin(pts_s[0](2), pts_s[1](2)));
@@ -148,8 +151,7 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                     std::fmax(Lim[2], std::fmax(pts_s[0](2), pts_s[1](2)));
             }
             for (size_t n = 0; n < N_co; ++n) {
-                pts_o =
-                    lineMesh.intersect(lineZ, P_o[n].vertices, P_o[n].faces);
+                pts_o = lineMesh.intersect(lineZ, P_o[n]);
                 if (pts_o.empty()) continue;
                 z_o_L(long(j), long(n)) = std::fmin(pts_o[0](2), pts_o[1](2));
                 z_o_U(long(j), long(n)) = std::fmax(pts_o[0](2), pts_o[1](2));
@@ -564,29 +566,6 @@ unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
         }
     }
     return idx;
-}
-
-// Generate mesh info from a ordered vertex list, i.e. "surf"
-Mesh HighwayRoadMap3D::getMesh(Eigen::MatrixXd bd, int n) {
-    Mesh M;
-    int Num = (n - 1) * (n - 1);
-    Eigen::ArrayXd q((n - 1) * (n - 1));
-    for (int i = 0; i < n - 1; ++i) {
-        q.segment(i * (n - 1), (n - 1)) =
-            Eigen::ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
-    }
-
-    M.vertices = bd;
-
-    M.faces = Eigen::MatrixXd::Zero(2 * Num, 3);
-    M.faces.block(0, 0, Num, 1) = q;
-    M.faces.block(0, 1, Num, 1) = q + n;
-    M.faces.block(0, 2, Num, 1) = q + n + 1;
-    M.faces.block(Num, 0, Num, 1) = q;
-    M.faces.block(Num, 1, Num, 1) = q + 1;
-    M.faces.block(Num, 2, Num, 1) = q + n + 1;
-
-    return M;
 }
 
 HighwayRoadMap3D::~HighwayRoadMap3D(){};

@@ -2,53 +2,58 @@
 #include <iostream>
 
 std::vector<Eigen::Vector3d> IntersectLineMesh3d::intersect(
-    Eigen::VectorXd line, Eigen::Matrix3Xd vertices, Eigen::MatrixX3d faces) {
+    const Eigen::VectorXd& line, const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
 
-    if (line(0) > vertices.row(0).maxCoeff() ||
-        line(0) < vertices.row(0).minCoeff()) {
+    if (line(0) > shape.vertices.row(0).maxCoeff() ||
+        line(0) < shape.vertices.row(0).minCoeff()) {
         return points;
     }
-    if (line(1) > vertices.row(1).maxCoeff() ||
-        line(1) < vertices.row(1).minCoeff()) {
+    if (line(1) > shape.vertices.row(1).maxCoeff() ||
+        line(1) < shape.vertices.row(1).minCoeff()) {
         return points;
     }
 
     double tol = 1e-12;
-
     Eigen::Vector3d t0, u, v, n, pt;
     double a, b, uu, uv, vv, wu, wv, D, s, t;
 
     /*
      * \brief Specifially for vertical sweep lines, first do a quick check
-     *        according to x and y coord:
-     * If the x or y coordinates of the vertical sweep line is out of range of
-     * the
-     * triangle, directly ignore
+     * according to x and y coord: If the x or y coordinates of the vertical
+     * sweep line is out of range of the triangle, directly ignore
      */
-    for (int i = 0; i < faces.rows(); i++) {
+    for (auto i = 0; i < shape.faces.rows(); ++i) {
         // ignore the face that is out of range
-        if (line(0) < fmin(vertices(0, int(faces(i, 0))),
-                           fmin(vertices(0, int(faces(i, 1))),
-                                vertices(0, int(faces(i, 2))))) ||
-            line(0) > fmax(vertices(0, int(faces(i, 0))),
-                           fmax(vertices(0, int(faces(i, 1))),
-                                vertices(0, int(faces(i, 2)))))) {
+        if (line(0) <
+                std::fmin(
+                    shape.vertices(0, int(shape.faces(i, 0))),
+                    std::fmin(shape.vertices(0, int(shape.faces(i, 1))),
+                              shape.vertices(0, int(shape.faces(i, 2))))) ||
+            line(0) >
+                std::fmax(
+                    shape.vertices(0, int(shape.faces(i, 0))),
+                    std::fmax(shape.vertices(0, int(shape.faces(i, 1))),
+                              shape.vertices(0, int(shape.faces(i, 2)))))) {
             continue;
         }
-        if (line(1) < fmin(vertices(1, int(faces(i, 0))),
-                           fmin(vertices(1, int(faces(i, 1))),
-                                vertices(1, int(faces(i, 2))))) ||
-            line(1) > fmax(vertices(1, int(faces(i, 0))),
-                           fmax(vertices(1, int(faces(i, 1))),
-                                vertices(1, int(faces(i, 2)))))) {
+        if (line(1) <
+                std::fmin(
+                    shape.vertices(1, int(shape.faces(i, 0))),
+                    std::fmin(shape.vertices(1, int(shape.faces(i, 1))),
+                              shape.vertices(1, int(shape.faces(i, 2))))) ||
+            line(1) >
+                std::fmax(
+                    shape.vertices(1, int(shape.faces(i, 0))),
+                    std::fmax(shape.vertices(1, int(shape.faces(i, 1))),
+                              shape.vertices(1, int(shape.faces(i, 2)))))) {
             continue;
         }
 
         // find triangle edge vectors
-        t0 = vertices.col(int(faces(i, 0)));
-        u = vertices.col(int(faces(i, 1))) - t0;
-        v = vertices.col(int(faces(i, 2))) - t0;
+        t0 = shape.vertices.col(int(shape.faces(i, 0)));
+        u = shape.vertices.col(int(shape.faces(i, 1))) - t0;
+        v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
         // triangle normal
         n = u.cross(v);

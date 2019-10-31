@@ -22,9 +22,9 @@ end
 
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal;
-for i = 1:size(ar,1)
-    arena(i).PlotShape;
-end
+% for i = 1:size(ar,1)
+%     arena(i).PlotShape;
+% end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:size(ob,1)
@@ -87,6 +87,12 @@ end
 %         [state_prm(edge_prm(i,1)+1,3) state_prm(edge_prm(i,2)+1,3)],...
 %         'b--', 'LineWidth', 2)
 % end
+
+%% State validation
+disp('Validating path...')
+high3D = pathValid_3D_multiBody(robot, arena, obs, path_prm);
+high3D.validation();
+high3D.PlotPath();
 
 %%
 function plotSurf(X,c)

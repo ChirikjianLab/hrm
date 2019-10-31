@@ -254,3 +254,79 @@ void ompl_planner::setCollisionObj() {
         obj_obs.push_back(fcl::CollisionObjectd(GeometryPtr_t(model_sq)));
     }
 }
+
+void ompl_planner::getVertexEdgeInfo() {
+    ob::PlannerData pd(ss_->getSpaceInformation());
+
+    // Write the output to .csv files
+    ofstream file_state;
+    const ob::State *state;
+    file_state.open("ompl_state3d.csv");
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        state = pd.getVertex(i).getState()->as<ob::State>();
+        file_state << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->getY() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->getZ() << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().w
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().x
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().y
+                   << ","
+                   << state->as<ob::SE3StateSpace::StateType>()->rotation().z
+                   << "\n";
+    }
+    file_state.close();
+
+    ofstream file_edge;
+    file_edge.open("ompl_edge3d.csv");
+    vector<vector<unsigned int>> edge(pd.numVertices());
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        pd.getEdges(i, edge[i]);
+        for (unsigned int j = 0; j < edge[i].size(); j++)
+            file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+    }
+    file_edge.close();
+}
+
+void ompl_planner::getPathInfo() {
+    const vector<ob::State *> &states = ss_->getSolutionPath().getStates();
+    ob::State *state;
+
+    ofstream file_traj;
+    file_traj.open("ompl_path3d.csv");
+    for (size_t i = 0; i < states.size(); ++i) {
+        state = states[i]->as<ob::State>();
+        file_traj << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->getY() << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->getZ() << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->rotation().w
+                  << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->rotation().x
+                  << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->rotation().y
+                  << ","
+                  << state->as<ob::SE3StateSpace::StateType>()->rotation().z
+                  << "\n";
+    }
+    file_traj.close();
+
+    // Smooth path
+    ss_->getSolutionPath().interpolate(50);
+    const vector<ob::State *> &s_states = ss_->getSolutionPath().getStates();
+
+    ofstream file_smooth_traj;
+    file_smooth_traj.open("ompl_smooth_path3d.csv");
+    for (size_t i = 0; i < s_states.size(); ++i) {
+        state = s_states[i]->as<ob::State>();
+        file_smooth_traj
+            << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
+            << state->as<ob::SE3StateSpace::StateType>()->getY() << ","
+            << state->as<ob::SE3StateSpace::StateType>()->getZ() << ","
+            << state->as<ob::SE3StateSpace::StateType>()->rotation().w << ","
+            << state->as<ob::SE3StateSpace::StateType>()->rotation().x << ","
+            << state->as<ob::SE3StateSpace::StateType>()->rotation().y << ","
+            << state->as<ob::SE3StateSpace::StateType>()->rotation().z << "\n";
+    }
+    file_smooth_traj.close();
+}

@@ -1,6 +1,5 @@
 #include "highway/include/highway_multibody.h"
 #include "planners/include/Hrm3dMultiBody.h"
-#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <stdlib.h>
@@ -73,10 +72,14 @@ int main(int argc, char **argv) {
     opt.N_layers = size_t(N_l);
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-    opt.Lim = {
-        arena.at(0).getSemiAxis().at(0) - robot.getBase().getSemiAxis().at(0),
-        arena.at(0).getSemiAxis().at(1) - robot.getBase().getSemiAxis().at(0),
-        arena.at(0).getSemiAxis().at(2) - robot.getBase().getSemiAxis().at(0)};
+
+    const double f = 1.5;
+    opt.Lim = {arena.at(0).getSemiAxis().at(0) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(1) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(2) -
+                   f * robot.getBase().getSemiAxis().at(0)};
 
     // Store results
     ofstream file_time;

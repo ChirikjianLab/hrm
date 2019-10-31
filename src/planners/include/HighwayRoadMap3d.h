@@ -53,11 +53,6 @@ struct boundary3D {
     };
 };
 
-struct Mesh {
-    Eigen::MatrixXd vertices;
-    Eigen::MatrixXd faces;
-};
-
 struct option3D {
     size_t N_layers, N_dx, N_dy, N_o, N_s;
     std::vector<double> Lim;
@@ -159,10 +154,10 @@ class HighwayRoadMap3D {
      */
     unsigned int find_cell(std::vector<double> v);
 
-    /*
-     * \brief get mesh info from a ordered vertex list
-     */
-    Mesh getMesh(Eigen::MatrixXd, int);
+    //    /*
+    //     * \brief get mesh info from a ordered vertex list
+    //     */
+    //    EMesh getMesh(Eigen::MatrixXd, int);
 
     /*
      * \brief query whether a point is within a collision-free line segment
@@ -195,7 +190,11 @@ class HighwayRoadMap3D {
     std::vector<std::vector<double>> Endpt;
 
     // Parameters for the roadmap
-    size_t N_o, N_s, N_dx, N_dy, N_layers;
+    size_t N_o;
+    size_t N_s;
+    size_t N_dx;
+    size_t N_dy;
+    size_t N_layers;
     std::vector<double> Lim;
     std::vector<Eigen::Quaterniond> q_r;
     int N_step = 3;

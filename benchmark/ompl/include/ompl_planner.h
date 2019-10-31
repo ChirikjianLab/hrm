@@ -53,6 +53,9 @@ class ompl_planner {
     bool compareStates(vector<double> goal_config, vector<double> last_config);
     void setCollisionObj();
 
+    void getVertexEdgeInfo();
+    void getPathInfo();
+
     // Variables
   public:
     typedef Matrix<double, 4, 1> Vector4d;

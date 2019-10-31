@@ -74,13 +74,8 @@ EMesh getMesh(const ParametricPoints& points) {
 }
 
 ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
-    ParametricPoints X;
-    for (int i = 0; i < obj.getNum(); i++) {
-        X.x.push_back(obj.getOriginShape()(0, i));
-        X.y.push_back(obj.getOriginShape()(1, i));
-        X.z.push_back(obj.getOriginShape()(2, i));
-    }
-
+    Eigen::MatrixXd sqMat = obj.getOriginShape();
+    ParametricPoints X = getBoundaryFromMatrix(sqMat);
     return X;
 }
 
@@ -102,4 +97,38 @@ std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
     }
 
     return obj;
+}
+
+ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat) {
+    ParametricPoints X;
+    for (int i = 0; i < ptsMat.cols(); i++) {
+        X.x.push_back(ptsMat(0, i));
+        X.y.push_back(ptsMat(1, i));
+        X.z.push_back(ptsMat(2, i));
+    }
+
+    return X;
+}
+
+MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
+                                   const int n) {
+    auto Num = (n - 1) * (n - 1);
+    Eigen::ArrayXd q((n - 1) * (n - 1));
+    for (auto i = 0; i < n - 1; ++i) {
+        q.segment(i * (n - 1), (n - 1)) =
+            Eigen::ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
+    }
+
+    MeshMatrix M;
+    M.vertices = surfBound;
+
+    M.faces = Eigen::MatrixXd::Zero(2 * Num, 3);
+    M.faces.block(0, 0, Num, 1) = q;
+    M.faces.block(0, 1, Num, 1) = q + n;
+    M.faces.block(0, 2, Num, 1) = q + n + 1;
+    M.faces.block(Num, 0, Num, 1) = q;
+    M.faces.block(Num, 1, Num, 1) = q + 1;
+    M.faces.block(Num, 2, Num, 1) = q + n + 1;
+
+    return M;
 }
