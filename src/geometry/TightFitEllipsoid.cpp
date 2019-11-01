@@ -1,8 +1,9 @@
 #include "include/TightFitEllipsoid.h"
+#include "util/include/InterpolateSO3.h"
 
 SuperEllipse getMVCE2D(const std::vector<double>& a,
                        const std::vector<double>& b, const double thetaA,
-                       const double thetaB) {
+                       const double thetaB, const int num) {
     Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
                     Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
@@ -30,13 +31,13 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
     double ang_c = acos(svd.matrixU()(0, 0));
     Eigen::Array2d c = svd.singularValues().array().pow(-0.5);
 
-    return SuperEllipse({c(0), c(1)}, 1, {0, 0}, ang_c, 50);
+    return SuperEllipse({c(0), c(1)}, 1, {0, 0}, ang_c, num);
 }
 
 SuperQuadrics getMVCE3D(const std::vector<double>& a,
                         const std::vector<double>& b,
                         const Eigen::Quaterniond& quatA,
-                        const Eigen::Quaterniond& quatB) {
+                        const Eigen::Quaterniond& quatB, const int num) {
     Eigen::Matrix3d Ra = quatA.toRotationMatrix();
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
@@ -67,30 +68,22 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     Eigen::Array3d c = svd.singularValues().array().pow(-0.5);
 
     return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0},
-                         {q_c.w(), q_c.x(), q_c.y(), q_c.z()}, 20);
+                         {q_c.w(), q_c.x(), q_c.y(), q_c.z()}, num);
 }
 
 SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
-                       const Eigen::Quaterniond& quatB, const int N_step) {
-    Eigen::Matrix3d Ra = quatA.toRotationMatrix();
-    Eigen::Matrix3d Rb = quatB.toRotationMatrix();
-
-    // Interpolate orientations
-    Eigen::AngleAxisd axang(Ra.transpose() * Rb);
-    Eigen::AngleAxisd d_axang = axang;
-    double dt = 1.0 / N_step;
-    Eigen::Vector3d Vs;
+                       const Eigen::Quaterniond& quatB, const int N_step,
+                       const int num) {
+    std::vector<Eigen::Quaterniond> interpolatedQuat =
+        interpolateAngleAxis(quatA, quatB, N_step);
 
     // Iteratively compute MVCE and update
-    SuperQuadrics enclosedEllipsoid = getMVCE3D(a, a, quatA, quatB);
+    SuperQuadrics enclosedEllipsoid = getMVCE3D(a, a, quatA, quatB, num);
     for (size_t i = 1; i < size_t(N_step); ++i) {
-        d_axang.angle() = i * dt * axang.angle();
-
-        enclosedEllipsoid =
-            getMVCE3D(a, enclosedEllipsoid.getSemiAxis(),
-                      Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()),
-                      enclosedEllipsoid.getQuaternion());
+        enclosedEllipsoid = getMVCE3D(a, enclosedEllipsoid.getSemiAxis(),
+                                      interpolatedQuat.at(i),
+                                      enclosedEllipsoid.getQuaternion(), num);
     }
 
     return enclosedEllipsoid;

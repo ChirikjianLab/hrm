@@ -197,7 +197,7 @@ class HighwayRoadMap3D {
     size_t N_layers;
     std::vector<double> Lim;
     std::vector<Eigen::Quaterniond> q_r;
-    int N_step = 3;
+    int N_step = 5;
 
     struct vertexIdx {
       public:

@@ -1,4 +1,5 @@
 #include "include/Hrm3dMultiBody.h"
+#include "util/include/InterpolateSO3.h"
 
 #include <fstream>
 #include <iostream>
@@ -81,7 +82,6 @@ void Hrm3DMultiBody::connectMultiLayer() {
         return;
     }
 
-    size_t n = vtxEdge.vertex.size();
     size_t n_1;
     size_t n_12;
     size_t n_2;
@@ -147,7 +147,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         //        //
 
         for (size_t j = 0; j < mid.size(); ++j) {
-            mid_cell.emplace_back(midLayer(mid.at(j)));
+            mid_cell.push_back(midLayer(mid[j]));
         }
 
         // Nearest vertex btw layers
@@ -163,23 +163,10 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 }
 
                 if (isCollisionFree(V1, V2)) {
-                    // Middle vertex: trans = V1; rot = V2;
-                    midVtx = {vtxEdge.vertex[m0][0], vtxEdge.vertex[m0][1],
-                              vtxEdge.vertex[m0][2], vtxEdge.vertex[m1][3],
-                              vtxEdge.vertex[m1][4], vtxEdge.vertex[m1][5],
-                              vtxEdge.vertex[m1][6]};
-                    vtxEdge.vertex.push_back(midVtx);
-
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, n));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[m0], midVtx));
-
-                    vtxEdge.edge.push_back(std::make_pair(m1, n));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[m1], midVtx));
-
-                    n++;
+                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
+                    vtxEdge.weight.push_back(vectorEuclidean(
+                        vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -197,35 +184,38 @@ void Hrm3DMultiBody::connectMultiLayer() {
 bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
                                      std::vector<double> V2) {
     bool status = false;
-    // Translation motion
-    // Both V1 and V2 are within any CF-Cell of midLayer
-    if (!isPtInCFLine(mid_cell.at(0), V1) ||
-        !isPtInCFLine(mid_cell.at(0), V2)) {
+
+    // Base: determine whether V1 is within CF-Line of midLayer
+    if (!isPtInCFLine(mid_cell[0], V1) || !isPtInCFLine(mid_cell[0], V2)) {
         return false;
     }
 
-    // Rotation motion
     // Link i: determine Vi=V+RobotM.tf{1:3,4} within CF-cell of midLayer
-    Eigen::Matrix3d
-        R1 = Eigen::Quaterniond(V1[3], V1[4], V1[5], V1[6]).toRotationMatrix(),
-        R2 = Eigen::Quaterniond(V2[3], V2[4], V2[5], V2[6]).toRotationMatrix();
-    Eigen::AngleAxisd axang(R1.transpose() * R2), d_axang = axang;
-    double dt = 1.0 / N_step;
-    Eigen::Vector3d Vs;
+    std::vector<Eigen::Quaterniond> rotInterp = interpolateAngleAxis(
+        Eigen::Quaterniond(V1[3], V1[4], V1[5], V1[6]),
+        Eigen::Quaterniond(V2[3], V2[4], V2[5], V2[6]), N_step);
+
+    auto t1 = Eigen::Vector3d({V1[0], V1[1], V1[2]});
+    auto t2 = Eigen::Vector3d({V2[0], V2[1], V2[2]});
+    double dt = 1.0 / (double(N_step) - 1);
 
     for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-        for (size_t j = 0; j <= size_t(N_step); ++j) {
-            d_axang.angle() = j * dt * axang.angle();
+        for (size_t j = 0; j < size_t(N_step); ++j) {
+            // Interpolated motion of Link i center from V1 to V2
+            Eigen::Vector3d tBase = ((1.0 - j * dt) * t1 + j * dt * t2);
+            Eigen::Vector3d tLink = tBase +
+                                    rotInterp[i].toRotationMatrix() *
+                                        RobotM.getTF().at(i).block<3, 1>(0, 3);
 
-            Vs = Eigen::Vector3d({V1[0], V1[1], V1[2]}) +
-                 R1 * d_axang.toRotationMatrix() *
-                     RobotM.getTF().at(i).block<3, 1>(0, 3);
-
-            status = isPtInCFCell(mid_cell.at(i + 1), {Vs[0], Vs[1], Vs[2]});
+            status = isPtInCFCell(mid_cell.at(i + 1),
+                                  {tLink[0], tLink[1], tLink[2]});
+            if (!status) {
+                return false;
+            }
         }
     }
 
-    return status;
+    return true;
 }
 
 // Point in collision-free cell
@@ -234,6 +224,11 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     size_t i_x = 0, i_y = 0;
 
     // Search for x-coord
+    // Out of the sweep range
+    if (V[0] < cell.tx[0]) {
+        return false;
+    }
+
     for (size_t i = 1; i < cell.tx.size(); ++i) {
         if (cell.tx[i] >= V[0]) {
             i_x = i;
@@ -246,6 +241,10 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
 
     // Search for the current plane
     cf_cellYZ cellX1 = cell.cellYZ[i_x];
+
+    if (V[1] < cellX1.ty[0]) {
+        return false;
+    }
     for (size_t j = 1; j < cellX1.ty.size(); ++j) {
         if (cellX1.ty[j] >= V[1]) {
             i_y = j;
@@ -260,17 +259,26 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     for (size_t k = 0; k < cellX1.zM[i_y].size(); ++k) {
         if ((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) {
             flag_cell = true;
+
+            // If the point is located in the sweep line, return true
+            if (std::fabs(V[1] - cellX1.ty[i_y]) < 1e-8) {
+                return true;
+            }
+
+            break;
         }
     }
     if (!flag_cell) {
         return false;
     }
     flag_cell = false;
+
     // Within the range of previous sweep line
     for (size_t k = 0; k < cellX1.zM[i_y - 1].size(); ++k) {
         if ((V[2] >= cellX1.zL[i_y - 1][k]) &&
             (V[2] <= cellX1.zU[i_y - 1][k])) {
             flag_cell = true;
+            break;
         }
     }
     if (!flag_cell) {
@@ -284,17 +292,20 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
     for (size_t k = 0; k < cellX2.zM[i_y].size(); ++k) {
         if ((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) {
             flag_cell = true;
+            break;
         }
     }
     if (!flag_cell) {
         return false;
     }
     flag_cell = false;
+
     // Within the range of previous sweep line
     for (size_t k = 0; k < cellX2.zM[i_y - 1].size(); ++k) {
         if ((V[2] >= cellX2.zL[i_y - 1][k]) &&
             (V[2] <= cellX2.zU[i_y - 1][k])) {
             flag_cell = true;
+            break;
         }
     }
     if (!flag_cell) {
@@ -308,18 +319,19 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
 // Point in collision-free line segment
 bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
     for (size_t i = 0; i < cell.tx.size(); ++i) {
-        if (fabs(cell.tx.at(i) - V.at(0)) > 1e-8) {
+        // Locate to the sweep line of the vertex
+        if (std::fabs(cell.tx[i] - V[0]) > 1e-8) {
             continue;
         }
 
-        for (size_t j = 0; j < cell.cellYZ.at(i).ty.size(); ++j) {
-            if (fabs(cell.cellYZ.at(i).ty.at(j) - V.at(1)) > 1e-8) {
+        for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
+            if (std::fabs(cell.cellYZ[i].ty[j] - V[1]) > 1e-8) {
                 continue;
             }
 
-            for (size_t k = 0; k < cell.cellYZ.at(i).zM.at(j).size(); ++k) {
-                if (!(V.at(2) < cell.cellYZ.at(i).zL.at(j)[k]) ||
-                    (V.at(2) > cell.cellYZ.at(i).zU.at(j)[k])) {
+            for (size_t k = 0; k < cell.cellYZ[i].zM[j].size(); ++k) {
+                if ((V[2] >= cell.cellYZ[i].zL[j][k]) &&
+                    (V[2] <= cell.cellYZ[i].zU[j][k])) {
                     return true;
                 }
             }
@@ -364,15 +376,16 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     }
     // else fit a TFE
     else {
-        SuperQuadrics e_fitted =
-            getTFE3D(robot.getBase().getSemiAxis(), q1, q2, N_step);
+        SuperQuadrics e_fitted = getTFE3D(robot.getBase().getSemiAxis(), q1, q2,
+                                          N_step, int(Robot.getNumParam()));
         tfe_obj.push_back(e_fitted);
 
         for (size_t i = 0; i < robot.getNumLinks(); ++i) {
             R_link = robot.getTF().at(i).block<3, 3>(0, 0);
             e_fitted = getTFE3D(robot.getLinks().at(i).getSemiAxis(),
                                 Eigen::Quaterniond(R1 * R_link),
-                                Eigen::Quaterniond(R2 * R_link), N_step);
+                                Eigen::Quaterniond(R2 * R_link), N_step,
+                                int(Robot.getNumParam()));
             tfe_obj.push_back(e_fitted);
         }
     }

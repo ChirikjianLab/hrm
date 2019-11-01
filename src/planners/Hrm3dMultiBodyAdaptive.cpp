@@ -17,7 +17,8 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
         q_r.push_back(Eigen::Quaterniond::UnitRandom());
 
         SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
-                              Robot.getPosition(), q_r.at(N_layers - 1), 20);
+                              Robot.getPosition(), q_r.at(N_layers - 1),
+                              int(Robot.getNumParam()));
         RobotM = MultiBodyTree3D(newBase);
         Robot.setQuaternion(RobotM.getBase().getQuaternion());
 

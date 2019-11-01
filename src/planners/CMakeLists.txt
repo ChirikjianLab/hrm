@@ -1,4 +1,6 @@
-add_library(SOURCE_2D HighwayRoadMap.cpp HighwayRoadMap2d.cpp)
+add_library(SOURCE_2D
+            HighwayRoadMap.cpp
+            HighwayRoadMap2d.cpp)
 target_link_libraries(SOURCE_2D GEOM UTIL)
 
 add_library(SOURCE_3D

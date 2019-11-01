@@ -34,10 +34,12 @@ void HighwayRoadMap2D::buildRoadmap() {
     for (size_t i = 0; i < N_layers; ++i) {
         if (i == N_layers - 1) {
             mid.push_back(getMVCE2D(Robot.getSemiAxis(), Robot.getSemiAxis(),
-                                    theta.at(i), theta.at(0)));
+                                    theta.at(i), theta.at(0),
+                                    int(Robot.getNum())));
         } else {
             mid.push_back(getMVCE2D(Robot.getSemiAxis(), Robot.getSemiAxis(),
-                                    theta.at(i), theta.at(i + 1)));
+                                    theta.at(i), theta.at(i + 1),
+                                    int(Robot.getNum())));
         }
     }
 

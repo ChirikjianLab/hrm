@@ -45,11 +45,12 @@ void HighwayRoadMap3D::buildRoadmap() {
     // Compute mid-layer TFE
     for (size_t i = 0; i < q_r.size(); ++i) {
         if (i == N_layers - 1) {
-            mid.push_back(
-                getTFE3D(Robot.getSemiAxis(), q_r.at(i), q_r.at(0), N_step));
+            mid.push_back(getTFE3D(Robot.getSemiAxis(), q_r.at(i), q_r.at(0),
+                                   N_step, int(Robot.getNumParam())));
         } else {
             mid.push_back(getTFE3D(Robot.getSemiAxis(), q_r.at(i),
-                                   q_r.at(i + 1), N_step));
+                                   q_r.at(i + 1), N_step,
+                                   int(Robot.getNumParam())));
         }
     }
 
