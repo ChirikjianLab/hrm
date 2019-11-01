@@ -7,7 +7,7 @@ double expFun(const double th, const double p, const bool func) {
 
 Eigen::MatrixXd expFun_mat(const Eigen::MatrixXd& thetaList, const double p,
                            const bool func) {
-    if (func) {
+    if (func == 0) {
         return thetaList.array().cos().sign().cwiseProduct(
             thetaList.array().cos().abs().pow(p));
     } else {

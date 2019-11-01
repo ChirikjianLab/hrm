@@ -75,7 +75,7 @@ robot = robotInit3D(vargin, 1);
 %     
 %     plotSurf(Obs_mink{i}, 'y')
 % end
-
+% 
 % % cells
 % cf_seg = load([loadPath, 'cell_3d.csv']);
 % for i = 1:size(cf_seg,1)
