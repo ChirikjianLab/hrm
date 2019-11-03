@@ -1,4 +1,5 @@
 #include "include/HighwayRoadMap3d.h"
+#include "util/include/InterpolateSE3.h"
 
 #include <fstream>
 #include <iostream>
@@ -35,6 +36,7 @@ void HighwayRoadMap3D::plan() {
 
     // Retrieve coordinates of solved path
     solutionPathInfo.solvedPath = getSolutionPath();
+    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(N_step);
 
     planTime.totalTime = planTime.buildTime + planTime.searchTime;
 }
@@ -46,11 +48,10 @@ void HighwayRoadMap3D::buildRoadmap() {
     for (size_t i = 0; i < q_r.size(); ++i) {
         if (i == N_layers - 1) {
             mid.push_back(getTFE3D(Robot.getSemiAxis(), q_r.at(i), q_r.at(0),
-                                   N_step, int(Robot.getNumParam())));
+                                   N_step, Robot.getNumParam()));
         } else {
             mid.push_back(getTFE3D(Robot.getSemiAxis(), q_r.at(i),
-                                   q_r.at(i + 1), N_step,
-                                   int(Robot.getNumParam())));
+                                   q_r.at(i + 1), N_step, Robot.getNumParam()));
         }
     }
 
@@ -427,6 +428,7 @@ void HighwayRoadMap3D::search() {
 
     if (num == num_vtx + 1) {
         solutionPathInfo.PathId.clear();
+        solutionPathInfo.Cost = std::numeric_limits<double>::infinity();
     }
     if (solutionPathInfo.PathId.size() > 0) {
         flag = true;
@@ -448,6 +450,23 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
     path.push_back(Endpt.at(1));
 
     return path;
+}
+
+std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
+    const unsigned int num) {
+    std::vector<std::vector<double>> pathInterp;
+    std::vector<std::vector<double>> pathSolved = getSolutionPath();
+
+    // Iteratively store interpolated poses along the solved path
+    for (size_t i = 0; i < pathSolved.size() - 1; ++i) {
+        std::vector<std::vector<double>> steps =
+            interpolateSE3(pathSolved[i], pathSolved[i + 1], num);
+        for (size_t j = 0; j < steps.size(); ++j) {
+            pathInterp.push_back(steps[j]);
+        }
+    }
+
+    return pathInterp;
 }
 
 /************************************************************************/
@@ -500,6 +519,9 @@ cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
 
 // Connect vertexes among different layers
 cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
+    // Reference point to be the center of Ec
+    Ec.setPosition({0.0, 0.0, 0.0});
+
     boundary3D bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < N_s; ++i) {

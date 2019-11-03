@@ -61,6 +61,7 @@ plot3(goal(1), goal(2), goal(3), 'gd', 'LineWidth', 3);
 % shortest path
 pathId = load([loadPath, 'paths3D.csv']) + 1;
 path = load([loadPath, 'solutionPath3D.csv']);
+% path = load([loadPath, 'interpolatedPath3D.csv']);
 
 if ~isempty(path)
     for i = 1:size(path,1)-1

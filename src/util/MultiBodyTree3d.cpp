@@ -17,11 +17,10 @@ void MultiBodyTree3D::addBody(SuperQuadrics link) {
 
 void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
     // Set transform of base
-    std::vector<double> pos(g.row(3).data(), g.row(3).data() + 3);
-    base_.setPosition(pos);
+    base_.setPosition({g(0, 3), g(1, 3), g(2, 3)});
 
-    Eigen::Matrix3d mat = g.block<3, 3>(0, 0);
-    Eigen::Quaterniond quat(mat);
+    Eigen::Matrix3d rotMat = g.topLeftCorner(3, 3);
+    Eigen::Quaterniond quat(rotMat);
     base_.setQuaternion(quat);
 
     // Set transform for each link
@@ -29,12 +28,10 @@ void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
     for (size_t i = 0; i < numLinks_; i++) {
         gLink = g * tf_.at(i);
 
-        std::vector<double> posLink(gLink.row(3).data(),
-                                    gLink.row(3).data() + 3);
-        link_.at(i).setPosition(posLink);
+        link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
-        mat = gLink.block<3, 3>(0, 0);
-        Eigen::Quaterniond quat(mat);
+        rotMat = gLink.topLeftCorner(3, 3);
+        quat.matrix() = rotMat;
         link_.at(i).setQuaternion(quat);
     }
 }

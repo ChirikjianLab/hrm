@@ -31,19 +31,18 @@ int main(int argc, char** argv) {
     }
 
     // Boundary
-    const double f = 1.5;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
-                             f * robot.at(0).getSemiAxis().at(0),
+                             robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +
-                             f * robot.at(0).getSemiAxis().at(0),
+                             robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(2) +
-                             f * robot.at(0).getSemiAxis().at(0)},
+                             robot.at(0).getSemiAxis().at(0)},
                    b2 = {arena.at(0).getSemiAxis().at(0) -
-                             f * robot.at(0).getSemiAxis().at(0),
+                             robot.at(0).getSemiAxis().at(0),
                          arena.at(0).getSemiAxis().at(1) -
-                             f * robot.at(0).getSemiAxis().at(0),
+                             robot.at(0).getSemiAxis().at(0),
                          arena.at(0).getSemiAxis().at(2) -
-                             f * robot.at(0).getSemiAxis().at(0)};
+                             robot.at(0).getSemiAxis().at(0)};
 
     // Start and goal setup
     string file_endpt = "../config/endPts_3d.csv";

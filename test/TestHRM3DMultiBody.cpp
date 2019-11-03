@@ -221,6 +221,19 @@ int main(int argc, char **argv) {
                       << path[i][5] << ' ' << path[i][6] << "\n";
         }
         file_path.close();
+
+        ofstream file_interp_path;
+        file_path.open("interpolatedPath3D.csv");
+        vector<vector<double>> pathInterp =
+            high3D.solutionPathInfo.interpolatedPath;
+        for (size_t i = 0; i < pathInterp.size(); i++) {
+            file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1]
+                             << ' ' << pathInterp[i][2] << ' '
+                             << pathInterp[i][3] << ' ' << pathInterp[i][4]
+                             << ' ' << pathInterp[i][5] << ' '
+                             << pathInterp[i][6] << "\n";
+        }
+        file_interp_path.close();
     }
 
     // Store results

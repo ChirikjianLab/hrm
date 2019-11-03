@@ -10,8 +10,8 @@ std::vector<std::vector<double>> interpolateSE3(
         Eigen::Quaterniond(vStart[3], vStart[4], vStart[5], vStart[6]),
         Eigen::Quaterniond(vEnd[3], vEnd[4], vEnd[5], vEnd[6]), N_step);
 
-    double dt = 1.0 / double(N_step);
-    for (size_t i = 0; i < N_step; ++i) {
+    double dt = 1.0 / N_step;
+    for (size_t i = 0; i <= N_step; ++i) {
         std::vector<double> tranStep;
         // Translation part
         for (size_t j = 0; j < 3; ++j) {
@@ -38,9 +38,9 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     // relative angle-axis representation, interpolate angles around the axis
     Eigen::AngleAxisd axang(Ra.transpose() * Rb);
     Eigen::AngleAxisd d_axang = axang;
-    double dt = 1.0 / (N_step - 1);
+    double dt = 1.0 / N_step;
 
-    for (size_t i = 0; i < N_step; ++i) {
+    for (size_t i = 0; i <= N_step; ++i) {
         d_axang.angle() = i * dt * axang.angle();
         interpolatedQuat.push_back(
             Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()));

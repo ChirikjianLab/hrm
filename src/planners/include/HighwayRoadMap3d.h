@@ -134,7 +134,8 @@ class HighwayRoadMap3D {
      * \brief get the resulting solved path and the interpolated one
      */
     std::vector<std::vector<double>> getSolutionPath();
-    std::vector<std::vector<double>> getInterpolatedSolutionPath(int num);
+    std::vector<std::vector<double>> getInterpolatedSolutionPath(
+        const unsigned int num);
 
     /*
      * \brief uniform random sample SO(3)

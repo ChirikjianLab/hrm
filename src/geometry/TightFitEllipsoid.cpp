@@ -46,7 +46,7 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     Eigen::DiagonalMatrix<double, 3> diag, diag_a, diag_c;
     diag.diagonal() = Eigen::Array3d(r / b[0], r / b[1], r / b[2]);
     diag_a.diagonal() =
-        Eigen::Array3d(pow(a[0], -2), pow(a[1], -2), pow(a[2], -2));
+        Eigen::Array3d(pow(a[0], -2.0), pow(a[1], -2.0), pow(a[2], -2.0));
 
     // Shrinking affine transformation
     Eigen::Matrix3d T = Rb * diag * Rb.transpose();
@@ -61,7 +61,7 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
                           std::fmax(a_p(2), r)};
 
     // Stretch back
-    diag_c.diagonal() = c_p.pow(-2);
+    diag_c.diagonal() = c_p.pow(-2.0);
     Eigen::Matrix3d C =
         T * svd.matrixU() * diag_c * svd.matrixU().transpose() * T;
     svd.compute(C);
