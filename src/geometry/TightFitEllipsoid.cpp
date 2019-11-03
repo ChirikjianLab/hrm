@@ -1,9 +1,9 @@
 #include "include/TightFitEllipsoid.h"
-#include "util/include/InterpolateSO3.h"
+#include "util/include/InterpolateSE3.h"
 
 SuperEllipse getMVCE2D(const std::vector<double>& a,
                        const std::vector<double>& b, const double thetaA,
-                       const double thetaB, const int num) {
+                       const double thetaB, const unsigned int num) {
     Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
                     Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
@@ -37,7 +37,8 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
 SuperQuadrics getMVCE3D(const std::vector<double>& a,
                         const std::vector<double>& b,
                         const Eigen::Quaterniond& quatA,
-                        const Eigen::Quaterniond& quatB, const int num) {
+                        const Eigen::Quaterniond& quatB,
+                        const unsigned int num) {
     Eigen::Matrix3d Ra = quatA.toRotationMatrix();
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
@@ -73,8 +74,8 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
 
 SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
-                       const Eigen::Quaterniond& quatB, const int N_step,
-                       const int num) {
+                       const Eigen::Quaterniond& quatB,
+                       const unsigned int N_step, const unsigned int num) {
     std::vector<Eigen::Quaterniond> interpolatedQuat =
         interpolateAngleAxis(quatA, quatB, N_step);
 

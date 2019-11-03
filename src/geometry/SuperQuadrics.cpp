@@ -8,7 +8,7 @@
 SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
                              std::vector<double> epsilon,
                              std::vector<double> position,
-                             Eigen::Quaterniond quat, const int num)
+                             Eigen::Quaterniond quat, const unsigned int num)
     : semiAxis_(semiAxis),
       epsilon_(epsilon),
       position_(position),

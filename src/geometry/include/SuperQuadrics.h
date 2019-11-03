@@ -16,7 +16,7 @@ class SuperQuadrics {
   public:
     SuperQuadrics(std::vector<double> semiAxis, std::vector<double> epsilon,
                   std::vector<double> position, Eigen::Quaterniond quat,
-                  const int num);
+                  const unsigned int num);
 
   public:
     // Getter functions
@@ -24,8 +24,8 @@ class SuperQuadrics {
     std::vector<double> getEpsilon() const noexcept { return epsilon_; }
     std::vector<double> getPosition() const noexcept { return position_; }
     Eigen::Quaterniond getQuaternion() const noexcept { return quat_; }
-    long getNum() const noexcept { return Num_; }
-    long getNumParam() const noexcept { return num_; }
+    unsigned int getNum() const noexcept { return Num_; }
+    unsigned int getNumParam() const noexcept { return num_; }
     std::vector<Eigen::Quaterniond> getQuatSamples() const noexcept {
         return qSample_;
     }
@@ -67,8 +67,8 @@ class SuperQuadrics {
     std::vector<Eigen::Quaterniond> qSample_;
 
     // Number of points of each parameter
-    long num_;
-    long Num_;
+    unsigned int num_;
+    unsigned int Num_;
 };
 
 #endif  // SUPERQUADRICS_H

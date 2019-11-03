@@ -1,5 +1,5 @@
 #include "include/Hrm3dMultiBody.h"
-#include "util/include/InterpolateSO3.h"
+#include "util/include/InterpolateSE3.h"
 
 #include <fstream>
 #include <iostream>
@@ -190,28 +190,28 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
         return false;
     }
 
-    // Link i: determine Vi=V+RobotM.tf{1:3,4} within CF-cell of midLayer
-    std::vector<Eigen::Quaterniond> rotInterp = interpolateAngleAxis(
-        Eigen::Quaterniond(V1[3], V1[4], V1[5], V1[6]),
-        Eigen::Quaterniond(V2[3], V2[4], V2[5], V2[6]), N_step);
+    // Link i: determine interpolated poses within CF-cell of midLayer
+    std::vector<std::vector<double>> vInterp = interpolateSE3(V1, V2, N_step);
 
-    auto t1 = Eigen::Vector3d({V1[0], V1[1], V1[2]});
-    auto t2 = Eigen::Vector3d({V2[0], V2[1], V2[2]});
-    double dt = 1.0 / (double(N_step) - 1);
+    for (size_t i = 0; i < size_t(N_step); ++i) {
+        // Interpolated motion of Link i center from V1 to V2
+        Eigen::Matrix4d gStep;
+        gStep.topLeftCorner(3, 3) =
+            Eigen::Quaterniond(vInterp[i][3], vInterp[i][4], vInterp[i][5],
+                               vInterp[i][6])
+                .toRotationMatrix();
+        gStep.topRightCorner(3, 1) =
+            Eigen::Vector3d(vInterp[i][0], vInterp[i][1], vInterp[i][2]);
+        gStep.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
+        RobotM.robotTF(gStep);
 
-    for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-        for (size_t j = 0; j < size_t(N_step); ++j) {
-            // Interpolated motion of Link i center from V1 to V2
-            Eigen::Vector3d tBase = ((1.0 - j * dt) * t1 + j * dt * t2);
-            Eigen::Vector3d tLink = tBase +
-                                    rotInterp[i].toRotationMatrix() *
-                                        RobotM.getTF().at(i).block<3, 1>(0, 3);
-
-            status = isPtInCFCell(mid_cell.at(i + 1),
-                                  {tLink[0], tLink[1], tLink[2]});
-            if (!status) {
-                return false;
-            }
+        // For each link, check whether its center is within CF-cell of midLayer
+        for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
+            status = isPtInCFCell(mid_cell[j + 1],
+                                  RobotM.getLinks()[j].getPosition());
+        }
+        if (!status) {
+            return false;
         }
     }
 
@@ -320,12 +320,12 @@ bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
 bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
     for (size_t i = 0; i < cell.tx.size(); ++i) {
         // Locate to the sweep line of the vertex
-        if (std::fabs(cell.tx[i] - V[0]) > 1e-8) {
+        if (cell.tx[i] > V[0]) {
             continue;
         }
 
         for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
-            if (std::fabs(cell.cellYZ[i].ty[j] - V[1]) > 1e-8) {
+            if (cell.cellYZ[i].ty[j] > V[1]) {
                 continue;
             }
 
@@ -356,38 +356,20 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     Eigen::AngleAxisd axang(R1.transpose() * R2);
     Eigen::Matrix3d R_link;
 
-    // Rotation angle > pi/2, fit a sphere
-    if (std::fabs(axang.angle()) > pi / 2.0) {
-        double ra = std::fmax(robot.getBase().getSemiAxis().at(0),
-                              std::fmax(robot.getBase().getSemiAxis().at(1),
-                                        robot.getBase().getSemiAxis().at(2)));
-        SuperQuadrics e_fitted({ra, ra, ra}, {1, 1}, {0, 0, 0},
-                               Eigen::Quaterniond::Identity(), 20);
-        tfe_obj.push_back(e_fitted);
+    // Compute a tightly-fitted ellipsoid that bounds rotational motions from q1
+    // to q2
 
-        for (size_t i = 0; i < robot.getNumLinks(); ++i) {
-            double rb = std::fmax(
-                robot.getLinks().at(i).getSemiAxis().at(0),
-                std::fmax(robot.getLinks().at(i).getSemiAxis().at(1),
-                          robot.getLinks().at(i).getSemiAxis().at(2)));
-            e_fitted.setSemiAxis({rb, rb, rb});
-            tfe_obj.push_back(e_fitted);
-        }
-    }
-    // else fit a TFE
-    else {
-        SuperQuadrics e_fitted = getTFE3D(robot.getBase().getSemiAxis(), q1, q2,
-                                          N_step, int(Robot.getNumParam()));
-        tfe_obj.push_back(e_fitted);
+    SuperQuadrics e_fitted = getTFE3D(robot.getBase().getSemiAxis(), q1, q2,
+                                      N_step, Robot.getNumParam());
+    tfe_obj.push_back(e_fitted);
 
-        for (size_t i = 0; i < robot.getNumLinks(); ++i) {
-            R_link = robot.getTF().at(i).block<3, 3>(0, 0);
-            e_fitted = getTFE3D(robot.getLinks().at(i).getSemiAxis(),
-                                Eigen::Quaterniond(R1 * R_link),
-                                Eigen::Quaterniond(R2 * R_link), N_step,
-                                int(Robot.getNumParam()));
-            tfe_obj.push_back(e_fitted);
-        }
+    for (size_t i = 0; i < robot.getNumLinks(); ++i) {
+        R_link = robot.getTF().at(i).block<3, 3>(0, 0);
+        e_fitted = getTFE3D(robot.getLinks().at(i).getSemiAxis(),
+                            Eigen::Quaterniond(R1 * R_link),
+                            Eigen::Quaterniond(R2 * R_link), N_step,
+                            Robot.getNumParam());
+        tfe_obj.push_back(e_fitted);
     }
 
     return tfe_obj;
