@@ -10,7 +10,7 @@
 SuperEllipse::SuperEllipse(const std::vector<double> &semiAxis,
                            const double epsilon,
                            const std::vector<double> &position,
-                           const double angle, const long num)
+                           const double angle, const unsigned int num)
     : semiAxis_(semiAxis),
       epsilon_(epsilon),
       position_(position),
@@ -35,7 +35,7 @@ Eigen::MatrixXd SuperEllipse::getOriginShape() const {
     Eigen::MatrixXd C(2, num_);
     Eigen::MatrixXd X(2, num_);
 
-    for (int i = 0; i < num_; i++) {
+    for (int i = 0; i < int(num_); i++) {
         th = 2.0 * i * pi / (num_ - 1);
 
         x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, 0);
@@ -84,7 +84,7 @@ Eigen::MatrixXd SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
     R2.angle() = th2;
     Eigen::Matrix2d Tinv = R2.matrix() * diag * R2.matrix().transpose();
 
-    for (int i = 0; i < num_; i++) {
+    for (int i = 0; i < int(num_); i++) {
         the(0, i) = 2.0 * i * pi / (num_ - 1);
         gradPhi(0, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 0);
         gradPhi(1, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 1);

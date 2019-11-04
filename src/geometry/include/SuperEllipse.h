@@ -17,7 +17,7 @@ class SuperEllipse {
 
     SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
                  const std::vector<double> &position, const double angle,
-                 const long num);
+                 const unsigned int num);
 
   public:
     // Getter functions
@@ -25,7 +25,7 @@ class SuperEllipse {
     double getEpsilon() const noexcept { return epsilon_; }
     std::vector<double> getPosition() const noexcept { return position_; }
     double getAngle() const noexcept { return angle_; }
-    long getNum() const noexcept { return num_; }
+    unsigned int getNum() const noexcept { return num_; }
 
     // Setter functions
     void setSemiAxis(const std::vector<double> &newSemiAxis);
@@ -54,7 +54,7 @@ class SuperEllipse {
     double angle_;
 
     // Number of points on boundary
-    long num_;
+    unsigned int num_;
 };
 
 #endif  // SUPERELLIPSE_H

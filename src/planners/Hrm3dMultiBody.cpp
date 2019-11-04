@@ -86,6 +86,8 @@ void Hrm3DMultiBody::connectMultiLayer() {
     size_t n_12;
     size_t n_2;
     size_t start = 0;
+    size_t j = 0;
+
     std::vector<double> V1;
     std::vector<double> V2;
 
@@ -93,62 +95,73 @@ void Hrm3DMultiBody::connectMultiLayer() {
     int n_connect = 0;
 
     for (size_t i = 0; i < N_layers; ++i) {
-        // Find vertex only in adjecent layers
         n_1 = vtxId[i].layer;
-
         // Construct the middle layer
         if (i == N_layers - 1 && N_layers != 2) {
-            n_12 = 0;
-            n_2 = vtxId[0].layer;
-
-            mid = tfe_multi(q_r[i], q_r[0]);
+            j = 0;
 
             //
-            std::ofstream file_pose;
-            file_pose.open("robot_pose_mid.csv");
-            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' << q_r[i].y()
-                      << ',' << q_r[i].z() << std::endl
-                      << q_r[0].w() << ',' << q_r[0].x() << ',' << q_r[0].y()
-                      << ',' << q_r[0].z() << std::endl;
-            file_pose.close();
+            //            std::ofstream file_pose;
+            // file_pose.open("robot_pose_mid.csv");
+            //            file_pose << q_r[i].w() << ',' <<  q_r[i].x() <<
+            //            ',' <<
+            //            q_r[i].y()
+            //                      << ',' << q_r[i].z() << std::endl
+            //                      << q_r[0].w() << ',' <<  q_r[0].x() <<
+            //                      ',' <<
+            //                      q_r[0].y()
+            //                      << ',' << q_r[0].z() <<  std::endl;
+            //            file_pose.close();
             //
         } else {
-            n_12 = n_1;
-            n_2 = vtxId[i + 1].layer;
-
-            mid = tfe_multi(q_r[i], q_r[i + 1]);
+            j = i + 1;
 
             //
-            std::ofstream file_pose;
-            file_pose.open("robot_pose_mid.csv");
-            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' << q_r[i].y()
-                      << ',' << q_r[i].z() << std::endl
-                      << q_r[i + 1].w() << ',' << q_r[i + 1].x() << ','
-                      << q_r[i + 1].y() << ',' << q_r[i + 1].z() << std::endl;
-            file_pose.close();
+            //            std::ofstream file_pose;
+            // file_pose.open("robot_pose_mid.csv");
+            //            file_pose << q_r[i].w() << ',' <<  q_r[i].x() <<
+            //            ',' <<
+            //            q_r[i].y()
+            //                      << ',' << q_r[i].z() << std::endl
+            //                      << q_r[i + 1].w() << ','  << q_r[i +
+            //                      1].x()
+            //                      << ','
+            //                      << q_r[i + 1].y() << ','  << q_r[i +
+            //                      1].z()
+            //                      << std::endl;
+            //            file_pose.close();
             //
         }
 
-        //
-        std::ofstream file_mid;
-        file_mid.open("mid_3d.csv");
-        for (size_t i = 0; i < mid.size(); i++) {
-            file_mid << mid[i].getSemiAxis()[0] << ','
-                     << mid[i].getSemiAxis()[1] << ','
-                     << mid[i].getSemiAxis()[2] << ','
-                     << mid[i].getPosition()[0] << ','
-                     << mid[i].getPosition()[1] << ','
-                     << mid[i].getPosition()[2] << ','
-                     << mid[i].getQuaternion().w() << ','
-                     << mid[i].getQuaternion().x() << ','
-                     << mid[i].getQuaternion().y() << ','
-                     << mid[i].getQuaternion().z() << std::endl;
+        if (j != 0) {
+            n_12 = vtxId[j - 1].layer;
+        } else {
+            n_12 = 0;
         }
-        file_mid.close();
+        n_2 = vtxId[j].layer;
+
+        mid = tfe_multi(q_r[i], q_r[j]);
+
+        //
+        //        std::ofstream file_mid;
+        //        file_mid.open("mid_3d.csv");
+        //        for (size_t i = 0; i < mid.size(); i++) {
+        //            file_mid << mid[i].getSemiAxis()[0] << ','
+        //                     << mid[i].getSemiAxis()[1] << ','
+        //                     << mid[i].getSemiAxis()[2] << ','
+        //                     << mid[i].getPosition()[0] << ','
+        //                     << mid[i].getPosition()[1] << ','
+        //                     << mid[i].getPosition()[2] << ','
+        //                     << mid[i].getQuaternion().w() << ','
+        //                     << mid[i].getQuaternion().x() << ','
+        //                     << mid[i].getQuaternion().y() <<  ','
+        //                     << mid[i].getQuaternion().z() << std::endl;
+        //        }
+        //        file_mid.close();
         //
 
-        for (size_t j = 0; j < mid.size(); ++j) {
-            mid_cell.push_back(midLayer(mid[j]));
+        for (size_t k = 0; k < mid.size(); ++k) {
+            mid_cell.push_back(midLayer(mid[k]));
         }
 
         // Nearest vertex btw layers
@@ -168,8 +181,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
                 if (isCollisionFree(V1, V2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(
-                        vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
+                    vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
                     n_connect++;
 
@@ -339,10 +351,7 @@ bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
                     return true;
                 }
             }
-
-            break;
         }
-        break;
     }
     return false;
 }
@@ -354,42 +363,44 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions from q1
     // to q2
-    Eigen::Matrix3d R1 = q1.toRotationMatrix(), R2 = q2.toRotationMatrix();
+    //    Eigen::Matrix3d R1 = q1.toRotationMatrix(), R2 =
+    //    q2.toRotationMatrix();
 
-    // Rotation axis and angle from R1 to R2
-    Eigen::AngleAxisd axang(R1.transpose() * R2);
+    //    // Rotation axis and angle from R1 to R2
+    //    Eigen::AngleAxisd axang(R1.transpose() * R2);
 
-    if (std::fabs(axang.angle()) > pi / 2.0) {
-        // Rotation angle > pi/2, fit a sphere
-        double ra = std::fmax(RobotM.getBase().getSemiAxis().at(0),
-                              std::fmax(RobotM.getBase().getSemiAxis().at(1),
-                                        RobotM.getBase().getSemiAxis().at(2)));
-        SuperQuadrics sphere({ra, ra, ra}, {1, 1}, {0, 0, 0},
-                             Eigen::Quaterniond::Identity(), 20);
-        tfe.push_back(sphere);
+    //    if (std::fabs(axang.angle()) > pi / 2.0) {
+    //        // Rotation angle > pi/2, fit a sphere
+    //        double ra = std::fmax(RobotM.getBase().getSemiAxis().at(0),
+    //                              std::fmax(RobotM.getBase().getSemiAxis().at(1),
+    //                                        RobotM.getBase().getSemiAxis().at(2)));
+    //        SuperQuadrics sphere({ra, ra, ra}, {1, 1}, {0, 0, 0},
+    //                             Eigen::Quaterniond::Identity(), 20);
+    //        tfe.push_back(sphere);
 
-        for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-            double rb = std::fmax(
-                RobotM.getLinks().at(i).getSemiAxis().at(0),
-                std::fmax(RobotM.getLinks().at(i).getSemiAxis().at(1),
-                          RobotM.getLinks().at(i).getSemiAxis().at(2)));
-            sphere.setSemiAxis({rb, rb, rb});
-            tfe.push_back(sphere);
-        }
-    } else {
-        tfe.push_back(getTFE3D(RobotM.getBase().getSemiAxis(), q1, q2, N_step,
-                               Robot.getNumParam()));
+    //        for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
+    //            double rb = std::fmax(
+    //                RobotM.getLinks().at(i).getSemiAxis().at(0),
+    //                std::fmax(RobotM.getLinks().at(i).getSemiAxis().at(1),
+    //                          RobotM.getLinks().at(i).getSemiAxis().at(2)));
+    //            sphere.setSemiAxis({rb, rb, rb});
+    //            tfe.push_back(sphere);
+    //        }
+    //    } else {
+    tfe.push_back(getMVCE3D(RobotM.getBase().getSemiAxis(),
+                            RobotM.getBase().getSemiAxis(), q1, q2,
+                            RobotM.getBase().getNumParam()));
 
-        for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-            Eigen::Matrix3d R_link = RobotM.getTF().at(i).topLeftCorner(3, 3);
-            tfe.push_back(
-                getMVCE3D(RobotM.getLinks().at(i).getSemiAxis(),
-                          RobotM.getLinks().at(i).getSemiAxis(),
-                          Eigen::Quaterniond(q1.toRotationMatrix() * R_link),
-                          Eigen::Quaterniond(q2.toRotationMatrix() * R_link),
-                          RobotM.getBase().getNumParam()));
-        }
+    for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
+        Eigen::Matrix3d R_link = RobotM.getTF().at(i).topLeftCorner(3, 3);
+        tfe.push_back(
+            getMVCE3D(RobotM.getLinks().at(i).getSemiAxis(),
+                      RobotM.getLinks().at(i).getSemiAxis(),
+                      Eigen::Quaterniond(q1.toRotationMatrix() * R_link),
+                      Eigen::Quaterniond(q2.toRotationMatrix() * R_link),
+                      RobotM.getLinks().at(i).getNumParam()));
     }
+    //    }
 
     return tfe;
 }

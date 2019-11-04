@@ -68,8 +68,7 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     Eigen::Quaterniond q_c(svd.matrixU());
     Eigen::Array3d c = svd.singularValues().array().pow(-0.5);
 
-    return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0},
-                         {q_c.w(), q_c.x(), q_c.y(), q_c.z()}, num);
+    return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0}, q_c, num);
 }
 
 SuperQuadrics getTFE3D(const std::vector<double>& a,

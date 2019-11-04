@@ -24,10 +24,13 @@ Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
     opt.N_layers = size_t(N_l);
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-    opt.Lim = {
-        arena.at(0).getSemiAxis().at(0) - robot.getBase().getSemiAxis().at(0),
-        arena.at(0).getSemiAxis().at(1) - robot.getBase().getSemiAxis().at(0),
-        arena.at(0).getSemiAxis().at(2) - robot.getBase().getSemiAxis().at(0)};
+    double f = 1.2;
+    opt.Lim = {arena.at(0).getSemiAxis().at(0) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(1) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(2) -
+                   f * robot.getBase().getSemiAxis().at(0)};
 
     //****************//
     // Main Algorithm //
@@ -132,10 +135,10 @@ int main(int argc, char **argv) {
         vector<Quaterniond> q_sample;
         for (size_t i = 0; i < quat_sample.size(); i++) {
             Quaterniond q;
-            q.w() = quat_sample[i][0];
-            q.x() = quat_sample[i][1];
-            q.y() = quat_sample[i][2];
-            q.z() = quat_sample[i][3];
+            q.w() = quat_sample[i][3];
+            q.x() = quat_sample[i][0];
+            q.y() = quat_sample[i][1];
+            q.z() = quat_sample[i][2];
             q_sample.emplace_back(q);
         }
         robot_parts.at(0).setQuatSamples(q_sample);

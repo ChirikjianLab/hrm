@@ -6,7 +6,7 @@ std::vector<std::vector<double>> interpolateSE3(
     std::vector<std::vector<double>> vInterp;
 
     // Interpolate SO(3)
-    std::vector<Eigen::Quaterniond> quatInterp = interpolateAngleAxis(
+    std::vector<Eigen::Quaterniond> quatInterp = interpolateSlerp(
         Eigen::Quaterniond(vStart[3], vStart[4], vStart[5], vStart[6]),
         Eigen::Quaterniond(vEnd[3], vEnd[4], vEnd[5], vEnd[6]), N_step);
 
@@ -44,6 +44,20 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
         d_axang.angle() = i * dt * axang.angle();
         interpolatedQuat.push_back(
             Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()));
+    }
+
+    return interpolatedQuat;
+}
+
+std::vector<Eigen::Quaterniond> interpolateSlerp(
+    const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
+    const unsigned int N_step) {
+    std::vector<Eigen::Quaterniond> interpolatedQuat;
+
+    double dt = 1.0 / N_step;
+
+    for (size_t i = 0; i <= N_step; ++i) {
+        interpolatedQuat.push_back(quatA.slerp(i * dt, quatB));
     }
 
     return interpolatedQuat;

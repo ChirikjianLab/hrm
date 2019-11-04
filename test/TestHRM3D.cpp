@@ -21,9 +21,10 @@ HighwayRoadMap3D plan(SuperQuadrics robot, vector<vector<double>> EndPts,
     opt.N_layers = size_t(N_l);
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-    opt.Lim = {arena.at(0).getSemiAxis().at(0) - robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(1) - robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(2) - robot.getSemiAxis().at(0)};
+    double f = 1.2;
+    opt.Lim = {arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(2) - f * robot.getSemiAxis().at(0)};
 
     //****************//
     // Main Algorithm //

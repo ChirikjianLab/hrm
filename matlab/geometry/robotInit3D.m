@@ -4,7 +4,7 @@ function robot = robotInit3D(vargin, isSingleBody)
 % C-space: SE(3)
 
 %% Initialization
-N_r = 20;
+N_r = 10;
 
 % Initialize robot parameters
 % Base
