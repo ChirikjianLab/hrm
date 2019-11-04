@@ -98,6 +98,30 @@ elseif opt == 14 % Superquadrics Corridor
     tz_o  = [  0   0   0   0];
     
     eps_o = 0.2*ones(2,size(ra_o,2));
+    
+elseif opt == 21 % Ellipsoids cluttered
+    % Arena
+    ra_s = 100;
+    rb_s = 60;
+    rc_s = 50;
+    
+    q_s = [0,1,0,0];
+    
+    tc_s = [0;0;0];
+    eps_s = [1;1];
+    
+    % Obstacles
+    ra_o = [20 25  5 20 20 18 15];
+    rb_o = [10 15 15 12 15  8 10];
+    rc_o = [10  5 20 10 10 12  8];
+    
+    q_o = pi*rand(size(ra_o,2), 4);
+    
+    tx_o  = [-32 -35  10  0 30  45 -45];
+    ty_o  = [-10  15 -25 10 20 -15 -10];
+    tz_o  = [-20  15 -10  0  5 -15   5];
+    
+    eps_o = ones(2,size(ra_o,2));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -246,12 +246,21 @@ void ompl_planner::setCollisionObj() {
     }
 
     for (size_t i = 0; i < obstacles.size(); i++) {
-        fcl::BVHModel<fcl::OBBRSS<double>> *model_sq =
-            new fcl::BVHModel<fcl::OBBRSS<double>>();
-        model_sq->beginModel();
-        model_sq->addSubModel(obs_mesh[i].vertices, obs_mesh[i].triangles);
-        model_sq->endModel();
-        obj_obs.push_back(fcl::CollisionObjectd(GeometryPtr_t(model_sq)));
+        if (std::fabs(obstacles.at(i).getEpsilon().at(0) - 1.0) < 1e-6 &&
+            std::fabs(obstacles.at(i).getEpsilon().at(1) - 1.0) < 1e-6) {
+            GeometryPtr_t ellip(
+                new fcl::Ellipsoidd(obstacles.at(i).getSemiAxis().at(0),
+                                    obstacles.at(i).getSemiAxis().at(1),
+                                    obstacles.at(i).getSemiAxis().at(2)));
+            obj_obs.push_back(fcl::CollisionObjectd(ellip));
+        } else {
+            fcl::BVHModel<fcl::OBBRSS<double>> *model_sq =
+                new fcl::BVHModel<fcl::OBBRSS<double>>();
+            model_sq->beginModel();
+            model_sq->addSubModel(obs_mesh[i].vertices, obs_mesh[i].triangles);
+            model_sq->endModel();
+            obj_obs.push_back(fcl::CollisionObjectd(GeometryPtr_t(model_sq)));
+        }
     }
 }
 
@@ -330,3 +339,5 @@ void ompl_planner::getPathInfo() {
     }
     file_smooth_traj.close();
 }
+
+ompl_planner::~ompl_planner() {}

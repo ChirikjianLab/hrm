@@ -44,9 +44,11 @@ class ompl_planner {
                  vector<SuperQuadrics> robot_, vector<SuperQuadrics> arena_,
                  vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_,
                  int planner, int sampler);
+    virtual ~ompl_planner();
 
+  public:
     bool plan(vector<double> start_, vector<double> goal_);
-    bool isStateValid(const ob::State *state) const;
+    virtual bool isStateValid(const ob::State *state) const;
     bool checkSeparation(SuperQuadrics robot, SuperQuadrics r_,
                          CollisionObject<double> obj_ellip, SuperQuadrics obs,
                          CollisionObject<double> obj_sq) const;
