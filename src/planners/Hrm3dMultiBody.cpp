@@ -38,7 +38,7 @@ void Hrm3DMultiBody::buildRoadmap() {
 
     for (size_t i = 0; i < N_layers; ++i) {
         // Set rotation matrix to robot
-        tf.block<3, 3>(0, 0) = q_r.at(i).toRotationMatrix();
+        tf.topLeftCorner(3, 3) = q_r.at(i).toRotationMatrix();
         RobotM.robotTF(tf);
         Robot.setQuaternion(q_r.at(i));
 
@@ -224,7 +224,7 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
 
         // For each link, check whether its center is within CF-cell of midLayer
         for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
-            if (!isPtInCFCell(mid_cell[j + 1],
+            if (!isPtInCFLine(mid_cell[j + 1],
                               RobotM.getLinks()[j].getPosition())) {
                 return false;
             }

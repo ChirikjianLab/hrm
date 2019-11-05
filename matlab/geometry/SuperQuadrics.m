@@ -49,8 +49,9 @@ classdef SuperQuadrics
                 obj.eps   = val{4};
                 obj.N     = val{5};
                 obj.color = color;
-                [obj.omega, obj.eta] = meshgrid(-1e-6:pi/(obj.N-1):pi+1e-6,...
-                    -1e-6:2*pi/(obj.N-1):2*pi+1e-6); 
+                [obj.omega, obj.eta] = meshgrid(...
+                    -pi-1e-6:2*pi/(obj.N-1):pi+1e-6,...
+                    -pi/2-1e-6:pi/(obj.N-1):pi/2+1e-6); 
                 
                 obj.infla = infla;
                 if infla > 0

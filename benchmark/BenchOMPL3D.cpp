@@ -80,8 +80,10 @@ int main(int argc, char** argv) {
                         << tester.validSpace << ',' << tester.numCheckedNodes
                         << ',' << tester.numValidNodes << endl;
 
-                tester.getVertexEdgeInfo();
-                tester.getPathInfo();
+                if (tester.flag) {
+                    tester.getVertexEdgeInfo();
+                    tester.getPathInfo();
+                }
             }
         }
     }

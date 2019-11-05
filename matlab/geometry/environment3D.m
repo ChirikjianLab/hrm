@@ -99,16 +99,41 @@ elseif opt == 14 % Superquadrics Corridor
     
     eps_o = 0.2*ones(2,size(ra_o,2));
     
-elseif opt == 21 % Ellipsoids cluttered
+elseif opt == 21 % Ellipsoids Sparse
+    % Arena(s)
+    ra_s = 70;
+    rb_s = 40;
+    rc_s = 30;
+    
+    q_s = [0,1,0,0];
+
+    tc_s = [0;0;0];
+    eps_s = [0.1;0.1];
+    
+    % Obstacles
+    ra_o  = [25 20];
+    rb_o  = [10 10];
+    rc_o  = [10 15];
+    
+    q_o = pi*[[0.1, 0.2, 0.1, 0];...
+        [0.3, 0.13, 0.5, 0.1]];
+    
+    tx_o = [ 20 -20];
+    ty_o = [-10  20];
+    tz_o = [ 15 -10];
+    
+    eps_o = ones(2,size(ra_o,2));
+
+elseif opt == 22 % Ellipsoids cluttered
     % Arena
-    ra_s = 100;
-    rb_s = 60;
-    rc_s = 50;
+    ra_s = 70;
+    rb_s = 40;
+    rc_s = 30;
     
     q_s = [0,1,0,0];
     
     tc_s = [0;0;0];
-    eps_s = [1;1];
+    eps_s = [.1;.1];
     
     % Obstacles
     ra_o = [20 25  5 20 20 18 15];
@@ -120,6 +145,31 @@ elseif opt == 21 % Ellipsoids cluttered
     tx_o  = [-32 -35  10  0 30  45 -45];
     ty_o  = [-10  15 -25 10 20 -15 -10];
     tz_o  = [-20  15 -10  0  5 -15   5];
+    
+    eps_o = ones(2,size(ra_o,2));
+    
+elseif opt == 23 % Ellipsoids Maze
+    % Arena
+    ra_s = 70;
+    rb_s = 40;
+    rc_s = 30;
+    
+    q_s = [0,1,0,0];
+    
+    tc_s = [0;0;0];
+    eps_s = [0.1;0.1];
+    
+    % Obstacles
+    ra_o = [70 15 15 15 25 35 40];
+    rb_o = [40 20 30 30 20 10 10];
+    rc_o = [ 5 30 30 30 10 10 10];
+    
+    q_o = [zeros(size(ra_o,2),1), ...
+        ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
+    
+    tx_o  = [  0 -60 -15  30 -45 -15 30];
+    ty_o  = [  0 -20  10 -10  20 -30 30];
+    tz_o  = [-30   0   0   0  20 -20 20];
     
     eps_o = ones(2,size(ra_o,2));
 end

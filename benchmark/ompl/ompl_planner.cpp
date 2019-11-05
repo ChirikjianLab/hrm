@@ -137,23 +137,21 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
     ss_->setup();
     //        ss_->print();
 
+    // Path planning
     cout << "Planning..." << endl;
-    ob::PlannerStatus solved = ss_->solve(60);
-
+    ob::PlannerStatus solved = ss_->solve(60.0);
     if (!solved) {
         flag = false;
         return false;
-    } else if (totalTime < 60) {
-        flag = true;
-    } else {
-        flag = false;
     }
 
-    /*Getting times*/
-    // flag = int(solved.operator bool());
     totalTime = ss_->getLastPlanComputationTime();
+    if (totalTime > 60.0) {
+        flag = false;
+        return false;
+    }
 
-    // Getting graph info
+    // Get graph info
     ob::PlannerData pd(ss_->getSpaceInformation());
     ss_->getPlannerData(pd);
 
