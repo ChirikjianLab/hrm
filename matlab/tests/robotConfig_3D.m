@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-[ar, obs, endPts] = environment3D(13, 1);
+[ar, obs, endPts] = environment3D(23, 1);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); obstacle = zeros(size(obs,2),12);

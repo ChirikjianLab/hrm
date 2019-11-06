@@ -74,31 +74,6 @@ elseif opt == 13 % Superquadrics Maze
     
     eps_o = 0.2*ones(2,size(ra_o,2));
     
-elseif opt == 14 % Superquadrics Corridor
-    % Arena
-    ra_s = 70;
-    rb_s = 40;
-    rc_s = 30;
-    
-    q_s = [0,1,0,0];
-    
-    tc_s = [0;0;0];
-    eps_s = [0.1;0.1];
-    
-    % Obstacles
-    ra_o = [60 70 10 10];
-    rb_o = [20 20 25 25];
-    rc_o = [ 5  5 30 30];
-    
-    q_o = [zeros(size(ra_o,2),1), ...
-        ones(size(ra_o,2),1), zeros(size(ra_o,2),2)];
-    
-    tx_o  = [-10   0 -24  24];
-    ty_o  = [ 20 -20 -15  15];
-    tz_o  = [  0   0   0   0];
-    
-    eps_o = 0.2*ones(2,size(ra_o,2));
-    
 elseif opt == 21 % Ellipsoids Sparse
     % Arena(s)
     ra_s = 70;
