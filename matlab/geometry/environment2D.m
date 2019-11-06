@@ -202,8 +202,8 @@ end
 N_s = length(ra_s); % # of arenas
 N_o = length(ra_o); % # of obstacles
 
-Nb = 300;  % # of pnts on the superelliptical obs(tacles)
-Ns = 300;  % # of pnts on the superelliptical arena
+Nb = 50;   % # of pnts on the superelliptical arena
+Ns = 300;  % # of pnts on the superelliptical obs(tacles)
 
 %% == construct SuperEllipse objects for the arena and obstacles
 for i = 1:N_s
