@@ -151,6 +151,8 @@ bool ompl_planner::plan(std::vector<double> start_, std::vector<double> goal_) {
         return false;
     }
 
+    flag = true;
+
     // Get graph info
     ob::PlannerData pd(ss_->getSpaceInformation());
     ss_->getPlannerData(pd);

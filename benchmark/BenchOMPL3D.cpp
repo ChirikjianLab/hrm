@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     const vector<vector<double>>& endPts = parse2DCsvFile(file_endpt);
 
     std::ofstream outfile;
-    outfile.open("time3D_ompl.csv");
+    outfile.open("time_ompl3D.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
