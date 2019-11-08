@@ -43,12 +43,12 @@ void HighwayRoadMap::plan() {
 
 void HighwayRoadMap::buildRoadmap() {
     // angle steps
-    double dr = pi / (N_layers - 1);
+    double dr = 2 * pi / (N_layers - 1);
 
-    // Setup rotation angles
+    // Setup rotation angles: angle range [-pi,pi]
     std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        theta.push_back(dr * i);
+        theta.push_back(-pi + dr * i);
     }
 
     for (size_t i = 0; i < N_layers; ++i) {

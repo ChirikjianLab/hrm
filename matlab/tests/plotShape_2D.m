@@ -73,14 +73,14 @@ end
 %         plot(cf_seg(i,3), cf_seg(i,1),'k*')
 % end
 % 
-% vertex and connections
-plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-edge = edge+1;
-for i = 1:size(edge,1)
-    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-end
+% % vertex and connections
+% plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
+% edge = edge+1;
+% for i = 1:size(edge,1)
+%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+% end
 
 % shortest path
 plot3([start(1) vtx(path(end)+1,1)],...
@@ -117,6 +117,16 @@ rob.ang = goal(3);
 rob.tx = goal(1);
 rob.ty = goal(2);
 rob.PlotShape();
+
+%% Store path
+pathHRM = start';
+
+for i = 1:numel(path)
+    pathHRM = [pathHRM; vtx(path(numel(path) - i + 1)+1,:)];
+end
+pathHRM = [pathHRM; goal'];
+
+csvwrite('pathCpp.csv', pathHRM);
 
 %% Path for PRM
 % path_prm = load([loadPath, 'prm_path.csv']);
