@@ -2,8 +2,8 @@ add_library(UTIL
             ExponentialFunction.cpp
             DistanceMetric.cpp
             InterpolateSE3.cpp
-            IntersectLineMesh3d.cpp
             Interval.cpp
+            LineIntersection.cpp
             MeshGenerator.cpp
             MultiBodyTree3d.cpp
             Parse2dCsvFile.cpp

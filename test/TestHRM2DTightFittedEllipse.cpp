@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     vector<vector<double>> time_stat;
 
     // Number of points on the boundary
-    int num = 50;
+    unsigned int num = 50;
 
     // Robot
     // Read robot config file
@@ -134,6 +134,10 @@ int main(int argc, char** argv) {
     par.N_dy = static_cast<size_t>(N_y);
     par.N_o = obs.size();
     par.N_s = arena.size();
+
+    double f = 1.5;
+    par.Lim = {arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {

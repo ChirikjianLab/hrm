@@ -1,4 +1,5 @@
 #include "highway/include/highway_planner.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 using namespace Eigen;

@@ -73,14 +73,14 @@ end
 %         plot(cf_seg(i,3), cf_seg(i,1),'k*')
 % end
 % 
-% % vertex and connections
-% plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-% edge = edge+1;
-% for i = 1:size(edge,1)
-%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-% end
+% vertex and connections
+plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
+edge = edge+1;
+for i = 1:size(edge,1)
+    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+end
 
 % shortest path
 plot3([start(1) vtx(path(end)+1,1)],...
@@ -106,7 +106,7 @@ rob.tx = start(1);
 rob.ty = start(2);
 rob.PlotShape();
 % plotEllipse(robot(1:2), start, 'k');
-for i = 1:size(path,2)-1 
+for i = 1:size(path,2)
     rob.ang = vtx(path(i)+1,3);
     rob.tx = vtx(path(i)+1,1);
     rob.ty = vtx(path(i)+1,2);

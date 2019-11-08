@@ -1,4 +1,5 @@
 #include "highway/include/hrm_multi_adaptive_planner.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <stdlib.h>

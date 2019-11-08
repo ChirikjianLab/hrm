@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 41;
+opt = 24;
 [ar, obs, pts] = environment2D(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -41,7 +41,7 @@ csvwrite(fullfile(outPath,'endPts.csv'), endPts);
 %% Robot Initialization
 disp('Robot Configurations...');
 % Robot: Only plan face
-face = robotInit2D(4, 0.1);
+face = robotInit2D(1, 0);
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -61,13 +61,13 @@ face.color = 'g';
 face.PlotShape();
 
 % Vertex and matrix for local c-space
-[m,n,p] = size(face.polyVtx.invMat);
-
-rob_vtx = face.polyVtx.vertex;
-csvwrite(fullfile(outPath,'robotVtx.csv'), rob_vtx);
-
-rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
-csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
+% [m,n,p] = size(face.polyVtx.invMat);
+% 
+% rob_vtx = face.polyVtx.vertex;
+% csvwrite(fullfile(outPath,'robotVtx.csv'), rob_vtx);
+% 
+% rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
+% csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
 
 %% Triangulations
 % disp('Triangulation...');

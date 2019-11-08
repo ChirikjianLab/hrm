@@ -1,5 +1,6 @@
 #include "geometry/include/SuperQuadrics.h"
 #include "planners/include/HighwayRoadMap3d.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <eigen3/Eigen/Geometry>

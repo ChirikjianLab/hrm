@@ -1,7 +1,7 @@
-#include "include/IntersectLineMesh3d.h"
+#include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> IntersectLineMesh3d::intersect(
+std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
     const Eigen::VectorXd& line, const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
 
@@ -101,6 +101,41 @@ std::vector<Eigen::Vector3d> IntersectLineMesh3d::intersect(
         points.push_back(pt);
         if (points.size() == 2) {
             break;
+        }
+    }
+
+    return points;
+}
+
+std::vector<double> intersectHorizontalLinePolygon2d(
+    const double ty, const Eigen::MatrixXd& shape) {
+    std::vector<double> points;
+
+    // ignore the edge that is out of range
+    if (ty > shape.row(1).maxCoeff() || ty < shape.row(1).minCoeff()) {
+        return points;
+    }
+
+    for (auto i = 0; i < shape.cols(); ++i) {
+        double x1 = shape(0, i);
+        double y1 = shape(1, i);
+        double x2;
+        double y2;
+
+        if (i == shape.cols() - 1) {
+            x2 = shape(0, 0);
+            y2 = shape(1, 0);
+        } else {
+            x2 = shape(0, i + 1);
+            y2 = shape(1, i + 1);
+        }
+
+        // compute line-line intersection
+        if (ty >= std::fmin(y1, y2) && ty <= std::fmax(y1, y2)) {
+            double t = (ty - y2) / (y1 - y2);
+            if (t >= 0.0 && t <= 1.0) {
+                points.push_back(t * x1 + (1.0 - t) * x2);
+            }
         }
     }
 

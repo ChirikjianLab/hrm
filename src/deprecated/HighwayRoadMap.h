@@ -49,7 +49,6 @@ struct param {
     double infla;
     size_t N_layers, N_dy, sampleNum, N_o, N_s;
     polyCSpace polyVtx;
-    std::vector<double> Lim;
 };
 
 class HighwayRoadMap {
@@ -71,6 +70,11 @@ class HighwayRoadMap {
     void search();
 
   private:
+    //    boundary::sepBd separateBoundary(Eigen::MatrixXd bd);
+    //    boundary::sepBd closestPt(boundary::sepBd P_bd, double ty);
+    //    Eigen::MatrixXd boundaryEnlarge(Eigen::MatrixXd bd_o[],
+    //    Eigen::MatrixXd x_o,
+    //                                    double ty[], int K);
     cf_cell enhanceDecomp(cf_cell cell);
     std::vector<double> addMidVtx(std::vector<double> vtx1,
                                   std::vector<double> vtx2);
@@ -127,7 +131,6 @@ class HighwayRoadMap {
     size_t N_KCsample;
     double ang_r;
     std::vector<size_t> N_v_layer;
-    std::vector<double> Lim;
 };
 
 #endif  // HIGHWAYROADMAP_H

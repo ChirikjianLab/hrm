@@ -3,7 +3,6 @@
 
 #include "src/geometry/include/SuperQuadrics.h"
 #include "src/geometry/include/TightFitEllipsoid.h"
-#include "src/util/include/IntersectLineMesh3d.h"
 #include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
 
@@ -41,16 +40,8 @@ struct cf_cell3D {
 
 // boundary: Minkowski boundary points for obstacles and arenas
 struct boundary3D {
-    std::vector<Eigen::MatrixXd> bd_s, bd_o;
-
-    // Seperated boundary points
-    struct sepBd {
-        Eigen::MatrixXd P_bd_L, P_bd_R;
-    } P_bd;
-
-    struct sepZ {
-        Eigen::MatrixXd z_L, z_R;
-    };
+    std::vector<Eigen::MatrixXd> bd_s;
+    std::vector<Eigen::MatrixXd> bd_o;
 };
 
 struct option3D {
@@ -154,11 +145,6 @@ class HighwayRoadMap3D {
      * \brief find the closest cell a pose lie on
      */
     unsigned int find_cell(std::vector<double> v);
-
-    //    /*
-    //     * \brief get mesh info from a ordered vertex list
-    //     */
-    //    EMesh getMesh(Eigen::MatrixXd, int);
 
     /*
      * \brief query whether a point is within a collision-free line segment

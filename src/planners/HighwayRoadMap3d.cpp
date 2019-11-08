@@ -1,5 +1,6 @@
 #include "include/HighwayRoadMap3d.h"
 #include "util/include/InterpolateSE3.h"
+#include "util/include/LineIntersection.h"
 
 #include <fstream>
 #include <iostream>
@@ -96,7 +97,6 @@ boundary3D HighwayRoadMap3D::boundaryGen() {
 cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                                        std::vector<Eigen::MatrixXd> bd_o) {
     cf_cell3D CF_cell;
-    IntersectLineMesh3d lineMesh;
     std::vector<Eigen::Vector3d> pts_s;
     std::vector<Eigen::Vector3d> pts_o;
     auto N_cs = bd_s.size();
@@ -145,7 +145,7 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
             for (size_t m = 0; m < N_cs; ++m) {
-                pts_s = lineMesh.intersect(lineZ, P_s[m]);
+                pts_s = intersectVerticalLineMesh3d(lineZ, P_s[m]);
                 if (pts_s.empty()) continue;
                 z_s_L(long(j), long(m)) =
                     std::fmin(-Lim[2], std::fmin(pts_s[0](2), pts_s[1](2)));
@@ -153,7 +153,7 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                     std::fmax(Lim[2], std::fmax(pts_s[0](2), pts_s[1](2)));
             }
             for (size_t n = 0; n < N_co; ++n) {
-                pts_o = lineMesh.intersect(lineZ, P_o[n]);
+                pts_o = intersectVerticalLineMesh3d(lineZ, P_o[n]);
                 if (pts_o.empty()) continue;
                 z_o_L(long(j), long(n)) = std::fmin(pts_o[0](2), pts_o[1](2));
                 z_o_U(long(j), long(n)) = std::fmax(pts_o[0](2), pts_o[1](2));

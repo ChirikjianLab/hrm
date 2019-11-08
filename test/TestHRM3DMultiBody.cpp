@@ -1,5 +1,6 @@
 #include "geometry/include/SuperQuadrics.h"
 #include "planners/include/Hrm3dMultiBody.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/MultiBodyTree3d.h"
 #include "util/include/Parse2dCsvFile.h"
 

@@ -1,5 +1,6 @@
 #include "highway/include/highway_multibody.h"
 #include "planners/include/Hrm3dMultiBody.h"
+#include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <stdlib.h>

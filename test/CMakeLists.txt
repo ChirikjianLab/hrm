@@ -1,9 +1,15 @@
 # 2D version
 add_executable(TestHRM2D TestHRM2D.cpp)
-target_link_libraries(TestHRM2D UTIL GEOM SOURCE_2D ${SOURCE_2D})
+target_link_libraries(TestHRM2D
+                      UTIL
+                      GEOM
+                      SOURCE_2D)
 
 add_executable(TestHRM2DTightFittedEllipse TestHRM2DTightFittedEllipse.cpp)
-target_link_libraries(TestHRM2DTightFittedEllipse UTIL GEOM SOURCE_2D ${SOURCE_2D})
+target_link_libraries(TestHRM2DTightFittedEllipse
+                      UTIL
+                      GEOM
+                      SOURCE_2D)
 
 # 3D version
 add_executable(TestHRM3D TestHRM3D.cpp)

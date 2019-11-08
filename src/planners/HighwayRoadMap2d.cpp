@@ -27,7 +27,7 @@ void HighwayRoadMap2D::buildRoadmap() {
     // Setup rotation angles
     std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        theta.push_back(dr * i + rand() * 0.01 / RAND_MAX);
+        theta.push_back(dr * i);
     }
 
     // Compute mid-layer TFE
@@ -70,7 +70,6 @@ boundary HighwayRoadMap2D::boundaryGen() {
 }
 
 void HighwayRoadMap2D::connectMultiLayer() {
-    size_t n = vtxEdge.vertex.size();
     size_t n_1;
     size_t n_12;
     size_t n_2;
@@ -103,16 +102,9 @@ void HighwayRoadMap2D::connectMultiLayer() {
 
                 // Only connect v1 and v2 that are close to each other
                 if (std::fabs(v1[1] - v2[1]) < 1 && isPtinCFLine(v1, v2)) {
-                    // Middle vertex: trans = V1; rot = V2;
-                    midVtx = {v1[0], v1[1], v2[2]};
-                    vtxEdge.vertex.push_back(midVtx);
-
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, n));
-                    vtxEdge.weight.push_back(vectorEuclidean(v1, midVtx));
-                    vtxEdge.edge.push_back(std::make_pair(m1, n));
-                    vtxEdge.weight.push_back(vectorEuclidean(v2, midVtx));
-                    n++;
+                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
+                    vtxEdge.weight.push_back(vectorEuclidean(v1, v2));
                     break;
                 }
             }
