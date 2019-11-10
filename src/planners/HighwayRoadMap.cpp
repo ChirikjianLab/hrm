@@ -295,8 +295,8 @@ void HighwayRoadMap::search() {
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
-    idx_s = find_cell(Endpt[0]);
-    idx_g = find_cell(Endpt[1]);
+    idx_s = getNearestVtxOnGraph(Endpt[0]);
+    idx_g = getNearestVtxOnGraph(Endpt[1]);
 
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
@@ -397,17 +397,32 @@ std::vector<double> HighwayRoadMap::addMidVtx(std::vector<double> vtx1,
     return midVtx;
 }
 
-unsigned int HighwayRoadMap::find_cell(std::vector<double> v) {
-    // Find the cell that an arbitrary vertex locates, and find the closest
-    // roadmap vertex
-    double d_min, d;
-    unsigned int idx = 0;
+size_t HighwayRoadMap::getNearestVtxOnGraph(std::vector<double> v) {
+    // Find the closest roadmap vertex
+    double minEuclideanDist;
+    double minAngleDist;
+    double minAngle;
+    double angleDist;
+    double euclideanDist;
+    size_t idx = 0;
 
-    d_min = vectorEuclidean(v, vtxEdge.vertex[0]);
-    for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
-        d = vectorEuclidean(v, vtxEdge.vertex[i]);
-        if (d < d_min) {
-            d_min = d;
+    // Find the closest C-layer
+    minAngleDist = std::fabs(v[2] - vtxEdge.vertex[0][2]);
+    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
+        angleDist = std::fabs(v[2] - vtxEdge.vertex[i][2]);
+        if (angleDist < minAngleDist) {
+            minAngleDist = angleDist;
+            minAngle = vtxEdge.vertex[i][2];
+        }
+    }
+
+    // Find the closest vertex at this C-layer
+    minEuclideanDist = vectorEuclidean(v, vtxEdge.vertex[0]);
+    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
+        euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
+        if ((euclideanDist < minEuclideanDist) &&
+            std::fabs(vtxEdge.vertex[i][2] - minAngle) < 1e-6) {
+            minEuclideanDist = euclideanDist;
             idx = i;
         }
     }

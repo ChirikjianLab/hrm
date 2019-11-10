@@ -74,7 +74,7 @@ class HighwayRoadMap {
     cf_cell enhanceDecomp(cf_cell cell);
     std::vector<double> addMidVtx(std::vector<double> vtx1,
                                   std::vector<double> vtx2);
-    unsigned int find_cell(std::vector<double> v);
+    size_t getNearestVtxOnGraph(std::vector<double> v);
 
     /* \brief Variables
      * N_o       : number of obstacles;
