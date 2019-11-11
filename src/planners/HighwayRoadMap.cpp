@@ -319,6 +319,13 @@ void HighwayRoadMap::search() {
         Cost += d[size_t(Paths[num])];
         num++;
     }
+
+    std::reverse(std::begin(Paths), std::end(Paths));
+
+    if (num == num_vtx + 1) {
+        Paths.clear();
+        Cost = std::numeric_limits<double>::infinity();
+    }
 }
 
 /*************************************************/
@@ -401,13 +408,13 @@ size_t HighwayRoadMap::getNearestVtxOnGraph(std::vector<double> v) {
     // Find the closest roadmap vertex
     double minEuclideanDist;
     double minAngleDist;
-    double minAngle;
+    double minAngle = vtxEdge.vertex[0][2];
     double angleDist;
     double euclideanDist;
     size_t idx = 0;
 
     // Find the closest C-layer
-    minAngleDist = std::fabs(v[2] - vtxEdge.vertex[0][2]);
+    minAngleDist = std::fabs(v[2] - minAngle);
     for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
         angleDist = std::fabs(v[2] - vtxEdge.vertex[i][2]);
         if (angleDist < minAngleDist) {

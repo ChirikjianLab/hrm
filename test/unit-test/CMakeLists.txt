@@ -3,4 +3,6 @@
 add_executable(GTestGeometry GTestGeometry.cpp)
 target_link_libraries(GTestGeometry
                       UTIL
-                      GEOM)
+                      GEOM
+                      ${GTEST_LIBRARIES}
+                      ${CMAKE_THREAD_LIBS_INIT})
