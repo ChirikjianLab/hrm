@@ -27,3 +27,5 @@ target_link_libraries(TestHRM3DMultiBody
                       GEOM
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
+
+add_subdirectory(unit-test)

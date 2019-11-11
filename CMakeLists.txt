@@ -70,6 +70,13 @@ if(GMP_FOUND)
   add_definitions("-DHAS_GMP")
 endif()
 
+find_package(GTest REQUIRED)
+if(GTEST_FOUND)
+  include_directories(${GTEST_INCLUDE_DIR})
+  link_libraries(${GTEST_LIBRARIES})
+  add_definitions("-DHAS_GTEST")
+endif()
+
 # Subdirectories
 add_subdirectory(src)
 add_subdirectory(test)
