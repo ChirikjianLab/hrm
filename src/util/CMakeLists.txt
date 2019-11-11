@@ -5,6 +5,7 @@ add_library(UTIL
             Interval.cpp
             LineIntersection.cpp
             MeshGenerator.cpp
-            MultiBodyTree3d.cpp
+            MultiBodyTree2D.cpp
+            MultiBodyTree3D.cpp
             Parse2dCsvFile.cpp
             PointInPoly.cpp)

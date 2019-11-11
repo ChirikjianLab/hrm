@@ -397,8 +397,8 @@ void HighwayRoadMap3D::search() {
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
-    idx_s = find_cell(Endpt[0]);
-    idx_g = find_cell(Endpt[1]);
+    idx_s = getNearestVtxOnGraph(Endpt[0]);
+    idx_g = getNearestVtxOnGraph(Endpt[1]);
 
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
@@ -576,18 +576,47 @@ void HighwayRoadMap3D::sampleSO3() {
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap
 // vertex
-unsigned int HighwayRoadMap3D::find_cell(std::vector<double> v) {
-    double d_min, d;
-    unsigned int idx = 0;
+size_t HighwayRoadMap3D::getNearestVtxOnGraph(std::vector<double> v) {
+    // Find the closest roadmap vertex
+    double minEuclideanDist;
+    double minQuatDist;
+    double quatDist;
+    double euclideanDist;
+    size_t idx = 0;
 
-    d_min = std::numeric_limits<double>::infinity();
-    for (unsigned int i = 0; i < vtxEdge.vertex.size(); ++i) {
-        d = vectorEuclidean(v, vtxEdge.vertex.at(i));
-        if (d < d_min) {
-            d_min = d;
+    Eigen::Quaterniond queryQuat(v[3], v[4], v[5], v[6]);
+    Eigen::Quaterniond minQuat(vtxEdge.vertex[0][3], vtxEdge.vertex[0][4],
+                               vtxEdge.vertex[0][5], vtxEdge.vertex[0][6]);
+
+    // Find the closest C-layer
+    minQuatDist = queryQuat.angularDistance(minQuat);
+    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
+        Eigen::Quaterniond currentQuat(
+            vtxEdge.vertex[i][3], vtxEdge.vertex[i][4], vtxEdge.vertex[i][5],
+            vtxEdge.vertex[i][6]);
+        quatDist = queryQuat.angularDistance(currentQuat);
+        if (quatDist < minQuatDist) {
+            minQuatDist = quatDist;
+            minQuat = currentQuat;
+        }
+    }
+
+    // Find the closest vertex at this C-layer
+    minEuclideanDist = vectorEuclidean(v, vtxEdge.vertex[0]);
+    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
+        euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
+        Eigen::Quaterniond currentQuat(
+            vtxEdge.vertex[i][3], vtxEdge.vertex[i][4], vtxEdge.vertex[i][5],
+            vtxEdge.vertex[i][6]);
+        quatDist = queryQuat.angularDistance(currentQuat);
+
+        if ((euclideanDist < minEuclideanDist) &&
+            std::fabs(quatDist - minQuatDist) < 1e-6) {
+            minEuclideanDist = euclideanDist;
             idx = i;
         }
     }
+
     return idx;
 }
 

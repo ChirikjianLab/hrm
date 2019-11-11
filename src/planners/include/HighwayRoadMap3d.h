@@ -144,7 +144,7 @@ class HighwayRoadMap3D {
     /*
      * \brief find the closest cell a pose lie on
      */
-    unsigned int find_cell(std::vector<double> v);
+    size_t getNearestVtxOnGraph(std::vector<double> v);
 
     /*
      * \brief query whether a point is within a collision-free line segment

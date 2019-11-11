@@ -234,104 +234,6 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
     return true;
 }
 
-// Point in collision-free cell
-bool Hrm3DMultiBody::isPtInCFCell(cf_cell3D cell, std::vector<double> V) {
-    bool flag_cell = false;
-    size_t i_x = 0, i_y = 0;
-
-    // Search for x-coord
-    // Out of the sweep range
-    if (V[0] < cell.tx[0]) {
-        return false;
-    }
-
-    for (size_t i = 1; i < cell.tx.size(); ++i) {
-        if (cell.tx[i] >= V[0]) {
-            i_x = i;
-            break;
-        }
-    }
-    if (i_x == 0) {
-        return false;
-    }
-
-    // Search for the current plane
-    cf_cellYZ cellX1 = cell.cellYZ[i_x];
-
-    if (V[1] < cellX1.ty[0]) {
-        return false;
-    }
-    for (size_t j = 1; j < cellX1.ty.size(); ++j) {
-        if (cellX1.ty[j] >= V[1]) {
-            i_y = j;
-            break;
-        }
-    }
-    if (i_y == 0) {
-        return false;
-    }
-
-    // Within the range of current sweep line
-    for (size_t k = 0; k < cellX1.zM[i_y].size(); ++k) {
-        if ((V[2] >= cellX1.zL[i_y][k]) && (V[2] <= cellX1.zU[i_y][k])) {
-            flag_cell = true;
-
-            // If the point is located in the sweep line, return true
-            if (std::fabs(V[1] - cellX1.ty[i_y]) < 1e-8) {
-                return true;
-            }
-
-            break;
-        }
-    }
-    if (!flag_cell) {
-        return false;
-    }
-    flag_cell = false;
-
-    // Within the range of previous sweep line
-    for (size_t k = 0; k < cellX1.zM[i_y - 1].size(); ++k) {
-        if ((V[2] >= cellX1.zL[i_y - 1][k]) &&
-            (V[2] <= cellX1.zU[i_y - 1][k])) {
-            flag_cell = true;
-            break;
-        }
-    }
-    if (!flag_cell) {
-        return false;
-    }
-    flag_cell = false;
-
-    // Search for the previou plane
-    cf_cellYZ cellX2 = cell.cellYZ[i_x - 1];
-    // Within the range of current sweep line
-    for (size_t k = 0; k < cellX2.zM[i_y].size(); ++k) {
-        if ((V[2] >= cellX2.zL[i_y][k]) && (V[2] <= cellX2.zU[i_y][k])) {
-            flag_cell = true;
-            break;
-        }
-    }
-    if (!flag_cell) {
-        return false;
-    }
-    flag_cell = false;
-
-    // Within the range of previous sweep line
-    for (size_t k = 0; k < cellX2.zM[i_y - 1].size(); ++k) {
-        if ((V[2] >= cellX2.zL[i_y - 1][k]) &&
-            (V[2] <= cellX2.zU[i_y - 1][k])) {
-            flag_cell = true;
-            break;
-        }
-    }
-    if (!flag_cell) {
-        return false;
-    }
-
-    // If within all the line segments
-    return true;
-}
-
 // Point in collision-free line segment
 bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
     for (size_t i = 0; i < cell.tx.size(); ++i) {
@@ -363,30 +265,6 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions from q1
     // to q2
-    //    Eigen::Matrix3d R1 = q1.toRotationMatrix(), R2 =
-    //    q2.toRotationMatrix();
-
-    //    // Rotation axis and angle from R1 to R2
-    //    Eigen::AngleAxisd axang(R1.transpose() * R2);
-
-    //    if (std::fabs(axang.angle()) > pi / 2.0) {
-    //        // Rotation angle > pi/2, fit a sphere
-    //        double ra = std::fmax(RobotM.getBase().getSemiAxis().at(0),
-    //                              std::fmax(RobotM.getBase().getSemiAxis().at(1),
-    //                                        RobotM.getBase().getSemiAxis().at(2)));
-    //        SuperQuadrics sphere({ra, ra, ra}, {1, 1}, {0, 0, 0},
-    //                             Eigen::Quaterniond::Identity(), 20);
-    //        tfe.push_back(sphere);
-
-    //        for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-    //            double rb = std::fmax(
-    //                RobotM.getLinks().at(i).getSemiAxis().at(0),
-    //                std::fmax(RobotM.getLinks().at(i).getSemiAxis().at(1),
-    //                          RobotM.getLinks().at(i).getSemiAxis().at(2)));
-    //            sphere.setSemiAxis({rb, rb, rb});
-    //            tfe.push_back(sphere);
-    //        }
-    //    } else {
     tfe.push_back(getMVCE3D(RobotM.getBase().getSemiAxis(),
                             RobotM.getBase().getSemiAxis(), q1, q2,
                             RobotM.getBase().getNumParam()));
@@ -400,7 +278,6 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
                       Eigen::Quaterniond(q2.toRotationMatrix() * R_link),
                       RobotM.getLinks().at(i).getNumParam()));
     }
-    //    }
 
     return tfe;
 }

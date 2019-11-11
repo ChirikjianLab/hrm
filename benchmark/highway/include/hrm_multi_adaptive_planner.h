@@ -2,14 +2,6 @@
 #define HRM_MULTI_ADAPTIVE_PLANNER_H
 
 #include "planners/include/Hrm3dMultiBodyAdaptive.h"
-#include "util/include/MultiBodyTree3d.h"
-#include "util/include/Parse2dCsvFile.h"
-
-#include <math.h>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <vector>
 
 class hrm_multi_adaptive_planner : public Hrm3DMultiBodyAdaptive {
   public:

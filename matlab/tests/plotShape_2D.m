@@ -83,12 +83,12 @@ end
 % end
 
 % shortest path
-plot3([start(1) vtx(path(end)+1,1)],...
-    [start(2) vtx(path(end)+1,2)],...
-    sc*[start(3) vtx(path(end)+1,3)], 'r', 'LineWidth', 2)
-plot3([goal(1) vtx(path(1)+1,1)],...
-    [goal(2) vtx(path(1)+1,2)],...
-    sc*[goal(3) vtx(path(1)+1,3)], 'g', 'LineWidth', 2)
+plot3([start(1) vtx(path(1)+1,1)],...
+    [start(2) vtx(path(1)+1,2)],...
+    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
+plot3([goal(1) vtx(path(end)+1,1)],...
+    [goal(2) vtx(path(end)+1,2)],...
+    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
 
 for i = 1:size(path,2)-1
     plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
@@ -122,11 +122,11 @@ rob.PlotShape();
 pathHRM = start';
 
 for i = 1:numel(path)
-    pathHRM = [pathHRM; vtx(path(numel(path) - i + 1)+1,:)];
+    pathHRM = [pathHRM; vtx(path(i)+1,:)];
 end
 pathHRM = [pathHRM; goal'];
 
-csvwrite('pathCpp.csv', pathHRM);
+% csvwrite('pathCpp.csv', pathHRM);
 
 %% Path for PRM
 % path_prm = load([loadPath, 'prm_path.csv']);

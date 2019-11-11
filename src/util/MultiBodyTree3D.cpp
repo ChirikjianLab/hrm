@@ -1,4 +1,4 @@
-#include "include/MultiBodyTree3d.h"
+#include "include/MultiBodyTree3D.h"
 
 MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(base) {}
 

@@ -1,17 +1,7 @@
 #ifndef HIGHWAY_PLANNER_H
 #define HIGHWAY_PLANNER_H
 
-#include "geometry/include/SuperQuadrics.h"
 #include "planners/include/HighwayRoadMap3d.h"
-
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
-
-#include <math.h>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <vector>
 
 class highway_planner : public HighwayRoadMap3D {
   public:

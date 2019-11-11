@@ -2,7 +2,7 @@
 #define HRM3DMULTIBODY_H
 
 #include "HighwayRoadMap3d.h"
-#include "src/util/include/MultiBodyTree3d.h"
+#include "src/util/include/MultiBodyTree3D.h"
 
 const double pi = 3.1415926;
 
@@ -19,10 +19,10 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     boundary3D boundaryGen();
     virtual void connectMultiLayer();
 
+  protected:
     std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond,
                                          Eigen::Quaterniond);
     bool isCollisionFree(std::vector<double>, std::vector<double>);
-    bool isPtInCFCell(cf_cell3D, std::vector<double>);
     bool isPtInCFLine(cf_cell3D, std::vector<double>);
 
   public:

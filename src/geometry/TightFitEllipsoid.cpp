@@ -71,16 +71,30 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0}, q_c, num);
 }
 
+SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
+                      const double thetaB, const unsigned int numStep,
+                      const unsigned int num) {
+    SuperEllipse enclosedEllipse = getMVCE2D(a, a, thetaA, thetaB, num);
+    double dt = 1.0 / (numStep - 1);
+    for (size_t i = 0; i < size_t(numStep); ++i) {
+        double thetaStep = (1 - i * dt) * thetaA + i * dt * thetaB;
+        enclosedEllipse = getMVCE2D(a, enclosedEllipse.getSemiAxis(), thetaStep,
+                                    enclosedEllipse.getAngle(), num);
+    }
+
+    return enclosedEllipse;
+}
+
 SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
                        const Eigen::Quaterniond& quatB,
-                       const unsigned int N_step, const unsigned int num) {
+                       const unsigned int numStep, const unsigned int num) {
     std::vector<Eigen::Quaterniond> interpolatedQuat =
-        interpolateAngleAxis(quatA, quatB, N_step);
+        interpolateAngleAxis(quatA, quatB, numStep);
 
     // Iteratively compute MVCE and update
     SuperQuadrics enclosedEllipsoid = getMVCE3D(a, a, quatA, quatB, num);
-    for (size_t i = 1; i < size_t(N_step); ++i) {
+    for (size_t i = 1; i < size_t(numStep); ++i) {
         enclosedEllipsoid = getMVCE3D(a, enclosedEllipsoid.getSemiAxis(),
                                       interpolatedQuat.at(i),
                                       enclosedEllipsoid.getQuaternion(), num);

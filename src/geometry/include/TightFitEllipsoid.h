@@ -13,15 +13,20 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
 
 SuperQuadrics getMVCE3D(const std::vector<double>& a,
                         const std::vector<double>& b,
-                        const Eigen::Quaterniond& q_a,
-                        const Eigen::Quaterniond& q_b, const unsigned int num);
+                        const Eigen::Quaterniond& quatA,
+                        const Eigen::Quaterniond& quatB,
+                        const unsigned int num);
 
 /*
  * \brief compute tightly fitted ellipsoid for an ellipsoid with multiple
  * interpolated orientations
  */
+SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
+                      const double thetaB, const unsigned int numStep,
+                      const unsigned int num);
+
 SuperQuadrics getTFE3D(const std::vector<double>& a,
-                       const Eigen::Quaterniond& q_a,
-                       const Eigen::Quaterniond& q_b, const unsigned int N_step,
-                       const unsigned int num);
+                       const Eigen::Quaterniond& quatA,
+                       const Eigen::Quaterniond& quatB,
+                       const unsigned int numStep, const unsigned int num);
 #endif  // TIGHTFITELLIPSOID_H
