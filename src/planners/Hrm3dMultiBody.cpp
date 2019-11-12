@@ -265,18 +265,16 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions from q1
     // to q2
-    tfe.push_back(getMVCE3D(RobotM.getBase().getSemiAxis(),
-                            RobotM.getBase().getSemiAxis(), q1, q2,
-                            RobotM.getBase().getNumParam()));
+    tfe.push_back(getTFE3D(RobotM.getBase().getSemiAxis(), q1, q2, N_step,
+                           RobotM.getBase().getNumParam()));
 
     for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
         Eigen::Matrix3d R_link = RobotM.getTF().at(i).topLeftCorner(3, 3);
         tfe.push_back(
-            getMVCE3D(RobotM.getLinks().at(i).getSemiAxis(),
-                      RobotM.getLinks().at(i).getSemiAxis(),
-                      Eigen::Quaterniond(q1.toRotationMatrix() * R_link),
-                      Eigen::Quaterniond(q2.toRotationMatrix() * R_link),
-                      RobotM.getLinks().at(i).getNumParam()));
+            getTFE3D(RobotM.getLinks().at(i).getSemiAxis(),
+                     Eigen::Quaterniond(q1.toRotationMatrix() * R_link),
+                     Eigen::Quaterniond(q2.toRotationMatrix() * R_link), N_step,
+                     RobotM.getLinks().at(i).getNumParam()));
     }
 
     return tfe;

@@ -38,7 +38,7 @@ elseif opt == 3
 
 % Nao robot, silhouette
 elseif opt == 4
-    robot = SuperEllipse([25/2,35/2,0,0,0,1,50], 'g', infla);
+    base = SuperEllipse([25/2,35/2,0,0,0,1,50], 'g', infla);
     
-%     robot = MultiBodyTree2D(base, 0);
+    robot = MultiBodyTree2D(base, 0);
 end

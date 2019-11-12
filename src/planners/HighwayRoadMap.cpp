@@ -26,7 +26,7 @@ HighwayRoadMap::HighwayRoadMap(const SuperEllipse& robot,
       N_dy(long(param.N_dy)),
       N_layers(param.N_layers),
       infla(param.infla),
-      N_KCsample(param.sampleNum),
+      numMidSample(param.sampleNum),
       Lim(param.Lim) {}
 
 HighwayRoadMap::~HighwayRoadMap(){};
@@ -46,13 +46,12 @@ void HighwayRoadMap::buildRoadmap() {
     double dr = 2 * pi / (N_layers - 1);
 
     // Setup rotation angles: angle range [-pi,pi]
-    std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        theta.push_back(-pi + dr * i);
+        ang_r.push_back(-pi + dr * i);
     }
 
     for (size_t i = 0; i < N_layers; ++i) {
-        Robot.setAngle(theta.at(i));
+        Robot.setAngle(ang_r.at(i));
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -90,12 +89,14 @@ boundary HighwayRoadMap::boundaryGen() {
 cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
                                    std::vector<Eigen::MatrixXd> bd_o) {
     cf_cell cell;
-    Eigen::MatrixXd x_s_L = Eigen::MatrixXd::Constant(N_dy, N_s, -Lim[0]);
-    Eigen::MatrixXd x_s_U = Eigen::MatrixXd::Constant(N_dy, N_s, Lim[0]);
+    Eigen::MatrixXd x_s_L =
+        Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), -Lim[0]);
+    Eigen::MatrixXd x_s_U =
+        Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), Lim[0]);
     Eigen::MatrixXd x_o_L = Eigen::MatrixXd::Constant(
-        N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+        N_dy, long(bd_o.size()), std::numeric_limits<double>::quiet_NaN());
     Eigen::MatrixXd x_o_U = Eigen::MatrixXd::Constant(
-        N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+        N_dy, long(bd_o.size()), std::numeric_limits<double>::quiet_NaN());
 
     std::vector<double> pts_s;
     std::vector<double> pts_o;
@@ -116,7 +117,7 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
     for (Eigen::Index i = 0; i < N_dy; ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
-        for (Eigen::Index j = 0; j < N_s; ++j) {
+        for (Eigen::Index j = 0; j < long(bd_s.size()); ++j) {
             pts_s = intersectHorizontalLinePolygon2d(ty[size_t(i)],
                                                      bd_s[size_t(j)]);
             if (pts_s.empty()) {
@@ -126,7 +127,7 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
             x_s_U(i, j) = std::fmax(Lim[0], std::fmax(pts_s[0], pts_s[1]));
         }
         // x-coordinate of the intersection btw sweep line and obstacles
-        for (Eigen::Index j = 0; j < N_o; ++j) {
+        for (Eigen::Index j = 0; j < long(bd_o.size()); ++j) {
             pts_o = intersectHorizontalLinePolygon2d(ty[size_t(i)],
                                                      bd_o[size_t(j)]);
             if (pts_o.empty()) {
@@ -138,11 +139,11 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
         // CF line segment for each ty
         // Construct intervals at each sweep line
-        for (Eigen::Index j = 0; j < N_s; ++j)
+        for (Eigen::Index j = 0; j < x_s_L.cols(); ++j)
             if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_U(i, j))) {
                 arena_seg.push_back({x_s_L(i, j), x_s_U(i, j)});
             }
-        for (Eigen::Index j = 0; j < N_o; ++j)
+        for (Eigen::Index j = 0; j < x_o_L.cols(); ++j)
             if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_U(i, j))) {
                 obs_seg.push_back({x_o_L(i, j), x_o_U(i, j)});
             }
@@ -173,12 +174,14 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
         xM.clear();
 
         // Reinitialize for the next iteration
-        x_s_L = Eigen::MatrixXd::Constant(N_dy, N_s, -Lim[0]);
-        x_s_U = Eigen::MatrixXd::Constant(N_dy, N_s, Lim[0]);
-        x_o_L = Eigen::MatrixXd::Constant(
-            N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
-        x_o_U = Eigen::MatrixXd::Constant(
-            N_dy, N_o, std::numeric_limits<double>::quiet_NaN());
+        Eigen::MatrixXd x_s_L =
+            Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), -Lim[0]);
+        Eigen::MatrixXd x_s_U =
+            Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), Lim[0]);
+        Eigen::MatrixXd x_o_L = Eigen::MatrixXd::Constant(
+            N_dy, long(bd_o.size()), std::numeric_limits<double>::quiet_NaN());
+        Eigen::MatrixXd x_o_U = Eigen::MatrixXd::Constant(
+            N_dy, long(bd_o.size()), std::numeric_limits<double>::quiet_NaN());
     }
 
     return enhanceDecomp(cell);
@@ -204,7 +207,7 @@ void HighwayRoadMap::connectOneLayer(cf_cell CFcell) {
         N_0 = N_v_line[i];
         N_1 = N_v_line[i + 1];
         for (size_t j1 = 0; j1 < CFcell.xM[i].size(); ++j1) {
-            // Connect vertex within one sweep line
+            // Connect vertex within one collision-free sweep line segment
             if (j1 != CFcell.xM[i].size() - 1) {
                 if (std::fabs(CFcell.xU[i][j1] - CFcell.xL[i][j1 + 1]) < 1e-5) {
                     vtxEdge.edge.push_back(
@@ -382,7 +385,7 @@ std::vector<double> HighwayRoadMap::addMidVtx(std::vector<double> vtx1,
     std::vector<double> midVtx, pt, pt1, pt2;
     bool flag;
 
-    for (size_t iter = 0; iter < N_KCsample; iter++) {
+    for (size_t iter = 0; iter < numMidSample; iter++) {
         pt.clear();
         pt1.clear();
         pt2.clear();

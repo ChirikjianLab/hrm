@@ -13,13 +13,13 @@ class HighwayRoadMap2D : public HighwayRoadMap {
     virtual ~HighwayRoadMap2D() override;
 
   public:
-    void plan() override;
-    void buildRoadmap() override;
-    boundary boundaryGen() override;
-    void connectMultiLayer() override;
+    virtual void plan() override;
+    virtual void buildRoadmap() override;
+    virtual boundary boundaryGen() override;
+    virtual void connectMultiLayer() override;
 
-  private:
-    void midLayer(SuperEllipse Ec);
+  protected:
+    cf_cell midLayer(SuperEllipse Ec);
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
 
     /*
@@ -28,7 +28,6 @@ class HighwayRoadMap2D : public HighwayRoadMap {
      * mid_cell : Middle C-layer as a cf_cell structure
      */
   private:
-    // for middle C-layer
     std::vector<SuperEllipse> mid;
     cf_cell mid_cell;
 };

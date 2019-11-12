@@ -25,26 +25,25 @@ void HighwayRoadMap2D::buildRoadmap() {
     double dr = 2 * pi / (N_layers - 1);
 
     // Setup rotation angles: angle range [-pi,pi]
-    std::vector<double> theta;
     for (size_t i = 0; i < N_layers; ++i) {
-        theta.push_back(-pi + dr * i);
+        ang_r.push_back(-pi + dr * i);
     }
 
     // Compute mid-layer TFE
     for (size_t i = 0; i < N_layers; ++i) {
         if (i == N_layers - 1) {
             mid.push_back(getMVCE2D(Robot.getSemiAxis(), Robot.getSemiAxis(),
-                                    theta.at(i), theta.at(0), Robot.getNum()));
+                                    ang_r.at(i), ang_r.at(0), Robot.getNum()));
         } else {
             mid.push_back(getMVCE2D(Robot.getSemiAxis(), Robot.getSemiAxis(),
-                                    theta.at(i), theta.at(i + 1),
+                                    ang_r.at(i), ang_r.at(i + 1),
                                     Robot.getNum()));
         }
     }
 
     // Construct roadmap
     for (size_t i = 0; i < N_layers; ++i) {
-        Robot.setAngle(theta.at(i));
+        Robot.setAngle(ang_r.at(i));
         boundary bd = boundaryGen();
         cf_cell CFcell = rasterScan(bd.bd_s, bd.bd_o);
         connectOneLayer(CFcell);
@@ -91,7 +90,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
         }
 
         // Compute middle C-layer
-        midLayer(mid[i]);
+        mid_cell = midLayer(mid[i]);
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
@@ -118,7 +117,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
 /**************** Private Functions **************/
 /*************************************************/
 // Connect vertexes among different layers
-void HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
+cf_cell HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
     boundary bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
@@ -128,7 +127,7 @@ void HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
         bd.bd_o.push_back(Obs.at(i).getMinkSum2D(Ec, +1));
     }
 
-    mid_cell = rasterScan(bd.bd_s, bd.bd_o);
+    return rasterScan(bd.bd_s, bd.bd_o);
 }
 
 bool HighwayRoadMap2D::isPtinCFLine(std::vector<double> V1,

@@ -124,8 +124,8 @@ class HighwayRoadMap {
     Eigen::Index N_dy;
     size_t N_layers;
     double infla;
-    size_t N_KCsample;
-    double ang_r;
+    size_t numMidSample;
+    std::vector<double> ang_r;
     std::vector<size_t> N_v_layer;
     std::vector<double> Lim;
 };

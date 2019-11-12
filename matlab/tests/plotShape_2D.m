@@ -99,24 +99,24 @@ end
 % Robot motions
 configPath = '../../config/';
 robot = load([configPath, 'robotConfig.csv']);
-rob = SuperEllipse([robot(1:3),robot(5:6),robot(4),50], 'g', 0);
 
-rob.ang = start(3);
-rob.tx = start(1);
-rob.ty = start(2);
-rob.PlotShape();
+rob = MultiBodyTree2D(SuperEllipse([robot(1,1:3),robot(1,5:6),...
+    robot(1,4),50], 'g', 0), size(robot,1)-1);
+for i = 1:size(robot,1)-1
+    rob.addBody(SuperEllipse([robot(i+1,1:3),robot(i+1,5:6),...
+    robot(i+1,4),50], 'b', 0), i)
+end
+
+g_start = [rot2(start(3)), start(1:2); 0,0,1];
+rob.robotTF(g_start,1);
 % plotEllipse(robot(1:2), start, 'k');
 for i = 1:size(path,2)
-    rob.ang = vtx(path(i)+1,3);
-    rob.tx = vtx(path(i)+1,1);
-    rob.ty = vtx(path(i)+1,2);
-    rob.PlotShape();
+    g_step = [rot2(vtx(path(i)+1,3)), vtx(path(i)+1,1:2)'; 0,0,1];
+    rob.robotTF(g_step,1);
 %     plotEllipse(robot(1:2), vtx(path(i)+1,:)', 'b')
 end
-rob.ang = goal(3);
-rob.tx = goal(1);
-rob.ty = goal(2);
-rob.PlotShape();
+g_goal = [rot2(goal(3)), goal(1:2); 0,0,1];
+rob.robotTF(g_goal,1);
 
 %% Store path
 pathHRM = start';

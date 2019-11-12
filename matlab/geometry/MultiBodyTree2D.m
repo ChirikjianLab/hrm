@@ -40,7 +40,8 @@ classdef MultiBodyTree2D < handle
         function robotTF(obj, g, isplot)
             obj.Base.tx = g(1,3); 
             obj.Base.ty = g(2,3);
-            obj.Base.ang = vex(logm(g(1:2,1:2)));
+            skewMat = logm(g(1:2,1:2));
+            obj.Base.ang = skewMat(2,1);
             
             if isplot
                 obj.Base.PlotShape;
@@ -50,7 +51,8 @@ classdef MultiBodyTree2D < handle
                 g_Link = g * obj.tf{i};
                 
                 obj.Link{i}.tx = g_Link(1,3); obj.Link{i}.ty = g_Link(2,3);
-                obj.Link{i}.ang = vex(logm(g_Link(1:2,1:2)));
+                skewMat = logm(g_Link(1:2,1:2));
+                obj.Link{i}.ang = skewMat(2,1);
                 
                 if isplot
                     obj.Link{i}.PlotShape;
@@ -70,7 +72,8 @@ classdef MultiBodyTree2D < handle
             % Mink sum for the other links
             for i = 1:size(obj.Link,2)
                 R_link = R_base * obj.tf{i}(1:2,1:2);
-                obj.Link{i}.ang = vex(logm(R_link));
+                skewMat = logm(R_link);
+                obj.Link{i}.ang = skewMat(2,1);
                 
                 Mink(:,:,i+1) = S1.MinkowskiSum_ES(obj.Link{i},k) -...
                     R_base*obj.tf{i}(1:2,3);

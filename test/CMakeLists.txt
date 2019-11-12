@@ -11,6 +11,12 @@ target_link_libraries(TestHRM2DTightFittedEllipse
                       GEOM
                       SOURCE_2D)
 
+add_executable(TestHRM2DMultiBody TestHRM2DMultiBody.cpp)
+target_link_libraries(TestHRM2DMultiBody
+                      UTIL
+                      GEOM
+                      SOURCE_2D)
+
 # 3D version
 add_executable(TestHRM3D TestHRM3D.cpp)
 target_link_libraries(TestHRM3D
