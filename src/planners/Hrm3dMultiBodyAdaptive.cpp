@@ -14,7 +14,17 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
     do {
         // Update C-layers
         N_layers++;
-        q_r.push_back(Eigen::Quaterniond::UnitRandom());
+
+        // First, add C-layers for end points, then randomly generate rotations
+        if (N_layers == 1) {
+            q_r.push_back(Eigen::Quaterniond(Endpt[0][3], Endpt[0][4],
+                                             Endpt[0][5], Endpt[0][6]));
+        } else if (N_layers == 2) {
+            q_r.push_back(Eigen::Quaterniond(Endpt[1][3], Endpt[1][4],
+                                             Endpt[1][5], Endpt[1][6]));
+        } else {
+            q_r.push_back(Eigen::Quaterniond::UnitRandom());
+        }
 
         SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
                               Robot.getPosition(), q_r.at(N_layers - 1),

@@ -327,7 +327,6 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
 // ******************************************************************** //
 // Connect vertices within adjacent C-layers //
 void HighwayRoadMap3D::connectMultiLayer() {
-    size_t n = vtxEdge.vertex.size();
     size_t n_1;
     size_t n_12;
     size_t n_2;
@@ -355,23 +354,10 @@ void HighwayRoadMap3D::connectMultiLayer() {
                     std::fabs(vtxEdge.vertex[m0][1] - vtxEdge.vertex[m1][1]) <=
                         1e-8 &&
                     isPtinCFLine(vtxEdge.vertex[m0], vtxEdge.vertex[m1])) {
-                    // Middle vertex: trans = V1; rot = V2;
-                    midVtx = {vtxEdge.vertex[m0][0], vtxEdge.vertex[m0][1],
-                              vtxEdge.vertex[m0][2], vtxEdge.vertex[m1][3],
-                              vtxEdge.vertex[m1][4], vtxEdge.vertex[m1][5],
-                              vtxEdge.vertex[m1][6]};
-                    vtxEdge.vertex.push_back(midVtx);
-
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, n));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[m0], midVtx));
-
-                    vtxEdge.edge.push_back(std::make_pair(m1, n));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[m1], midVtx));
-
-                    n++;
+                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
+                    vtxEdge.weight.push_back(vectorEuclidean(
+                        vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -385,7 +371,9 @@ void HighwayRoadMap3D::connectMultiLayer() {
 // ******************************************************************** //
 
 void HighwayRoadMap3D::search() {
-    Vertex idx_s, idx_g, num;
+    std::vector<Vertex> idx_s;
+    std::vector<Vertex> idx_g;
+    size_t num;
 
     // Construct the roadmap
     size_t num_vtx = vtxEdge.vertex.size();
@@ -397,41 +385,49 @@ void HighwayRoadMap3D::search() {
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
-    idx_s = getNearestVtxOnGraph(Endpt[0]);
-    idx_g = getNearestVtxOnGraph(Endpt[1]);
+    idx_s = getNearestNeighborsOnGraph(Endpt[0], 10, pi / 2);
+    idx_g = getNearestNeighborsOnGraph(Endpt[1], 10, pi / 2);
 
     // Search for shortest path
-    std::vector<Vertex> p(num_vertices(g));
-    std::vector<double> d(num_vertices(g));
-    boost::astar_search(
-        g, idx_s,
-        [this, idx_g](Vertex v) {
-            return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
-        },
-        boost::predecessor_map(boost::make_iterator_property_map(
-                                   p.begin(), get(boost::vertex_index, g)))
-            .distance_map(make_iterator_property_map(
-                d.begin(), get(boost::vertex_index, g))));
+    for (Vertex idxS : idx_s) {
+        for (Vertex idxG : idx_g) {
+            std::vector<Vertex> p(num_vertices(g));
+            std::vector<double> d(num_vertices(g));
+            boost::astar_search(
+                g, idxS,
+                [this, idxG](Vertex v) {
+                    return vectorEuclidean(vtxEdge.vertex[v],
+                                           vtxEdge.vertex[idxG]);
+                },
+                boost::predecessor_map(
+                    boost::make_iterator_property_map(
+                        p.begin(), get(boost::vertex_index, g)))
+                    .distance_map(make_iterator_property_map(
+                        d.begin(), get(boost::vertex_index, g))));
 
-    // Record path and cost
-    num = 0;
-    solutionPathInfo.PathId.push_back(int(idx_g));
-    while (solutionPathInfo.PathId[num] != int(idx_s) && num <= num_vtx) {
-        solutionPathInfo.PathId.push_back(
-            int(p[size_t(solutionPathInfo.PathId[num])]));
-        solutionPathInfo.Cost +=
-            vtxEdge.weight[size_t(solutionPathInfo.PathId[num])];
-        num++;
-    }
-    std::reverse(std::begin(solutionPathInfo.PathId),
-                 std::end(solutionPathInfo.PathId));
+            // Record path and cost
+            num = 0;
+            solutionPathInfo.Cost = 0;
+            solutionPathInfo.PathId.push_back(int(idxG));
+            while (solutionPathInfo.PathId[num] != int(idxS) &&
+                   num <= num_vtx) {
+                solutionPathInfo.PathId.push_back(
+                    int(p[size_t(solutionPathInfo.PathId[num])]));
+                solutionPathInfo.Cost +=
+                    vtxEdge.weight[size_t(solutionPathInfo.PathId[num])];
+                num++;
+            }
+            std::reverse(std::begin(solutionPathInfo.PathId),
+                         std::end(solutionPathInfo.PathId));
 
-    if (num == num_vtx + 1) {
-        solutionPathInfo.PathId.clear();
-        solutionPathInfo.Cost = std::numeric_limits<double>::infinity();
-    }
-    if (solutionPathInfo.PathId.size() > 0) {
-        flag = true;
+            if (num == num_vtx + 1) {
+                solutionPathInfo.PathId.clear();
+                solutionPathInfo.Cost = std::numeric_limits<double>::infinity();
+            } else {
+                flag = true;
+                return;
+            }
+        }
     }
 }
 
@@ -576,45 +572,56 @@ void HighwayRoadMap3D::sampleSO3() {
 
 // Find the cell that an arbitrary vertex locates, and find the closest roadmap
 // vertex
-size_t HighwayRoadMap3D::getNearestVtxOnGraph(std::vector<double> v) {
-    // Find the closest roadmap vertex
+std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
+    const std::vector<double>& v, const size_t k, const double r) {
     double minEuclideanDist;
     double minQuatDist;
     double quatDist;
     double euclideanDist;
-    size_t idx = 0;
+    std::vector<Vertex> idx;
 
     Eigen::Quaterniond queryQuat(v[3], v[4], v[5], v[6]);
-    Eigen::Quaterniond minQuat(vtxEdge.vertex[0][3], vtxEdge.vertex[0][4],
-                               vtxEdge.vertex[0][5], vtxEdge.vertex[0][6]);
+    Eigen::Quaterniond minQuat;
 
     // Find the closest C-layer
-    minQuatDist = queryQuat.angularDistance(minQuat);
-    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
-        Eigen::Quaterniond currentQuat(
-            vtxEdge.vertex[i][3], vtxEdge.vertex[i][4], vtxEdge.vertex[i][5],
-            vtxEdge.vertex[i][6]);
-        quatDist = queryQuat.angularDistance(currentQuat);
+    minQuatDist = queryQuat.angularDistance(q_r[0]);
+    for (size_t i = 0; i < q_r.size(); ++i) {
+        quatDist = queryQuat.angularDistance(q_r[i]);
         if (quatDist < minQuatDist) {
             minQuatDist = quatDist;
-            minQuat = currentQuat;
+            minQuat = q_r[i];
         }
     }
 
-    // Find the closest vertex at this C-layer
-    minEuclideanDist = vectorEuclidean(v, vtxEdge.vertex[0]);
-    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
-        euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
-        Eigen::Quaterniond currentQuat(
-            vtxEdge.vertex[i][3], vtxEdge.vertex[i][4], vtxEdge.vertex[i][5],
-            vtxEdge.vertex[i][6]);
-        quatDist = queryQuat.angularDistance(currentQuat);
-
-        if ((euclideanDist < minEuclideanDist) &&
-            std::fabs(quatDist - minQuatDist) < 1e-6) {
-            minEuclideanDist = euclideanDist;
-            idx = i;
+    // Search for k-nn C-layers
+    std::vector<Eigen::Quaterniond> quatList;
+    for (size_t i = 0; i < q_r.size(); ++i) {
+        if (minQuat.angularDistance(q_r[i]) < r) {
+            quatList.push_back(q_r[i]);
         }
+
+        if (quatList.size() >= k) {
+            break;
+        }
+    }
+
+    // Find the close vertex at each C-layer
+    for (Eigen::Quaterniond quatCur : quatList) {
+        Vertex idxLayer = 0;
+        minEuclideanDist = std::numeric_limits<double>::infinity();
+        for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
+            euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
+
+            if (euclideanDist < minEuclideanDist &&
+                quatCur.angularDistance(Eigen::Quaterniond(
+                    vtxEdge.vertex[i][3], vtxEdge.vertex[i][4],
+                    vtxEdge.vertex[i][5], vtxEdge.vertex[i][6])) < 1e-6) {
+                minEuclideanDist = euclideanDist;
+                idxLayer = i;
+            }
+        }
+
+        idx.push_back(idxLayer);
     }
 
     return idx;

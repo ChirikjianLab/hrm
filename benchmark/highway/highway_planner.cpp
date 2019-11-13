@@ -75,7 +75,7 @@ void highway_planner::plan_search() {
     file_path.close();
 
     ofstream file_interp_path;
-    file_path.open("interpolatedPath3D.csv");
+    file_interp_path.open("interpolatedPath3D.csv");
     vector<vector<double>> pathInterp = getInterpolatedSolutionPath(5);
     for (size_t i = 0; i < pathInterp.size(); i++) {
         file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1] << ' '

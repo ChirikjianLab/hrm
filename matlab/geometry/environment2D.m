@@ -136,8 +136,8 @@ elseif opt == 31 % MultiBody Sparse
     eps_s = 0.1;
     
     % superquadric obstacles
-    ra_o  = [25 20];
-    rb_o  = [10 10];
+    ra_o  = [30 20];
+    rb_o  = [15 10];
     ang_o = [pi/3 -pi/4];
     
     tx_o     = [ 20 -30];
@@ -177,8 +177,8 @@ elseif opt == 33 % Multibody maze
     ty_o     = [-10  15 -15  -2  32 -15 -32];
     eps_o    = [0.1 0.1 0.1 0.1 0.1 0.1 0.1];
     
-    P_start = [-60; 30; 0; 0; 0];
-    P_goal  = [ 66;-30; pi/2; 0; 0];
+    P_start = [-60; 30; pi*rand; 0; 0];
+    P_goal  = [ 65;-30; 0; 0; 0];
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif opt == 41 % Nao robot cluttered

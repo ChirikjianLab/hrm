@@ -43,7 +43,7 @@ classdef pathValid_3D_multiBody < handle
                 % collision detection
                 for j = 1:length(Obj.Obs)
                     for k = 1:length(robotSurf)
-                        if GJK(robotSurf(k),obsSurf(j),20)
+                        if GJK(robotSurf(k),obsSurf(j),10)
                             valid = false;
                             disp(['Collision at Vertex #:', num2str(i),...
                                 '  Pose: ',num2str(Obj.Paths(i,:))]);

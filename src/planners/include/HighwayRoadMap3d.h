@@ -6,7 +6,9 @@
 #include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
 
+#include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/util/Time.h>
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -142,9 +144,14 @@ class HighwayRoadMap3D {
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
 
     /*
-     * \brief find the closest cell a pose lie on
+     * \brief find the nearest neighbors of a pose on the graph
+     * \param v the queried vertex
+     * \param k number of neighbors
+     * \param r radius of a neighboring ball around v
      */
-    size_t getNearestVtxOnGraph(std::vector<double> v);
+    std::vector<Vertex> getNearestNeighborsOnGraph(const std::vector<double>& v,
+                                                   const size_t k,
+                                                   const double r);
 
     /*
      * \brief query whether a point is within a collision-free line segment
