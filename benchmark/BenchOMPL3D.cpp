@@ -1,5 +1,7 @@
 #include "ompl/include/ompl_planner.h"
 
+using namespace std;
+
 int main(int argc, char** argv) {
     if (argc != 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
@@ -70,15 +72,15 @@ int main(int argc, char** argv) {
                 cout << "Sampler: " << n << endl;
                 cout << "Num of trials: " << i << endl;
 
-                ompl_planner tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
+                PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
                 tester.plan(endPts[0], endPts[1]);
 
-                outfile << tester.id_planner << ',' << tester.id_sampler << ','
-                        << tester.flag << ',' << tester.totalTime << ','
-                        << tester.numGraphNodes << "," << tester.numGraphEdges
-                        << "," << tester.numPathNodes << ","
-                        << tester.validSpace << ',' << tester.numCheckedNodes
-                        << ',' << tester.numValidNodes << endl;
+                outfile << m << ',' << n << ',' << tester.flag << ','
+                        << tester.totalTime << ',' << tester.numGraphNodes
+                        << "," << tester.numGraphEdges << ","
+                        << tester.numPathNodes << "," << tester.validSpace
+                        << ',' << tester.numCheckedNodes << ','
+                        << tester.numValidNodes << endl;
 
                 if (tester.flag) {
                     tester.getVertexEdgeInfo();

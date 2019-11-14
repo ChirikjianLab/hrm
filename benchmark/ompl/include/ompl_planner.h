@@ -12,6 +12,7 @@
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/UniformValidStateSampler.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/config.h>
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/est/EST.h>
 #include <ompl/geometric/planners/kpiece/KPIECE1.h>
@@ -21,10 +22,10 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/util/PPM.h>
 
-#include <math.h>
-#include <ompl/config.h>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+
+#include <math.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -33,26 +34,29 @@
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
-using namespace Eigen;
-using namespace std;
-using namespace fcl;
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-class ompl_planner {
+class PlannerOMPL {
   public:
-    ompl_planner(vector<double> lowBound, vector<double> highBound,
-                 vector<SuperQuadrics> robot_, vector<SuperQuadrics> arena_,
-                 vector<SuperQuadrics> obs_, vector<EMesh> obs_mesh_,
-                 int planner, int sampler);
-    virtual ~ompl_planner();
+    PlannerOMPL(std::vector<double> lowBound, std::vector<double> highBound,
+                const std::vector<SuperQuadrics>& robot,
+                const std::vector<SuperQuadrics>& arena,
+                const std::vector<SuperQuadrics>& obs,
+                const std::vector<EMesh>& obsMesh, const int planner,
+                const int sampler);
+    virtual ~PlannerOMPL();
 
   public:
-    bool plan(vector<double> start_, vector<double> goal_);
-    virtual bool isStateValid(const ob::State *state) const;
-    bool checkSeparation(SuperQuadrics robot, SuperQuadrics r_,
-                         CollisionObject<double> obj_ellip, SuperQuadrics obs,
-                         CollisionObject<double> obj_sq) const;
-    bool compareStates(vector<double> goal_config, vector<double> last_config);
+    bool plan(const std::vector<double>& start,
+              const std::vector<double>& goal);
+    virtual bool isStateValid(const ob::State* state) const;
+    bool checkSeparation(const SuperQuadrics& robotOrigin,
+                         const SuperQuadrics& robotAux,
+                         fcl::CollisionObject<double> objE,
+                         const SuperQuadrics& obs,
+                         fcl::CollisionObject<double> objSQ) const;
+    bool compareStates(std::vector<double> goalConfig,
+                       std::vector<double> lastConfig);
     void setCollisionObj();
 
     void getVertexEdgeInfo();
@@ -60,16 +64,6 @@ class ompl_planner {
 
     // Variables
   public:
-    typedef Matrix<double, 4, 1> Vector4d;
-
-    og::SimpleSetupPtr ss_;
-    vector<SuperQuadrics> arena;
-    vector<SuperQuadrics> robot;
-    vector<SuperQuadrics> obstacles;
-    vector<EMesh> obs_mesh;
-
-    vector<fcl::CollisionObject<double>> obj_robot, obj_obs;
-
     unsigned int numCheckedNodes;
     unsigned int numValidNodes;
     unsigned int numGraphNodes;
@@ -79,8 +73,19 @@ class ompl_planner {
     int flag;
     double totalTime;
     double validSpace;
-    int id_planner;
-    int id_sampler;
+
+  protected:
+    og::SimpleSetupPtr ss_;
+    const std::vector<SuperQuadrics>& arena_;
+    const std::vector<SuperQuadrics>& robot_;
+    const std::vector<SuperQuadrics>& obstacles_;
+    const std::vector<EMesh>& obsMesh_;
+
+    std::vector<fcl::CollisionObject<double>> objRobot_;
+    std::vector<fcl::CollisionObject<double>> objObs_;
+
+    const int planner_;
+    const int sampler_;
 };
 
 #endif  // OMPL_PLANNER_H

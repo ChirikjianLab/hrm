@@ -1,4 +1,5 @@
 add_library(UTIL
+            EllipsoidSeparation.cpp
             ExponentialFunction.cpp
             DistanceMetric.cpp
             InterpolateSE3.cpp
