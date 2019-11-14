@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-opt = 31;
+opt = 41;
 [ar, obs, pts] = environment2D(opt);
 
 %% Store Arena and Obstacles as .csv files
@@ -41,7 +41,7 @@ csvwrite(fullfile(outPath,'endPts.csv'), endPts);
 %% Robot Initialization
 disp('Robot Configurations...');
 % Robot: Only plan face
-Robot = robotInit2D(3, 0);
+Robot = robotInit2D(4, 0);
 
 %% Store robot info as .csv files
 % Robot configuration

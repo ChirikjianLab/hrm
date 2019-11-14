@@ -100,7 +100,8 @@ void HighwayRoadMap2D::connectMultiLayer() {
                 v2 = vtxEdge.vertex[m1];
 
                 // Only connect v1 and v2 that are close to each other
-                if (std::fabs(v1[1] - v2[1]) < 1 && isPtinCFLine(v1, v2)) {
+                if (std::fabs(v1[1] - v2[1]) < Lim[0] / N_dy &&
+                    isPtinCFLine(v1, v2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(v1, v2));
