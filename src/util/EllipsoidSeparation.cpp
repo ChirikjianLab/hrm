@@ -1,6 +1,6 @@
 #include "include/EllipsoidSeparation.h"
 
-bool EllipsoidSeparation(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
+bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     // Semi-axis
     Eigen::DiagonalMatrix<double, 4> A;
     A.diagonal() = {std::pow(Ea.getSemiAxis().at(0), -2.0),
@@ -92,6 +92,23 @@ bool EllipsoidSeparation(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     // Roots of the characteristic_polynomial (lambda0, ... , lambda4)
     std::vector<std::complex<double>> roots =
         getRootsPolynomial({T4, T3, T2, T1, T0});
+
+    // Find the real negative roots
+    std::vector<size_t> negRootsId;
+    for (size_t i = 0; i < roots.size(); ++i) {
+        if (std::fabs(roots.at(i).imag()) < 1e-8 && roots.at(i).real() < 0) {
+            negRootsId.push_back(i);
+        }
+    }
+
+    // Separation conditions
+    if (negRootsId.size() == 2 &&
+        std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
+            1e-8) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 std::vector<std::complex<double>> getRootsPolynomial(
