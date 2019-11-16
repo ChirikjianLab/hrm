@@ -177,7 +177,6 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
 }
 
 bool PlannerOMPL::isStateValid(const ob::State *state) const {
-    bool res = true;
     for (unsigned int j = 0; j < robot_.size(); j++) {
         SuperQuadrics robotAux = robot_[j];
         robotAux.setPosition(
@@ -193,12 +192,14 @@ bool PlannerOMPL::isStateValid(const ob::State *state) const {
 
         // Checking collision against obstacles
         for (unsigned int i = 0; i < obstacles_.size(); i++) {
-            bool aux = checkSeparation(robot_[j], robotAux, objRobot_[j],
-                                       obstacles_[i], objObs_[i]);
-            if (!aux) return false;
+            if (!checkSeparation(robot_[j], robotAux, objRobot_[j],
+                                 obstacles_[i], objObs_[i])) {
+                return false;
+            }
         }
     }
-    return res;
+
+    return true;
 }
 
 // Returns true when separated and false when overlapping
