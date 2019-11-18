@@ -90,9 +90,9 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
                                    std::vector<Eigen::MatrixXd> bd_o) {
     cf_cell cell;
     Eigen::MatrixXd x_s_L =
-        Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), -Lim[0]);
-    Eigen::MatrixXd x_s_U =
         Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), Lim[0]);
+    Eigen::MatrixXd x_s_U =
+        Eigen::MatrixXd::Constant(N_dy, long(bd_s.size()), Lim[1]);
     Eigen::MatrixXd x_o_L = Eigen::MatrixXd::Constant(
         N_dy, long(bd_o.size()), std::numeric_limits<double>::quiet_NaN());
     Eigen::MatrixXd x_o_U = Eigen::MatrixXd::Constant(

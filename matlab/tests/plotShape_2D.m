@@ -19,7 +19,7 @@ path = load([loadPath, 'paths.csv']);
 
 endPts = load(['../../config/', 'endPts.csv']);
 
-figure; hold on; axis equal; axis off;
+figure; hold on; axis equal; axis on;
 %% environment
 disp('Environment Initialization...')
 
@@ -42,11 +42,11 @@ end
 for i = 1:2:size(X_ori,1)-3
     patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
 end
-
-% Mink
-for i = 1:2:size(X,1)-1
-    plot(X(i,:),X(i+1,:),'k.');
-end
+% 
+% % Mink
+% for i = 1:2:size(X,1)-1
+%     plot(X(i,:),X(i+1,:),'k.');
+% end
 
 %% raster scan
 % N_dy = size(X_obs)/2;
