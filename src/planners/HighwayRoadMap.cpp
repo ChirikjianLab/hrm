@@ -108,11 +108,11 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
     // Find intersecting points to C-obstacles for each raster scan line
     std::vector<double> ty;
-    double dy = 2 * Lim[1] / (N_dy - 1);
+    double dy = (Lim[3] - Lim[2]) / (N_dy - 1);
 
     for (Eigen::Index i = 0; i < N_dy; ++i) {
         // y-coordinate of each sweep line
-        ty.push_back(-Lim[1] + i * dy);
+        ty.push_back(Lim[2] + i * dy);
     }
 
     for (Eigen::Index i = 0; i < N_dy; ++i) {
@@ -123,8 +123,8 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
             if (pts_s.empty()) {
                 continue;
             }
-            x_s_L(i, j) = std::fmin(-Lim[0], std::fmin(pts_s[0], pts_s[1]));
-            x_s_U(i, j) = std::fmax(Lim[0], std::fmax(pts_s[0], pts_s[1]));
+            x_s_L(i, j) = std::fmin(Lim[0], std::fmin(pts_s[0], pts_s[1]));
+            x_s_U(i, j) = std::fmax(Lim[1], std::fmax(pts_s[0], pts_s[1]));
         }
         // x-coordinate of the intersection btw sweep line and obstacles
         for (Eigen::Index j = 0; j < long(bd_o.size()); ++j) {

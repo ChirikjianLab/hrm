@@ -196,6 +196,17 @@ elseif opt == 41 % Nao robot cluttered
     
     P_start = [-55; 35; -pi/2; 0; 0];
     P_goal  = [ 56;-35; -pi/4; 0; 0];
+    
+    % Offset according to the world frame
+    wf = [-70; -50];
+    tx_s = tx_s - wf(1);
+    ty_s = ty_s - wf(2);
+    
+    tx_o = tx_o - wf(1);
+    ty_o = ty_o - wf(2);
+    
+    P_start(1:2) = P_start(1:2) - wf;
+    P_goal(1:2) = P_goal(1:2) - wf;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -218,24 +229,5 @@ end
 
 %% == Start and ending points ==
 EndPts = [P_start(1:3) P_goal(1:3)];
-
-%% == Plot obstacle(s), arena(s) =====
-% plot the ARENA with color filled, under rotation
-for i = 1:N_s
-    arena(i).PlotShape;
-    axis equal
-end
-
-% plot the OBSTACLE(s) with color filled, under rotation and translation
-for i = 1:N_o
-    obs(i).PlotShape;
-    hold on
-    is = num2str(i);
-    box on;
-    text(tx_o(i),ty_o(i), is, 'Color', [1 1 1]);
-    axis equal
-end
-
-axis off
 
 end
