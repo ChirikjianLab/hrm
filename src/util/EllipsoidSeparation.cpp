@@ -1,5 +1,7 @@
 #include "include/EllipsoidSeparation.h"
 
+#include <iostream>
+
 bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     // Semi-axis
     Eigen::DiagonalMatrix<double, 4> A;
@@ -25,21 +27,21 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
 
     // a_{ij} belongs to A in det(lambda*A - Ta'*(Tb^-1)'*B*(Tb^-1)*Ta)
     double a11 = A.toDenseMatrix()(0, 0);
-    double a12 = A.toDenseMatrix()(0, 1);
-    double a13 = A.toDenseMatrix()(0, 2);
-    double a14 = A.toDenseMatrix()(0, 3);
-    double a21 = A.toDenseMatrix()(1, 0);
+    //    double a12 = A.toDenseMatrix()(0, 1);
+    //    double a13 = A.toDenseMatrix()(0, 2);
+    //    double a14 = A.toDenseMatrix()(0, 3);
+    //    double a21 = A.toDenseMatrix()(1, 0);
     double a22 = A.toDenseMatrix()(1, 1);
-    double a23 = A.toDenseMatrix()(1, 2);
-    double a24 = A.toDenseMatrix()(1, 3);
-    double a31 = A.toDenseMatrix()(2, 0);
-    double a32 = A.toDenseMatrix()(2, 1);
+    //    double a23 = A.toDenseMatrix()(1, 2);
+    //    double a24 = A.toDenseMatrix()(1, 3);
+    //    double a31 = A.toDenseMatrix()(2, 0);
+    //    double a32 = A.toDenseMatrix()(2, 1);
     double a33 = A.toDenseMatrix()(2, 2);
-    double a34 = A.toDenseMatrix()(2, 3);
-    double a41 = A.toDenseMatrix()(3, 0);
-    double a42 = A.toDenseMatrix()(3, 1);
-    double a43 = A.toDenseMatrix()(3, 2);
-    double a44 = A.toDenseMatrix()(3, 3);
+    //    double a34 = A.toDenseMatrix()(2, 3);
+    //    double a41 = A.toDenseMatrix()(3, 0);
+    //    double a42 = A.toDenseMatrix()(3, 1);
+    //    double a43 = A.toDenseMatrix()(3, 2);
+    //    double a44 = A.toDenseMatrix()(3, 3);
 
     // b_{ij} belongs to b = Ta'*(Tb^-1)'*B*(Tb^-1)*Ta
     Eigen::Matrix4d b =
@@ -113,27 +115,31 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
 
 std::vector<std::complex<double>> getRootsPolynomial(
     const std::vector<double>& coeffs) {
-    long matsz = long(coeffs.size() - 1);
+    const long matsz = long(coeffs.size() - 1);
     std::vector<std::complex<double>> vret;
-    Eigen::MatrixXd companionMatrix(matsz, matsz);
+    Eigen::MatrixXd companionMatrix = Eigen::MatrixXd::Zero(matsz, matsz);
 
-    for (long n = 0; n < matsz; n++) {
-        for (long m = 0; m < matsz; m++) {
-            if (n == m + 1) {
-                companionMatrix(n, m) = 1.0;
-            }
+    // Construct the companion matrix
+    companionMatrix.bottomLeftCorner(matsz - 1, matsz - 1) =
+        Eigen::MatrixXd::Identity(matsz - 1, matsz - 1);
 
-            if (m == matsz - 1) {
-                companionMatrix(n, m) = -coeffs[size_t(n)] / coeffs.back();
-            }
-        }
+    for (long i = 0; i < matsz; ++i) {
+        companionMatrix(0, i) = -coeffs[size_t(i + 1)] / coeffs[0];
     }
 
+    // Solve for the root as the eigenvalues of companion matrix
     Eigen::MatrixXcd eig = companionMatrix.eigenvalues();
 
     for (long i = 0; i < matsz; i++) {
         vret.push_back(eig(i));
     }
+
+    //    std::cout << coeffs[0] << ',' << coeffs[1] << ',' << coeffs[2] << ','
+    //              << coeffs[3] << ',' << coeffs[4] << std::endl;
+    //    std::cout << companionMatrix << std::endl;
+    //    std::cout << vret[0] << ',' << vret[1] << ',' << vret[2] << ',' <<
+    //    vret[3]
+    //              << std::endl;
 
     return vret;
 }

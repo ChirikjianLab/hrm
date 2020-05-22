@@ -29,10 +29,12 @@ bool PlannerOMPLEllipsoid::isStateValid(const ob::State* state) const {
 
         // Checking collision against obstacles
         for (unsigned int i = 0; i < obstacles_.size(); i++) {
-            if (!checkSeparationASC(robot_[j], robotAux, obstacles_[i]))
+            if (!checkSeparationASC(robot_[j], robotAux, obstacles_[i])) {
                 return false;
+            }
         }
     }
+
     return true;
 }
 

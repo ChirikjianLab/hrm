@@ -19,14 +19,14 @@ path = load([loadPath, 'paths.csv']);
 
 endPts = load(['../../config/', 'endPts.csv']);
 
-figure; hold on; axis equal; axis off;
+figure; hold on; axis equal; axis on;
 %% environment
 disp('Environment Initialization...')
 
 sc = 20;
 % start and goal
-start = endPts(2,:)';
-goal = endPts(3,:)';
+start = endPts(1,:)';
+goal = endPts(2,:)';
 plot3(start(1), start(2), sc*start(3), 'ro', 'LineWidth', 3);
 plot3(goal(1), goal(2), sc*goal(3), 'gd', 'LineWidth', 3);
 

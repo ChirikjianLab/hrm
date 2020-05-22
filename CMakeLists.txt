@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(highwayRoadMap LANGUAGES C CXX)
+project(highwayRoadMap LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 

@@ -49,6 +49,11 @@ struct param {
     double infla;
     size_t N_layers, N_dy, sampleNum, N_o, N_s;
     polyCSpace polyVtx;
+
+    /*
+     * \brief Boundary limit of the planning arena
+     * \param Lim: {xLowBound, xHighBound, yLowbound, yHighBound}
+     */
     std::vector<double> Lim;
 };
 

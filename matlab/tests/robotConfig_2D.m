@@ -33,15 +33,12 @@ end
 % rel_vol = 1-vol_obs/vol_arena
 
 % End points
-% Boundary limits
-endPts(1,:) = [50,65,35];
-endPts(2:3,:) = pts';
+endPts = pts';
 
 % Store obstacle and arena configuations
 csvwrite(fullfile(outPath,'obsConfig.csv'), obstacle);
 csvwrite(fullfile(outPath,'arenaConfig.csv'), arena);
 csvwrite(fullfile(outPath,'endPts.csv'), endPts);
-
 
 %% Robot Initialization
 disp('Robot Configurations...');
@@ -62,12 +59,6 @@ end
 
 csvwrite(fullfile(outPath,'robotConfig.csv'), robot);
 
-Robot.Base.color = 'r';
-Robot.robotTF([rot2(pts(3,1)), pts(1:2,1); 0,0,1], 1)
-
-Robot.Base.color = 'g';
-Robot.robotTF([rot2(pts(3,2)), pts(1:2,2); 0,0,1], 1)
-
 % Vertex and matrix for local c-space
 % [m,n,p] = size(face.polyVtx.invMat);
 %
@@ -76,6 +67,26 @@ Robot.robotTF([rot2(pts(3,2)), pts(1:2,2); 0,0,1], 1)
 %
 % rob_invMat = reshape(face.polyVtx.invMat, m*n, p);
 % csvwrite(fullfile(outPath,'robotInvMat.csv'), rob_invMat');
+
+%% Plot Environment and robot at start and end poses
+% plot the ARENA with color filled, under rotation
+for i = 1:size(ar,2)
+    ar(i).PlotShape;
+end
+
+% plot the OBSTACLE(s) with color filled, under rotation and translation
+for i = 1:size(obs,2)
+    obs(i).PlotShape;
+    is = num2str(i);
+    box on;
+    text(obs(i).tx, obs(i).ty, is, 'Color', [1 1 1]);
+end
+
+Robot.Base.color = 'r';
+Robot.robotTF([rot2(pts(3,1)), pts(1:2,1); 0,0,1], 1)
+
+Robot.Base.color = 'g';
+Robot.robotTF([rot2(pts(3,2)), pts(1:2,2); 0,0,1], 1)
 
 %% Triangulations
 % disp('Triangulation...');

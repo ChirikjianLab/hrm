@@ -120,8 +120,8 @@ int main(int argc, char** argv) {
     vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
     vector<vector<double>> EndPts;
 
+    EndPts.push_back(endPts[0]);
     EndPts.push_back(endPts[1]);
-    EndPts.push_back(endPts[2]);
 
     // Arena and Obstacles as class of SuperEllipse
     vector<SuperEllipse> arena;
@@ -148,9 +148,14 @@ int main(int argc, char** argv) {
     par.N_s = arena.size();
     par.polyVtx = polyVtx;
 
-    double f = 1.2;
-    par.Lim = {arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
+    double f = 1.5;
+    vector<double> bound = {
+        arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
+        arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
+    par.Lim = {arena.at(0).getPosition().at(0) - bound.at(0),
+               arena.at(0).getPosition().at(0) + bound.at(0),
+               arena.at(0).getPosition().at(1) - bound.at(1),
+               arena.at(0).getPosition().at(1) + bound.at(1)};
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {

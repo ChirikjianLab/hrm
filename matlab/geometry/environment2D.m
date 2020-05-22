@@ -197,6 +197,7 @@ elseif opt == 41 % Nao robot cluttered
     P_start = [-55; 35; -pi/2; 0; 0];
     P_goal  = [ 56;-35; -pi/4; 0; 0];
     
+<<<<<<< HEAD
     origin_offset = [ra_s; rb_s];
     tx_s = tx_s + origin_offset(1);
     ty_s = ty_s + origin_offset(2);
@@ -206,6 +207,18 @@ elseif opt == 41 % Nao robot cluttered
     
     P_start(1:2) = P_start(1:2) + origin_offset;
     P_goal(1:2) = P_goal(1:2) + origin_offset;
+=======
+    % Offset according to the world frame
+    wf = [-70; -50];
+    tx_s = tx_s - wf(1);
+    ty_s = ty_s - wf(2);
+    
+    tx_o = tx_o - wf(1);
+    ty_o = ty_o - wf(2);
+    
+    P_start(1:2) = P_start(1:2) - wf;
+    P_goal(1:2) = P_goal(1:2) - wf;
+>>>>>>> 43c2e7b4b3c7f31996e82c796531c967b973f1f5
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -229,6 +242,7 @@ end
 %% == Start and ending points ==
 EndPts = [P_start(1:3) P_goal(1:3)];
 
+<<<<<<< HEAD
 %% == Plot obstacle(s), arena(s) =====
 % plot the ARENA with color filled, under rotation
 for i = 1:N_s
@@ -246,4 +260,6 @@ for i = 1:N_o
     axis equal
 end 
 
+=======
+>>>>>>> 43c2e7b4b3c7f31996e82c796531c967b973f1f5
 end
