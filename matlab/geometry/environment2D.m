@@ -181,7 +181,7 @@ elseif opt == 33 % Multibody maze
     P_goal  = [ 65;-30; 0; 0; 0];
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif opt == 41 % Nao robot cluttered
+elseif opt == 41 % Nao robot cluttered    
     ra_s = 150/2; rb_s = 120/2; ang_s = 0;
     tx_s = 0; ty_s = 0;
     eps_s = 0.1;
@@ -196,6 +196,16 @@ elseif opt == 41 % Nao robot cluttered
     
     P_start = [-55; 35; -pi/2; 0; 0];
     P_goal  = [ 56;-35; -pi/4; 0; 0];
+    
+    origin_offset = [ra_s; rb_s];
+    tx_s = tx_s + origin_offset(1);
+    ty_s = ty_s + origin_offset(2);
+    
+    tx_o = tx_o + origin_offset(1);
+    ty_o = ty_o + origin_offset(2);
+    
+    P_start(1:2) = P_start(1:2) + origin_offset;
+    P_goal(1:2) = P_goal(1:2) + origin_offset;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -234,8 +244,6 @@ for i = 1:N_o
     box on;
     text(tx_o(i),ty_o(i), is, 'Color', [1 1 1]);
     axis equal
-end
-
-axis off
+end 
 
 end
