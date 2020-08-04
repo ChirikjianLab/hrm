@@ -5,13 +5,13 @@ A paradigm for robot motion planning based on parameterizations of the free spac
 We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). This repository is the C++ implementation of algorithms and benchmarks. The algorithms for both SE(2) and SE(3) rigid body planning problems have been developed and compared with sampled-based planners from OMPL. The benchmark results show that our proposed method outperforms the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problem.
 
 ## Dependencies
-- [OMPL](https://ompl.kavrakilab.org/installation.html): Open Motion Planning Library for sample-based planners
-- [FCL](https://github.com/flexible-collision-library/fcl): Flexible Collision Library for collision detection
-- [CCD](https://github.com/danfis/libccd): Required dependency for FCL
+- [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.4.0): Open Motion Planning Library for sample-based planners
+- [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
+- [CCD](https://github.com/danfis/libccd) (version >= 2.0): Required dependency for FCL
 - [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
 - GMP: Required dependency for CGAL
-- Eigen
-- [Boost](https://www.boost.org/)
+- [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
+- [Boost](https://www.boost.org/) (version >= 1.55.0)
 - [cmake-format] 
     ```
     sudo pip3 install cmake-format==0.4.5
@@ -33,11 +33,11 @@ cd build
 cmake ../
 make
 ```
-The compilations are tested on Ubuntu 16.04 system using CMake (>= 3.10).
+The compilations are tested on Ubuntu 16.04 system using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
 
 ## Testing Instructions
 ### Generate configuration files
-Configuration files are all stored in "/config" folder, including (3D cases as an example) "arena_config_3d.csv", "obs_config_3d.csv". "robot_config_3d.csv" and "endPts_3d.csv". In the repository, there are pre-defined configurations  in these files. To customize different robot or environment configurations, simply run the Matlab scripts "/matlab/test/robotConfig_3D.m", and change different parameters that defines the geometric shapes.
+Configuration files are all stored in "/config" folder, including (3D cases as an example) "arena_config_3d.csv", "obs_config_3d.csv". "robot_config_3d.csv" and "endPts_3d.csv". In the repository, there are pre-defined configurations in these files. To customize different robot or environment configurations, simply run the Matlab scripts "/matlab/test/robotConfig_3D.m", and change different parameters that defines the geometric shapes.
 
 ### Running tests
 Testing files are located in "/test" folder:
@@ -45,6 +45,7 @@ Testing files are located in "/test" folder:
 - 2D case (single body, Tighly-fitted Ellipsoid): "/test/TestHRM2DTightFittedEllipse.cpp"
 - 3D case (sinlge body): "/test/TestHRM3D.cpp"
 - 3D case (multi body): "/test/TestHRM3DMultiBody.cpp"
+- GTest for geometric subroutines: "/test/unit-test/GTestGeometry.cpp"
 
 ### Benchmarks
 Benchmark files are stored in "/benchmark" folder:

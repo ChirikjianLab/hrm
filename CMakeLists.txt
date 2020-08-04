@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.10)
 project(highwayRoadMap LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
+set(default_build_type "RelWithDebInfo")
 
 # Specify the minimum version for CMake
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
 
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
