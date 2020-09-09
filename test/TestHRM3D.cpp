@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
         ofstream file_pathId;
         file_pathId.open("paths3D.csv");
         vector<int> paths = high3D.solutionPathInfo.PathId;
-        if (~paths.empty()) {
+        if (!paths.empty()) {
             for (size_t i = 0; i < paths.size(); i++) {
                 file_pathId << paths[i] << ' ';
             }
