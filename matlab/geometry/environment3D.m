@@ -90,8 +90,8 @@ elseif opt == 21 % Ellipsoids Sparse
     rb_o  = [10 10];
     rc_o  = [10 15];
     
-    q_o = pi*[[0.1, 0.2, 0.1, 0];...
-        [0.3, 0.13, 0.5, 0.1]];
+    q_o = pi*[[0.2, 0.1, 0, 0.1];...
+        [0.13, 0.5, 0.1, 0.3]];
     
     tx_o = [ 20 -20];
     ty_o = [-10  20];
@@ -165,39 +165,19 @@ No = 20;  % parameter for pnts on the superquadric obstacles
 
 %% == construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s
-    arena(i) = SuperQuadrics({a_s(:,i), q_s(i,:), tc_s(:,i),...
-        eps_s(:,i), Ns}, 'w', 0);
+    arena(i) = SuperQuadrics({a_s(:,i), eps_s(:,i), tc_s(:,i), q_s(i,:),...
+        Ns}, 'w', 0);
 end
 
 for i = 1:N_o
-    obs(i) = SuperQuadrics({a_o(:,i), q_o(i,:), tc_o(:,i),...
-        eps_o(:,i), No}, 'k', 0);
+    obs(i) = SuperQuadrics({a_o(:,i), eps_o(:,i), tc_o(:,i), q_o(i,:),...
+        No}, 'k', 0);
 end
-
-%% == Plot obstacle(s), arena(s) =====
-% plot the ARENA with color filled, under rotation
-figure; hold on; axis equal;
-for i = 1:N_s
-%     arena(i).PlotShape;
-end
-
-% plot the OBSTACLE(s) with color filled, under rotation and translation
-for i = 1:N_o
-    obs(i).PlotShape;
-    
-    is = num2str(i);
-    box on;
-    text(tx_o(i),ty_o(i),tz_o(i), is, 'Color', [1 1 1]);
-    axis equal
-end
-
-axis off
-
 
 %% start and goal configurations
 if endpt_opt == 1
-    tc_start = [-55; 20; -15];
-    tc_goal  = [ 53;-20; 10];
+    tc_start = [-52; 20; -15];
+    tc_goal  = [ 50;-20; 10];
     
     q_start = pi * rand(1,4);
     % q_start = pi * rand(3,1);
@@ -215,9 +195,5 @@ end
 q_start = q_start/norm(q_start);
 q_goal = q_goal/norm(q_goal);
 EndPts = [[tc_start; q_start'],[tc_goal; q_goal']];
-
-% plot the start and end configurations
-plot3(tc_start(1), tc_start(2), tc_start(3), 'c+', 'LineWidth', 2)
-plot3(tc_goal(1), tc_goal(2), tc_goal(3), 'gd', 'LineWidth', 2)
 
 end

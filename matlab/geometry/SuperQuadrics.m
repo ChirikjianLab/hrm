@@ -10,7 +10,7 @@ classdef SuperQuadrics
     
     properties
         a       % semi-axes lengths, 3x1 vector
-        q       % exponential coordinates for orientation, 3x1 vector
+        q       % axis-angle parameterization for robot orientation, 1x4 vector
         tc      % center, 3x1 vector
         eps     % exponent for the signed power function, 2x1 vector
         
@@ -38,20 +38,21 @@ classdef SuperQuadrics
                 error('Length 1st input not equal to 5!')
             elseif length(val{1}) ~= 3
                 error('Length semi-axes not equal to 3!')
+            elseif length(val{2}) ~= 2
+                error('Length exponent not equal to 2!')
             elseif length(val{3}) ~= 3
                 error('Length center point not equal to 3!')
-            elseif length(val{4}) ~= 2
-                error('Length exponent not equal to 2!')
             else
                 obj.a     = val{1};
-                obj.q     = val{2};
+                obj.eps   = val{2};
                 obj.tc    = val{3};
-                obj.eps   = val{4};
+                obj.q     = val{4};
+                
                 obj.N     = val{5};
                 obj.color = color;
                 [obj.omega, obj.eta] = meshgrid(...
                     -pi-1e-6:2*pi/(obj.N-1):pi+1e-6,...
-                    -pi/2-1e-6:pi/(obj.N-1):pi/2+1e-6); 
+                    -pi/2-1e-6:pi/(obj.N-1):pi/2+1e-6);
                 
                 obj.infla = infla;
                 if infla > 0
@@ -77,16 +78,16 @@ classdef SuperQuadrics
             end
             
             % Parameters
-            R1 = objSQ.par2rotm(objSQ.q);
-            R2 = objE.par2rotm(objE.q);
+            R1 = par2rotm(objSQ.q);
+            R2 = par2rotm(objE.q);
             
             Tinv = R2*diag(objE.a)*R2';
             
-            gradPhix = objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
-                .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos')/objSQ.a(1);
-            gradPhiy = objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
-                .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'sin')/objSQ.a(2);
-            gradPhiz = objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'sin')...
+            gradPhix = sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
+                .* sc_eps(objSQ.omega,objSQ.eps(2),'cos')/objSQ.a(1);
+            gradPhiy = sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
+                .* sc_eps(objSQ.omega,objSQ.eps(2),'sin')/objSQ.a(2);
+            gradPhiz = sc_eps(objSQ.eta,objSQ.eps(1),'sin')...
                 .* ones(size(objSQ.omega))/objSQ.a(3);
             [m, n] = size(gradPhix);
             gradPhi = [reshape(gradPhix, 1, m*n);
@@ -169,11 +170,11 @@ classdef SuperQuadrics
         %% ---------------------------------------------------------------%
         function pnt = GetPoints(objSQ)
             % Generate N interpolated points of the given superquadrics
-            x = objSQ.a(1).*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
-                .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'cos');
-            y = objSQ.a(2)*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
-                .* objSQ.sc_eps(objSQ.omega,objSQ.eps(2),'sin');
-            z = objSQ.a(3)*objSQ.sc_eps(objSQ.eta,objSQ.eps(1),'sin')...
+            x = objSQ.a(1).*sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
+                .* sc_eps(objSQ.omega,objSQ.eps(2),'cos');
+            y = objSQ.a(2)*sc_eps(objSQ.eta,objSQ.eps(1),'cos')...
+                .* sc_eps(objSQ.omega,objSQ.eps(2),'sin');
+            z = objSQ.a(3)*sc_eps(objSQ.eta,objSQ.eps(1),'sin')...
                 .* ones(size(objSQ.omega));
             
             [m, n] = size(x);
@@ -181,7 +182,7 @@ classdef SuperQuadrics
             yy = reshape(y, 1, m*n);
             zz = reshape(z, 1, m*n);
             
-            pnt = objSQ.par2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
+            pnt = par2rotm(objSQ.q)*[xx;yy;zz] + objSQ.tc;
         end
         
         %% ---------------------------------------------------------------%
@@ -227,33 +228,5 @@ classdef SuperQuadrics
             surf(X, Y, Z, 'FaceColor', 'r', 'FaceAlpha',0.1, ...
                 'EdgeColor', 'none');
         end
-    end
-    
-    %% Private Methods
-    methods (Access=protected)
-        %% Exponent functions
-        function val = sc_eps(Obj, angle, eps, name)
-            %SuperEllipse.sc_eps: a sin/cos exponentiation function
-            if strcmp(name, 'sin')
-                val = sign(sin(angle)).*abs(sin(angle)).^eps;
-            elseif strcmp(name, 'cos')
-                val = sign(cos(angle)).*abs(cos(angle)).^eps;
-            else
-                error('The third input has to be either "cos" or "sin".')
-            end
-        end
-        
-        %% Exponential coordinate transformations
-        function R = par2rotm(Obj, q)
-            if length(q) == 3
-                R = expm(skew(q));
-            elseif length(q) == 4
-                if size(q,2) ~= 4
-                    q = q';
-                end
-                R = quat2rotm(q);
-            end
-        end
-        
     end
 end

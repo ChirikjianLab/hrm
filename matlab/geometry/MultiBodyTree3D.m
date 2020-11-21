@@ -31,7 +31,7 @@ classdef MultiBodyTree3D < handle
             else
                 obj.Link{i} = link;
                 
-                g = [obj.par2rotm(link.q), link.tc; zeros(1,3), 1];
+                g = [par2rotm(link.q), link.tc; zeros(1,3), 1];
                 obj.tf{i} = g;
             end
         end
@@ -49,7 +49,7 @@ classdef MultiBodyTree3D < handle
                 g_Link = g * obj.tf{i};
                 
                 obj.Link{i}.tc = g_Link(1:3,4);
-                obj.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
+                obj.Link{i}.q = rotm2axang(g_Link(1:3,1:3));
                 
                 if isplot
                     obj.Link{i}.PlotShape;
@@ -64,27 +64,15 @@ classdef MultiBodyTree3D < handle
             
             % Mink sum for the base link
             Mink(:,:,1) = S1.MinkowskiSum_3D_ES(obj.Base,k);
-            R_base = obj.par2rotm(obj.Base.q);
+            R_base = par2rotm(obj.Base.q);
             
             % Mink sum for the other links
             for i = 1:size(obj.Link,2)
                 R_link = R_base * obj.tf{i}(1:3,1:3);
-                obj.Link{i}.q = rotm2quat(R_link);
+                obj.Link{i}.q = rotm2axang(R_link);
                 
                 Mink(:,:,i+1) = S1.MinkowskiSum_3D_ES(obj.Link{i},k) -...
                     R_base*obj.tf{i}(1:3,4);
-            end
-        end
-        
-        %% Exponential coordinate transformations
-        function R = par2rotm(Obj, q)
-            if length(q) == 3
-                R = expm(skew(q));
-            elseif length(q) == 4
-                if size(q,2) ~= 4
-                    q = q';
-                end
-                R = quat2rotm(q);
             end
         end
     end
