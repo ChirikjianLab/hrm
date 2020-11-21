@@ -11,13 +11,13 @@ classdef SuperEllipse
     properties
         ra      % length of semi-major axis
         rb      % length of semi-minor axis
+        eps     % exponent for the signed power function
         
         % in the world frame
         ang     % angle for the orientation
         tx      % x of center
         ty      % y of center
         
-        eps     % exponent for the signed power function
         N       % No. of interpolated points on the perimeter
         color   % fill color of the superellipse
         
@@ -43,10 +43,12 @@ classdef SuperEllipse
             else
                 obj.ra    = val(1);
                 obj.rb    = val(2);
-                obj.ang   = val(3);
+                obj.eps   = val(3);
+                
                 obj.tx    = val(4);
                 obj.ty    = val(5);
-                obj.eps   = val(6);
+                obj.ang   = val(6);
+                
                 obj.N     = val(7);
                 obj.color = col;
                 obj.infla = infla;

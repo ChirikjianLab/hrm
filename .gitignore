@@ -34,6 +34,9 @@
 /.metadata/
 /bin/
 
+# Intermediate configuration files
+/config/
+
 ### Qt ignores ###
 # Qt-es
 object_script.*.Release
