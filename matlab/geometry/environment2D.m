@@ -1,4 +1,4 @@
-function [arena, obs, EndPts] = Environment2D(obs_shape, opt)
+function [arena, obs, end_points] = Environment2D(obs_shape, opt)
 %% Retrieve arena, obstacle and end points info
 path_prefix = '../../resources/2D/';
 
@@ -56,6 +56,6 @@ for i = 1:N_o
 end
 
 %% == Start and ending points ==
-EndPts = csvread([path_prefix, 'setting_', shape_prefix, '_',...
+end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
     env_type, '_2D.csv']);
 end

@@ -12,7 +12,7 @@ if opt == 1
     colors = ['g', 'b', 'b'];
 end
 
-% Construct MultiLinkTree class
+%% Construct MultiLinkTree class
 N_links = size(robot_config, 1) - 1;
 
 base = SuperQuadrics({robot_config(1,1:3), robot_config(1,4:5),...

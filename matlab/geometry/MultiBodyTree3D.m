@@ -39,7 +39,7 @@ classdef MultiBodyTree3D < handle
         %% Transform the robot as a whole body
         function robotTF(obj, g, isplot)
             obj.Base.tc = g(1:3,4);
-            obj.Base.q = rotm2quat(g(1:3,1:3));
+            obj.Base.q = rotm2axang(g(1:3,1:3));
             
             if isplot
                 obj.Base.PlotShape;

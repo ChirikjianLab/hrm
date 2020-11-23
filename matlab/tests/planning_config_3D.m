@@ -7,18 +7,18 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-[ar, obs, endPts] = environment3D(23, 1);
+[ar, obs, endPts] = Environment3D(2, 2);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); 
 obstacle = zeros(size(obs,2),12);
 
 for i = 1:size(ar,2)
-    arena(i,:) = [ar.a',ar.eps',ar.tc',ar.q];
+    arena(i,:) = [ar.a, ar.eps, ar.tc', ar.q];
 end
 
 for i = 1:size(obs,2)
-    obstacle(i,:) = [obs(i).a',obs(i).eps',obs(i).tc',obs(i).q];
+    obstacle(i,:) = [obs(i).a, obs(i).eps, obs(i).tc', obs(i).q];
 end
 
 % Store obstacle and arena configuations
@@ -44,7 +44,7 @@ for i = 1:Robot.numLink
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
-csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts');
+csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts);
 
 %% Plot obstacle(s), arena(s) and end points
 % plot the ARENA with color filled, under rotation
@@ -64,14 +64,14 @@ for i = 1:size(obs,2)
 end
 
 % plot the start and end configurations
-plot3(endPts(1,1), endPts(2,1), endPts(3,1), 'c+', 'LineWidth', 2)
-plot3(endPts(1,2), endPts(2,2), endPts(3,2), 'gd', 'LineWidth', 2)
+plot3(endPts(1,1), endPts(1,2), endPts(1,3), 'c+', 'LineWidth', 2)
+plot3(endPts(2,1), endPts(2,2), endPts(2,3), 'gd', 'LineWidth', 2)
 
 % plot the robot at start and goal configs
-g_start = [par2rotm(endPts(4:7,1)'), endPts(1:3,1); zeros(1,3), 1];
+g_start = [par2rotm(endPts(1, 4:7)), endPts(1, 1:3)'; zeros(1,3), 1];
 Robot.robotTF(g_start, 1);
 
-g_goal = [par2rotm(endPts(4:7,2)'), endPts(1:3,2); zeros(1,3), 1];
+g_goal = [par2rotm(endPts(2, 4:7)), endPts(2, 1:3)'; zeros(1,3), 1];
 Robot.robotTF(g_goal, 1);
 
 % Plot properties
