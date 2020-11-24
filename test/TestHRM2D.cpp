@@ -1,6 +1,6 @@
 #include "geometry/include/SuperEllipse.h"
 #include "planners/include/HighwayRoadMap.h"
-#include "util/include/Parse2dCsvFile.h"
+#include "util/include/ParsePlanningSettings.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     // Robot
     // Read robot config file
-    string file_robConfig = "../config/robotConfig.csv";
+    string file_robConfig = "../config/robot_config_2D.csv";
     vector<vector<double>> rob_config = parse2DCsvFile(file_robConfig);
 
     string file_robVtx = "../config/robotVtx.csv";
@@ -100,43 +100,16 @@ int main(int argc, char** argv) {
     vector<vector<double>> rob_InvMat = parse2DCsvFile(file_robInvMat);
 
     // Robot as a class of SuperEllipse
-    SuperEllipse robot({rob_config[0][0], rob_config[0][1]}, rob_config[0][3],
-                       {rob_config[0][4], rob_config[0][5]}, rob_config[0][2],
+    SuperEllipse robot({rob_config[0][0], rob_config[0][1]}, rob_config[0][2],
+                       {rob_config[0][3], rob_config[0][4]}, rob_config[0][5],
                        num);
 
     polyCSpace polyVtx;
     polyVtx.vertex = rob_vtx;
     polyVtx.invMat = rob_InvMat;
 
-    // Environment
-    // Read environment config file
-    string file_arenaConfig = "../config/arenaConfig.csv";
-    vector<vector<double>> arena_config = parse2DCsvFile(file_arenaConfig);
-
-    string file_obsConfig = "../config/obsConfig.csv";
-    vector<vector<double>> obs_config = parse2DCsvFile(file_obsConfig);
-
-    string file_endpt = "../config/endPts.csv";
-    vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
-    vector<vector<double>> EndPts;
-
-    EndPts.push_back(endPts[0]);
-    EndPts.push_back(endPts[1]);
-
-    // Arena and Obstacles as class of SuperEllipse
-    vector<SuperEllipse> arena;
-    for (size_t j = 0; j < arena_config.size(); j++) {
-        arena.emplace_back(SuperEllipse(
-            {arena_config[j][0], arena_config[j][1]}, arena_config[j][3],
-            {arena_config[j][4], arena_config[j][5]}, arena_config[j][2], num));
-    }
-
-    vector<SuperEllipse> obs;
-    for (size_t j = 0; j < obs_config.size(); j++) {
-        obs.emplace_back(SuperEllipse(
-            {obs_config[j][0], obs_config[j][1]}, obs_config[j][3],
-            {obs_config[j][4], obs_config[j][5]}, obs_config[j][2], num));
-    }
+    // Load Environment
+    PlannerSetting2D env2D = LoadEnvironment2D();
 
     // Parameters
     param par;
@@ -144,22 +117,23 @@ int main(int argc, char** argv) {
     par.N_layers = static_cast<size_t>(N_l);
     par.N_dy = static_cast<size_t>(N_y);
     par.sampleNum = 10;
-    par.N_o = obs.size();
-    par.N_s = arena.size();
+    par.N_o = env2D.obstacle.size();
+    par.N_s = env2D.arena.size();
     par.polyVtx = polyVtx;
 
     double f = 1.5;
     vector<double> bound = {
-        arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
-        arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
-    par.Lim = {arena.at(0).getPosition().at(0) - bound.at(0),
-               arena.at(0).getPosition().at(0) + bound.at(0),
-               arena.at(0).getPosition().at(1) - bound.at(1),
-               arena.at(0).getPosition().at(1) + bound.at(1)};
+        env2D.arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
+        env2D.arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
+    par.Lim = {env2D.arena.at(0).getPosition().at(0) - bound.at(0),
+               env2D.arena.at(0).getPosition().at(0) + bound.at(0),
+               env2D.arena.at(0).getPosition().at(1) - bound.at(1),
+               env2D.arena.at(0).getPosition().at(1) + bound.at(1)};
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {
-        HighwayRoadMap high = plan(robot, EndPts, arena, obs, par);
+        HighwayRoadMap high =
+            plan(robot, env2D.end_points, env2D.arena, env2D.obstacle, par);
 
         time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
                              high.planTime.buildTime + high.planTime.searchTime,
