@@ -8,7 +8,7 @@ outPath = '../../config';
 disp('Environment Initialization...')
 
 obs_shape = 2;
-map_type = 6;
+map_type = 3;
 [ar, obs, end_points] = Environment2D(obs_shape, map_type);
 
 % Store Arena and Obstacles as .csv files
@@ -36,11 +36,11 @@ csvwrite(fullfile(outPath,'end_points_2D.csv'), end_points);
 %% Robot Initialization
 disp('Robot Configurations...');
 % Set robot configuration
-Robot = RobotInit2D(4, 0);
+Robot = RobotInit2D(1, 0);
 
 % Store robot info as .csv files
-robot = [Robot.Base.ra, Robot.Base.rb, Robot.Base.ang, Robot.Base.eps,...
-    Robot.Base.tx, Robot.Base.ty, Robot.Base.infla];
+robot = [Robot.Base.ra, Robot.Base.rb, Robot.Base.eps, Robot.Base.tx,...
+    Robot.Base.ty, Robot.Base.ang, Robot.Base.infla];
 
 for i = 1:Robot.numLink
     robot = [robot;

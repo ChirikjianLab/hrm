@@ -1,23 +1,7 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../bin/';
-X_ori = load([loadPath, 'bd_ori.csv']);
-X = load([loadPath, 'bd.csv']);
-% X_obs = load([loadPath, 'bd_obs.csv']);
-% X_arena = load([loadPath, 'bd_arena.csv']);
-% Y = load([loadPath, 'bd_ty.csv']);
-%
-% X_obs_ex = load([loadPath, 'bd_obs_ex.csv']);
-
-cf_seg = load([loadPath, 'cell.csv']);
-
-vtx = load([loadPath, 'vertex.csv']);
-edge = load([loadPath, 'edge.csv']);
-
-path = load([loadPath, 'paths.csv']);
-
-endPts = load(['../../config/', 'endPts.csv']);
+[X_ori, X, cf_seg, vtx, edge, path, robot, endPts] = loadResults('2D');
 
 figure; hold on; axis equal; axis on;
 %% environment
@@ -84,14 +68,10 @@ end
 % end
 
 % Robot motions
-configPath = '../../config/';
-robot = load([configPath, 'robotConfig.csv']);
-
-rob = MultiBodyTree2D(SuperEllipse([robot(1,1:3),robot(1,5:6),...
-    robot(1,4),50], 'g', 0), size(robot,1)-1);
+rob = MultiBodyTree2D(SuperEllipse([robot(1,1:6), 50], 'g', 0),...
+    size(robot,1)-1);
 for i = 1:size(robot,1)-1
-    rob.addBody(SuperEllipse([robot(i+1,1:3),robot(i+1,5:6),...
-        robot(i+1,4),50], 'b', 0), i)
+    rob.addBody(SuperEllipse([robot(i+1,1:6), 50], 'b', 0), i);
 end
 
 g_start = [rot2(start(3)), start(1:2); 0,0,1];

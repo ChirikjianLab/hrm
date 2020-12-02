@@ -4,29 +4,29 @@ function robot = RobotInit2D(opt, infla)
 % one face as base that can translate and rotate,
 % links attached to the base that can rotate
 % 
-% C-space: SE(2) x (S^1)^n
+% C-space: SE(2)
 
 %% Read configuration files and set body colors
 path_prefix = '../../resources/2D/';
 
 % Single body robot
 if opt == 1
-    robot_config = csvread([path_prefix, 'robot_2D_single_body.csv']);
+    robot_config = csvread([path_prefix, 'robot_single_body_2D.csv']);
     colors = 'g';
     
 % Rabbit-shape robot, rigid
 elseif opt == 2
-    robot_config = csvread([path_prefix, 'robot_2D_rabbit.csv']);
+    robot_config = csvread([path_prefix, 'robot_rabbit_2D.csv']);
     colors = ['g', 'b', 'b'];
     
 % S-shape robot, rigid
 elseif opt == 3
-    robot_config = csvread([path_prefix, 'robot_2D_S_shape.csv']);
+    robot_config = csvread([path_prefix, 'robot_S_shape_2D.csv']);
     colors = ['b', 'b', 'b', 'b', 'b'];
 
 % Nao robot, silhouette
 elseif opt == 4
-    robot_config = csvread([path_prefix, 'robot_2D_NAO_silhouette.csv']);
+    robot_config = csvread([path_prefix, 'robot_NAO_silhouette_2D.csv']);
     colors = 'b';
 end
 
