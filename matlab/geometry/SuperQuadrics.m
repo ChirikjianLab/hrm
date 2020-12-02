@@ -46,7 +46,7 @@ classdef SuperQuadrics
                 obj.a     = val{1};
                 obj.eps   = val{2};
                 obj.tc    = val{3};
-                obj.q     = val{4};
+                obj.q     = val{4}/norm(val{4});
                 
                 obj.N     = val{5};
                 obj.color = color;

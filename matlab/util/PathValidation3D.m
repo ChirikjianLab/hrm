@@ -1,4 +1,4 @@
-classdef pathValid_3D_multiBody < handle
+classdef PathValidation3D < handle
     properties
         RobotM
         Arena        % Arena Obj. of class SuperQuadrics
@@ -10,7 +10,7 @@ classdef pathValid_3D_multiBody < handle
     
     methods
         %% Constructor
-        function Obj = pathValid_3D_multiBody(Robot, Arena, Obs, Paths)
+        function Obj = PathValidation3D(Robot, Arena, Obs, Paths)
             Obj.RobotM = Robot;
             Obj.Arena = Arena;
             Obj.Obs = Obs;
@@ -23,7 +23,7 @@ classdef pathValid_3D_multiBody < handle
         function valid = validation(Obj)
             % Do collision checking for each vertex to validate.
             for i = 1:size(Obj.Paths,1)-1
-                g_i = [quat2rotm(Obj.Paths(i,4:end)), Obj.Paths(i,1:3)';
+                g_i = [par2rotm(Obj.Paths(i,4:end)), Obj.Paths(i,1:3)';
                     0,0,0,1];
                 Obj.RobotM.robotTF(g_i,1);
                 
@@ -60,7 +60,7 @@ classdef pathValid_3D_multiBody < handle
         end
         
         %% --------------- Plot the Valid Path ----------------------------
-        function PlotPath(Obj)
+        function show(Obj)
             figure; hold on; axis equal;
             for i = 1:size(Obj.Arena,2)
                 Obj.Arena(i).PlotShape;
@@ -78,7 +78,7 @@ classdef pathValid_3D_multiBody < handle
             for i = 1:size(Obj.ValidPath,2)
                 Obj.RobotM.Base.tc = Obj.ValidPath(1:3,i);
                 Obj.RobotM.Base.q = Obj.ValidPath(4:end,i);
-                g = [quat2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc;
+                g = [par2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc;
                     zeros(1,3), 1];
                 
                 Obj.RobotM.robotTF(g, 1);

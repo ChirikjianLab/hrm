@@ -27,10 +27,6 @@ csvwrite(fullfile(outPath,'arena_config_3D.csv'), arena);
 
 %% Robot Initialization
 disp('Robot Configurations...');
-% Robot: Only plan face
-vargin.opt = 'rotation';
-vargin.Hhc3D_path = '../include/Hhc_3D.mat';
-
 Robot = RobotInit3D(1);
 
 %% Store robot info as .csv files
@@ -40,7 +36,7 @@ robot = [Robot.Base.a, Robot.Base.eps, Robot.Base.tc', Robot.Base.q];
 for i = 1:Robot.numLink
     robot = [robot;
              Robot.Link{i}.a, Robot.Link{i}.eps,...
-             Robot.tf{i}(1:3,4)', rotm2axang(Robot.tf{i}(1:3,1:3))];
+             Robot.tf{i}(1:3,4)', rotm2quat(Robot.tf{i}(1:3,1:3))];
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
@@ -68,10 +64,10 @@ plot3(endPts(1,1), endPts(1,2), endPts(1,3), 'c+', 'LineWidth', 2)
 plot3(endPts(2,1), endPts(2,2), endPts(2,3), 'gd', 'LineWidth', 2)
 
 % plot the robot at start and goal configs
-g_start = [par2rotm(endPts(1, 4:7)), endPts(1, 1:3)'; zeros(1,3), 1];
+g_start = [quat2rotm(endPts(1, 4:7)), endPts(1, 1:3)'; zeros(1,3), 1];
 Robot.robotTF(g_start, 1);
 
-g_goal = [par2rotm(endPts(2, 4:7)), endPts(2, 1:3)'; zeros(1,3), 1];
+g_goal = [quat2rotm(endPts(2, 4:7)), endPts(2, 1:3)'; zeros(1,3), 1];
 Robot.robotTF(g_goal, 1);
 
 % Plot properties

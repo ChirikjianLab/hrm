@@ -5,5 +5,5 @@ elseif length(q) == 4
     if size(q,2) ~= 4
         q = q';
     end
-    R = axang2rotm(q);
+    R = quat2rotm(q/norm(q));
 end
