@@ -109,7 +109,8 @@ int main(int argc, char** argv) {
     polyVtx.invMat = rob_InvMat;
 
     // Load Environment
-    PlannerSetting2D env2D = LoadEnvironment2D();
+    PlannerSetting2D* env2D = new PlannerSetting2D();
+    env2D->loadEnvironment();
 
     // Parameters
     param par;
@@ -117,23 +118,25 @@ int main(int argc, char** argv) {
     par.N_layers = static_cast<size_t>(N_l);
     par.N_dy = static_cast<size_t>(N_y);
     par.sampleNum = 10;
-    par.N_o = env2D.obstacle.size();
-    par.N_s = env2D.arena.size();
+    par.N_o = env2D->getObstacle().size();
+    par.N_s = env2D->getArena().size();
     par.polyVtx = polyVtx;
 
     double f = 1.5;
-    vector<double> bound = {
-        env2D.arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
-        env2D.arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
-    par.Lim = {env2D.arena.at(0).getPosition().at(0) - bound.at(0),
-               env2D.arena.at(0).getPosition().at(0) + bound.at(0),
-               env2D.arena.at(0).getPosition().at(1) - bound.at(1),
-               env2D.arena.at(0).getPosition().at(1) + bound.at(1)};
+    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                f * robot.getSemiAxis().at(0),
+                            env2D->getArena().at(0).getSemiAxis().at(1) -
+                                f * robot.getSemiAxis().at(0)};
+    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {
         HighwayRoadMap high =
-            plan(robot, env2D.end_points, env2D.arena, env2D.obstacle, par);
+            plan(robot, env2D->getEndPoints(), env2D->getArena(),
+                 env2D->getObstacle(), par);
 
         time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
                              high.planTime.buildTime + high.planTime.searchTime,

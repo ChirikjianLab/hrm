@@ -39,7 +39,7 @@ HighwayRoadMap2D plan(const SuperEllipse& robot,
 
     // write to .csv file
     ofstream file_ori_bd;
-    file_ori_bd.open("bd_ori.csv");
+    file_ori_bd.open("origin_bound_2D.csv");
     for (size_t i = 0; i < bd_ori.bd_o.size(); i++) {
         file_ori_bd << bd_ori.bd_o[i] << "\n";
     }
@@ -49,7 +49,7 @@ HighwayRoadMap2D plan(const SuperEllipse& robot,
     file_ori_bd.close();
 
     ofstream file_bd;
-    file_bd.open("bd.csv");
+    file_bd.open("mink_bound_2D.csv");
     for (size_t i = 0; i < bd.bd_o.size(); i++) {
         file_bd << bd.bd_o[i] << "\n";
     }
@@ -59,7 +59,7 @@ HighwayRoadMap2D plan(const SuperEllipse& robot,
     file_bd.close();
 
     ofstream file_cell;
-    file_cell.open("cell.csv");
+    file_cell.open("cell_2D.csv");
     for (size_t i = 0; i < cell.ty.size(); i++) {
         for (size_t j = 0; j < cell.xL[i].size(); j++) {
             file_cell << cell.ty[i] << ' ' << cell.xL[i][j] << ' '
@@ -95,29 +95,33 @@ int main(int argc, char** argv) {
                        50);
 
     // Load Environment
-    PlannerSetting2D env2D = LoadEnvironment2D();
+    PlannerSetting2D* env2D = new PlannerSetting2D();
+    env2D->loadEnvironment();
 
     // Parameters
     param par;
     par.N_layers = static_cast<size_t>(N_l);
     par.N_dy = static_cast<size_t>(N_y);
-    par.N_o = env2D.obstacle.size();
-    par.N_s = env2D.arena.size();
     par.sampleNum = 5;
 
+    par.N_o = env2D->getObstacle().size();
+    par.N_s = env2D->getArena().size();
+
     double f = 1.5;
-    vector<double> bound = {
-        env2D.arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
-        env2D.arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0)};
-    par.Lim = {env2D.arena.at(0).getPosition().at(0) - bound.at(0),
-               env2D.arena.at(0).getPosition().at(0) + bound.at(0),
-               env2D.arena.at(0).getPosition().at(1) - bound.at(1),
-               env2D.arena.at(0).getPosition().at(1) + bound.at(1)};
+    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                f * robot.getSemiAxis().at(0),
+                            env2D->getArena().at(0).getSemiAxis().at(1) -
+                                f * robot.getSemiAxis().at(0)};
+    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
     // Multiple planning trials
     for (int i = 0; i < N; i++) {
         HighwayRoadMap2D high =
-            plan(robot, env2D.end_points, env2D.arena, env2D.obstacle, par);
+            plan(robot, env2D->getEndPoints(), env2D->getArena(),
+                 env2D->getObstacle(), par);
 
         time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
                              high.planTime.buildTime + high.planTime.searchTime,
@@ -141,7 +145,7 @@ int main(int argc, char** argv) {
 
         // Write the output to .csv files
         ofstream file_vtx;
-        file_vtx.open("vertex.csv");
+        file_vtx.open("vertex_2D.csv");
         vector<vector<double>> vtx = high.vtxEdge.vertex;
         for (size_t i = 0; i < vtx.size(); i++) {
             file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2]
@@ -150,7 +154,7 @@ int main(int argc, char** argv) {
         file_vtx.close();
 
         ofstream file_edge;
-        file_edge.open("edge.csv");
+        file_edge.open("edge_2D.csv");
         vector<pair<int, int>> edge = high.vtxEdge.edge;
         for (size_t i = 0; i < edge.size(); i++) {
             file_edge << edge[i].first << ' ' << edge[i].second << "\n";
@@ -158,7 +162,7 @@ int main(int argc, char** argv) {
         file_edge.close();
 
         ofstream file_paths;
-        file_paths.open("paths.csv");
+        file_paths.open("paths_2D.csv");
         vector<int> paths = high.Paths;
         for (size_t i = 0; i < paths.size(); i++) {
             file_paths << paths[i] << ' ';
@@ -168,7 +172,7 @@ int main(int argc, char** argv) {
 
     // Store results
     ofstream file_time;
-    file_time.open("time_high.csv");
+    file_time.open("time_high_2D.csv");
     file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
               << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
               << "PATH_NODE"

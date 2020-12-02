@@ -1,4 +1,5 @@
 #include "ompl/include/ompl_planner_ellipsoid.h"
+#include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
 
@@ -22,9 +23,9 @@ int main(int argc, char** argv) {
     string arena_config = "../config/arena_config_3d.csv";
     string obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot = getSQFromCsv(robot_config, n);
-    vector<SuperQuadrics> arena = getSQFromCsv(arena_config, n);
-    vector<SuperQuadrics> obs = getSQFromCsv(obs_config, n);
+    vector<SuperQuadrics> robot = loadVectorSuperQuadrics(robot_config, n);
+    vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
+    vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
 
     // Obstacle mesh
     vector<EMesh> obs_mesh;

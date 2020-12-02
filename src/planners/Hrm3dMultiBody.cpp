@@ -236,26 +236,63 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
 
 // Point in collision-free line segment
 bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
-    for (size_t i = 0; i < cell.tx.size(); ++i) {
+    std::vector<bool> isInLine(4, false);
+
+    for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
         // Locate to the sweep line of the vertex
         if (cell.tx[i] < V[0]) {
             continue;
         }
 
-        for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
+        for (size_t j = 0; j < cell.cellYZ[i].ty.size() - 1; ++j) {
             if (cell.cellYZ[i].ty[j] < V[1]) {
                 continue;
             }
 
+            // z-coordinate within the current line
             for (size_t k = 0; k < cell.cellYZ[i].zM[j].size(); ++k) {
                 if ((V[2] >= cell.cellYZ[i].zL[j][k]) &&
                     (V[2] <= cell.cellYZ[i].zU[j][k])) {
-                    return true;
+                    isInLine[0] = true;
+                    break;
+                }
+            }
+
+            // z-coordinate within 3 neighboring lines
+            for (size_t k = 0; k < cell.cellYZ[i].zM[j + 1].size(); ++k) {
+                if ((V[2] >= cell.cellYZ[i].zL[j + 1][k]) &&
+                    (V[2] <= cell.cellYZ[i].zU[j + 1][k])) {
+                    isInLine[1] = true;
+                    break;
+                }
+            }
+
+            for (size_t k = 0; k < cell.cellYZ[i + 1].zM[j].size(); ++k) {
+                if ((V[2] >= cell.cellYZ[i + 1].zL[j][k]) &&
+                    (V[2] <= cell.cellYZ[i + 1].zU[j][k])) {
+                    isInLine[2] = true;
+                    break;
+                }
+            }
+
+            for (size_t k = 0; k < cell.cellYZ[i + 1].zM[j + 1].size(); ++k) {
+                if ((V[2] >= cell.cellYZ[i + 1].zL[j + 1][k]) &&
+                    (V[2] <= cell.cellYZ[i + 1].zU[j + 1][k])) {
+                    isInLine[3] = true;
+                    break;
                 }
             }
         }
     }
-    return false;
+
+    // z-coordinate within all neighboring sweep lines, then collision free
+    for (size_t i = 0; i < isInLine.size(); ++i) {
+        if (!isInLine[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // Multi-body Tightly-Fitted Ellipsoid

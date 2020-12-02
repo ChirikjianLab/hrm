@@ -4,6 +4,7 @@ target_link_libraries(BenchOMPL3D
                       SOURCE_3D
                       OMPL_BENCH
                       GEOM
+                      TESTUTIL
                       ${OMPL}
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
@@ -14,6 +15,7 @@ target_link_libraries(BenchOMPL3DEllipsoid
                       SOURCE_3D
                       OMPL_BENCH
                       GEOM
+                      TESTUTIL
                       ${OMPL})
 
 add_executable(BenchHRM3D BenchHRM3D.cpp)
@@ -22,6 +24,7 @@ target_link_libraries(BenchHRM3D
                       SOURCE_3D
                       HIGHWAY_BENCH
                       GEOM
+                      TESTUTIL
                       ${OMPL})
 
 add_executable(BenchHRM3DMultiBody BenchHRM3DMultiBody.cpp)
@@ -30,6 +33,7 @@ target_link_libraries(BenchHRM3DMultiBody
                       SOURCE_3D
                       HIGHWAY_BENCH
                       GEOM
+                      TESTUTIL
                       ${OMPL})
 
 add_executable(BenchHRM3DAdaptive
@@ -39,6 +43,7 @@ target_link_libraries(BenchHRM3DAdaptive
                       SOURCE_3D
                       HIGHWAY_BENCH
                       GEOM
+                      TESTUTIL
                       ${OMPL})
 
 add_subdirectory(highway)

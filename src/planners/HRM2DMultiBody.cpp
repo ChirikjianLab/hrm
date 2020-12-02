@@ -181,19 +181,37 @@ bool HRM2DMultiBody::isCollisionFree(const std::vector<double>& V1,
 // Point in collision-free line segment
 bool HRM2DMultiBody::isPtInCFLine(const cf_cell& cell,
                                   const std::vector<double>& V) {
-    for (size_t i = 0; i < cell.ty.size(); ++i) {
+    std::vector<bool> isInLine(2, false);
+
+    for (size_t i = 1; i < cell.ty.size(); ++i) {
         // Locate to the sweep line of the vertex
         if (cell.ty[i] < V[1]) {
             continue;
         }
 
-        for (size_t j = 0; j < cell.xM.size(); ++j) {
+        // z-coordinate within the current line
+        for (size_t j = 0; j < cell.xM[i].size(); ++j) {
             if ((V[0] >= cell.xL[i][j]) && (V[0] <= cell.xU[i][j])) {
-                return true;
+                isInLine[0] = true;
+                break;
+            }
+        }
+
+        // z-coordinate within the adjacent line
+        for (size_t j = 0; j < cell.xM[i - 1].size(); ++j) {
+            if ((V[0] >= cell.xL[i - 1][j]) && (V[0] <= cell.xU[i - 1][j])) {
+                isInLine[1] = true;
+                break;
             }
         }
     }
-    return false;
+
+    // z-coordinate within all neighboring sweep lines, then collision free
+    if (isInLine[0] && isInLine[1]) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // Multi-body Tightly-Fitted Ellipsoid

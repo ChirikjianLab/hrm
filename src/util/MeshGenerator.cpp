@@ -79,25 +79,25 @@ ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
     return X;
 }
 
-std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
-                                        const int num) {
-    // Read config file
-    std::vector<std::vector<double>> config = parse2DCsvFile(file_name);
+// std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
+//                                        const int num) {
+//    // Read config file
+//    std::vector<std::vector<double>> config = parse2DCsvFile(file_name);
 
-    // Generate SQ object
-    std::vector<SuperQuadrics> obj;
-    for (size_t j = 0; j < config.size(); j++) {
-        obj.emplace_back(
-            SuperQuadrics({config[j][0], config[j][1], config[j][2]},
-                          {config[j][3], config[j][4]},
-                          {config[j][5], config[j][6], config[j][7]},
-                          Eigen::Quaterniond(config[j][8], config[j][9],
-                                             config[j][10], config[j][11]),
-                          num));
-    }
+//    // Generate SQ object
+//    std::vector<SuperQuadrics> obj;
+//    for (size_t j = 0; j < config.size(); j++) {
+//        obj.emplace_back(
+//            SuperQuadrics({config[j][0], config[j][1], config[j][2]},
+//                          {config[j][3], config[j][4]},
+//                          {config[j][5], config[j][6], config[j][7]},
+//                          Eigen::Quaterniond(config[j][8], config[j][9],
+//                                             config[j][10], config[j][11]),
+//                          num));
+//    }
 
-    return obj;
-}
+//    return obj;
+//}
 
 ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat) {
     ParametricPoints X;

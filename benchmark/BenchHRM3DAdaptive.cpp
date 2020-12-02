@@ -1,6 +1,5 @@
 #include "highway/include/hrm_multi_adaptive_planner.h"
-#include "util/include/MeshGenerator.h"
-#include "util/include/Parse2dCsvFile.h"
+#include "util/include/ParsePlanningSettings.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -31,9 +30,10 @@ int main(int argc, char **argv) {
     string arena_config = "../config/arena_config_3d.csv";
     string obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_parts = getSQFromCsv(robot_config, n);
-    vector<SuperQuadrics> arena = getSQFromCsv(arena_config, n);
-    vector<SuperQuadrics> obs = getSQFromCsv(obs_config, n);
+    vector<SuperQuadrics> robot_parts =
+        loadVectorSuperQuadrics(robot_config, n);
+    vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
+    vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
 
     // Generate multibody tree for robot
     MultiBodyTree3D robot(robot_parts[0]);

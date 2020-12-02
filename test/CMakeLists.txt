@@ -30,14 +30,5 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
 
-add_executable(TestHRM3DMultiBody TestHRM3DMultiBody.cpp)
-target_link_libraries(TestHRM3DMultiBody
-                      UTIL
-                      SOURCE_3D
-                      GEOM
-                      TESTUTIL
-                      ${FCL_LIBRARIES}
-                      ${CCD_LIBRARIES})
-
 add_subdirectory(googletest)
 add_subdirectory(util)

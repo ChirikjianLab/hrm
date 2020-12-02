@@ -1,6 +1,6 @@
 #include "highway/include/highway_planner.h"
 #include "util/include/MeshGenerator.h"
-#include "util/include/Parse2dCsvFile.h"
+#include "util/include/ParsePlanningSettings.h"
 
 using namespace Eigen;
 using namespace std;
@@ -26,9 +26,9 @@ int main(int argc, char **argv) {
            arena_config = "../config/arena_config_3d.csv",
            obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = getSQFromCsv(robot_config, n),
-                          arena = getSQFromCsv(arena_config, n),
-                          obs = getSQFromCsv(obs_config, n);
+    vector<SuperQuadrics> robot_aux = loadVectorSuperQuadrics(robot_config, n),
+                          arena = loadVectorSuperQuadrics(arena_config, n),
+                          obs = loadVectorSuperQuadrics(obs_config, n);
     SuperQuadrics robot = robot_aux[0];
 
     // Read predefined quaternions
