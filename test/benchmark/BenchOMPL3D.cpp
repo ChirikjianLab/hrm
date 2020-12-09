@@ -1,5 +1,5 @@
-#include "ompl/include/ompl_planner.h"
 #include "util/include/ParsePlanningSettings.h"
+#include "util/include/ompl_planner.h"
 
 using namespace std;
 

@@ -3,21 +3,20 @@ cmake_minimum_required(VERSION 3.10)
 # Project's name
 project(highwayRoadMap LANGUAGES CXX)
 
+# Specify the minimum version for CMake
 set(CMAKE_CXX_STANDARD 14)
 set(default_build_type "RelWithDebInfo")
 
-# Specify the minimum version for CMake
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
+# Specify Binary dir
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
+# Include directories
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/test)
-include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 
 #add_compile_options(
 #        -Wall
@@ -25,7 +24,7 @@ include_directories(${PROJECT_SOURCE_DIR}/benchmark)
 #        -Woverloaded-virtual
 #)
 
-# Packages
+# Dependency packages
 
 find_package(OMPL REQUIRED)
 IF (OMPL_FOUND)
@@ -81,4 +80,3 @@ endif()
 # Subdirectories
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(benchmark)

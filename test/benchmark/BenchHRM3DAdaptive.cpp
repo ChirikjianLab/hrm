@@ -1,7 +1,5 @@
-#include "highway/include/highway_multibody.h"
-#include "planners/include/Hrm3dMultiBody.h"
-#include "util/include/MeshGenerator.h"
 #include "util/include/ParsePlanningSettings.h"
+#include "util/include/hrm_multi_adaptive_planner.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -10,11 +8,12 @@
 using namespace Eigen;
 using namespace std;
 
+#define pi 3.1415926
+
 int main(int argc, char **argv) {
-    if (argc != 7) {
+    if (argc != 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of layers 4) Num of sweep planes 5) Num of sweep lines 6) "
-                "Pre-defined quaternions (if no, enter 0)"
+                "of sweep planes 4) Num of sweep lines"
              << endl;
         return 1;
     }
@@ -22,7 +21,7 @@ int main(int argc, char **argv) {
     // Record planning time for N trials
     size_t N = size_t(atoi(argv[1]));
     int n = atoi(argv[2]);
-    int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
+    int N_x = atoi(argv[3]), N_y = atoi(argv[4]);
 
     vector<vector<double>> stat(N);
 
@@ -35,23 +34,6 @@ int main(int argc, char **argv) {
         loadVectorSuperQuadrics(robot_config, n);
     vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
     vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
-
-    // Read predefined quaternions
-    string quat_file = argv[6];
-    if (quat_file.compare("0") == 0) {
-        cout << "Will generate uniform random rotations from SO(3)" << endl;
-    } else {
-        vector<vector<double>> quat_sample = parse2DCsvFile(quat_file);
-
-        vector<Quaterniond> q_sample;
-        for (size_t i = 0; i < quat_sample.size(); i++) {
-            Quaterniond q(quat_sample[i][0], quat_sample[i][1],
-                          quat_sample[i][2], quat_sample[i][3]);
-            q_sample.emplace_back(q);
-        }
-        robot_parts.at(0).setQuatSamples(q_sample);
-        N_l = static_cast<int>(q_sample.size());
-    }
 
     // Generate multibody tree for robot
     MultiBodyTree3D robot(robot_parts[0]);
@@ -71,10 +53,11 @@ int main(int argc, char **argv) {
     option3D opt;
     opt.N_o = obs.size();
     opt.N_s = arena.size();
-    opt.N_layers = size_t(N_l);
+    opt.N_layers = 0;
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-    double f = 1.2;
+
+    const double f = 1.2;
     opt.Lim = {arena.at(0).getSemiAxis().at(0) -
                    f * robot.getBase().getSemiAxis().at(0),
                arena.at(0).getSemiAxis().at(1) -
@@ -85,25 +68,21 @@ int main(int argc, char **argv) {
     // Store results
     ofstream file_time;
     file_time.open("time_high3D.csv");
-    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
-              << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
-              << "N_Y" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
+    file_time << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS" << ','
+              << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE" << ','
+              << "GRAPH_EDGE" << ',' << "PATH_NODE"
               << "\n";
 
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HighwayRoadmap3D
-        hrm_multibody_planner high3D(robot, EndPts, arena, obs, opt);
-        high3D.plan_graph();
-        high3D.plan_search();
+        hrm_multi_adaptive_planner high3D(robot, EndPts, arena, obs, opt);
+        high3D.plan_path();
 
         // Store results
-        file_time << high3D.flag << ',' << high3D.planTime.buildTime << ','
-                  << high3D.planTime.searchTime << ','
-                  << high3D.planTime.buildTime + high3D.planTime.searchTime
-                  << ',' << N_l << ',' << N_x << ',' << N_y << ','
+        file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','
+                  << high3D.N_layers << ',' << N_x << ',' << N_y << ','
                   << high3D.vtxEdge.vertex.size() << ','
                   << high3D.vtxEdge.edge.size() << ','
                   << high3D.solutionPathInfo.PathId.size() << "\n";

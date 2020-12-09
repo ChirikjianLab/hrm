@@ -56,7 +56,7 @@ void highway_planner::plan_search() {
     // Write to file
     ofstream file_paths;
     file_paths.open("paths3D.csv");
-    if (~solutionPathInfo.PathId.empty()) {
+    if (!solutionPathInfo.PathId.empty()) {
         for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
             file_paths << solutionPathInfo.PathId[i] << ' ';
         }

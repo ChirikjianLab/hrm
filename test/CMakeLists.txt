@@ -30,5 +30,6 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
 
-add_subdirectory(googletest)
+add_subdirectory(benchmark)
+add_subdirectory(gtest)
 add_subdirectory(util)

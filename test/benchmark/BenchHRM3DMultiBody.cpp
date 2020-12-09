@@ -1,6 +1,11 @@
-#include "highway/include/highway_planner.h"
+#include "planners/include/Hrm3dMultiBody.h"
 #include "util/include/MeshGenerator.h"
 #include "util/include/ParsePlanningSettings.h"
+#include "util/include/highway_multibody.h"
+
+#include <stdlib.h>
+#include <cstdlib>
+#include <ctime>
 
 using namespace Eigen;
 using namespace std;
@@ -16,20 +21,20 @@ int main(int argc, char **argv) {
 
     // Record planning time for N trials
     size_t N = size_t(atoi(argv[1]));
-    int n = atoi(argv[2]), N_l = atoi(argv[3]), N_x = atoi(argv[4]),
-        N_y = atoi(argv[5]);
+    int n = atoi(argv[2]);
+    int N_l = atoi(argv[3]), N_x = atoi(argv[4]), N_y = atoi(argv[5]);
 
     vector<vector<double>> stat(N);
 
     // Read and setup environment config
-    string robot_config = "../config/robot_config_3d.csv",
-           arena_config = "../config/arena_config_3d.csv",
-           obs_config = "../config/obs_config_3d.csv";
+    string robot_config = "../config/robot_config_3d.csv";
+    string arena_config = "../config/arena_config_3d.csv";
+    string obs_config = "../config/obs_config_3d.csv";
 
-    vector<SuperQuadrics> robot_aux = loadVectorSuperQuadrics(robot_config, n),
-                          arena = loadVectorSuperQuadrics(arena_config, n),
-                          obs = loadVectorSuperQuadrics(obs_config, n);
-    SuperQuadrics robot = robot_aux[0];
+    vector<SuperQuadrics> robot_parts =
+        loadVectorSuperQuadrics(robot_config, n);
+    vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
+    vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
 
     // Read predefined quaternions
     string quat_file = argv[6];
@@ -40,14 +45,18 @@ int main(int argc, char **argv) {
 
         vector<Quaterniond> q_sample;
         for (size_t i = 0; i < quat_sample.size(); i++) {
-            Quaterniond q;
-            q.w() = quat_sample[i][0];
-            q.x() = quat_sample[i][1];
-            q.y() = quat_sample[i][2];
-            q.z() = quat_sample[i][3];
+            Quaterniond q(quat_sample[i][0], quat_sample[i][1],
+                          quat_sample[i][2], quat_sample[i][3]);
             q_sample.emplace_back(q);
         }
-        robot.setQuatSamples(q_sample);
+        robot_parts.at(0).setQuatSamples(q_sample);
+        N_l = static_cast<int>(q_sample.size());
+    }
+
+    // Generate multibody tree for robot
+    MultiBodyTree3D robot(robot_parts[0]);
+    for (size_t i = 1; i < robot_parts.size(); i++) {
+        robot.addBody(robot_parts[i]);
     }
 
     // Start and goal setup
@@ -66,9 +75,12 @@ int main(int argc, char **argv) {
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
     double f = 1.2;
-    opt.Lim = {arena.at(0).getSemiAxis().at(0) - f * robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(1) - f * robot.getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(2) - f * robot.getSemiAxis().at(0)};
+    opt.Lim = {arena.at(0).getSemiAxis().at(0) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(1) -
+                   f * robot.getBase().getSemiAxis().at(0),
+               arena.at(0).getSemiAxis().at(2) -
+                   f * robot.getBase().getSemiAxis().at(0)};
 
     // Store results
     ofstream file_time;
@@ -80,14 +92,14 @@ int main(int argc, char **argv) {
               << "\n";
 
     for (size_t i = 0; i < N; i++) {
-        cout << "Number of trials: " << i << endl;
+        cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HighwayRoadmap3D
-        highway_planner high3D(robot, EndPts, arena, obs, opt);
+        hrm_multibody_planner high3D(robot, EndPts, arena, obs, opt);
         high3D.plan_graph();
         high3D.plan_search();
 
-        // Write results
+        // Store results
         file_time << high3D.flag << ',' << high3D.planTime.buildTime << ','
                   << high3D.planTime.searchTime << ','
                   << high3D.planTime.buildTime + high3D.planTime.searchTime
