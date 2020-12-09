@@ -18,17 +18,8 @@ target_link_libraries(BenchOMPL3DEllipsoid
                       TESTUTIL
                       ${OMPL})
 
-add_executable(BenchHRM3D BenchHRM3D.cpp)
-target_link_libraries(BenchHRM3D
-                      UTIL
-                      SOURCE_3D
-                      HIGHWAY_UTIL
-                      GEOM
-                      TESTUTIL
-                      ${OMPL})
-
-add_executable(BenchHRM3DMultiBody BenchHRM3DMultiBody.cpp)
-target_link_libraries(BenchHRM3DMultiBody
+add_executable(BenchHighway3D BenchHighway3D.cpp)
+target_link_libraries(BenchHighway3D
                       UTIL
                       SOURCE_3D
                       HIGHWAY_UTIL

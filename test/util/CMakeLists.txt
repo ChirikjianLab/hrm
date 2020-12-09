@@ -7,7 +7,6 @@ target_link_libraries(TESTUTIL
 
 add_library(HIGHWAY_UTIL
             highway_planner.cpp
-            highway_multibody.cpp
             hrm_multi_adaptive_planner.cpp)
 
 add_library(OMPL_UTIL

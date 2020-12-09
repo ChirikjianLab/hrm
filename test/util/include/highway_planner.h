@@ -1,16 +1,21 @@
 #ifndef HIGHWAY_PLANNER_H
 #define HIGHWAY_PLANNER_H
 
-#include "planners/include/HighwayRoadMap3d.h"
+#include "planners/include/Hrm3dMultiBody.h"
 
-class highway_planner : public HighwayRoadMap3D {
+class PlannerHighway3D : public Hrm3DMultiBody {
   public:
-    highway_planner(SuperQuadrics robot,
-                    std::vector<std::vector<double>> EndPts,
-                    std::vector<SuperQuadrics> arena,
-                    std::vector<SuperQuadrics> obs, option3D opt);
-    void plan_graph();
-    void plan_search();
+    PlannerHighway3D(MultiBodyTree3D robot,
+                     std::vector<std::vector<double>> endPts,
+                     std::vector<SuperQuadrics> arena,
+                     std::vector<SuperQuadrics> obs, option3D opt);
+
+    void getGraphAndPath();
+
+  private:
+    void storeGraph();
+
+    void storePath();
 };
 
 #endif  // HIGHWAY_PLANNER_H

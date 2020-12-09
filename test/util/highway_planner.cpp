@@ -2,25 +2,26 @@
 
 using namespace std;
 
-highway_planner::highway_planner(SuperQuadrics robot,
-                                 vector<vector<double>> EndPts,
-                                 vector<SuperQuadrics> arena,
-                                 vector<SuperQuadrics> obs, option3D opt)
-    : HighwayRoadMap3D(robot, EndPts, arena, obs, opt) {}
+PlannerHighway3D::PlannerHighway3D(MultiBodyTree3D robot,
+                                   vector<vector<double>> EndPts,
+                                   vector<SuperQuadrics> arena,
+                                   vector<SuperQuadrics> obs, option3D opt)
+    : Hrm3DMultiBody(robot, EndPts, arena, obs, opt) {}
 
-void highway_planner::plan_graph() {
-    // Highway algorithm
-    auto start = ompl::time::now();
-    buildRoadmap();
-    planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
+void PlannerHighway3D::getGraphAndPath() {
+    plan();
+    storeGraph();
+    storePath();
+}
 
+void PlannerHighway3D::storeGraph() {
     // Building Time
     cout << "Roadmap build time: " << planTime.buildTime << "s" << endl;
     cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
 
     // Write the output to .csv files
     ofstream file_vtx;
-    file_vtx.open("vertex3D.csv");
+    file_vtx.open("vertex_3D.csv");
     vector<vector<double>> vtx = vtxEdge.vertex;
     for (size_t i = 0; i < vtx.size(); i++) {
         file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
@@ -30,7 +31,7 @@ void highway_planner::plan_graph() {
     file_vtx.close();
 
     ofstream file_edge;
-    file_edge.open("edge3D.csv");
+    file_edge.open("edge_3D.csv");
     for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
         file_edge << vtxEdge.edge[i].first << ' ' << vtxEdge.edge[i].second
                   << "\n";
@@ -38,15 +39,9 @@ void highway_planner::plan_graph() {
     file_edge.close();
 }
 
-void highway_planner::plan_search() {
-    auto start = ompl::time::now();
-    search();
-    planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
-
+void PlannerHighway3D::storePath() {
     // Path Time
     cout << "Path search time: " << planTime.searchTime << "s" << endl;
-
-    planTime.totalTime = planTime.buildTime + planTime.searchTime;
     cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
 
     cout << "Number of configurations in Path: "
@@ -55,7 +50,7 @@ void highway_planner::plan_search() {
 
     // Write to file
     ofstream file_paths;
-    file_paths.open("paths3D.csv");
+    file_paths.open("paths_3D.csv");
     if (!solutionPathInfo.PathId.empty()) {
         for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
             file_paths << solutionPathInfo.PathId[i] << ' ';
@@ -65,7 +60,7 @@ void highway_planner::plan_search() {
 
     // Retrieve solution path
     ofstream file_path;
-    file_path.open("solutionPath3D.csv");
+    file_path.open("solution_path_3D.csv");
     vector<vector<double>> path = getSolutionPath();
     for (size_t i = 0; i < path.size(); i++) {
         file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2] << ' '
@@ -75,7 +70,7 @@ void highway_planner::plan_search() {
     file_path.close();
 
     ofstream file_interp_path;
-    file_interp_path.open("interpolatedPath3D.csv");
+    file_interp_path.open("interpolated_path_3D.csv");
     vector<vector<double>> pathInterp = getInterpolatedSolutionPath(5);
     for (size_t i = 0; i < pathInterp.size(); i++) {
         file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1] << ' '

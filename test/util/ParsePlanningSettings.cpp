@@ -135,7 +135,5 @@ void PlannerSetting3D::loadEnvironment() {
     // Read end points config file
     std::vector<std::vector<double>> endPts =
         parse2DCsvFile("../config/end_points_3D.csv");
-
-    end_points_.push_back(endPts[0]);
-    end_points_.push_back(endPts[1]);
+    end_points_ = endPts;
 }

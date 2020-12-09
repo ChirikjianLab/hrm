@@ -19,13 +19,11 @@ int main(int argc, char** argv) {
     vector<vector<double>> time_stat;
 
     // Read and setup environment config
-    string robot_config = "../config/robot_config_3d.csv";
-    string arena_config = "../config/arena_config_3d.csv";
-    string obs_config = "../config/obs_config_3d.csv";
+    PlannerSetting3D* env3D = new PlannerSetting3D();
+    env3D->loadEnvironment();
 
-    vector<SuperQuadrics> robot = loadVectorSuperQuadrics(robot_config, n);
-    vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
-    vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
+    const vector<SuperQuadrics>& arena = env3D->getArena();
+    const vector<SuperQuadrics>& obs = env3D->getObstacle();
 
     // Obstacle mesh
     vector<EMesh> obs_mesh;
@@ -33,27 +31,22 @@ int main(int argc, char** argv) {
         obs_mesh.emplace_back(getMeshFromSQ(obs.at(i)));
     }
 
+    // Setup robot config
+    string robot_config = "../config/robot_config_3D.csv";
+    vector<SuperQuadrics> robot = loadVectorSuperQuadrics(robot_config, n);
+
     // Boundary
-    double f = 1.2;
+    double f = 1.5;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +
                              f * robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(2) +
                              f * robot.at(0).getSemiAxis().at(0)},
-                   b2 = {arena.at(0).getSemiAxis().at(0) -
-                             f * robot.at(0).getSemiAxis().at(0),
-                         arena.at(0).getSemiAxis().at(1) -
-                             f * robot.at(0).getSemiAxis().at(0),
-                         arena.at(0).getSemiAxis().at(2) -
-                             f * robot.at(0).getSemiAxis().at(0)};
-
-    // Start and goal setup
-    string file_endpt = "../config/endPts_3d.csv";
-    const vector<vector<double>>& endPts = parse2DCsvFile(file_endpt);
+                   b2 = {-b1[0], -b1[1], -b1[2]};
 
     std::ofstream outfile;
-    outfile.open("time_ompl3D.csv");
+    outfile.open("time_ompl_3D.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
@@ -74,7 +67,8 @@ int main(int argc, char** argv) {
                 cout << "Num of trials: " << i << endl;
 
                 PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
-                tester.plan(endPts[0], endPts[1]);
+                tester.plan(env3D->getEndPoints().at(0),
+                            env3D->getEndPoints().at(1));
 
                 outfile << m << ',' << n << ',' << tester.flag << ','
                         << tester.totalTime << ',' << tester.numGraphNodes

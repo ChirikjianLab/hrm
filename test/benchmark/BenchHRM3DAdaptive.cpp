@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     }
 
     // Start and goal setup
-    string file_endpt = "../config/endPts_3d.csv";
+    string file_endpt = "../config/end_points_3D.csv";
     vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
     vector<vector<double>> EndPts;
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 
     // Store results
     ofstream file_time;
-    file_time.open("time_high3D.csv");
+    file_time.open("time_high_3D.csv");
     file_time << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS" << ','
               << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE" << ','
               << "GRAPH_EDGE" << ',' << "PATH_NODE"
