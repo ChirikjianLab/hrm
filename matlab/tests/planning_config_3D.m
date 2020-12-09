@@ -7,7 +7,7 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-[ar, obs, endPts] = Environment3D(2, 2);
+[ar, obs, endPts] = Environment3D(2, 4);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); 
@@ -27,7 +27,7 @@ csvwrite(fullfile(outPath,'arena_config_3D.csv'), arena);
 
 %% Robot Initialization
 disp('Robot Configurations...');
-Robot = RobotInit3D(1);
+Robot = RobotInit3D(2);
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -71,4 +71,4 @@ g_goal = [quat2rotm(endPts(2, 4:7)), endPts(2, 1:3)'; zeros(1,3), 1];
 Robot.robotTF(g_goal, 1);
 
 % Plot properties
-light('Position',[1 0 0])
+light('Position',[-1 0 1])

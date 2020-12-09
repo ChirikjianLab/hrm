@@ -10,6 +10,12 @@ path_prefix = '../../resources/3D/';
 if opt == 1
     robot_config = csvread([path_prefix, 'robot_rabbit_3D.csv']);
     colors = ['g', 'b', 'b'];
+    
+elseif opt == 2
+    robot_config = csvread([path_prefix, 'robot_chair_3D.csv']);
+    colors = ['g', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b',...
+        'm', 'm', 'm', 'm'];
+    
 end
 
 %% Construct MultiLinkTree class

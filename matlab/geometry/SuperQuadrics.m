@@ -196,7 +196,7 @@ classdef SuperQuadrics
             Z = reshape(pnt(3,:), m, n);
             
             S = surf(X, Y, Z, 'FaceColor', objSQ.color,...
-                'EdgeColor', 'none', 'FaceAlpha',0.3);
+                'EdgeColor', 'none', 'FaceAlpha', 1);
         end
         
         %% ---------------------------------------------------------------%
@@ -211,7 +211,7 @@ classdef SuperQuadrics
             Z = reshape(pnt(3,:), m, n);
             
             surf(X, Y, Z, 'FaceColor', objSQ.color, 'EdgeColor', 'none',...
-                'FaceAlpha',0.5);
+                'FaceAlpha', 1);
         end
         
         %% ---------------------------------------------------------------%

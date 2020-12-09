@@ -26,6 +26,8 @@ elseif obs_shape == 2
             env_type = 'cluttered';
         case 3
             env_type = 'maze';
+        case 4
+            env_type = 'home';
     end
 end
 
@@ -49,7 +51,7 @@ end
 
 for i = 1:N_o
     obs(i) = SuperQuadrics({obs_config(i,1:3), obs_config(i,4:5),...
-        obs_config(i,6:8)', obs_config(i,9:end), Ns}, 'k', 0);
+        obs_config(i,6:8)', obs_config(i,9:end), No}, 'y', 0);
 end
 
 end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
