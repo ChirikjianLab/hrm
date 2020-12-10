@@ -141,14 +141,14 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
 
     // Path planning
     std::cout << "Planning..." << std::endl;
-    ob::PlannerStatus solved = ss_->solve(60.0);
+    ob::PlannerStatus solved = ss_->solve(100.0);
     if (!solved) {
         flag = false;
         return false;
     }
 
     totalTime = ss_->getLastPlanComputationTime();
-    if (totalTime > 60.0) {
+    if (totalTime > 100.0) {
         flag = false;
         return false;
     }

@@ -38,6 +38,8 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
 
         vtxId.push_back(N_v);
 
+        free_cell.push_back(CFcell);
+
         connectMultiLayer();
 
         search();
@@ -54,7 +56,6 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
         return;
     }
 
-    size_t n = vtxEdge.vertex.size();
     size_t start;
     size_t n_1;
     size_t n_2;
@@ -91,18 +92,11 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
                 continue;
             }
 
-            if (isCollisionFree(V1, V2)) {
-                // Middle vertex: trans = V1; rot = V2;
-                midVtx = {V1[0], V1[1], V1[2], V2[3], V2[4], V2[5], V2[6]};
-                vtxEdge.vertex.push_back(midVtx);
-
+            if (isCollisionFree(&free_cell.at(N_layers - 1), V1, V2)) {
                 // Add new connections
-                vtxEdge.edge.push_back(std::make_pair(m0, n));
-                vtxEdge.weight.push_back(vectorEuclidean(V1, midVtx));
-                vtxEdge.edge.push_back(std::make_pair(m1, n));
-                vtxEdge.weight.push_back(vectorEuclidean(V2, midVtx));
-
-                n++;
+                // motion primitive: first rotate from V1, then translate to V2
+                vtxEdge.edge.push_back(std::make_pair(m0, m1));
+                vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
                 break;
             }

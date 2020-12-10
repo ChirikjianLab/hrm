@@ -20,13 +20,22 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     virtual void connectMultiLayer();
 
   protected:
-    std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond,
-                                         Eigen::Quaterniond);
-    bool isCollisionFree(std::vector<double>, std::vector<double>);
-    bool isPtInCFLine(cf_cell3D, std::vector<double>);
+    std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond q1,
+                                         Eigen::Quaterniond q2);
+    bool isCollisionFree(const cf_cell3D* cell, const std::vector<double>& V1,
+                         const std::vector<double>& V2);
+    bool isRotationMotionFree(const std::vector<double>& V1,
+                              const std::vector<double>& V2);
+    bool isTranslationMotionFree(const cf_cell3D* cell,
+                                 const std::vector<double>& V1,
+                                 const std::vector<double>& V2);
+    bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>& V);
 
-  public:
+  protected:
     MultiBodyTree3D RobotM;
+
+    std::vector<cf_cell3D> free_cell;
+
     std::vector<SuperQuadrics> mid;
     std::vector<cf_cell3D> mid_cell;
     std::vector<double> midVtx;

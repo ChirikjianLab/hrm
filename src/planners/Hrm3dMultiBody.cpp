@@ -48,6 +48,9 @@ void Hrm3DMultiBody::buildRoadmap() {
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
+
+        // Store the collision-free segment info
+        free_cell.push_back(CFcell);
     }
     connectMultiLayer();
 };
@@ -166,19 +169,19 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
-            V1 = vtxEdge.vertex[m0];
+            V1 = vtxEdge.vertex.at(m0);
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
                 V2 = vtxEdge.vertex[m1];
 
                 // Locate the nearest vertices
-                if (std::fabs(V1[0] - V2[0]) > Lim[0] / N_dx ||
-                    std::fabs(V1[1] - V2[1]) > Lim[1] / N_dy) {
+                if (std::fabs(V1.at(0) - V2.at(0)) > Lim[0] / N_dx ||
+                    std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy) {
                     continue;
                 }
 
                 //                n_check++;
 
-                if (isCollisionFree(V1, V2)) {
+                if (isCollisionFree(&free_cell.at(i), V1, V2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
@@ -200,8 +203,18 @@ void Hrm3DMultiBody::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
-                                     std::vector<double> V2) {
+bool Hrm3DMultiBody::isCollisionFree(const cf_cell3D* cell,
+                                     const std::vector<double>& V1,
+                                     const std::vector<double>& V2) {
+    if (isRotationMotionFree(V1, V2) && isTranslationMotionFree(cell, V1, V2)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool Hrm3DMultiBody::isRotationMotionFree(const std::vector<double>& V1,
+                                          const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp = interpolateSE3(V1, V2, N_step);
 
@@ -218,13 +231,13 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
         RobotM.robotTF(gStep);
 
         // Base: determine whether each step is within CF-Line of midLayer
-        if (!isPtInCFLine(mid_cell[0], RobotM.getBase().getPosition())) {
+        if (!isPtInCFLine(&mid_cell[0], RobotM.getBase().getPosition())) {
             return false;
         }
 
         // For each link, check whether its center is within CF-cell of midLayer
         for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
-            if (!isPtInCFLine(mid_cell[j + 1],
+            if (!isPtInCFLine(&mid_cell[j + 1],
                               RobotM.getLinks()[j].getPosition())) {
                 return false;
             }
@@ -235,49 +248,50 @@ bool Hrm3DMultiBody::isCollisionFree(std::vector<double> V1,
 }
 
 // Point in collision-free line segment
-bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
+bool Hrm3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
+                                  const std::vector<double>& V) {
     std::vector<bool> isInLine(4, false);
 
-    for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
+    for (size_t i = 0; i < cell->tx.size() - 1; ++i) {
         // Locate to the sweep line of the vertex
-        if (cell.tx[i] < V[0]) {
+        if (cell->tx[i] < V.at(0)) {
             continue;
         }
 
-        for (size_t j = 0; j < cell.cellYZ[i].ty.size() - 1; ++j) {
-            if (cell.cellYZ[i].ty[j] < V[1]) {
+        for (size_t j = 0; j < cell->cellYZ[i].ty.size() - 1; ++j) {
+            if (cell->cellYZ[i].ty[j] < V.at(1)) {
                 continue;
             }
 
             // z-coordinate within the current line
-            for (size_t k = 0; k < cell.cellYZ[i].zM[j].size(); ++k) {
-                if ((V[2] >= cell.cellYZ[i].zL[j][k]) &&
-                    (V[2] <= cell.cellYZ[i].zU[j][k])) {
+            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
+                if ((V.at(2) > cell->cellYZ[i].zL[j][k]) &&
+                    (V.at(2) < cell->cellYZ[i].zU[j][k])) {
                     isInLine[0] = true;
                     break;
                 }
             }
 
             // z-coordinate within 3 neighboring lines
-            for (size_t k = 0; k < cell.cellYZ[i].zM[j + 1].size(); ++k) {
-                if ((V[2] >= cell.cellYZ[i].zL[j + 1][k]) &&
-                    (V[2] <= cell.cellYZ[i].zU[j + 1][k])) {
+            for (size_t k = 0; k < cell->cellYZ[i].zM[j + 1].size(); ++k) {
+                if ((V.at(2) > cell->cellYZ[i].zL[j + 1][k]) &&
+                    (V.at(2) < cell->cellYZ[i].zU[j + 1][k])) {
                     isInLine[1] = true;
                     break;
                 }
             }
 
-            for (size_t k = 0; k < cell.cellYZ[i + 1].zM[j].size(); ++k) {
-                if ((V[2] >= cell.cellYZ[i + 1].zL[j][k]) &&
-                    (V[2] <= cell.cellYZ[i + 1].zU[j][k])) {
+            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j].size(); ++k) {
+                if ((V.at(2) > cell->cellYZ[i + 1].zL[j][k]) &&
+                    (V.at(2) < cell->cellYZ[i + 1].zU[j][k])) {
                     isInLine[2] = true;
                     break;
                 }
             }
 
-            for (size_t k = 0; k < cell.cellYZ[i + 1].zM[j + 1].size(); ++k) {
-                if ((V[2] >= cell.cellYZ[i + 1].zL[j + 1][k]) &&
-                    (V[2] <= cell.cellYZ[i + 1].zU[j + 1][k])) {
+            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j + 1].size(); ++k) {
+                if ((V.at(2) > cell->cellYZ[i + 1].zL[j + 1][k]) &&
+                    (V.at(2) < cell->cellYZ[i + 1].zU[j + 1][k])) {
                     isInLine[3] = true;
                     break;
                 }
@@ -293,6 +307,33 @@ bool Hrm3DMultiBody::isPtInCFLine(cf_cell3D cell, std::vector<double> V) {
     }
 
     return true;
+}
+
+bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
+                                             const std::vector<double>& V1,
+                                             const std::vector<double>& V2) {
+    for (size_t i = 0; i < cell->tx.size(); ++i) {
+        if (fabs(cell->tx[i] - V1.at(0)) > 1e-8) {
+            continue;
+        }
+
+        for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
+            if (fabs(cell->cellYZ[i].ty[j] - V1.at(1)) > 1e-8) {
+                continue;
+            }
+
+            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
+                if ((V1.at(2) > cell->cellYZ[i].zL[j][k]) &&
+                    (V1.at(2) < cell->cellYZ[i].zU[j][k]) &&
+                    (V2.at(2) > cell->cellYZ[i].zL[j][k]) &&
+                    (V2.at(2) < cell->cellYZ[i].zU[j][k])) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
