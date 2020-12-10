@@ -70,16 +70,16 @@ for i = 1:3:size(X_ori,1)-3
 end
 
 % shortest path
-pathSolved = load([loadPath, 'solution_path_3D.csv']);
+path_highway = load([loadPath, 'solution_path_3D.csv']);
 
-if ~isempty(pathSolved)
-    for i = 1:size(pathSolved,1)-1
-        plot3([pathSolved(i,1) pathSolved(i+1,1)],...
-            [pathSolved(i,2) pathSolved(i+1,2)],...
-            [pathSolved(i,3) pathSolved(i+1,3)], 'c', 'LineWidth', 2)
+if ~isempty(path_highway)
+    for i = 1:size(path_highway,1)-1
+        plot3([path_highway(i,1) path_highway(i+1,1)],...
+            [path_highway(i,2) path_highway(i+1,2)],...
+            [path_highway(i,3) path_highway(i+1,3)], 'c', 'LineWidth', 2)
 
-        robot.Base.q = pathSolved(i,4:7);
-        robot.Base.tc = pathSolved(i,1:3)';
+        robot.Base.q = path_highway(i,4:7);
+        robot.Base.tc = path_highway(i,1:3)';
         g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
         robot.robotTF(g,1);
     end
@@ -92,6 +92,8 @@ light('Position',[-1 0 1])
 disp('Validating path...')
 Graph.V = vtx';
 
-high3D = PathValidation3D(robot, arena, obs, pathSolved);
+high3D = PathValidation3D(robot, arena, obs, path_highway);
 high3D.validation();
 high3D.show();
+
+light('Position',[-1 0 1])

@@ -3,28 +3,49 @@ initAddpath;
 
 loadPath = '../../bin/';
 
+[X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, endPts] = loadResults('3D');
+
+% Robot
+robot = MultiBodyTree3D(SuperQuadrics({robot_config(1,1:3),...
+    robot_config(1,4:5),...
+    robot_config(1,6:8)', robot_config(1,9:end), 20}, 'g', 0),...
+    size(robot_config,1)-1);
+for i = 1:size(robot_config,1)-1
+    robot.addBody(SuperQuadrics({robot_config(i,1:3),...
+        robot_config(i,4:5),...
+    robot_config(i,6:8)', robot_config(i,9:end), 20}, 'b', 0), i);
+end
+
 %% Environment
+figure; hold on; axis equal;
 disp('Environment Initialization...')
 
-ob = load(['../../config/', 'obs_config_3d.csv']);
-ar = load(['../../config/', 'arena_config_3d.csv']);
+% start and goal
+start = endPts(1,:);
+goal = endPts(2,:);
+plot3(start(1), start(2), start(3), 'ro', 'LineWidth', 3);
+plot3(goal(1), goal(2), goal(3), 'gd', 'LineWidth', 3);
 
 % Plot
+ob = load(['../../config/', 'obstacle_config_3D.csv']);
+ar = load(['../../config/', 'arena_config_3D.csv']);
+
 for i = 1:size(ar,1)
-    arena(i) = SuperQuadrics({ar(i,1:3), ar(i,9:12), ar(i,6:8)',...
-        ar(i,4:5), 20}, 'w', 0);
+    arena(i) = SuperQuadrics({ar(i,1:3), ar(i,4:5), ar(i,6:8)',...
+        ar(i,9:end), 20},...
+        'w', 0);
 end
 
 for i = 1:size(ob,1)
-    obs(i) = SuperQuadrics({ob(i,1:3), ob(i,9:12), ob(i,6:8)',...
-        ob(i,4:5), 20}, 'k', 0);
+    obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
+        ob(i,9:end), 20},...
+        'y', 0);
 end
 
-% plot the ARENA with color filled, under rotation
-figure; hold on; axis equal;
-% for i = 1:size(ar,1)
-%     arena(i).PlotShape;
-% end
+% plot the ARENA bound
+for i = 1:size(arena,2)
+    PlotBox(arena(i).tc, 2*arena(i).a)
+end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:size(ob,1)
@@ -38,22 +59,7 @@ end
 
 axis off
 
-%% Robot Initialization
-disp('Robot Configurations...');
-% Robot: Only plan face
-vargin.opt = 'rotation';
-vargin.Hhc3D_path = '../include/Hhc_3D.mat';
-
-robot = robotInit3D(vargin, 0);
-
 %% Path from OMPL
-% start and goal
-endPts = load(['../../config/', 'endPts_3d.csv']);
-start = endPts(1,:);
-goal = endPts(2,:);
-plot3(start(1), start(2), start(3), 'ro', 'LineWidth', 3);
-plot3(goal(1), goal(2), goal(3), 'gd', 'LineWidth', 3);
-
 path_prm = load([loadPath, 'ompl_smooth_path3d.csv']);
 state_prm = load([loadPath, 'ompl_state3d.csv']);
 edge_prm = load([loadPath, 'ompl_edge3d.csv']);
@@ -88,19 +94,14 @@ end
 %         'b--', 'LineWidth', 2)
 % end
 
+% Plot properties
+light('Position',[-1 0 1])
+
 %% State validation
 disp('Validating path...')
-high3D = pathValid_3D_multiBody(robot, arena, obs, path_prm);
+high3D = PathValidation3D(robot, arena, obs, path_prm);
 high3D.validation();
-high3D.PlotPath();
+high3D.show();
 
-%%
-function plotSurf(X,c)
-num = sqrt(size(X,2));
-
-x = reshape(X(1,:),num,num);
-y = reshape(X(2,:),num,num);
-z = reshape(X(3,:),num,num);
-
-surf(x,y,z,'FaceAlpha',0.3,'FaceColor',c,'EdgeColor','none')
-end
+% Plot properties
+light('Position',[-1 0 1])

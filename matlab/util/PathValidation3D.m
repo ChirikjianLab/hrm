@@ -62,8 +62,9 @@ classdef PathValidation3D < handle
         %% --------------- Plot the Valid Path ----------------------------
         function show(Obj)
             figure; hold on; axis equal;
+            
             for i = 1:size(Obj.Arena,2)
-                Obj.Arena(i).PlotShape;
+                PlotBox(Obj.Arena(i).tc, 2*Obj.Arena(i).a)
             end
             
             for i = 1:size(Obj.Obs,2)
