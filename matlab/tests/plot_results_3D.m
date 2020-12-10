@@ -39,7 +39,7 @@ end
 for i = 1:size(ob,1)
     obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
         ob(i,9:end), 20},...
-        'k', 0);
+        'y', 0);
 end
 
 % plot the ARENA bound
@@ -86,7 +86,7 @@ if ~isempty(pathSolved)
 end
 
 % Plot properties
-light('Position',[1 0 0])
+light('Position',[-1 0 1])
 
 %% Validation
 disp('Validating path...')

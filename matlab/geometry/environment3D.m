@@ -46,12 +46,14 @@ No = 20;  % parameter for pnts on the superquadric obstacles
 %% Construct SuperQuadrics objects for the arena and obstacles
 for i = 1:N_s
     arena(i) = SuperQuadrics({arena_config(1,1:3), arena_config(i,4:5),...
-        arena_config(i,6:8)', arena_config(i,9:end), Ns}, 'w', 0);
+        arena_config(i,6:8)', axang2quat(arena_config(i,9:end)), Ns},...
+        'w', 0);
 end
 
 for i = 1:N_o
     obs(i) = SuperQuadrics({obs_config(i,1:3), obs_config(i,4:5),...
-        obs_config(i,6:8)', obs_config(i,9:end), No}, 'y', 0);
+        obs_config(i,6:8)', axang2quat(obs_config(i,9:end)), No},...
+        'y', 0);
 end
 
 end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
