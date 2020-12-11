@@ -24,8 +24,8 @@ void PlannerHighway3D::storeGraph() {
     file_vtx.open("vertex_3D.csv");
     vector<vector<double>> vtx = vtxEdge.vertex;
     for (size_t i = 0; i < vtx.size(); i++) {
-        file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
-                 << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' '
+        file_vtx << vtx[i][0] << ',' << vtx[i][1] << ',' << vtx[i][2] << ','
+                 << vtx[i][3] << ',' << vtx[i][4] << ',' << vtx[i][5] << ','
                  << vtx[i][6] << "\n";
     }
     file_vtx.close();
@@ -33,7 +33,7 @@ void PlannerHighway3D::storeGraph() {
     ofstream file_edge;
     file_edge.open("edge_3D.csv");
     for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
-        file_edge << vtxEdge.edge[i].first << ' ' << vtxEdge.edge[i].second
+        file_edge << vtxEdge.edge[i].first << ',' << vtxEdge.edge[i].second
                   << "\n";
     }
     file_edge.close();
@@ -53,7 +53,7 @@ void PlannerHighway3D::storePath() {
     file_paths.open("paths_3D.csv");
     if (!solutionPathInfo.PathId.empty()) {
         for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
-            file_paths << solutionPathInfo.PathId[i] << ' ';
+            file_paths << solutionPathInfo.PathId[i] << ',';
         }
     }
     file_paths.close();
@@ -63,20 +63,20 @@ void PlannerHighway3D::storePath() {
     file_path.open("solution_path_3D.csv");
     vector<vector<double>> path = getSolutionPath();
     for (size_t i = 0; i < path.size(); i++) {
-        file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2] << ' '
-                  << path[i][3] << ' ' << path[i][4] << ' ' << path[i][5] << ' '
+        file_path << path[i][0] << ',' << path[i][1] << ',' << path[i][2] << ','
+                  << path[i][3] << ',' << path[i][4] << ',' << path[i][5] << ','
                   << path[i][6] << "\n";
     }
     file_path.close();
 
     ofstream file_interp_path;
     file_interp_path.open("interpolated_path_3D.csv");
-    vector<vector<double>> pathInterp = getInterpolatedSolutionPath(5);
-    for (size_t i = 0; i < pathInterp.size(); i++) {
-        file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1] << ' '
-                         << pathInterp[i][2] << ' ' << pathInterp[i][3] << ' '
-                         << pathInterp[i][4] << ' ' << pathInterp[i][5] << ' '
-                         << pathInterp[i][6] << "\n";
+    vector<vector<double>> path_interp = getInterpolatedSolutionPath(5);
+    for (size_t i = 0; i < path_interp.size(); i++) {
+        file_interp_path << path_interp[i][0] << ',' << path_interp[i][1] << ','
+                         << path_interp[i][2] << ',' << path_interp[i][3] << ','
+                         << path_interp[i][4] << ',' << path_interp[i][5] << ','
+                         << path_interp[i][6] << "\n";
     }
     file_interp_path.close();
 }

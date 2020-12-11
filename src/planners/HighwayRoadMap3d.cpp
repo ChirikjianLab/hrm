@@ -450,19 +450,35 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
 
 std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     const unsigned int num) {
-    std::vector<std::vector<double>> pathInterp;
-    std::vector<std::vector<double>> pathSolved = getSolutionPath();
+    std::vector<std::vector<double>> path_interp;
+    std::vector<std::vector<double>> path_solved = getSolutionPath();
+
+    // Default motion primitive: first rotate, then translate
+    const unsigned num_rotate = num / 2;
+    const unsigned num_trans = num - num_rotate;
 
     // Iteratively store interpolated poses along the solved path
-    for (size_t i = 0; i < pathSolved.size() - 1; ++i) {
-        std::vector<std::vector<double>> steps =
-            interpolateSE3(pathSolved[i], pathSolved[i + 1], num);
-        for (size_t j = 0; j < steps.size(); ++j) {
-            pathInterp.push_back(steps[j]);
-        }
+    for (size_t i = 0; i < path_solved.size() - 1; ++i) {
+        // Middle step: {V1_trans, V2_rot}
+        std::vector<double> mid_step = {
+            path_solved[i][0],     path_solved[i][1],     path_solved[i][2],
+            path_solved[i + 1][3], path_solved[i + 1][4], path_solved[i + 1][5],
+            path_solved[i + 1][6]};
+
+        // Two motion sequences
+        std::vector<std::vector<double>> path_rotate =
+            interpolateSE3(path_solved[i], mid_step, num_rotate);
+        std::vector<std::vector<double>> path_trans =
+            interpolateSE3(mid_step, path_solved[i + 1], num_trans);
+
+        // Combine the motion sequences
+        path_interp.insert(path_interp.end(), path_rotate.begin(),
+                           path_rotate.end());
+        path_interp.insert(path_interp.end(), path_trans.begin(),
+                           path_trans.end());
     }
 
-    return pathInterp;
+    return path_interp;
 }
 
 /************************************************************************/
@@ -570,8 +586,8 @@ void HighwayRoadMap3D::sampleSO3() {
     }
 }
 
-// Find the cell that an arbitrary vertex locates, and find the closest roadmap
-// vertex
+// Find the cell that an arbitrary vertex locates, and find the closest
+// roadmap vertex
 std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     const std::vector<double>& v, const size_t k, const double r) {
     double minEuclideanDist;

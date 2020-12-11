@@ -57,9 +57,9 @@ Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
     for (size_t i = 0; i < CF_cell.tx.size(); i++) {
         for (size_t j = 0; j < CF_cell.cellYZ[i].ty.size(); j++) {
             for (size_t k = 0; k < CF_cell.cellYZ[i].zM[j].size(); k++) {
-                file_cell << CF_cell.tx[i] << ' ' << CF_cell.cellYZ[i].ty[j]
-                          << ' ' << CF_cell.cellYZ[i].zL[j][k] << ' '
-                          << CF_cell.cellYZ[i].zM[j][k] << ' '
+                file_cell << CF_cell.tx[i] << ',' << CF_cell.cellYZ[i].ty[j]
+                          << ',' << CF_cell.cellYZ[i].zL[j][k] << ','
+                          << CF_cell.cellYZ[i].zM[j][k] << ','
                           << CF_cell.cellYZ[i].zU[j][k] << "\n";
             }
         }
@@ -148,8 +148,8 @@ int main(int argc, char** argv) {
         file_vtx.open("vertex_3D.csv");
         vector<vector<double>> vtx = high3D.vtxEdge.vertex;
         for (size_t i = 0; i < vtx.size(); i++) {
-            file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
-                     << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' '
+            file_vtx << vtx[i][0] << ',' << vtx[i][1] << ',' << vtx[i][2] << ','
+                     << vtx[i][3] << ',' << vtx[i][4] << ',' << vtx[i][5] << ','
                      << vtx[i][6] << "\n";
         }
         file_vtx.close();
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
         file_edge.open("edge_3D.csv");
         vector<pair<int, int>> edge = high3D.vtxEdge.edge;
         for (size_t i = 0; i < edge.size(); i++) {
-            file_edge << edge[i].first << ' ' << edge[i].second << "\n";
+            file_edge << edge[i].first << ',' << edge[i].second << "\n";
         }
         file_edge.close();
 
@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
         vector<int> paths = high3D.solutionPathInfo.PathId;
         if (!paths.empty()) {
             for (size_t i = 0; i < paths.size(); i++) {
-                file_pathId << paths[i] << ' ';
+                file_pathId << paths[i] << ',';
             }
         }
         file_pathId.close();
@@ -176,22 +176,22 @@ int main(int argc, char** argv) {
         file_path.open("solution_path_3D.csv");
         vector<vector<double>> path = high3D.solutionPathInfo.solvedPath;
         for (size_t i = 0; i < path.size(); i++) {
-            file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2]
-                      << ' ' << path[i][3] << ' ' << path[i][4] << ' '
-                      << path[i][5] << ' ' << path[i][6] << "\n";
+            file_path << path[i][0] << ',' << path[i][1] << ',' << path[i][2]
+                      << ',' << path[i][3] << ',' << path[i][4] << ','
+                      << path[i][5] << ',' << path[i][6] << "\n";
         }
         file_path.close();
 
         ofstream file_interp_path;
         file_path.open("interpolated_path_3D.csv");
-        vector<vector<double>> pathInterp =
+        vector<vector<double>> path_interp =
             high3D.solutionPathInfo.interpolatedPath;
-        for (size_t i = 0; i < pathInterp.size(); i++) {
-            file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1]
-                             << ' ' << pathInterp[i][2] << ' '
-                             << pathInterp[i][3] << ' ' << pathInterp[i][4]
-                             << ' ' << pathInterp[i][5] << ' '
-                             << pathInterp[i][6] << "\n";
+        for (size_t i = 0; i < path_interp.size(); i++) {
+            file_interp_path << path_interp[i][0] << ',' << path_interp[i][1]
+                             << ',' << path_interp[i][2] << ','
+                             << path_interp[i][3] << ',' << path_interp[i][4]
+                             << ',' << path_interp[i][5] << ','
+                             << path_interp[i][6] << "\n";
         }
         file_interp_path.close();
     }
