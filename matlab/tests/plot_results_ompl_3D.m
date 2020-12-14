@@ -13,7 +13,7 @@ robot = MultiBodyTree3D(SuperQuadrics({robot_config(1,1:3),...
 for i = 1:size(robot_config,1)-1
     robot.addBody(SuperQuadrics({robot_config(i,1:3),...
         robot_config(i,4:5),...
-    robot_config(i,6:8)', robot_config(i,9:end), 20}, 'b', 0), i);
+        robot_config(i,6:8)', robot_config(i,9:end), 20}, 'b', 0), i);
 end
 
 %% Environment
@@ -60,6 +60,8 @@ end
 axis off
 
 %% Path from OMPL
+disp("Plotting results from OMPL planner...")
+
 path_prm = load([loadPath, 'ompl_smooth_path3d.csv']);
 state_prm = load([loadPath, 'ompl_state3d.csv']);
 edge_prm = load([loadPath, 'ompl_edge3d.csv']);
@@ -75,18 +77,18 @@ for i = 1:size(path_prm,1)-1
     plot3([path_prm(i,1) path_prm(i+1,1)],...
         [path_prm(i,2) path_prm(i+1,2)],...
         [path_prm(i,3) path_prm(i+1,3)], 'b-', 'LineWidth', 2)
-       
-        robot.Base.q = path_prm(i+1,4:7);
-        robot.Base.tc = path_prm(i+1,1:3)';
-        g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
-        robot.robotTF(g,1);
+    
+    robot.Base.q = path_prm(i+1,4:7);
+    robot.Base.tc = path_prm(i+1,1:3)';
+    g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
+    robot.robotTF(g,1);
 end
 
 % for i = 1:size(state_prm,1)-1
 %     plot3(state_prm(i,1),state_prm(i,2),state_prm(i,3),...
 %         'b+', 'LineWidth', 2)
 % end
-% 
+%
 % for i = 1:size(edge_prm,1)-1
 %     plot3([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
 %         [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
@@ -98,10 +100,14 @@ end
 light('Position',[-1 0 1])
 
 %% State validation
-disp('Validating path...')
-high3D = PathValidation3D(robot, arena, obs, path_prm);
-high3D.validation();
-high3D.show();
+is_validation = false;
 
-% Plot properties
-light('Position',[-1 0 1])
+if is_validation
+    disp('Validating path...')
+    high3D = PathValidation3D(robot, arena, obs, path_prm);
+    high3D.validation();
+    high3D.show();
+    
+    % Plot properties
+    light('Position',[-1 0 1])
+end
