@@ -13,7 +13,7 @@ robot = MultiBodyTree3D(SuperQuadrics({robot_config(1,1:3),...
 for i = 1:size(robot_config,1)-1
     robot.addBody(SuperQuadrics({robot_config(i,1:3),...
         robot_config(i,4:5),...
-    robot_config(i,6:8)', robot_config(i,9:end), 20}, 'b', 0), i);
+        robot_config(i,6:8)', robot_config(i,9:end), 20}, 'b', 0), i);
 end
 
 %% Environment
@@ -60,24 +60,26 @@ end
 axis off
 
 %% Results from C++
-% Environment: scattered points
-for i = size(X_ori,1)-2
-    plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'k.');
-end
+disp("Plotting results from HighwayRoadMap planner...")
 
-for i = 1:3:size(X_ori,1)-3
-    plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'b.');
-end
+% % Environment: scattered points
+% for i = size(X_ori,1)-2
+%     plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'k.');
+% end
+% 
+% for i = 1:3:size(X_ori,1)-3
+%     plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'b.');
+% end
 
 % shortest path
-path_highway = load([loadPath, 'solution_path_3D.csv']);
+path_highway = load([loadPath, 'interpolated_path_3D.csv']);
 
 if ~isempty(path_highway)
-    for i = 1:size(path_highway,1)-1
+    for i = 1:10:size(path_highway,1)-1
         plot3([path_highway(i,1) path_highway(i+1,1)],...
             [path_highway(i,2) path_highway(i+1,2)],...
             [path_highway(i,3) path_highway(i+1,3)], 'c', 'LineWidth', 2)
-
+        
         robot.Base.q = path_highway(i,4:7);
         robot.Base.tc = path_highway(i,1:3)';
         g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
@@ -89,11 +91,15 @@ end
 light('Position',[-1 0 1])
 
 %% Validation
-disp('Validating path...')
-Graph.V = vtx';
+is_validation = false;
 
-high3D = PathValidation3D(robot, arena, obs, path_highway);
-high3D.validation();
-high3D.show();
-
-light('Position',[-1 0 1])
+if is_validation
+    disp('Validating path...')
+    Graph.V = vtx';
+    
+    high3D = PathValidation3D(robot, arena, obs, path_highway);
+    high3D.validation();
+    high3D.show();
+    
+    light('Position',[-1 0 1])
+end
