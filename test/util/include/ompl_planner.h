@@ -64,14 +64,14 @@ class PlannerOMPL {
 
     // Variables
   public:
-    unsigned int numCheckedNodes;
-    unsigned int numValidNodes;
-    unsigned int numGraphNodes;
-    unsigned int numGraphEdges;
-    unsigned long numPathNodes;
+    unsigned int numCheckedNodes = 0;
+    unsigned int numValidNodes = 0;
+    unsigned int numGraphNodes = 0;
+    unsigned int numGraphEdges = 0;
+    unsigned long numPathNodes = 0;
 
-    int flag;
-    double totalTime;
+    int flag = false;
+    double totalTime = 0.0;
     double validSpace;
 
   protected:
@@ -86,6 +86,8 @@ class PlannerOMPL {
 
     const int planner_;
     const int sampler_;
+
+    double maxPlanningTime_ = 60.0;
 };
 
 #endif  // OMPL_PLANNER_H

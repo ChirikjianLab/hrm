@@ -141,19 +141,25 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
 
     // Path planning
     std::cout << "Planning..." << std::endl;
-    ob::PlannerStatus solved = ss_->solve(100.0);
-    if (!solved) {
-        flag = false;
-        return false;
-    }
 
-    totalTime = ss_->getLastPlanComputationTime();
-    if (totalTime > 100.0) {
-        flag = false;
-        return false;
-    }
+    try {
+        ob::PlannerStatus solved = ss_->solve(maxPlanningTime_);
+        totalTime = ss_->getLastPlanComputationTime();
 
-    flag = true;
+        // Get solution status
+        if (!solved || totalTime > maxPlanningTime_) {
+            flag = false;
+        } else {
+            // Number of nodes in solved path
+            numPathNodes = ss_->getSolutionPath().getStates().size();
+            flag = true;
+        }
+
+    } catch (ompl::Exception &ex) {
+        std::stringstream es;
+        es << ex.what() << std::endl;
+        OMPL_WARN(es.str().c_str());
+    }
 
     // Get graph info
     ob::PlannerData pd(ss_->getSpaceInformation());
@@ -169,8 +175,6 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
     numValidNodes =
         pd.getSpaceInformation()->getMotionValidator()->getValidMotionCount();
 
-    // Number of nodes in solved path
-    numPathNodes = ss_->getSolutionPath().getStates().size();
     validSpace = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 
     return true;

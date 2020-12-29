@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     vector<SuperQuadrics> robot = loadVectorSuperQuadrics(robot_config, n);
 
     // Boundary
-    double f = 1.0;
+    double f = 1.2;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +
