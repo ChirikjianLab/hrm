@@ -4,10 +4,11 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc != 7) {
+    if (argc < 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
                 "Planner start ID 4) Planner end ID 5) Sampler start ID 6) "
-                "Sampler end ID"
+                "Sampler end ID 7) Max planning time (in seconds, default: "
+                "60.0s)"
              << endl;
         return 1;
     }
@@ -52,8 +53,11 @@ int main(int argc, char** argv) {
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
             << "CHECKED_NODES" << ',' << "VALID_NODES" << endl;
 
-    // Planner number: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
-    // Sampler number: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
+    /*
+     * \brief Planner and sampler inputs
+     *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
+     *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
+     */
     const int id_plan_start = atoi(argv[3]);
     const int id_plan_end = atoi(argv[4]);
     const int id_sample_start = atoi(argv[5]);
@@ -67,6 +71,13 @@ int main(int argc, char** argv) {
                 cout << "Num of trials: " << i << endl;
 
                 PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
+
+                // Max planning time limit
+                if (argc == 8) {
+                    const double max_planning_time = atoi(argv[7]);
+                    tester.setMaxPlanningTime(max_planning_time);
+                }
+
                 tester.plan(env3D->getEndPoints().at(0),
                             env3D->getEndPoints().at(1));
 

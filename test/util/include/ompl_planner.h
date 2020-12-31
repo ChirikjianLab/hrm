@@ -49,15 +49,21 @@ class PlannerOMPL {
   public:
     bool plan(const std::vector<double>& start,
               const std::vector<double>& goal);
+
+    void setMaxPlanningTime(const double maxTime) {
+        maxPlanningTime_ = maxTime;
+    }
+
     virtual bool isStateValid(const ob::State* state) const;
     bool checkSeparation(const SuperQuadrics& robotOrigin,
                          const SuperQuadrics& robotAux,
                          fcl::CollisionObject<double> objE,
                          const SuperQuadrics& obs,
                          fcl::CollisionObject<double> objSQ) const;
+    void setCollisionObj();
+
     bool compareStates(std::vector<double> goalConfig,
                        std::vector<double> lastConfig);
-    void setCollisionObj();
 
     void getVertexEdgeInfo();
     void getPathInfo();
