@@ -7,7 +7,10 @@ outPath = '../../config';
 %% Environment Initialization
 disp('Environment Initialization...')
 
-[ar, obs, endPts] = Environment3D(2, 4);
+% Obstacle types:
+%  first input: 1 -- ellipsoid or 2 -- superquadrics
+%  second input: map type
+[ar, obs, endPts] = Environment3D(2, 3);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); 
@@ -27,7 +30,11 @@ csvwrite(fullfile(outPath,'arena_config_3D.csv'), arena);
 
 %% Robot Initialization
 disp('Robot Configurations...');
-Robot = RobotInit3D(2);
+
+% Options for robot type:
+%  1 -- rabbit shape with three bodies
+%  2 -- chair
+Robot = RobotInit3D(1);
 
 %% Store robot info as .csv files
 % Robot configuration

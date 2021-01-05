@@ -93,10 +93,10 @@ plot3([goal(1) vtx(path(end)+1,1)],...
 for i = 1:size(path,2)-1
     plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
         [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'c', 'LineWidth', 2)
+        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'm', 'LineWidth', 2)
     
     plot([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)], 'c', 'LineWidth', 2)
+        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)], 'm', 'LineWidth', 2)
 end
 
 %% Path interpolation
@@ -115,9 +115,6 @@ for i = 1:size(path,2)-1
 end
 
 figure; hold on; axis equal; axis off;
-% opt = 41;
-% environment2D(opt);
-
 % original
 X_ori = [X_ori, X_ori(:,1)];
 for i = size(X_ori,1)-1
@@ -129,16 +126,24 @@ for i = 1:2:size(X_ori,1)-3
 end
 
 % Robot
-for i = 1:size(pathInterp,2)
+g_start = [rot2(start(3)), start(1:2); 0,0,1];
+rob.robotTF(g_start,1);
+for i = 1:ceil(size(pathInterp,2)/8):size(pathInterp,2)
     g_step = [rot2(pathInterp(3,i)), pathInterp(1:2,i); 0,0,1];
     rob.robotTF(g_step,1);
 end
+g_goal = [rot2(goal(3)), goal(1:2); 0,0,1];
+rob.robotTF(g_goal,1);
 
 % shortest path
+plot([start(1) pathInterp(1,1)],...
+    [start(2) pathInterp(2,1)], 'm', 'LineWidth', 2)
 for i = 1:size(pathInterp,2)-1
     plot([pathInterp(1,i) pathInterp(1,i+1)],...
         [pathInterp(2,i) pathInterp(2,i+1)], 'm', 'LineWidth', 2)
 end
+plot([goal(1) pathInterp(1,end)],...
+    [goal(2) pathInterp(2,end)], 'm', 'LineWidth', 2)
 
 %% Store path
 pathHRM = start';
