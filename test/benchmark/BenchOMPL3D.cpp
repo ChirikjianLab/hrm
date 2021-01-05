@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     vector<SuperQuadrics> robot = loadVectorSuperQuadrics(robot_config, n);
 
     // Boundary
-    double f = 1.2;
+    double f = 1.5;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.at(0).getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +
@@ -65,6 +65,11 @@ int main(int argc, char** argv) {
 
     for (int m = id_plan_start; m <= id_plan_end; m++) {
         for (int n = id_sample_start; n <= id_sample_end; n++) {
+            // Only PRM use different samplers
+            if (m != 0 && n > 0) {
+                continue;
+            }
+
             for (int i = 0; i < N; i++) {
                 cout << "Planner: " << m << endl;
                 cout << "Sampler: " << n << endl;

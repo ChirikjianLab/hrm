@@ -26,9 +26,9 @@ int main(int argc, char **argv) {
     vector<vector<double>> stat(N);
 
     // Read and setup environment config
-    string robot_config = "../config/robot_config_3d.csv";
-    string arena_config = "../config/arena_config_3d.csv";
-    string obs_config = "../config/obs_config_3d.csv";
+    string robot_config = "../config/robot_config_3D.csv";
+    string arena_config = "../config/arena_config_3D.csv";
+    string obs_config = "../config/obstacle_config_3D.csv";
 
     vector<SuperQuadrics> robot_parts =
         loadVectorSuperQuadrics(robot_config, n);
