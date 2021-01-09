@@ -1,10 +1,7 @@
 #include "include/ParsePlanningSettings.h"
 
-PlannerSetting::PlannerSetting() {}
-PlannerSetting::~PlannerSetting() {}
-
 std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
-                                                 int num) {
+                                                 const int num_curve_param) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
 
@@ -14,51 +11,14 @@ std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
         object.emplace_back(SuperEllipse(
             {object_config[j][0], object_config[j][1]}, object_config[j][2],
             {object_config[j][3], object_config[j][4]}, object_config[j][5],
-            num));
+            num_curve_param));
     }
 
     return object;
 }
 
-MultiBodyTree2D loadRobotMultiBody2D() {
-    // Number of points on the boundary
-    unsigned int num = 50;
-
-    // Read robot config file
-    std::vector<SuperEllipse> robot_parts =
-        loadVectorSuperEllipse("../config/robot_config_2D.csv", num);
-
-    // Generate multibody tree for robot
-    MultiBodyTree2D robot(robot_parts[0]);
-    for (size_t i = 1; i < robot_parts.size(); ++i) {
-        robot.addBody(robot_parts[i]);
-    }
-
-    return robot;
-}
-
-PlannerSetting2D::PlannerSetting2D() {}
-PlannerSetting2D::~PlannerSetting2D() {}
-
-void PlannerSetting2D::loadEnvironment() {
-    // Number of points on the boundary
-    unsigned int num = 50;
-
-    // Read environment config file
-    arena_ = loadVectorSuperEllipse("../config/arena_config_2D.csv", num);
-
-    obstacle_ = loadVectorSuperEllipse("../config/obstacle_config_2D.csv", num);
-
-    // Read end points config file
-    std::vector<std::vector<double>> endPts =
-        parse2DCsvFile("../config/end_points_2D.csv");
-
-    end_points_.push_back(endPts[0]);
-    end_points_.push_back(endPts[1]);
-};
-
 std::vector<SuperQuadrics> loadVectorSuperQuadrics(
-    const std::string config_file, const int num) {
+    const std::string config_file, const int num_surf_param) {
     // Read config file
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
@@ -72,10 +32,41 @@ std::vector<SuperQuadrics> loadVectorSuperQuadrics(
             {object_config[j][5], object_config[j][6], object_config[j][7]},
             Eigen::Quaterniond(object_config[j][8], object_config[j][9],
                                object_config[j][10], object_config[j][11]),
-            num));
+            num_surf_param));
     }
 
     return obj;
+}
+
+MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param) {
+    // Read robot config file
+    std::vector<SuperEllipse> robot_parts = loadVectorSuperEllipse(
+        "../config/robot_config_2D.csv", num_curve_param);
+
+    // Generate multibody tree for robot
+    MultiBodyTree2D robot(robot_parts[0]);
+    for (size_t i = 1; i < robot_parts.size(); ++i) {
+        robot.addBody(robot_parts[i]);
+    }
+
+    return robot;
+}
+
+MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
+                                     const int num_surf_param) {
+    // Read and setup robot info
+    std::vector<SuperQuadrics> robot_parts = loadVectorSuperQuadrics(
+        "../config/robot_config_3D.csv", num_surf_param);
+
+    loadPreDefinedQuaternions(quat_file, robot_parts[0]);
+
+    // Generate multibody tree for robot
+    MultiBodyTree3D robot(robot_parts[0]);
+    for (size_t i = 1; i < robot_parts.size(); i++) {
+        robot.addBody(robot_parts[i]);
+    }
+
+    return robot;
 }
 
 void loadPreDefinedQuaternions(const std::string quat_file,
@@ -101,36 +92,37 @@ void loadPreDefinedQuaternions(const std::string quat_file,
     }
 }
 
-MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file) {
-    // Number of angles that parameterize the Minkowski sum boundary
-    unsigned int num = 10;
+PlannerSetting::PlannerSetting() {}
+PlannerSetting::~PlannerSetting() {}
 
-    // Read and setup robot info
-    std::vector<SuperQuadrics> robot_parts =
-        loadVectorSuperQuadrics("../config/robot_config_3D.csv", num);
+PlannerSetting2D::PlannerSetting2D() {}
+PlannerSetting2D::~PlannerSetting2D() {}
 
-    loadPreDefinedQuaternions(quat_file, robot_parts[0]);
+void PlannerSetting2D::loadEnvironment() {
+    // Read environment config file
+    arena_ = loadVectorSuperEllipse("../config/arena_config_2D.csv",
+                                    num_curve_param_);
 
-    // Generate multibody tree for robot
-    MultiBodyTree3D robot(robot_parts[0]);
-    for (size_t i = 1; i < robot_parts.size(); i++) {
-        robot.addBody(robot_parts[i]);
-    }
+    obstacle_ = loadVectorSuperEllipse("../config/obstacle_config_2D.csv",
+                                       num_curve_param_);
 
-    return robot;
-}
+    // Read end points config file
+    std::vector<std::vector<double>> endPts =
+        parse2DCsvFile("../config/end_points_2D.csv");
+
+    end_points_.push_back(endPts[0]);
+    end_points_.push_back(endPts[1]);
+};
 
 PlannerSetting3D::PlannerSetting3D() {}
 PlannerSetting3D::~PlannerSetting3D() {}
 
 void PlannerSetting3D::loadEnvironment() {
-    // Number of angles that parameterize the Minkowski sum boundary
-    unsigned int num = 10;
-
     // Read and setup environment config
-    arena_ = loadVectorSuperQuadrics("../config/arena_config_3D.csv", num);
-    obstacle_ =
-        loadVectorSuperQuadrics("../config/obstacle_config_3D.csv", num);
+    arena_ = loadVectorSuperQuadrics("../config/arena_config_3D.csv",
+                                     num_surf_param_);
+    obstacle_ = loadVectorSuperQuadrics("../config/obstacle_config_3D.csv",
+                                        num_surf_param_);
 
     // Read end points config file
     std::vector<std::vector<double>> endPts =

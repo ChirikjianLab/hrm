@@ -7,11 +7,39 @@
 #include "util/include/MultiBodyTree3D.h"
 #include "util/include/Parse2dCsvFile.h"
 
+/*
+ * \brief Free function for loading vector of 2D superellipses
+ */
 std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
-                                                 const int num);
+                                                 const int num_curve_param);
 
-MultiBodyTree2D loadRobotMultiBody2D();
+/*
+ * \brief Free function for loading vector of 3D superquadrics
+ */
+std::vector<SuperQuadrics> loadVectorSuperQuadrics(
+    const std::string config_file, const int num_surf_param);
 
+/*
+ * \brief Free function for loading multi-body tree in 2D
+ */
+MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param);
+
+/*
+ * \brief Free function for loading multi-body tree in 3D
+ */
+MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
+                                     const int num_surf_param);
+
+/*
+ * \brief Free function for loading predefined quaternion or generating uniform
+ * random SO(3) rotations
+ */
+void loadPreDefinedQuaternions(const std::string quat_file,
+                               SuperQuadrics& robot_base);
+
+/*
+ * \class Setting planning environment, pure virtual functions
+ */
 class PlannerSetting {
   public:
     PlannerSetting();
@@ -21,6 +49,9 @@ class PlannerSetting {
     virtual void loadEnvironment() = 0;
 };
 
+/*
+ * \class Setting 2D planning environment
+ */
 class PlannerSetting2D : public PlannerSetting {
   public:
     PlannerSetting2D();
@@ -32,6 +63,7 @@ class PlannerSetting2D : public PlannerSetting {
     std::vector<std::vector<double>> getEndPoints() const {
         return end_points_;
     }
+    int getNumCurveParam() const { return num_curve_param_; }
 
     void loadEnvironment();
 
@@ -39,16 +71,13 @@ class PlannerSetting2D : public PlannerSetting {
     std::vector<SuperEllipse> arena_;
     std::vector<SuperEllipse> obstacle_;
     std::vector<std::vector<double>> end_points_;
+
+    const int num_curve_param_ = 50;
 };
 
-std::vector<SuperQuadrics> loadVectorSuperQuadrics(
-    const std::string config_file, const int num);
-
-void loadPreDefinedQuaternions(const std::string quat_file,
-                               SuperQuadrics& robot_base);
-
-MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file);
-
+/*
+ * \class Setting 3D planning environment
+ */
 class PlannerSetting3D : public PlannerSetting {
   public:
     PlannerSetting3D();
@@ -60,6 +89,7 @@ class PlannerSetting3D : public PlannerSetting {
     std::vector<std::vector<double>> getEndPoints() const {
         return end_points_;
     }
+    int getNumSurfParam() const { return num_surf_param_; }
 
     void loadEnvironment();
 
@@ -67,6 +97,8 @@ class PlannerSetting3D : public PlannerSetting {
     std::vector<SuperQuadrics> arena_;
     std::vector<SuperQuadrics> obstacle_;
     std::vector<std::vector<double>> end_points_;
+
+    const int num_surf_param_ = 10;
 };
 
 #endif  // PARSEPLANNINGSETTINGS_H
