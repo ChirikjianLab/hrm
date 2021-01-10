@@ -10,7 +10,7 @@ disp('Environment Initialization...')
 % Obstacle types:
 %  first input: 1 -- ellipsoid or 2 -- superquadrics
 %  second input: map type
-[ar, obs, endPts] = Environment3D(2, 3);
+[ar, obs, endPts] = Environment3D(2, 1);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12); 
