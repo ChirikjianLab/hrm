@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     vector<vector<double>> time_stat;
 
     // Load Robot and Environment settings
-    MultiBodyTree2D robot = loadRobotMultiBody2D();
+    MultiBodyTree2D robot = loadRobotMultiBody2D(50);
     PlannerSetting2D* env2D = new PlannerSetting2D();
     env2D->loadEnvironment();
 

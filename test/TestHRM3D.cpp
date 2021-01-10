@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     env3D->loadEnvironment();
 
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D(argv[5]);
+    MultiBodyTree3D robot = loadRobotMultiBody3D(argv[5], 10);
 
     // Options
     option3D opt;

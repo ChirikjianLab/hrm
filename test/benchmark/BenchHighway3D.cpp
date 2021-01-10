@@ -10,17 +10,19 @@ using namespace Eigen;
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc != 6) {
+    if (argc < 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
                 "sweep planes 4) Num of sweep lines 5) Pre-defined quaternions "
-                "(if no, enter 0)"
+                "file prefix (if no, enter 0 or leave blank)"
              << endl;
         return 1;
     }
 
     // Record planning time for N trials
-    size_t N = size_t(atoi(argv[1]));
-    int N_l = atoi(argv[2]), N_x = atoi(argv[3]), N_y = atoi(argv[4]);
+    const size_t N = size_t(atoi(argv[1]));
+    const int N_l = atoi(argv[2]);
+    const int N_x = atoi(argv[3]);
+    const int N_y = atoi(argv[4]);
 
     vector<vector<double>> stat(N);
 
@@ -29,7 +31,12 @@ int main(int argc, char** argv) {
     env3D->loadEnvironment();
 
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D(argv[5]);
+    string quat_file = "0";
+    if (argc == 6 && strcmp(argv[5], "0") != 0) {
+        quat_file = string(argv[5]) + '_' + string(argv[2]) + ".csv";
+    }
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
     option3D opt;
