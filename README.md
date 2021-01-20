@@ -10,6 +10,8 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 - [CCD](https://github.com/danfis/libccd) (version >= 2.0): Required dependency for FCL
 - [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
 - GMP: Required dependency for CGAL
+- [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
+- [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
 - [Boost](https://www.boost.org/) (version >= 1.55.0)
 - [cmake-format] 

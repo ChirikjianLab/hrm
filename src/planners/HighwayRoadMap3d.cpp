@@ -212,9 +212,9 @@ cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
 
         // x-coords
         for (size_t j = 0; j < cf_seg[i].size(); j++) {
-            zL.push_back(cf_seg[i][j].s);
-            zU.push_back(cf_seg[i][j].e);
-            zM.push_back((cf_seg[i][j].s + cf_seg[i][j].e) / 2.0);
+            zL.push_back(cf_seg[i][j].s());
+            zU.push_back(cf_seg[i][j].e());
+            zM.push_back((cf_seg[i][j].s() + cf_seg[i][j].e()) / 2.0);
         }
         cellYZ.zL.push_back(zL);
         cellYZ.zU.push_back(zU);

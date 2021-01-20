@@ -28,7 +28,7 @@ using Finite_cells_iterator = Triangulation::Finite_cells_iterator;
 using Point_3 = K::Point_3;
 
 // Mesh as a structure of vertices and triangles
-struct EMesh {
+struct Mesh {
     std::vector<fcl::Vector3d> vertices;
     std::vector<fcl::Triangle> triangles;
 };
@@ -48,12 +48,12 @@ struct ParametricPoints {
 /*
  * \brief get mesh info from SuperQuadrics class
  */
-EMesh getMeshFromSQ(SuperQuadrics sq);
+Mesh getMeshFromSQ(SuperQuadrics sq);
 
 /*
  * \brief get mesh info from 3D point cloud
  */
-EMesh getMesh(const ParametricPoints& points);
+Mesh getMesh(const ParametricPoints& points);
 
 /*
  * \brief get 3D point cloud from SuperQuadric class
