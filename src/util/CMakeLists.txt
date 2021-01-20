@@ -9,4 +9,8 @@ add_library(UTIL
             MultiBodyTree2D.cpp
             MultiBodyTree3D.cpp
 	    Parse2dCsvFile.cpp
+            ParseURDF.cpp
             PointInPoly.cpp)
+target_link_libraries(UTIL
+                      ${orocos_kdl_LIBRARIES}
+                      ${kdl_parser_LIBRARIES})

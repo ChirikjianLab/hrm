@@ -70,6 +70,11 @@ if(GMP_FOUND)
   add_definitions("-DHAS_GMP")
 endif()
 
+find_package(orocos_kdl REQUIRED)
+include_directories(${orocos_kdl_INCLUDE_DIRS})
+
+find_package(kdl_parser REQUIRED)
+
 find_package(GTest REQUIRED)
 if(GTEST_FOUND)
   include_directories(${GTEST_INCLUDE_DIRS})
