@@ -1,4 +1,4 @@
-function [arena, obs, end_points] = Environment2D(obs_shape, opt)
+function [arena, obs, end_points] = environment2D(obs_shape, opt)
 %% Retrieve arena, obstacle and end points info
 path_prefix = '../../resources/2D/';
 

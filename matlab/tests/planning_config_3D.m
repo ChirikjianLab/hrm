@@ -10,10 +10,10 @@ disp('Environment Initialization...')
 % Obstacle types:
 %  first input: 1 -- ellipsoid or 2 -- superquadrics
 %  second input: map type
-[ar, obs, endPts] = Environment3D(1, 3);
+[ar, obs, endPts] = environment3D(2, 4);
 
 %% Store Arena and Obstacles as .csv files
-arena = zeros(size(ar,2),12); 
+arena = zeros(size(ar,2),12);
 obstacle = zeros(size(obs,2),12);
 
 for i = 1:size(ar,2)
@@ -31,10 +31,16 @@ csvwrite(fullfile(outPath,'arena_config_3D.csv'), arena);
 %% Robot Initialization
 disp('Robot Configurations...');
 
-% Options for robot type:
-%  1 -- rabbit shape with three bodies
-%  2 -- chair
-Robot = RobotInit3D(1);
+% Arguments for robot loader:
+%  1. type:
+%     1 -- rigid bodies, including rabbit and chair
+%     0 -- articulated bodies, including snake and tri-snake
+%
+%  2. robot_name: name of robot
+%     (1) rigid bodies: rabbit, chair
+%     (2) articulated bodies: snake, tri-snake
+isrigid = false;
+[Robot, RobotURDF, jointLimits] = robotInit3D(isrigid, 'tri-snake');
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -42,14 +48,14 @@ robot = [Robot.Base.a, Robot.Base.eps, Robot.Base.tc', Robot.Base.q];
 
 for i = 1:Robot.numLink
     robot = [robot;
-             Robot.Link{i}.a, Robot.Link{i}.eps,...
-             Robot.tf{i}(1:3,4)', rotm2quat(Robot.tf{i}(1:3,1:3))];
+        Robot.Link{i}.a, Robot.Link{i}.eps,...
+        Robot.tf{i}(1:3,4)', rotm2quat(Robot.tf{i}(1:3,1:3))];
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
 csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts);
 
-%% Plot obstacle(s), arena(s) and end points
+%% Plot obstacle(s), arena(s)
 % plot the ARENA with color filled, under rotation
 figure; hold on; axis equal; axis off
 
@@ -66,16 +72,36 @@ for i = 1:size(obs,2)
     text(obs(i).tc(1), obs(i).tc(2), obs(i).tc(3), is, 'Color', [1 1 1]);
 end
 
-% plot the start and end configurations
+%% plot the start and end configurations
 plot3(endPts(1,1), endPts(1,2), endPts(1,3), 'c+', 'LineWidth', 2)
 plot3(endPts(2,1), endPts(2,2), endPts(2,3), 'gd', 'LineWidth', 2)
 
 % plot the robot at start and goal configs
-g_start = [quat2rotm(endPts(1, 4:7)), endPts(1, 1:3)'; zeros(1,3), 1];
-Robot.robotTF(g_start, 1);
-
-g_goal = [quat2rotm(endPts(2, 4:7)), endPts(2, 1:3)'; zeros(1,3), 1];
-Robot.robotTF(g_goal, 1);
+if isrigid
+    Robot.Base.color = 'r';
+    Robot.robotTF(1, [axang2rotm(endPts(1,4:7)), endPts(1,1:3)';
+        0,0,0,1]);
+    Robot.Base.color = 'g';
+    Robot.robotTF(1, [axang2rotm(endPts(2,4:7)), endPts(2,1:3)';
+        0,0,0,1]);
+    
+else
+    jointConfig = homeConfiguration(RobotURDF);
+    
+    Robot.Base.color = 'r';
+    for i = 1:RobotURDF.NumBodies
+        jointConfig(i).JointPosition = endPts(1,7+i);
+    end
+    Robot.robotTF(1, [axang2rotm(endPts(1,4:7)), endPts(1,1:3)';
+        0,0,0,1], jointConfig, RobotURDF);
+    
+    Robot.Base.color = 'g';
+    for i = 1:RobotURDF.NumBodies
+        jointConfig(i).JointPosition = endPts(2,7+i);
+    end
+    Robot.robotTF(1, [axang2rotm(endPts(2,4:7)), endPts(2,1:3)';
+        0,0,0,1], jointConfig, RobotURDF);
+end
 
 % Plot properties
 light('Position',[-1 0 1])

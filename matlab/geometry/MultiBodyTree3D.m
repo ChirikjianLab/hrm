@@ -3,7 +3,7 @@
 % Dependencies:
 %    SuperQuadrics.m: class of SuperQuadrics
 %
-% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2019
+% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2021
 
 classdef MultiBodyTree3D < handle
     properties
@@ -36,22 +36,42 @@ classdef MultiBodyTree3D < handle
             end
         end
         
-        %% Transform the robot as a whole body
-        function robotTF(obj, g, isplot)
+        %% Set transformation for base
+        function setBaseTransform(obj, g)
             obj.Base.tc = g(1:3,4);
             obj.Base.q = rotm2quat(g(1:3,1:3));
-            
-            if isplot
-                obj.Base.PlotShape;
-            end
+        end
+        
+        %% Set transformation for selected link relative to base
+        function setLinkTransform(obj, linkID, g)
+            obj.Link{linkID}.tc = g(1:3,4);
+            obj.Link{linkID}.q = rotm2quat(g(1:3,1:3));
+        end
+        
+        %% Transform the robot
+        function robotTF(obj, isplot, g, jointConfig, robotURDF)
+            % Set transform for base ellipsoid
+            obj.setBaseTransform(g);
             
             for i = 1:size(obj.Link,2)
-                g_Link = g * obj.tf{i};
+                % Compute transformation of the link center to base
+                if nargin == 3
+                    gLink = g * obj.tf{i};
+                else
+                    gLink = g * getTransform(robotURDF, jointConfig,...
+                        strcat('body',num2str(i)));
+                    
+                    % offset from body frame to ellipsoid center
+                    gLink = gLink * obj.tf{i};
+                end
                 
-                obj.Link{i}.tc = g_Link(1:3,4);
-                obj.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
-                
-                if isplot
+                obj.setLinkTransform(i, gLink);
+            end
+            
+            % Plot robot shapes
+            if isplot
+                obj.Base.PlotShape;
+                for i = 1:size(obj.Link,2)
                     obj.Link{i}.PlotShape;
                 end
             end
