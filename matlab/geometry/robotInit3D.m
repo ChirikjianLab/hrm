@@ -1,4 +1,4 @@
-function [robot, robotURDF, jointLimits] = robotInit3D(isrigid, robot_name)
+function [robot, robotURDF, jointLimits] = robotInit3D(robot_type, robot_name)
 % Construct object of robot using union of SuperQuadrics objects
 % C-space: SE(3) x (S^1)^n
 
@@ -21,7 +21,7 @@ robot = MultiBodyTree3D(base, N_links);
 
 link = cell(1,N_links);
 
-if isrigid
+if robot_type == "rigid"
     % For rigid bodies
     for i = 1:N_links
         link{i} = SuperQuadrics({robot_config(i+1,1:3),...
@@ -31,14 +31,12 @@ if isrigid
         robot.addBody(link{i}, i);
     end
     
-else
+elseif robot_type == "articulated"
     % For articulated bodies
     urdfFile = [path_prefix, 'urdf/', robot_name, '.urdf'];
     
     % Kinematics
     robotURDF = importrobot(urdfFile);
-    home_config = homeConfiguration(robotURDF);
-    
     if N_links ~= robotURDF.NumBodies
         error('Number of bodies in URDF and shape files not match...')
     end
@@ -46,15 +44,15 @@ else
     % Load each links
     jointLimits = [-pi/2*ones(1,N_links); pi/2*ones(1,N_links)];
     for i = 1:N_links
-        g_link = getTransform(robotURDF, home_config,...
-                        strcat('body',num2str(i)));
-        
-        link{i} = SuperQuadrics({robot_config(i,1:3), [1,1],...
-            (robot_config(i,1:3)-0.5)'.*robot_config(i,end-3:end-1)', [0,1,0,0],...
-            N_r}, 'b', 0);
+        % Link center offset from joint axis according to semi-axes length
+        link{i} = SuperQuadrics({robot_config(i+1,1:3), [1,1],...
+            (robot_config(i+1,1:3)-0.5)'.*robot_config(i+1,end-3:end-1)',...
+            [0,1,0,0], N_r}, 'b', 0);
         robot.addBody(link{i}, i);
         
         jointLimits(:,i) = robotURDF.Bodies{i}.Joint.PositionLimits;
     end
-    
+
+else
+    error('Please enter correct robot type (rigid, articulated)...')
 end

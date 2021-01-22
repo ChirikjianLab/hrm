@@ -39,8 +39,8 @@ disp('Robot Configurations...');
 %  2. robot_name: name of robot
 %     (1) rigid bodies: rabbit, chair
 %     (2) articulated bodies: snake, tri-snake
-isrigid = false;
-[Robot, RobotURDF, jointLimits] = robotInit3D(isrigid, 'tri-snake');
+robot_type = "articulated";
+[Robot, RobotURDF, jointLimits] = robotInit3D(robot_type, 'tri-snake');
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -77,7 +77,7 @@ plot3(endPts(1,1), endPts(1,2), endPts(1,3), 'c+', 'LineWidth', 2)
 plot3(endPts(2,1), endPts(2,2), endPts(2,3), 'gd', 'LineWidth', 2)
 
 % plot the robot at start and goal configs
-if isrigid
+if robot_type == "rigid"
     Robot.Base.color = 'r';
     Robot.robotTF(1, [axang2rotm(endPts(1,4:7)), endPts(1,1:3)';
         0,0,0,1]);
@@ -85,7 +85,7 @@ if isrigid
     Robot.robotTF(1, [axang2rotm(endPts(2,4:7)), endPts(2,1:3)';
         0,0,0,1]);
     
-else
+elseif robot_type == "articulated"
     jointConfig = homeConfiguration(RobotURDF);
     
     Robot.Base.color = 'r';
