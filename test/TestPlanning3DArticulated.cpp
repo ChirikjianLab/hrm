@@ -28,9 +28,10 @@ int main(int argc, char** argv) {
                      "number of x-coord for sweep line (default = 30), (6) "
                      "number of y-coord for sweep line (default = 30), (7) "
                      "number of points on free segment (default = 20), (8) "
-                     "robot type (default = snake) (9) number of random "
-                     "rotation samples (default = 60, if random, use 0), (10) "
-                     "file path for pre-defined rotation samples..."
+                     "robot type (default = snake) (9) number of SO(3) "
+                     "rotation samples for base (default = 60), (10) "
+                     "file path prefix for pre-defined rotation samples (if "
+                     "random, input 0)..."
                   << std::endl;
 
         return -1;
@@ -60,7 +61,7 @@ int main(int argc, char** argv) {
     std::string urdfFile = "../resources/3D/urdf/" + robot_type + ".urdf";
 
     std::string quat_file = "0";
-    if (argc > 9 && strcmp(argv[9], "0") != 0) {
+    if (argc > 9 && strcmp(argv[10], "0") != 0) {
         quat_file = std::string(argv[10]) + '_' + std::string(argv[9]) + ".csv";
     }
     MultiBodyTree3D robot =
