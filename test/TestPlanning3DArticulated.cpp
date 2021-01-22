@@ -1,4 +1,4 @@
-#include "samplers/include/PlannerSE3Articulated.h"
+#include "samplers/include/Planner3DArticulated.h"
 #include "util/include/Parse2dCsvFile.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     if (argc > 8) {
         robot_type = std::string(argv[8]);
     }
-    std::string urdfFile = "../resources/urdf/" + robot_type + ".urdf";
+    std::string urdfFile = "../resources/3D/urdf/" + robot_type + ".urdf";
 
     std::string quat_file = "0";
     if (argc > 9 && strcmp(argv[9], "0") != 0) {
@@ -67,8 +67,8 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Initiate planner
-    PlannerSE3Articulated planner(robot, urdfFile, env3D->getArena(),
-                                  env3D->getObstacle(), param);
+    Planner3DArticulated planner(robot, urdfFile, env3D->getArena(),
+                                 env3D->getObstacle(), param);
     planner.setup(plannerId, stateSamplerId, validStateSamplerId);
 
     // Plan

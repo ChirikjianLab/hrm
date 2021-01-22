@@ -1,8 +1,8 @@
-#include "include/PlannerSE3Articulated.h"
+#include "include/Planner3DArticulated.h"
 
 #include "ompl/util/RandomNumbers.h"
 
-PlannerSE3Articulated::PlannerSE3Articulated(
+Planner3DArticulated::Planner3DArticulated(
     const MultiBodyTree3D &robot, const std::string urdfFile,
     const std::vector<SuperQuadrics> &arena,
     const std::vector<SuperQuadrics> &obstacle, const parameters3D &param)
@@ -10,8 +10,8 @@ PlannerSE3Articulated::PlannerSE3Articulated(
     kdl_ = new ParseURDF(urdfFile_);
 }
 
-void PlannerSE3Articulated::setup(const int plannerId, const int stateSamplerId,
-                                  const int validStateSamplerId) {
+void Planner3DArticulated::setup(const int plannerId, const int stateSamplerId,
+                                 const int validStateSamplerId) {
     std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0),
                                  arena_.at(0).getSemiAxis().at(1),
                                  arena_.at(0).getSemiAxis().at(2)};
@@ -67,8 +67,8 @@ void PlannerSE3Articulated::setup(const int plannerId, const int stateSamplerId,
     ss_->setup();
 }
 
-void PlannerSE3Articulated::plan(const std::vector<std::vector<double>> &endPts,
-                                 const double maxTimeInSec) {
+void Planner3DArticulated::plan(const std::vector<std::vector<double>> &endPts,
+                                const double maxTimeInSec) {
     numCollisionChecks_ = 0;
 
     // Set start and goal poses
@@ -95,7 +95,7 @@ void PlannerSE3Articulated::plan(const std::vector<std::vector<double>> &endPts,
     ss_->clear();
 }
 
-void PlannerSE3Articulated::getSolution() {
+void Planner3DArticulated::getSolution() {
     if (isSolved_) {
         try {
             // Get solution path
@@ -143,7 +143,7 @@ void PlannerSE3Articulated::getSolution() {
     }
 }
 
-bool PlannerSE3Articulated::isStateValid(const ob::State *state) {
+bool Planner3DArticulated::isStateValid(const ob::State *state) {
     const std::vector<double> stateVar = getStateToVector(state);
 
     // Set pose to the robot base
@@ -196,7 +196,7 @@ bool PlannerSE3Articulated::isStateValid(const ob::State *state) {
     return true;
 }
 
-void PlannerSE3Articulated::buildFreeStateLibraryFromSweep() {
+void Planner3DArticulated::buildFreeStateLibraryFromSweep() {
     std::cout << "Building free space library using sweep-line process..."
               << std::endl;
     std::cout << "Number of shape samples: " << param_.numRotation << '\n'
@@ -351,7 +351,7 @@ void PlannerSE3Articulated::buildFreeStateLibraryFromSweep() {
     //    std::cout << "Finished free state Storage" << std::endl;
 }
 
-void PlannerSE3Articulated::setStateFromVector(
+void Planner3DArticulated::setStateFromVector(
     const std::vector<double> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) {
     ob::ScopedState<ob::SE3StateSpace> stateBase(
@@ -374,7 +374,7 @@ void PlannerSE3Articulated::setStateFromVector(
     stateJoint >> *state;
 }
 
-std::vector<double> PlannerSE3Articulated::getStateToVector(
+std::vector<double> Planner3DArticulated::getStateToVector(
     const ob::State *state) {
     std::vector<double> stateVariables(7 + kdl_->getKDLTree().getNrOfJoints());
     ob::ScopedState<ob::CompoundStateSpace> compoundState(ss_->getStateSpace());

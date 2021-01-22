@@ -6,14 +6,14 @@
 
 #include "ompl/base/StateSpace.h"
 
-class PlannerSE3Articulated : public PlannerSE3 {
+class Planner3DArticulated : public PlannerSE3 {
   public:
-    PlannerSE3Articulated(const MultiBodyTree3D &robot,
-                          const std::string urdfFile,
-                          const std::vector<SuperQuadrics> &arena,
-                          const std::vector<SuperQuadrics> &obstacle,
-                          const parameters3D &param);
-    virtual ~PlannerSE3Articulated() {}
+    Planner3DArticulated(const MultiBodyTree3D &robot,
+                         const std::string urdfFile,
+                         const std::vector<SuperQuadrics> &arena,
+                         const std::vector<SuperQuadrics> &obstacle,
+                         const parameters3D &param);
+    virtual ~Planner3DArticulated() {}
 
     void setup(const int plannerId, const int stateSamplerId,
                const int validSamplerId);

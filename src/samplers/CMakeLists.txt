@@ -11,7 +11,7 @@ add_library(SAMPLER_3D
             MinkowskiSamplerSE3.cpp
             FreeSpaceSE3.cpp
             PlannerSE3.cpp
-            PlannerSE3Articulated.cpp)
+            Planner3DArticulated.cpp)
 target_link_libraries(SAMPLER_3D
                       GEOM
                       UTIL)

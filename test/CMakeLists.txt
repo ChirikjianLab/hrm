@@ -30,8 +30,8 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
 
-add_executable(TestPlanningSE3Articulated TestPlanningSE3Articulated.cpp)
-target_link_libraries(TestPlanningSE3Articulated
+add_executable(TestPlanning3DArticulated TestPlanning3DArticulated.cpp)
+target_link_libraries(TestPlanning3DArticulated
                       TESTUTIL
                       SAMPLER_3D)
 
