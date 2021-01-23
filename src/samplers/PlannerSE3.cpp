@@ -179,6 +179,8 @@ void PlannerSE3::setStateSampler(const int stateSamplerId) {
             buildFreeStateLibraryFromSweep();
         }
 
+        OMPL_INFORM("Using Pre-computed state sampler: Minkowski-sweep line");
+
         ss_->getStateSpace()->setStateSamplerAllocator(
             [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
                 return std::make_shared<ob::PrecomputedStateSampler>(
@@ -190,11 +192,15 @@ void PlannerSE3::setStateSampler(const int stateSamplerId) {
             buildFreeStateLibraryFromBoundary();
         }
 
+        OMPL_INFORM("Using pre-computed state sampler: Minkowski-boundary");
+
         ss_->getStateSpace()->setStateSamplerAllocator(
             [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
                 return std::make_shared<ob::PrecomputedStateSampler>(
                     ss, validStateLibrary_);
             });
+    } else {
+        OMPL_INFORM("Using default state sampler");
     }
 }
 
@@ -202,6 +208,8 @@ void PlannerSE3::setValidStateSampler(const int validSamplerId) {
     // Set the valid state sampler
     if (validSamplerId == 0) {
         // Proposed Minkowski-based sampler
+        OMPL_INFORM("Using Minkowski-sweep line valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 auto sampler =
@@ -217,6 +225,8 @@ void PlannerSE3::setValidStateSampler(const int validSamplerId) {
             });
     } else if (validSamplerId == 1) {
         // Proposed Minkowski-based sampler, sample on boundary
+        OMPL_INFORM("Using Minkowski-boundary valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 auto sampler =
@@ -232,24 +242,32 @@ void PlannerSE3::setValidStateSampler(const int validSamplerId) {
             });
     } else if (validSamplerId == 2) {
         // Uniform sampler
+        OMPL_INFORM("Using Uniform valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::UniformValidStateSampler>(si);
             });
     } else if (validSamplerId == 3) {
         // Gaussian sampler
+        OMPL_INFORM("Using Gaussian valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::GaussianValidStateSampler>(si);
             });
     } else if (validSamplerId == 4) {
         // Obstacle-based sampler
+        OMPL_INFORM("Using Obstacle-based valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
             });
     } else if (validSamplerId == 5) {
         // Maximum-clearance sampler
+        OMPL_INFORM("Using Max-clearance valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 auto vss =
@@ -260,6 +278,8 @@ void PlannerSE3::setValidStateSampler(const int validSamplerId) {
             });
     } else if (validSamplerId == 6) {
         // Bridge-test sampler
+        OMPL_INFORM("Using Bridge-test valid state sampler");
+
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::BridgeTestValidStateSampler>(si);

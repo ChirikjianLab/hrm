@@ -143,7 +143,7 @@ class PlannerSE3 {
      * compute C-obstacle boundaries via closed-form Minkowski sums,
      * valid states comes from C-obstacle boundaries
      */
-    void buildFreeStateLibraryFromBoundary();
+    virtual void buildFreeStateLibraryFromBoundary();
 
   protected:
     // Planner simple setup pointer

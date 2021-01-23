@@ -351,6 +351,96 @@ void Planner3DArticulated::buildFreeStateLibraryFromSweep() {
     //    std::cout << "Finished free state Storage" << std::endl;
 }
 
+void Planner3DArticulated::buildFreeStateLibraryFromBoundary() {
+    std::cout << "Building free space library from C-obstacle boundary..."
+              << std::endl;
+    std::cout << "Number of shape samples: " << param_.numRotation << std::endl;
+
+    ompl::time::point start = ompl::time::now();
+    ompl::RNG rng;
+
+    for (size_t i = 0; i < param_.numRotation; ++i) {
+        // Define random rotational state, including orientation of base and
+        // joint angles
+        Eigen::Quaterniond quat = param_.qSample.empty()
+                                      ? Eigen::Quaterniond::UnitRandom()
+                                      : param_.qSample[i];
+
+        // Transform the robot
+        Eigen::Matrix4d gBase = Eigen::Matrix4d::Identity();
+        gBase.topLeftCorner(3, 3) = quat.toRotationMatrix();
+
+        Eigen::VectorXd jointConfig(kdl_->getKDLTree().getNrOfJoints());
+        for (uint i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+            jointConfig[i] = rng.uniformReal(-maxJointAngle_, maxJointAngle_);
+        }
+        robot_.robotTF(urdfFile_, &gBase, &jointConfig);
+
+        // Generate free space boundary
+        FreeSpaceSE3 fs(&robot_, &arena_, &obstacle_, &param_);
+        fs.generateCSpaceBoundary();
+        boundary3D boundaries = fs.getCSpaceBoundary();
+
+        for (Eigen::Matrix3Xd bound : boundaries.obsBd) {
+            for (Eigen::Index j = 0; j < bound.cols(); ++j) {
+                if (bound(0, j) > param_.xLim.first &&
+                    bound(0, j) < param_.xLim.second &&
+                    bound(1, j) > param_.yLim.first &&
+                    bound(1, j) < param_.yLim.second &&
+                    bound(2, j) > param_.zLim.first &&
+                    bound(2, j) < param_.zLim.second) {
+                    ob::State *state = ss_->getSpaceInformation()->allocState();
+
+                    // Assign sampled XYZ points to compound state
+                    state->as<ob::CompoundStateSpace::StateType>()
+                        ->components[0]
+                        ->as<ob::SE3StateSpace::StateType>()
+                        ->setXYZ(bound(0, j), bound(1, j), bound(2, j));
+
+                    // Assign rotational parts
+                    state->as<ob::CompoundStateSpace::StateType>()
+                        ->components[0]
+                        ->as<ob::SE3StateSpace::StateType>()
+                        ->rotation()
+                        .w = quat.w();
+                    state->as<ob::CompoundStateSpace::StateType>()
+                        ->components[0]
+                        ->as<ob::SE3StateSpace::StateType>()
+                        ->rotation()
+                        .x = quat.x();
+                    state->as<ob::CompoundStateSpace::StateType>()
+                        ->components[0]
+                        ->as<ob::SE3StateSpace::StateType>()
+                        ->rotation()
+                        .y = quat.y();
+                    state->as<ob::CompoundStateSpace::StateType>()
+                        ->components[0]
+                        ->as<ob::SE3StateSpace::StateType>()
+                        ->rotation()
+                        .z = quat.z();
+
+                    for (uint m = 0; m < kdl_->getKDLTree().getNrOfJoints();
+                         ++m) {
+                        state->as<ob::CompoundStateSpace::StateType>()
+                            ->components[1]
+                            ->as<ob::RealVectorStateSpace::StateType>()
+                            ->values[m] = jointConfig[m];
+                    }
+
+                    validStateLibrary_.push_back(state);
+                }
+            }
+        }
+    }
+
+    libraryBuildTime_ = ompl::time::seconds(ompl::time::now() - start);
+
+    std::cout << "Number of free samples: " << validStateLibrary_.size()
+              << std::endl;
+    std::cout << "Time to build free sample library: " << libraryBuildTime_
+              << " seconds" << std::endl;
+}
+
 void Planner3DArticulated::setStateFromVector(
     const std::vector<double> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) {

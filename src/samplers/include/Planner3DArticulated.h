@@ -24,6 +24,7 @@ class Planner3DArticulated : public PlannerSE3 {
     void getSolution();
     bool isStateValid(const ob::State *state);
     void buildFreeStateLibraryFromSweep();
+    void buildFreeStateLibraryFromBoundary();
 
   private:
     void setStateFromVector(const std::vector<double> *stateVariables,
