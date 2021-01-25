@@ -9,7 +9,7 @@ class hrm_multi_adaptive_planner : public Hrm3DMultiBodyAdaptive {
                                std::vector<std::vector<double>> EndPts,
                                std::vector<SuperQuadrics> arena,
                                std::vector<SuperQuadrics> obs, option3D opt);
-    void plan_path();
+    void plan_path(const double time_lim);
 };
 
 #endif  // HRM_MULTI_ADAPTIVE_PLANNER_H

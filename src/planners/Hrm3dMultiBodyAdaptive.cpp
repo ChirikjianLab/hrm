@@ -9,39 +9,23 @@ Hrm3DMultiBodyAdaptive::Hrm3DMultiBodyAdaptive(
 
 void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
     ompl::time::point start = ompl::time::now();
+
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(nullptr)));
+    N_layers = 1;
 
     // Get the current Transformation
     Eigen::Matrix4d tf;
     tf.setIdentity();
 
     do {
-        // Update C-layers
-        N_layers++;
-
-        // First, add C-layers for end points, then randomly generate rotations
-        if (N_layers == 1) {
-            q_r.push_back(Eigen::Quaterniond(Endpt[0][3], Endpt[0][4],
-                                             Endpt[0][5], Endpt[0][6]));
-        } else if (N_layers == 2) {
-            q_r.push_back(Eigen::Quaterniond(Endpt[1][3], Endpt[1][4],
-                                             Endpt[1][5], Endpt[1][6]));
-        } else {
-            q_r.push_back(Eigen::Quaterniond::UnitRandom());
-        }
+        // Randomly generate rotations
+        q_r.push_back(Eigen::Quaterniond::UnitRandom());
 
         // Set rotation matrix to robot
         tf.topLeftCorner(3, 3) = q_r.at(N_layers - 1).toRotationMatrix();
         RobotM.robotTF(tf);
         Robot.setQuaternion(RobotM.getBase().getQuaternion());
-
-        //        // Transform the robot to build C-layer
-        //        SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
-        //                              Robot.getPosition(), q_r.at(N_layers -
-        //                              1), Robot.getNumParam());
-        //        RobotM = MultiBodyTree3D(newBase);
-        //        Robot.setQuaternion(RobotM.getBase().getQuaternion());
 
         // Minkowski operations
         boundary3D bd = boundaryGen();
@@ -63,6 +47,9 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
 
         // Graph search
         search();
+
+        // Update number of C-layers
+        N_layers++;
 
         planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
     } while (!flag && planTime.totalTime < timeLim);
@@ -106,7 +93,7 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
                 continue;
             }
 
-            if (isCollisionFree(&free_cell.at(N_layers - 1), V1, V2)) {
+            if (isCollisionFree(&free_cell.back(), V1, V2)) {
                 // Add new connections
                 // motion primitive: first rotate from V1, then translate to V2
                 vtxEdge.edge.push_back(std::make_pair(m0, m1));

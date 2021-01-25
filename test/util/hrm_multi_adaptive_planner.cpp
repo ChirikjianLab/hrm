@@ -7,11 +7,9 @@ hrm_multi_adaptive_planner::hrm_multi_adaptive_planner(
     vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt)
     : Hrm3DMultiBodyAdaptive(robot, EndPts, arena, obs, opt) {}
 
-void hrm_multi_adaptive_planner::plan_path() {
+void hrm_multi_adaptive_planner::plan_path(const double time_lim) {
     // Highway algorithm
-    auto start = ompl::time::now();
-    planPath(60);
-    planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
+    planPath(time_lim);
 
     // Planning Time
     cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;

@@ -10,9 +10,10 @@ using namespace Eigen;
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc < 3) {
+    if (argc != 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Num of sweep planes 3) "
-                "Num of sweep lines"
+                "Num of sweep lines 4) Max planning time (in seconds, default: "
+                "60.0s)"
              << endl;
         return 1;
     }
@@ -21,6 +22,7 @@ int main(int argc, char** argv) {
     const size_t N = size_t(atoi(argv[1]));
     const int N_x = atoi(argv[2]);
     const int N_y = atoi(argv[3]);
+    const double time_lim = double(atoi(argv[4]));
 
     vector<vector<double>> stat(N);
 
@@ -61,7 +63,7 @@ int main(int argc, char** argv) {
         hrm_multi_adaptive_planner high3D(robot, env3D->getEndPoints(),
                                           env3D->getArena(),
                                           env3D->getObstacle(), opt);
-        high3D.plan_path();
+        high3D.plan_path(time_lim);
 
         // Store results
         file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','
