@@ -2,11 +2,11 @@
 A paradigm for robot motion planning based on parameterizations of the free space
 
 ## Description
-We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). This repository is the C++ implementation of algorithms and benchmarks. The algorithms for both SE(2) and SE(3) rigid body planning problems have been developed and compared with sampled-based planners from OMPL. The benchmark results show that our proposed method outperforms the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problem.
+We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). This repository is the C++ implementation of algorithms and benchmarks. The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems, Hybrid Probabilistic Highway RoadMap (HP-HRM) for articulated body planning problems and Closed-Form Collision-Free ConFiguration (CF3) sampler for sampling-based planners. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
 
 ## Dependencies
-- [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.4.0): Open Motion Planning Library for sample-based planners
-- [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
+- [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sample-based planners
+- [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
 - [CCD](https://github.com/danfis/libccd) (version >= 2.0): Required dependency for FCL
 - [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
 - GMP: Required dependency for CGAL
@@ -14,7 +14,7 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 - [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
 - [Boost](https://www.boost.org/) (version >= 1.55.0)
-- [cmake-format] 
+- [cmake-format] (version >= 0.4.5)
     ```
     sudo pip3 install cmake-format==0.4.5
     ```
@@ -35,33 +35,37 @@ cd build
 cmake ../
 make
 ```
-The compilations are tested on Ubuntu 16.04 system using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
+The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
+
+**Note**: If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
+```
+cmake ../ -DCMAKE_PREFIX_PATH=/your/ompl/path -DOMPL_PREFIX=/your/ompl/include/dir
+```
 
 ## Testing Instructions
 ### Generate configuration files
-Configuration files are all stored in "/config" folder, including (3D cases as an example) "arena_config_3d.csv", "obs_config_3d.csv". "robot_config_3d.csv" and "endPts_3d.csv". In the repository, there are pre-defined configurations in these files. To customize different robot or environment configurations, simply run the Matlab scripts "/matlab/test/robotConfig_3D.m", and change different parameters that defines the geometric shapes.
+Configuration files for environment and robot when testing the C++ scripts are all stored in "/config" folder, including (3D cases as an example) "arena_config_3D.csv", "obs_config_3D.csv". "robot_config_3D.csv" and "end_points_3D.csv". In the repository, there are pre-defined configurations in these files. To customize different robot or environment configurations, simply run the Matlab scripts "/matlab/tests/planning_config_3D.m", and change different parameters that defines the geometric shapes of the obstacles and robots.
 
 ### Running tests
 Testing files are located in "/test" folder:
-- 2D case (single body, Kinematics of Containment): "/test/TestHRM2D.cpp"
-- 2D case (single body, Tighly-fitted Ellipsoid): "/test/TestHRM2DTightFittedEllipse.cpp"
-- 3D case (sinlge body): "/test/TestHRM3D.cpp"
-- 3D case (multi body): "/test/TestHRM3DMultiBody.cpp"
-- GTest for geometric subroutines: "/test/unit-test/GTestGeometry.cpp"
+- 2D case (single body, Kinematics of Containment): "TestHRM2D.cpp"
+- 2D case (single body, Tighly-fitted Ellipsoid): "TestHRM2DTightFittedEllipse.cpp"
+- 3D case (sinlge body): "TestHRM3D.cpp"
+- 3D case (multi body): "TestHRM3DMultiBody.cpp"
+- GTest for geometric subroutines: "/gtest/GTestGeometry.cpp"
 
 ### Benchmarks
-Benchmark files are stored in "/benchmark" folder:
-- 3D OMPL planners: "/benchmark/BenchOMPL3D.cpp", 
-- 3D Highway single body: "/benchmark/BenchHRM3D.cpp"
-- 3D Highway multi body: "/benchmark/BenchHRM3DMultiBody.cpp"
-- 3D Highway multi body with adaptive C-layers updates: "/benchmark/BenchHRM3DAdaptive.cpp"
+Benchmark files are stored in "/test/benchmark" folder:
+- 3D OMPL planners: "BenchOMPL3D.cpp" (for general superquadric shapes), "BenchOMPL3DEllipsoid.cpp" (for ellipsoidal shapes)
+- 3D Highway multi body: "BenchHRM3DMultiBody.cpp"
+- 3D Highway multi body with adaptive C-layers updates: "BenchHRM3DAdaptive.cpp"
 
 ### Visualizations
 After running test or benchmark files, parameters for visualization will be generated in the "/bin" folder. Visualization scripts are all in Matlab:
-- Plot 2D results: "/matlab/tests/plotShape.m"
-- Plot 3D single body results: "/matlab/tests/plotShape_3D.m"
-- Plot 3D multi body results: "/matlab/tests/plotShape_3D_MultiBody.m"
-- Plot 3D OMPL planners results: "/matlab/tests/plotShape_ompl_3D.m"
+- Plot 2D results: "/matlab/tests/plot_results_2D.m"
+- Plot 2D Highway RoadMap graph: "/matlab/tests/plot_results_graph_2D.m"
+- Plot 3D results: "/matlab/tests/plot_results_highway_3D.m"
+- Plot 3D OMPL planners results: "/matlab/tests/plot_results_ompl_3D.m"
 
 ## Status
 ### Highway RoadMap planner
@@ -75,15 +79,14 @@ After running test or benchmark files, parameters for visualization will be gene
 - Layer connections using TFE.
 
 ### OMPL sampled-based planners
-1. SE(2) single rigid body
-
-2. SE(3) single/multi rigid body:
-- Benchmark: "/benchmark/BenchOMPL3D.cpp"
+1. SE(3) single/multi rigid body:
+- Benchmark: "/tests/benchmark/BenchOMPL3D.cpp"
 
 ### Benchmark in different scenerios
 - Sparse map
 - Cluttered map
 - Maze map
+- Home environment map
 
 ### Demo
 1. Verified the algorithm in real robot, i.e. project the NAO humanoid robot to the plane, and plan a trajectory.
