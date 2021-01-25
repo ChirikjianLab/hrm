@@ -24,7 +24,7 @@ void hrm_multi_adaptive_planner::plan_path() {
 
     // Write the output to .csv files
     ofstream file_vtx;
-    file_vtx.open("vertex3D.csv");
+    file_vtx.open("vertex_3D.csv");
     vector<vector<double>> vtx = vtxEdge.vertex;
     for (size_t i = 0; i < vtx.size(); i++) {
         file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
@@ -34,7 +34,7 @@ void hrm_multi_adaptive_planner::plan_path() {
     file_vtx.close();
 
     ofstream file_edge;
-    file_edge.open("edge3D.csv");
+    file_edge.open("edge_3D.csv");
     for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
         file_edge << vtxEdge.edge[i].first << ' ' << vtxEdge.edge[i].second
                   << "\n";
@@ -42,8 +42,8 @@ void hrm_multi_adaptive_planner::plan_path() {
     file_edge.close();
 
     ofstream file_paths;
-    file_paths.open("paths3D.csv");
-    if (~solutionPathInfo.PathId.empty()) {
+    file_paths.open("paths_3D.csv");
+    if (!solutionPathInfo.PathId.empty()) {
         for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
             file_paths << solutionPathInfo.PathId[i] << ' ';
         }
@@ -51,7 +51,7 @@ void hrm_multi_adaptive_planner::plan_path() {
     file_paths.close();
 
     ofstream file_path;
-    file_path.open("solutionPath3D.csv");
+    file_path.open("solution_path_3D.csv");
     vector<vector<double>> path = getSolutionPath();
     for (size_t i = 0; i < path.size(); i++) {
         file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2] << ' '
@@ -61,7 +61,7 @@ void hrm_multi_adaptive_planner::plan_path() {
     file_path.close();
 
     ofstream file_interp_path;
-    file_interp_path.open("interpolatedPath3D.csv");
+    file_interp_path.open("interpolated_path_3D.csv");
     vector<vector<double>> pathInterp = getInterpolatedSolutionPath(5);
     for (size_t i = 0; i < pathInterp.size(); i++) {
         file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1] << ' '

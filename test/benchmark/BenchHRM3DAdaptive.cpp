@@ -1,3 +1,4 @@
+#include "util/include/MeshGenerator.h"
 #include "util/include/ParsePlanningSettings.h"
 #include "util/include/hrm_multi_adaptive_planner.h"
 
@@ -8,66 +9,46 @@
 using namespace Eigen;
 using namespace std;
 
-#define pi 3.1415926
-
-int main(int argc, char **argv) {
-    if (argc != 5) {
-        cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) Num "
-                "of sweep planes 4) Num of sweep lines"
+int main(int argc, char** argv) {
+    if (argc < 3) {
+        cerr << "Usage: Please add 1) Num of trials 2) Num of sweep planes 3) "
+                "Num of sweep lines"
              << endl;
         return 1;
     }
 
     // Record planning time for N trials
-    size_t N = size_t(atoi(argv[1]));
-    int n = atoi(argv[2]);
-    int N_x = atoi(argv[3]), N_y = atoi(argv[4]);
+    const size_t N = size_t(atoi(argv[1]));
+    const int N_x = atoi(argv[2]);
+    const int N_y = atoi(argv[3]);
 
     vector<vector<double>> stat(N);
 
-    // Read and setup environment config
-    string robot_config = "../config/robot_config_3D.csv";
-    string arena_config = "../config/arena_config_3D.csv";
-    string obs_config = "../config/obstacle_config_3D.csv";
+    // Setup environment config
+    PlannerSetting3D* env3D = new PlannerSetting3D();
+    env3D->loadEnvironment();
 
-    vector<SuperQuadrics> robot_parts =
-        loadVectorSuperQuadrics(robot_config, n);
-    vector<SuperQuadrics> arena = loadVectorSuperQuadrics(arena_config, n);
-    vector<SuperQuadrics> obs = loadVectorSuperQuadrics(obs_config, n);
+    // Setup robot
+    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
 
-    // Generate multibody tree for robot
-    MultiBodyTree3D robot(robot_parts[0]);
-    for (size_t i = 1; i < robot_parts.size(); i++) {
-        robot.addBody(robot_parts[i]);
-    }
-
-    // Start and goal setup
-    string file_endpt = "../config/end_points_3D.csv";
-    vector<vector<double>> endPts = parse2DCsvFile(file_endpt);
-    vector<vector<double>> EndPts;
-
-    EndPts.push_back(endPts[0]);
-    EndPts.push_back(endPts[1]);
-
-    // Parameters
+    // Options
     option3D opt;
-    opt.N_o = obs.size();
-    opt.N_s = arena.size();
+    opt.N_o = env3D->getObstacle().size();
+    opt.N_s = env3D->getArena().size();
     opt.N_layers = 0;
     opt.N_dx = size_t(N_x);
     opt.N_dy = size_t(N_y);
-
-    const double f = 1.2;
-    opt.Lim = {arena.at(0).getSemiAxis().at(0) -
+    double f = 1.5;
+    opt.Lim = {env3D->getArena().at(0).getSemiAxis().at(0) -
                    f * robot.getBase().getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(1) -
+               env3D->getArena().at(0).getSemiAxis().at(1) -
                    f * robot.getBase().getSemiAxis().at(0),
-               arena.at(0).getSemiAxis().at(2) -
+               env3D->getArena().at(0).getSemiAxis().at(2) -
                    f * robot.getBase().getSemiAxis().at(0)};
 
     // Store results
     ofstream file_time;
-    file_time.open("time_high_3D.csv");
+    file_time.open("time_prob_high_3D.csv");
     file_time << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS" << ','
               << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE" << ','
               << "GRAPH_EDGE" << ',' << "PATH_NODE"
@@ -76,14 +57,16 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HighwayRoadmap3D
-        hrm_multi_adaptive_planner high3D(robot, EndPts, arena, obs, opt);
+        // Path planning using HRM3DMultiBody
+        hrm_multi_adaptive_planner high3D(robot, env3D->getEndPoints(),
+                                          env3D->getArena(),
+                                          env3D->getObstacle(), opt);
         high3D.plan_path();
 
         // Store results
         file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','
-                  << high3D.N_layers << ',' << N_x << ',' << N_y << ','
-                  << high3D.vtxEdge.vertex.size() << ','
+                  << high3D.N_layers << ',' << high3D.N_dx << ',' << high3D.N_dy
+                  << ',' << high3D.vtxEdge.vertex.size() << ','
                   << high3D.vtxEdge.edge.size() << ','
                   << high3D.solutionPathInfo.PathId.size() << "\n";
     }

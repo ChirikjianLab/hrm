@@ -11,6 +11,11 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
     ompl::time::point start = ompl::time::now();
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(nullptr)));
+
+    // Get the current Transformation
+    Eigen::Matrix4d tf;
+    tf.setIdentity();
+
     do {
         // Update C-layers
         N_layers++;
@@ -26,22 +31,37 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
             q_r.push_back(Eigen::Quaterniond::UnitRandom());
         }
 
-        SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
-                              Robot.getPosition(), q_r.at(N_layers - 1),
-                              Robot.getNumParam());
-        RobotM = MultiBodyTree3D(newBase);
+        // Set rotation matrix to robot
+        tf.topLeftCorner(3, 3) = q_r.at(N_layers - 1).toRotationMatrix();
+        RobotM.robotTF(tf);
         Robot.setQuaternion(RobotM.getBase().getQuaternion());
 
+        //        // Transform the robot to build C-layer
+        //        SuperQuadrics newBase(Robot.getSemiAxis(), Robot.getEpsilon(),
+        //                              Robot.getPosition(), q_r.at(N_layers -
+        //                              1), Robot.getNumParam());
+        //        RobotM = MultiBodyTree3D(newBase);
+        //        Robot.setQuaternion(RobotM.getBase().getQuaternion());
+
+        // Minkowski operations
         boundary3D bd = boundaryGen();
+
+        // Sweep-line process
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
+
+        // Connect within one C-layer
         connectOneLayer(CFcell);
 
         vtxId.push_back(N_v);
 
         free_cell.push_back(CFcell);
 
-        connectMultiLayer();
+        // Connect among adjacent C-layers
+        if (N_layers >= 2) {
+            connectMultiLayer();
+        }
 
+        // Graph search
         search();
 
         planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
@@ -56,21 +76,16 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
         return;
     }
 
-    size_t start;
-    size_t n_1;
-    size_t n_2;
+    size_t start = 0;
+    size_t n_1 = vtxId.at(N_layers - 2).layer;
+    size_t n_12 = vtxId.at(N_layers - 2).layer;
+    size_t n_2 = vtxId.at(N_layers - 1).layer;
     std::vector<double> V1;
     std::vector<double> V2;
 
-    // Find vertex only in adjecent layers
-    if (N_layers == 2) {
-        start = 0;
-        n_1 = vtxId.at(0).layer;
-        n_2 = vtxId.at(0).layer;
-    } else {
+    // Find vertex only in adjacent layers
+    if (N_layers > 2) {
         start = vtxId.at(N_layers - 3).layer;
-        n_1 = vtxId.at(N_layers - 2).layer;
-        n_2 = vtxId.at(N_layers - 1).layer;
     }
 
     // Middle layer TFE and cell
@@ -82,13 +97,12 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
     // Nearest vertex btw layers
     for (size_t m0 = start; m0 < n_1; ++m0) {
         V1 = vtxEdge.vertex.at(m0);
-        for (size_t m1 = n_1; m1 < n_2; ++m1) {
+        for (size_t m1 = n_12; m1 < n_2; ++m1) {
             V2 = vtxEdge.vertex.at(m1);
 
             // Locate the nearest vertices
-            if (std::fabs(V1[0] - V2[0]) > 1e-8 ||
-                std::fabs(V1[1] - V2[1]) > 1e-8 ||
-                std::fabs(V1[2] - V2[2]) > 1) {
+            if (std::fabs(V1.at(0) - V2.at(0)) > Lim[0] / N_dx ||
+                std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy) {
                 continue;
             }
 
@@ -98,6 +112,7 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
                 vtxEdge.edge.push_back(std::make_pair(m0, m1));
                 vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
+                n_12 = m1;
                 break;
             }
         }
