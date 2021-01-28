@@ -1,4 +1,4 @@
-function robot = robotInit2D(opt, infla)
+function robot = RobotInit2D(opt, infla)
 % RobotInit2D Construct robot
 % Construct object of robot using SuperEllipse objects
 % one face as base that can translate and rotate,

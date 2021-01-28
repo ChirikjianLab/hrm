@@ -1,4 +1,4 @@
-function [robot, robotURDF, jointLimits] = robotInit3D(robot_type, robot_name)
+function [robot, robotURDF, jointLimits] = RobotInit3D(robot_type, robot_name)
 % Construct object of robot using union of SuperQuadrics objects
 % C-space: SE(3) x (S^1)^n
 
