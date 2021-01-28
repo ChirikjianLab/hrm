@@ -27,60 +27,31 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 # Dependency packages
 
 find_package(OMPL REQUIRED)
-IF (OMPL_FOUND)
-    include_directories(${OMPL_INCLUDE_DIRS})
-    link_libraries(${OMPL_LIBRARIES})
-    ADD_DEFINITIONS( "-DHAS_OMPL" )
-ENDIF()
-
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIRS})
+include_directories(${OMPL_INCLUDE_DIRS})
+link_libraries(${OMPL_LIBRARIES})
 
 find_package(FCL REQUIRED)
-if(FCL_FOUND)
-  include_directories(${FCL_INCLUDE_DIRS})
-  link_libraries(${FCL_LIBRARIES})
-  add_definitions("-DHAS_FCL")
-endif()
-
-find_package(Boost REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  add_definitions("-DHAS_BOOST")
-endif()
-
-find_package(CCD REQUIRED)
-if(CCD_FOUND)
-  include_directories(${CDD_INCLUDE_DIRS})
-  link_libraries(${CCD_LIBRARIES})
-  add_definitions("-DHAS_CCD")
-endif()
+include_directories(${FCL_INCLUDE_DIRS})
+link_libraries(${FCL_LIBRARIES})
 
 find_package(CGAL REQUIRED)
-if(CGAL_FOUND)
-  include_directories(${CGAL_INCLUDE_DIRS})
-  link_libraries(${CGAL_LIBRARIES})
-  add_definitions("-DHAS_CGAL")
-endif()
-
-find_package(GMP REQUIRED)
-if(GMP_FOUND)
-  include_directories(${GMP_INCLUDE_DIRS})
-  link_libraries(${GMP_LIBRARIES})
-  add_definitions("-DHAS_GMP")
-endif()
+include_directories(${CGAL_INCLUDE_DIRS})
+link_libraries(${CGAL_LIBRARIES})
 
 find_package(orocos_kdl REQUIRED)
 include_directories(${orocos_kdl_INCLUDE_DIRS})
 
 find_package(kdl_parser REQUIRED)
 
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
 find_package(GTest REQUIRED)
-if(GTEST_FOUND)
-  include_directories(${GTEST_INCLUDE_DIRS})
-  link_libraries(${GTEST_LIBRARIES})
-  add_definitions("-DHAS_GTEST")
-endif()
+include_directories(${GTEST_INCLUDE_DIRS})
+link_libraries(${GTEST_LIBRARIES})
 
 # Subdirectories
 add_subdirectory(src)
