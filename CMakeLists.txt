@@ -34,9 +34,17 @@ find_package(FCL REQUIRED)
 include_directories(${FCL_INCLUDE_DIRS})
 link_libraries(${FCL_LIBRARIES})
 
+find_package(CCD REQUIRED)
+include_directories(${CCD_INCLUDE_DIRS})
+link_libraries(${CCD_LIBRARIES})
+
 find_package(CGAL REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 link_libraries(${CGAL_LIBRARIES})
+
+find_package(GMP REQUIRED)
+include_directories(${GMP_INCLUDE_DIRS})
+link_libraries(${GMP_LIBRARIES})
 
 find_package(orocos_kdl REQUIRED)
 include_directories(${orocos_kdl_INCLUDE_DIRS})
