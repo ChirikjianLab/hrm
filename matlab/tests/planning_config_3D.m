@@ -39,8 +39,8 @@ disp('Robot Configurations...');
 %  2. robot_name: name of robot
 %     (1) rigid bodies: rabbit, chair
 %     (2) articulated bodies: snake, tri-snake
-robot_type = "articulated";
-[Robot, RobotURDF, jointLimits] = robotInit3D(robot_type, 'tri-snake');
+robot_type = "rigid";
+[Robot, RobotURDF, jointLimits] = robotInit3D(robot_type, 'chair');
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -53,7 +53,8 @@ for i = 1:Robot.numLink
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
-csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts);
+csvwrite(fullfile(outPath,'end_points_3D.csv'), ...
+    endPts(:,1:7+size(jointLimits,2)));
 
 %% Plot obstacle(s), arena(s)
 % plot the ARENA with color filled, under rotation
