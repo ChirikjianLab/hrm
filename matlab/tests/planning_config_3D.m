@@ -53,7 +53,8 @@ for i = 1:Robot.numLink
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
-csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts);
+csvwrite(fullfile(outPath,'end_points_3D.csv'), ...
+    endPts(:,1:7+size(jointLimits,2)));
 
 %% Plot obstacle(s), arena(s)
 % plot the ARENA with color filled, under rotation
