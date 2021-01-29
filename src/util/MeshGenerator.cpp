@@ -1,18 +1,18 @@
 #include "include/MeshGenerator.h"
 
-EMesh getMeshFromSQ(SuperQuadrics sq) {
+Mesh getMeshFromSQ(SuperQuadrics sq) {
     Eigen::Quaterniond quat;
     sq.setQuaternion(quat.setIdentity());
     sq.setPosition({0.0, 0.0, 0.0});
 
-    EMesh M;
+    Mesh M;
     ParametricPoints pts = getBoundary3D(sq);
     M = getMesh(pts);
     return M;
 }
 
-EMesh getMesh(const ParametricPoints& points) {
-    EMesh res;
+Mesh getMesh(const ParametricPoints& points) {
+    Mesh res;
 
     std::list<Point> L;
     for (size_t i = 0; i < points.x.size(); i++) {

@@ -1,5 +1,6 @@
 add_library(UTIL
             EllipsoidSeparation.cpp
+            EllipsoidSQCollisionFCL.cpp
             ExponentialFunction.cpp
             DistanceMetric.cpp
             InterpolateSE3.cpp
@@ -9,4 +10,8 @@ add_library(UTIL
             MultiBodyTree2D.cpp
             MultiBodyTree3D.cpp
 	    Parse2dCsvFile.cpp
+            ParseURDF.cpp
             PointInPoly.cpp)
+target_link_libraries(UTIL
+                      ${orocos_kdl_LIBRARIES}
+                      ${kdl_parser_LIBRARIES})
