@@ -226,7 +226,7 @@ void Planner3DArticulated::buildFreeStateLibraryFromSweep() {
         robot_.robotTF(urdfFile_, &gBase, &jointConfig);
 
         // Generate free space boundary
-        FreeSpaceSE3 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace3D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
         std::vector<freeSegment3D> freeSegments = fs.getFreeSegments();
 
@@ -377,7 +377,7 @@ void Planner3DArticulated::buildFreeStateLibraryFromBoundary() {
         robot_.robotTF(urdfFile_, &gBase, &jointConfig);
 
         // Generate free space boundary
-        FreeSpaceSE3 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace3D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
         boundary3D boundaries = fs.getCSpaceBoundary();
 

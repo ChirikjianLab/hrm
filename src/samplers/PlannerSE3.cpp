@@ -374,7 +374,7 @@ void PlannerSE3::buildFreeStateLibraryFromSweep() {
         tf.bottomRows(1) << 0.0, 0.0, 0.0, 1.0;
         robot_.robotTF(tf);
 
-        FreeSpaceSE3 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace3D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
         std::vector<freeSegment3D> freeSegments = fs.getFreeSegments();
 
@@ -431,7 +431,7 @@ void PlannerSE3::buildFreeStateLibraryFromBoundary() {
         tf.bottomRows(1) << 0.0, 0.0, 0.0, 1.0;
         robot_.robotTF(tf);
 
-        FreeSpaceSE3 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace3D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
         boundary3D boundaries = fs.getCSpaceBoundary();
 

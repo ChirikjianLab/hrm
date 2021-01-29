@@ -1,13 +1,13 @@
-#include "include/FreeSpaceSE3.h"
+#include "include/FreeSpace3D.h"
 #include "util/include/LineIntersection.h"
 
-FreeSpaceSE3::FreeSpaceSE3(MultiBodyTree3D* robot,
-                           std::vector<SuperQuadrics>* arena,
-                           std::vector<SuperQuadrics>* obstacle,
-                           parameters3D* param)
+FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
+                         std::vector<SuperQuadrics>* arena,
+                         std::vector<SuperQuadrics>* obstacle,
+                         parameters3D* param)
     : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
-void FreeSpaceSE3::generateCSpaceBoundary() {
+void FreeSpace3D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
     std::vector<Eigen::MatrixXd> auxBoundary;
     for (size_t i = 0; i < arena_->size(); ++i) {
@@ -24,8 +24,8 @@ void FreeSpaceSE3::generateCSpaceBoundary() {
     }
 }
 
-freeSegment3D FreeSpaceSE3::computeFreeSegmentsGivenXY(const double xCoord,
-                                                       const double yCoord) {
+freeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(const double xCoord,
+                                                      const double yCoord) {
     // Compute intersections between each sweep line and C-obstacles
     intersectSweepLine3D intersects = computeIntersectSweepLine(xCoord, yCoord);
 
@@ -37,7 +37,7 @@ freeSegment3D FreeSpaceSE3::computeFreeSegmentsGivenXY(const double xCoord,
     return lineSegments;
 }
 
-std::vector<freeSegment3D> FreeSpaceSE3::computeFreeSegments() {
+std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
     std::vector<freeSegment3D> freeSegments;
     // Find intersecting points to C-obstacles for each raster scan line
     const double dx =
@@ -68,7 +68,7 @@ std::vector<freeSegment3D> FreeSpaceSE3::computeFreeSegments() {
     return freeSegments;
 }
 
-intersectSweepLine3D FreeSpaceSE3::computeIntersectSweepLine(
+intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
     const double xCoord, const double yCoord) const {
     Eigen::ArrayXd sweepLine(6);
     sweepLine << xCoord, yCoord, 0.0, 0.0, 0.0, 1.0;
@@ -124,7 +124,7 @@ intersectSweepLine3D FreeSpaceSE3::computeIntersectSweepLine(
     return intersects;
 }
 
-freeSegment3D FreeSpaceSE3::computeSweepLineFreeSegment(
+freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
     const intersectSweepLine3D* intersections) const {
     // Collision-free segment of the current sweep line
     freeSegment3D currentLine;

@@ -1,7 +1,6 @@
 #include "include/PlannerSE2.h"
 
 #include "ompl/base/PrecomputedStateSampler.h"
-
 #include "ompl/base/spaces/DubinsStateSpace.h"
 #include "ompl/base/spaces/ReedsSheppStateSpace.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
@@ -334,11 +333,11 @@ void PlannerSE2::buildFreeStateLibraryFromSweep() {
         tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
         robot_.robotTF(tf);
 
-        FreeSpaceSE2 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        std::vector<freeSegment> freeSegments = fs.getFreeSegments();
+        std::vector<freeSegment2D> freeSegments = fs.getFreeSegments();
 
-        for (freeSegment segment : freeSegments) {
+        for (freeSegment2D segment : freeSegments) {
             // Generate several random points on the free segment
             for (size_t j = 0; j < segment.xCoords.size(); ++j) {
                 for (size_t k = 0; k < param_.numPointOnFreeSegment; ++k) {
@@ -383,9 +382,9 @@ void PlannerSE2::buildFreeStateLibraryFromBoundary() {
         tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
         robot_.robotTF(tf);
 
-        FreeSpaceSE2 fs(&robot_, &arena_, &obstacle_, &param_);
+        FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        boundary boundaries = fs.getCSpaceBoundary();
+        boundary2D boundaries = fs.getCSpaceBoundary();
 
         for (Eigen::Matrix2Xd bound : boundaries.obsBd) {
             for (Eigen::Index j = 0; j < bound.cols(); ++j) {

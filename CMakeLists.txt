@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(highwayRoadMap LANGUAGES CXX)
+project(HighwayRoadMap LANGUAGES CXX)
 
 # Specify the minimum version for CMake
 set(CMAKE_CXX_STANDARD 14)

@@ -1,5 +1,5 @@
-#ifndef FREESPACESE3_H
-#define FREESPACESE3_H
+#ifndef FREESPACE3D_H
+#define FREESPACE3D_H
 
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/Interval.h"
@@ -64,11 +64,11 @@ struct intersectSweepLine3D {
 /*
  * \class FreeSpaceSE3 class to compute free space in SE(3)
  */
-class FreeSpaceSE3 {
+class FreeSpace3D {
   public:
-    FreeSpaceSE3(MultiBodyTree3D* robot, std::vector<SuperQuadrics>* arena,
-                 std::vector<SuperQuadrics>* obstacle, parameters3D* param);
-    ~FreeSpaceSE3() {}
+    FreeSpace3D(MultiBodyTree3D* robot, std::vector<SuperQuadrics>* arena,
+                std::vector<SuperQuadrics>* obstacle, parameters3D* param);
+    ~FreeSpace3D() {}
 
   public:
     void generateCSpaceBoundary();
@@ -101,4 +101,4 @@ class FreeSpaceSE3 {
     parameters3D* param_;
 };
 
-#endif  // FREESPACESE3_H
+#endif  // FREESPACE3D_H

@@ -16,7 +16,7 @@ bool MinkowskiSweepLineSamplerSE3::sample(ob::State* state) {
 
     // Compute the free segments on a sweep line and select a random x-coord
     // in a random segment
-    FreeSpaceSE3 fs(robot_, arena_, obstacle_, param_);
+    FreeSpace3D fs(robot_, arena_, obstacle_, param_);
     fs.generateCSpaceBoundary();
 
     Eigen::Quaterniond quat;
@@ -72,7 +72,7 @@ bool MinkowskiSweepLineSamplerSE3::sampleNear(ob::State* state,
 
     // Compute the free segments on a sweep line and select a random x-coord
     // in a random segment
-    FreeSpaceSE3 fs(robot_, arena_, obstacle_, param_);
+    FreeSpace3D fs(robot_, arena_, obstacle_, param_);
     fs.generateCSpaceBoundary();
 
     double zSample = rng_.uniformReal(param_->zLim.first, param_->zLim.second);
@@ -126,7 +126,7 @@ bool MinkowskiBoundarySamplerSE3::sample(ob::State* state) {
     bool valid = false;
 
     // Compute the C-obstacle boundary and randomly select one point
-    FreeSpaceSE3 fs(robot_, arena_, obstacle_, param_);
+    FreeSpace3D fs(robot_, arena_, obstacle_, param_);
     fs.generateCSpaceBoundary();
 
     do {
@@ -183,7 +183,7 @@ bool MinkowskiBoundarySamplerSE3::sampleNear(ob::State* state,
     bool valid = false;
 
     // Compute the C-obstacle boundary and randomly select one point
-    FreeSpaceSE3 fs(robot_, arena_, obstacle_, param_);
+    FreeSpace3D fs(robot_, arena_, obstacle_, param_);
     fs.generateCSpaceBoundary();
 
     do {

@@ -1,7 +1,7 @@
 #ifndef MINKOWSKISAMPLERSE2_H
 #define MINKOWSKISAMPLERSE2_H
 
-#include "FreeSpaceSE2.h"
+#include "geometry/include/FreeSpace2D.h"
 
 #include "ompl/base/StateSampler.h"
 #include "ompl/base/ValidStateSampler.h"
@@ -29,7 +29,7 @@ class MinkowskiSweepLineSamplerSE2 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperEllipse>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters* param) { param_ = param; }
+    void setParam(parameters2D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -38,7 +38,7 @@ class MinkowskiSweepLineSamplerSE2 : public ob::ValidStateSampler {
     MultiBodyTree2D* robot_;
     std::vector<SuperEllipse>* arena_;
     std::vector<SuperEllipse>* obstacle_;
-    parameters* param_;
+    parameters2D* param_;
 };
 
 class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
@@ -56,7 +56,7 @@ class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperEllipse>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters* param) { param_ = param; }
+    void setParam(parameters2D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -65,7 +65,7 @@ class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
     MultiBodyTree2D* robot_;
     std::vector<SuperEllipse>* arena_;
     std::vector<SuperEllipse>* obstacle_;
-    parameters* param_;
+    parameters2D* param_;
 };
 
 #endif  // MINKOWSKISAMPLERSE2_H

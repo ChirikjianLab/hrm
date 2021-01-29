@@ -6,20 +6,6 @@ target_link_libraries(TestHRM2D
                       HRM_2D
                       TESTUTIL)
 
-add_executable(TestHRM2DTightFittedEllipse TestHRM2DTightFittedEllipse.cpp)
-target_link_libraries(TestHRM2DTightFittedEllipse
-                      UTIL
-                      GEOM
-                      HRM_2D
-                      TESTUTIL)
-
-add_executable(TestHRM2DMultiBody TestHRM2DMultiBody.cpp)
-target_link_libraries(TestHRM2DMultiBody
-                      UTIL
-                      GEOM
-                      HRM_2D
-                      TESTUTIL)
-
 # 3D version
 add_executable(TestHRM3D TestHRM3D.cpp)
 target_link_libraries(TestHRM3D
@@ -30,8 +16,8 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
 
-add_executable(TestPlanning3DArticulated TestPlanning3DArticulated.cpp)
-target_link_libraries(TestPlanning3DArticulated
+add_executable(TestMinkSampler3D TestMinkSampler3D.cpp)
+target_link_libraries(TestMinkSampler3D
                       TESTUTIL
                       SAMPLER_3D)
 

@@ -1,13 +1,13 @@
-#include "include/FreeSpaceSE2.h"
+#include "include/FreeSpace2D.h"
 #include "util/include/LineIntersection.h"
 
-FreeSpaceSE2::FreeSpaceSE2(MultiBodyTree2D* robot,
-                           std::vector<SuperEllipse>* arena,
-                           std::vector<SuperEllipse>* obstacle,
-                           parameters* param)
+FreeSpace2D::FreeSpace2D(MultiBodyTree2D* robot,
+                         std::vector<SuperEllipse>* arena,
+                         std::vector<SuperEllipse>* obstacle,
+                         parameters2D* param)
     : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
-void FreeSpaceSE2::generateCSpaceBoundary() {
+void FreeSpace2D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
     std::vector<Eigen::MatrixXd> auxBoundary;
     for (size_t i = 0; i < arena_->size(); ++i) {
@@ -24,19 +24,19 @@ void FreeSpaceSE2::generateCSpaceBoundary() {
     }
 }
 
-freeSegment FreeSpaceSE2::computeFreeSegmentsGivenY(const double yCoord) {
+freeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const double yCoord) {
     // Compute intersections between each sweep line and C-obstacles
-    intersectSweepLine intersects = computeIntersectSweepLine(yCoord);
+    intersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
 
     // Compute collision-free segment of each sweep line
-    freeSegment lineSegments = computeSweepLineFreeSegment(intersects);
+    freeSegment2D lineSegments = computeSweepLineFreeSegment(intersects);
     lineSegments.yCoord = yCoord;
 
     return lineSegments;
 }
 
-std::vector<freeSegment> FreeSpaceSE2::computeFreeSegments() {
-    std::vector<freeSegment> freeSegments;
+std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
+    std::vector<freeSegment2D> freeSegments;
 
     // Find intersecting points to C-obstacles for each raster scan line
     const double dy =
@@ -53,12 +53,12 @@ std::vector<freeSegment> FreeSpaceSE2::computeFreeSegments() {
     return freeSegments;
 }
 
-intersectSweepLine FreeSpaceSE2::computeIntersectSweepLine(
+intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     const double yCoord) const {
     size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
     size_t numObsMink = configSpaceBoundary_.obsBd.size();
 
-    intersectSweepLine intersects;
+    intersectSweepLine2D intersects;
 
     // x-coordinate of the intersection btw sweep line and arenas
     for (size_t j = 0; j < numArenaMink; ++j) {
@@ -92,10 +92,10 @@ intersectSweepLine FreeSpaceSE2::computeIntersectSweepLine(
     return intersects;
 }
 
-freeSegment FreeSpaceSE2::computeSweepLineFreeSegment(
-    const intersectSweepLine& intersections) const {
+freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
+    const intersectSweepLine2D& intersections) const {
     // Collision-free segment of the current sweep line
-    freeSegment currentLine;
+    freeSegment2D currentLine;
 
     // Construct intervals of the current sweep line
     std::vector<Interval> collisionFreeSegment;

@@ -1,7 +1,7 @@
 #ifndef MINKOWSKISAMPLERSE3_H
 #define MINKOWSKISAMPLERSE3_H
 
-#include "samplers/include/FreeSpaceSE3.h"
+#include "geometry/include/FreeSpace3D.h"
 #include "util/include/MultiBodyTree3D.h"
 
 #include "ompl/base/StateSampler.h"
