@@ -42,7 +42,7 @@ class PlannerOMPL {
                 const std::vector<SuperQuadrics>& robot,
                 const std::vector<SuperQuadrics>& arena,
                 const std::vector<SuperQuadrics>& obs,
-                const std::vector<EMesh>& obsMesh, const int planner,
+                const std::vector<Mesh>& obsMesh, const int planner,
                 const int sampler);
     virtual ~PlannerOMPL();
 
@@ -85,7 +85,7 @@ class PlannerOMPL {
     const std::vector<SuperQuadrics>& arena_;
     const std::vector<SuperQuadrics>& robot_;
     const std::vector<SuperQuadrics>& obstacles_;
-    const std::vector<EMesh>& obsMesh_;
+    const std::vector<Mesh>& obsMesh_;
 
     std::vector<fcl::CollisionObject<double>> objRobot_;
     std::vector<fcl::CollisionObject<double>> objObs_;

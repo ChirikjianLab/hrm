@@ -5,7 +5,7 @@ PlannerOMPLEllipsoid::PlannerOMPLEllipsoid(
     std::vector<double> lowBound, std::vector<double> highBound,
     const std::vector<SuperQuadrics>& robot,
     const std::vector<SuperQuadrics>& arena,
-    const std::vector<SuperQuadrics>& obs, const std::vector<EMesh>& obsMesh,
+    const std::vector<SuperQuadrics>& obs, const std::vector<Mesh>& obsMesh,
     const int planner, const int sampler)
     : PlannerOMPL(lowBound, highBound, robot, arena, obs, obsMesh, planner,
                   sampler) {

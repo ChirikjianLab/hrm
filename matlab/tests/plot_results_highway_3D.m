@@ -76,7 +76,7 @@ if ~isempty(path_highway)
     plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
         'm-', 'LineWidth', 2)
     
-    for i = 1:ceil(size(path_highway,1)/10):size(path_highway,1)     
+    for i = 1:ceil(size(path_highway,1)/50):size(path_highway,1)     
         PlotRobotPose(robot, path_highway(i,:));
     end
 end

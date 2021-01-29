@@ -3,14 +3,16 @@
 % Dependencies:
 %    SuperQuadrics.m: class of SuperQuadrics
 %
-% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2019
+% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2021
 
 classdef MultiBodyTree3D < handle
     properties
         Base      % Base of the robot, class: SuperQuadrics
         numLink   % Number of links
         Link      % Links of robot, a cell of class SuperQuadrics
-        tf        % SE(3) transformations from base to each link
+        tf        % Offset transform --
+                  %  For rigid-body: relative to base
+                  %  For articulated-body: relative to body frame
     end
     
     methods
@@ -31,27 +33,47 @@ classdef MultiBodyTree3D < handle
             else
                 obj.Link{i} = link;
                 
-                g = [quat2rotm(link.q), link.tc; zeros(1,3), 1];
+                g = [par2rotm(link.q), link.tc; zeros(1,3), 1];
                 obj.tf{i} = g;
             end
         end
         
-        %% Transform the robot as a whole body
-        function robotTF(obj, g, isplot)
+        %% Set transformation for base
+        function setBaseTransform(obj, g)
             obj.Base.tc = g(1:3,4);
             obj.Base.q = rotm2quat(g(1:3,1:3));
-            
-            if isplot
-                obj.Base.PlotShape;
-            end
+        end
+        
+        %% Set transformation for selected link relative to base
+        function setLinkTransform(obj, linkID, g)
+            obj.Link{linkID}.tc = g(1:3,4);
+            obj.Link{linkID}.q = rotm2quat(g(1:3,1:3));
+        end
+        
+        %% Transform the robot by a specific configuration
+        function robotTF(obj, isplot, g, jointConfig, robotURDF)
+            % Set transform for base ellipsoid
+            obj.setBaseTransform(g);
             
             for i = 1:size(obj.Link,2)
-                g_Link = g * obj.tf{i};
+                % Compute transformation of the link center to base
+                if nargin == 3
+                    g_Link = g * obj.tf{i};
+                else
+                    g_Link = g * getTransform(robotURDF, jointConfig,...
+                        strcat('body',num2str(i)));
+                    
+                    % offset from body frame to ellipsoid center
+                    g_Link = g_Link * obj.tf{i};
+                end
                 
-                obj.Link{i}.tc = g_Link(1:3,4);
-                obj.Link{i}.q = rotm2quat(g_Link(1:3,1:3));
-                
-                if isplot
+                obj.setLinkTransform(i, g_Link);
+            end
+            
+            % Plot robot shapes
+            if isplot
+                obj.Base.PlotShape;
+                for i = 1:size(obj.Link,2)
                     obj.Link{i}.PlotShape;
                 end
             end
@@ -64,7 +86,7 @@ classdef MultiBodyTree3D < handle
             
             % Mink sum for the base link
             Mink(:,:,1) = S1.MinkowskiSum_3D_ES(obj.Base,k);
-            R_base = quat2rotm(obj.Base.q);
+            R_base = par2rotm(obj.Base.q);
             
             % Mink sum for the other links
             for i = 1:size(obj.Link,2)

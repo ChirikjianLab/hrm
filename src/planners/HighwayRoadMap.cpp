@@ -158,9 +158,9 @@ cf_cell HighwayRoadMap::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
 
         // x-coords
         for (size_t j = 0; j < cf_seg[i].size(); ++j) {
-            xL.push_back(cf_seg[i][j].s);
-            xU.push_back(cf_seg[i][j].e);
-            xM.push_back((cf_seg[i][j].s + cf_seg[i][j].e) / 2.0);
+            xL.push_back(cf_seg[i][j].s());
+            xU.push_back(cf_seg[i][j].e());
+            xM.push_back((cf_seg[i][j].s() + cf_seg[i][j].e()) / 2.0);
         }
         cell.xL.push_back(xL);
         cell.xU.push_back(xU);

@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="snake">
+  <xacro:property name="baselen" value="10"/>
+  <xacro:property name="bodylen" value="7.6"/>
+  <xacro:property name="joint_offset" value="0.5"/>
+    
+  <material name="blue">
+    <color rgba="0 0 0.8 0.7"/>
+  </material>
+    
+  <material name="green">
+    <color rgba="0 0.8 0 0.7"/>
+  </material>
+    
+  <link name="base">
+    <visual>
+      <geometry>
+        <box size="10 5 4"/>
+      </geometry>
+      <material name="green"/>
+    </visual>
+  </link>
+
+  <joint name="body1_to_base" type="revolute">
+    <parent link="base"/>
+    <child link="body1"/>
+    <origin rpy="0 0 0" xyz="${baselen-joint_offset} 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-pi/3}" upper="${pi/3}" effort="100" velocity="5"/>
+  </joint>
+  	
+  <link name="body1">
+    <visual>
+      <geometry>
+        <box size="7.6 4.7 2.4"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="body2_to_body1" type="revolute">
+    <parent link="body1"/>
+    <child link="body2"/>
+    <origin rpy="0 0 0" xyz="${bodylen*2-joint_offset*2} 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-pi/4}" upper="${pi/4}" effort="100" velocity="5"/>
+  </joint>
+    
+  <link name="body2">
+    <visual>
+      <geometry>
+        <box size="7.6 4.7 2.4"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="body3_to_body2" type="revolute">
+    <parent link="body2"/>
+    <child link="body3"/>
+    <origin rpy="0 0 0" xyz="${bodylen*2-joint_offset*2} 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-pi/2}" upper="${pi/2}" effort="100" velocity="5"/>
+  </joint>
+
+  <link name="body3">
+    <visual>
+      <geometry>
+        <box size="7.6 4.7 2.4"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
+      <material name="blue"/>
+    </visual>
+  </link>
+    
+</robot>

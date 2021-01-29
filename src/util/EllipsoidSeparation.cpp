@@ -113,6 +113,72 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     }
 }
 
+bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
+    if (Ea.getEpsilon() != 1.0 || Eb.getEpsilon() != 1.0) {
+        std::cerr << "Object not an ellipse!" << std::endl;
+    }
+
+    // Semi-axis
+    Eigen::DiagonalMatrix<double, 3> A;
+    A.diagonal() = {std::pow(Ea.getSemiAxis().at(0), -2.0),
+                    std::pow(Ea.getSemiAxis().at(1), -2.0), -1.0};
+    Eigen::DiagonalMatrix<double, 3> B;
+    B.diagonal() = {std::pow(Eb.getSemiAxis().at(0), -2.0),
+                    std::pow(Eb.getSemiAxis().at(1), -2.0), -1.0};
+
+    // Transformations
+    Eigen::Matrix3d Ta = Eigen::Matrix3d::Identity();
+    Ta.topLeftCorner(2, 2) =
+        Eigen::Rotation2Dd(Ea.getAngle()).toRotationMatrix();
+    Ta.topRightCorner(2, 1) =
+        Eigen::Vector2d(Ea.getPosition().at(0), Ea.getPosition().at(1));
+
+    Eigen::Matrix3d Tb = Eigen::Matrix3d::Identity();
+    Tb.topLeftCorner(2, 2) =
+        Eigen::Rotation2Dd(Eb.getAngle()).toRotationMatrix();
+    Tb.topRightCorner(2, 1) =
+        Eigen::Vector2d(Eb.getPosition().at(0), Eb.getPosition().at(1));
+
+    // aij belongs to A in det(lambda*A - Ma'*(Mb^-1)'*B*(Mb^-1)*Ma)
+    Eigen::Matrix3d a = A;
+
+    // bij belongs to b = Ma'*(Mb^-1)'*B*(Mb^-1)*Ma matmul
+    Eigen::Matrix3d b =
+        (Tb.inverse() * Ta).transpose() * B * (Tb.inverse() * Ta);
+
+    // Coefficients of the Characteristic Polynomial
+    double T3 = -a(0, 0) * a(1, 1) * a(2, 2);
+    double T2 = (a(0, 0) * a(1, 1) * b(2, 2)) + (a(0, 0) * a(2, 2) * b(1, 1)) +
+                (a(1, 1) * a(2, 2) * b(0, 0));
+    double T1 = (a(0, 0) * b(1, 2) * b(2, 1)) - (a(0, 0) * b(1, 1) * b(2, 2)) -
+                (a(1, 1) * b(0, 0) * b(2, 2)) + (a(1, 1) * b(0, 2) * b(2, 0)) -
+                (a(2, 2) * b(0, 0) * b(1, 1)) + (a(2, 2) * b(0, 1) * b(1, 0));
+    double T0 = (b(0, 0) * b(1, 1) * b(2, 2)) - (b(0, 0) * b(1, 2) * b(2, 1)) -
+                (b(0, 1) * b(1, 0) * b(2, 2)) + (b(0, 1) * b(1, 2) * b(2, 0)) +
+                (b(0, 2) * b(1, 0) * b(2, 1)) - (b(0, 2) * b(1, 1) * b(2, 0));
+
+    // Roots of the characteristic_polynomial (lambda0, ... , lambda4)
+    std::vector<std::complex<double>> roots =
+        getRootsPolynomial({T3, T2, T1, T0});
+
+    // Find the real negative roots
+    std::vector<size_t> negRootsId;
+    for (size_t i = 0; i < roots.size(); ++i) {
+        if (std::fabs(roots.at(i).imag()) < 1e-8 && roots.at(i).real() < 0) {
+            negRootsId.push_back(i);
+        }
+    }
+
+    // Separation conditions
+    if (negRootsId.size() == 2 &&
+        std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
+            1e-8) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 std::vector<std::complex<double>> getRootsPolynomial(
     const std::vector<double>& coeffs) {
     const long matsz = long(coeffs.size() - 1);

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(highwayRoadMap LANGUAGES CXX)
+project(HighwayRoadMap LANGUAGES CXX)
 
 # Specify the minimum version for CMake
 set(CMAKE_CXX_STANDARD 14)
@@ -27,55 +27,41 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 # Dependency packages
 
 find_package(OMPL REQUIRED)
-IF (OMPL_FOUND)
-    include_directories(${OMPL_INCLUDE_DIRS})
-    link_libraries(${OMPL_LIBRARIES})
-    ADD_DEFINITIONS( "-DHAS_OMPL" )
-ENDIF()
+include_directories(${OMPL_INCLUDE_DIRS})
+link_libraries(${OMPL_LIBRARIES})
+
+find_package(FCL REQUIRED)
+include_directories(${FCL_INCLUDE_DIRS})
+link_libraries(${FCL_LIBRARIES})
+
+find_package(CCD REQUIRED)
+include_directories(${CCD_INCLUDE_DIRS})
+link_libraries(${CCD_LIBRARIES})
+
+find_package(CGAL REQUIRED)
+include_directories(${CGAL_INCLUDE_DIRS})
+link_libraries(${CGAL_LIBRARIES})
+
+find_package(GMP REQUIRED)
+include_directories(${GMP_INCLUDE_DIRS})
+link_libraries(${GMP_LIBRARIES})
+
+find_package(orocos_kdl)
+include_directories(${orocos_kdl_INCLUDE_DIRS})
+link_libraries(${orocos_kdl_LIBRARIES})
+
+find_package(kdl_parser)
+link_libraries(${kdl_parser_LIBRARIES})
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(FCL REQUIRED)
-if(FCL_FOUND)
-  include_directories(${FCL_INCLUDE_DIRS})
-  link_libraries(${FCL_LIBRARIES})
-  add_definitions("-DHAS_FCL")
-endif()
-
 find_package(Boost REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  add_definitions("-DHAS_BOOST")
-endif()
-
-find_package(CCD REQUIRED)
-if(CCD_FOUND)
-  include_directories(${CDD_INCLUDE_DIRS})
-  link_libraries(${CCD_LIBRARIES})
-  add_definitions("-DHAS_CCD")
-endif()
-
-find_package(CGAL REQUIRED)
-if(CGAL_FOUND)
-  include_directories(${CGAL_INCLUDE_DIRS})
-  link_libraries(${CGAL_LIBRARIES})
-  add_definitions("-DHAS_CGAL")
-endif()
-
-find_package(GMP REQUIRED)
-if(GMP_FOUND)
-  include_directories(${GMP_INCLUDE_DIRS})
-  link_libraries(${GMP_LIBRARIES})
-  add_definitions("-DHAS_GMP")
-endif()
+include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
-if(GTEST_FOUND)
-  include_directories(${GTEST_INCLUDE_DIRS})
-  link_libraries(${GTEST_LIBRARIES})
-  add_definitions("-DHAS_GTEST")
-endif()
+include_directories(${GTEST_INCLUDE_DIRS})
+link_libraries(${GTEST_LIBRARIES})
 
 # Subdirectories
 add_subdirectory(src)
