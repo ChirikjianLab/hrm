@@ -1,6 +1,6 @@
 #include "util/include/MeshGenerator.h"
 #include "util/include/ParsePlanningSettings.h"
-#include "util/include/hrm_multi_adaptive_planner.h"
+#include "util/include/UtilProbHRM.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     const size_t N = size_t(atoi(argv[1]));
     const int N_x = atoi(argv[2]);
     const int N_y = atoi(argv[3]);
-    const double time_lim = double(atoi(argv[4]));
+    const double timeLim = double(atoi(argv[4]));
 
     vector<vector<double>> stat(N);
 
@@ -60,10 +60,9 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        hrm_multi_adaptive_planner high3D(robot, env3D->getEndPoints(),
-                                          env3D->getArena(),
-                                          env3D->getObstacle(), opt);
-        high3D.plan_path(time_lim);
+        UtilProbHRM high3D(robot, env3D->getEndPoints(), env3D->getArena(),
+                           env3D->getObstacle(), opt);
+        high3D.planPath(timeLim);
 
         // Store results
         file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','

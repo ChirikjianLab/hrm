@@ -11,13 +11,14 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     Hrm3DMultiBody(MultiBodyTree3D, std::vector<std::vector<double>>,
                    std::vector<SuperQuadrics>, std::vector<SuperQuadrics>,
                    option3D);
-    virtual ~Hrm3DMultiBody();
+    virtual ~Hrm3DMultiBody() override;
 
   public:
-    void plan();
-    void buildRoadmap();
-    boundary3D boundaryGen();
-    virtual void connectMultiLayer();
+    virtual void plan() override;
+
+    void buildRoadmap() override;
+    boundary3D boundaryGen() override;
+    virtual void connectMultiLayer() override;
 
   protected:
     std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond q1,

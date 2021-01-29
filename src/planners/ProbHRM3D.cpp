@@ -1,13 +1,14 @@
-#include "include/Hrm3dMultiBodyAdaptive.h"
-#include <iostream>
+#include "include/ProbHRM3D.h"
 
-Hrm3DMultiBodyAdaptive::Hrm3DMultiBodyAdaptive(
-    MultiBodyTree3D robot, std::vector<std::vector<double>> endPts,
-    std::vector<SuperQuadrics> arena, std::vector<SuperQuadrics> obs,
-    option3D opt)
+ProbHRM3D::ProbHRM3D(MultiBodyTree3D robot,
+                     std::vector<std::vector<double>> endPts,
+                     std::vector<SuperQuadrics> arena,
+                     std::vector<SuperQuadrics> obs, option3D opt)
     : Hrm3DMultiBody::Hrm3DMultiBody(robot, endPts, arena, obs, opt) {}
 
-void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
+ProbHRM3D::~ProbHRM3D() {}
+
+void ProbHRM3D::plan(double timeLim) {
     ompl::time::point start = ompl::time::now();
 
     // Iteratively add layers with random orientations
@@ -58,7 +59,7 @@ void Hrm3DMultiBodyAdaptive::planPath(double timeLim) {
     solutionPathInfo.solvedPath = getSolutionPath();
 }
 
-void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
+void ProbHRM3D::connectMultiLayer() {
     if (N_layers == 1) {
         return;
     }
@@ -108,5 +109,3 @@ void Hrm3DMultiBodyAdaptive::connectMultiLayer() {
     // Clear mid_cell and update the number of vertices
     mid_cell.clear();
 }
-
-Hrm3DMultiBodyAdaptive::~Hrm3DMultiBodyAdaptive(){};

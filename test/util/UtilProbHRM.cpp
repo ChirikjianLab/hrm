@@ -1,15 +1,15 @@
-#include "include/hrm_multi_adaptive_planner.h"
+#include "include/UtilProbHRM.h"
 
 using namespace std;
 
-hrm_multi_adaptive_planner::hrm_multi_adaptive_planner(
-    MultiBodyTree3D robot, vector<vector<double>> EndPts,
-    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs, option3D opt)
-    : Hrm3DMultiBodyAdaptive(robot, EndPts, arena, obs, opt) {}
+UtilProbHRM::UtilProbHRM(MultiBodyTree3D robot, vector<vector<double>> EndPts,
+                         vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
+                         option3D opt)
+    : ProbHRM3D(robot, EndPts, arena, obs, opt) {}
 
-void hrm_multi_adaptive_planner::plan_path(const double time_lim) {
+void UtilProbHRM::planPath(const double timeLim) {
     // Highway algorithm
-    planPath(time_lim);
+    plan(timeLim);
 
     // Planning Time
     cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;

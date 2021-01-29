@@ -27,9 +27,8 @@ target_link_libraries(BenchHighway3D
                       TESTUTIL
                       ${OMPL})
 
-add_executable(BenchHRM3DAdaptive
-               BenchHRM3DAdaptive.cpp)
-target_link_libraries(BenchHRM3DAdaptive
+add_executable(BenchProbHRM3D BenchProbHRM3D.cpp)
+target_link_libraries(BenchProbHRM3D
                       UTIL
                       HRM_3D
                       HIGHWAY_UTIL
