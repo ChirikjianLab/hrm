@@ -20,15 +20,13 @@ class SuperQuadrics {
 
   public:
     // Getter functions
-    std::vector<double> getSemiAxis() const noexcept { return semiAxis_; }
-    std::vector<double> getEpsilon() const noexcept { return epsilon_; }
-    std::vector<double> getPosition() const noexcept { return position_; }
-    Eigen::Quaterniond getQuaternion() const noexcept { return quat_; }
-    unsigned int getNum() const noexcept { return Num_; }
-    unsigned int getNumParam() const noexcept { return num_; }
-    std::vector<Eigen::Quaterniond> getQuatSamples() const noexcept {
-        return qSample_;
-    }
+    std::vector<double> getSemiAxis() const { return semiAxis_; }
+    std::vector<double> getEpsilon() const { return epsilon_; }
+    std::vector<double> getPosition() const { return position_; }
+    Eigen::Quaterniond getQuaternion() const { return quat_; }
+    unsigned int getNum() const { return Num_; }
+    unsigned int getNumParam() const { return num_; }
+    std::vector<Eigen::Quaterniond> getQuatSamples() const { return qSample_; }
 
     // Setter functions
     void setSemiAxis(const std::vector<double> &newSemiAxis);

@@ -10,10 +10,10 @@ class MultiBodyTree3D {
     MultiBodyTree3D(SuperQuadrics base);
 
   public:
-    SuperQuadrics getBase() const noexcept { return base_; }
-    std::vector<SuperQuadrics> getLinks() const noexcept { return link_; }
-    double getNumLinks() const noexcept { return numLinks_; }
-    std::vector<Eigen::Matrix4d> getTF() const noexcept { return tf_; }
+    SuperQuadrics getBase() const { return base_; }
+    std::vector<SuperQuadrics> getLinks() const { return link_; }
+    double getNumLinks() const { return numLinks_; }
+    std::vector<Eigen::Matrix4d> getTF() const { return tf_; }
 
     void addBody(SuperQuadrics link);
     void robotTF(Eigen::Matrix4d tf);

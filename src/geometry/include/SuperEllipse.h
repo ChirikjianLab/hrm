@@ -21,11 +21,11 @@ class SuperEllipse {
 
   public:
     // Getter functions
-    std::vector<double> getSemiAxis() const noexcept { return semiAxis_; }
-    double getEpsilon() const noexcept { return epsilon_; }
-    std::vector<double> getPosition() const noexcept { return position_; }
-    double getAngle() const noexcept { return angle_; }
-    unsigned int getNum() const noexcept { return num_; }
+    std::vector<double> getSemiAxis() const { return semiAxis_; }
+    double getEpsilon() const { return epsilon_; }
+    std::vector<double> getPosition() const { return position_; }
+    double getAngle() const { return angle_; }
+    unsigned int getNum() const { return num_; }
 
     // Setter functions
     void setSemiAxis(const std::vector<double> &newSemiAxis);

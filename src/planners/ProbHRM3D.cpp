@@ -12,7 +12,7 @@ void ProbHRM3D::plan(double timeLim) {
     ompl::time::point start = ompl::time::now();
 
     // Iteratively add layers with random orientations
-    srand(unsigned(std::time(nullptr)));
+    srand(unsigned(std::time(NULL)));
     N_layers = 1;
 
     // Get the current Transformation
