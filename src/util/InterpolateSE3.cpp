@@ -33,8 +33,28 @@ std::vector<std::vector<double>> interpolateCompoundSE3Rn(
         return interpolateSE3(vStart, vEnd, numStep);
     } else {
         std::vector<std::vector<double>> vInterp;
-        std::vector<std::vector<double>> vSE3Interp = interpolateSE3();
-        std::vector<std::vector<double>> vRnInterp = interpolateRn();
+
+        std::vector<double> vStartSE3(vStart.begin(), vStart.begin() + 7);
+        std::vector<double> vStartRn(vStart.begin() + 7, vStart.end());
+
+        std::vector<double> vEndSE3(vEnd.begin(), vEnd.begin() + 7);
+        std::vector<double> vEndRn(vEnd.begin() + 7, vEnd.end());
+
+        std::vector<std::vector<double>> vSE3Interp =
+            interpolateSE3(vStartSE3, vEndSE3, numStep);
+        std::vector<std::vector<double>> vRnInterp =
+            interpolateRn(vStartRn, vEndRn, numStep);
+
+        // Combine two interpolated sequences
+        for (size_t i = 0; i <= numStep; ++i) {
+            std::vector<double> vStep = vSE3Interp.at(i);
+            vStep.insert(vStep.end(), vRnInterp.at(i).begin(),
+                         vRnInterp.at(i).end());
+
+            vInterp.push_back(vStep);
+        }
+
+        return vInterp;
     }
 }
 

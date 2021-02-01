@@ -33,30 +33,22 @@ PlotRobotPose(robot, endPts(2,:), robotURDF);
 ob = load(['../../config/', 'obstacle_config_3D.csv']);
 ar = load(['../../config/', 'arena_config_3D.csv']);
 
+% plot the ARENA bound
 for i = 1:size(ar,1)
     arena(i) = SuperQuadrics({ar(i,1:3), ar(i,4:5), ar(i,6:8)',...
         ar(i,9:end), 20},...
         'w', 0);
-end
-
-for i = 1:size(ob,1)
-    obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
-        ob(i,9:end), 20},...
-        'y', 0);
-end
-
-% plot the ARENA bound
-for i = 1:size(arena,2)
+    
     PlotBox(arena(i).tc, 2*arena(i).a)
 end
 
 % plot the OBSTACLE(s) with color filled, under rotation and translation
 for i = 1:size(ob,1)
-    obs(i).PlotShape;
+    obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
+        ob(i,9:end), 20},...
+        'y', 0);
     
-    is = num2str(i);
-    box on;
-    axis equal
+    obs(i).PlotShape;
 end
 
 axis off
@@ -79,7 +71,7 @@ if ~isempty(path_highway)
     plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
         'm-', 'LineWidth', 2)
     
-    for i = 1:ceil(size(path_highway,1)/50):size(path_highway,1)
+    for i = 1:ceil(size(path_highway,1)/10):size(path_highway,1)
         PlotRobotPose(robot, path_highway(i,:), robotURDF);
     end
 end

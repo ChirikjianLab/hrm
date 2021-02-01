@@ -13,6 +13,13 @@ std::vector<std::vector<double>> interpolateSE3(
     const unsigned int N_step);
 
 /*
+ * \brief SE(3)xR^n compound interpolation
+ */
+std::vector<std::vector<double>> interpolateCompoundSE3Rn(
+    const std::vector<double>& vStart, const std::vector<double>& vEnd,
+    const unsigned int numStep);
+
+/*
  * \brief SO(3) interpolation using axis-angle parameterization
  * Find axis of relative rotations, interpolate angles around it
  */

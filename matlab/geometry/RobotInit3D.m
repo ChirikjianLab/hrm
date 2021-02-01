@@ -5,6 +5,9 @@ function [robot, robotURDF, jointLimits] = RobotInit3D(robot_type, robot_name)
 path_prefix = '../../resources/3D/';
 
 robot_config = csvread([path_prefix, 'robot_', robot_name, '_3D.csv']);
+for i = 1:size(robot_config,1)
+    robot_config(i,9:end) = axang2quat(robot_config(i,9:end));
+end
 
 if robot_type == "rigid"
     urdf_file = [];

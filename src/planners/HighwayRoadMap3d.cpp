@@ -478,9 +478,9 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
 
         // Two motion sequences
         std::vector<std::vector<double>> path_rotate =
-            interpolateSE3(path_solved[i], mid_step, num_rotate);
+            interpolateCompoundSE3Rn(path_solved[i], mid_step, num_rotate);
         std::vector<std::vector<double>> path_trans =
-            interpolateSE3(mid_step, path_solved[i + 1], num_trans);
+            interpolateCompoundSE3Rn(mid_step, path_solved[i + 1], num_trans);
 
         // Combine the motion sequences
         path_interp.insert(path_interp.end(), path_rotate.begin(),
