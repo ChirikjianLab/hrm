@@ -234,13 +234,37 @@ cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
 // ******************************************************************** //
 
 // ******************************************************************** //
+// Generate vertices //
+void HighwayRoadMap3D::generateVertices(const double tx,
+                                        const cf_cellYZ* cellYZ) {
+    N_v.plane.clear();
+    for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
+        N_v.plane.push_back(vtxEdge.vertex.size());
+        for (size_t j = 0; j < cellYZ->zM[i].size(); ++j) {
+            // Construct a std::vector of vertex
+            vtxEdge.vertex.push_back(
+                {tx, cellYZ->ty[i], cellYZ->zM[i][j], Robot.getQuaternion().w(),
+                 Robot.getQuaternion().x(), Robot.getQuaternion().y(),
+                 Robot.getQuaternion().z()});
+        }
+    }
+
+    // Record index info
+    N_v.line.push_back(N_v.plane);
+    N_v.layer = vtxEdge.vertex.size();
+}
+
 // Connect vertices within one C-layer //
 void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     size_t I0 = 0, I1 = 0;
 
     N_v.line.clear();
     for (size_t i = 0; i < cell.tx.size(); ++i) {
-        connectOnePlane(cell.tx[i], cell.cellYZ[i]);
+        // Generate collision-free vertices
+        generateVertices(cell.tx.at(i), &cell.cellYZ.at(i));
+
+        // Connect within one plane
+        connectOnePlane(&cell.cellYZ[i]);
     }
 
     for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
@@ -270,32 +294,18 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     }
 }
 
-void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
+void HighwayRoadMap3D::connectOnePlane(const cf_cellYZ* CFcell) {
     size_t N_0 = 0, N_1 = 0;
 
-    N_v.plane.clear();
-    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
-        N_v.plane.push_back(vtxEdge.vertex.size());
-        for (size_t j = 0; j < CFcell.zM[i].size(); ++j) {
-            // Construct a std::vector of vertex
-            vtxEdge.vertex.push_back(
-                {tx, CFcell.ty[i], CFcell.zM[i][j], Robot.getQuaternion().w(),
-                 Robot.getQuaternion().x(), Robot.getQuaternion().y(),
-                 Robot.getQuaternion().z()});
-        }
-    }
-
-    // Record index info
-    N_v.line.push_back(N_v.plane);
-    N_v.layer = vtxEdge.vertex.size();
-
-    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
+    // Connect vertices within one plane
+    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
         N_0 = N_v.plane[i];
         N_1 = N_v.plane[i + 1];
-        for (size_t j1 = 0; j1 < CFcell.zM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < CFcell->zM[i].size(); ++j1) {
             // Connect vertex within one sweep line
-            if (j1 != CFcell.zM[i].size() - 1) {
-                if (std::fabs(CFcell.zU[i][j1] - CFcell.zL[i][j1 + 1]) < 1e-5) {
+            if (j1 != CFcell->zM[i].size() - 1) {
+                if (std::fabs(CFcell->zU[i][j1] - CFcell->zL[i][j1 + 1]) <
+                    1e-5) {
                     vtxEdge.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
                     vtxEdge.weight.push_back(
@@ -305,12 +315,12 @@ void HighwayRoadMap3D::connectOnePlane(double tx, cf_cellYZ CFcell) {
             }
 
             // Connect vertex btw adjacent cells
-            if (i != CFcell.ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell.zM[i + 1].size(); ++j2) {
-                    if (CFcell.zM[i][j1] >= CFcell.zL[i + 1][j2] &&
-                        CFcell.zM[i][j1] <= CFcell.zU[i + 1][j2] &&
-                        CFcell.zM[i + 1][j2] >= CFcell.zL[i][j1] &&
-                        CFcell.zM[i + 1][j2] <= CFcell.zU[i][j1]) {
+            if (i != CFcell->ty.size() - 1) {
+                for (size_t j2 = 0; j2 < CFcell->zM[i + 1].size(); ++j2) {
+                    if (CFcell->zM[i][j1] >= CFcell->zL[i + 1][j2] &&
+                        CFcell->zM[i][j1] <= CFcell->zU[i + 1][j2] &&
+                        CFcell->zM[i + 1][j2] >= CFcell->zL[i][j1] &&
+                        CFcell->zM[i + 1][j2] <= CFcell->zU[i][j1]) {
                         vtxEdge.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         vtxEdge.weight.push_back(
@@ -460,10 +470,11 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     // Iteratively store interpolated poses along the solved path
     for (size_t i = 0; i < path_solved.size() - 1; ++i) {
         // Middle step: {V1_trans, V2_rot}
-        std::vector<double> mid_step = {
-            path_solved[i][0],     path_solved[i][1],     path_solved[i][2],
-            path_solved[i + 1][3], path_solved[i + 1][4], path_solved[i + 1][5],
-            path_solved[i + 1][6]};
+        std::vector<double> mid_step = path_solved[i];
+
+        for (size_t j = 3; j < path_solved[i].size(); ++j) {
+            path_solved[i][j] = path_solved[i + 1][j];
+        }
 
         // Two motion sequences
         std::vector<std::vector<double>> path_rotate =
@@ -573,7 +584,8 @@ bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
 
 // Sampled rotations on SO(3), return a list of Quaternions
 void HighwayRoadMap3D::sampleSO3() {
-    srand(unsigned(std::time(nullptr)));
+    srand(unsigned(std::time(NULL)));
+
     if (Robot.getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
         for (size_t i = 0; i < N_layers; ++i) {

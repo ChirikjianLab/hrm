@@ -10,19 +10,20 @@ using namespace Eigen;
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc != 5) {
-        cerr << "Usage: Please add 1) Num of trials 2) Num of sweep planes 3) "
-                "Num of sweep lines 4) Max planning time (in seconds, default: "
-                "60.0s)"
+    if (argc != 6) {
+        cerr << "Usage: Please add 1) Num of trials 2) robot name 3) Num of "
+                "sweep planes 4) Num of sweep lines 5) Max planning time (in "
+                "seconds, default: 60.0s)"
              << endl;
         return 1;
     }
 
     // Record planning time for N trials
     const size_t N = size_t(atoi(argv[1]));
-    const int N_x = atoi(argv[2]);
-    const int N_y = atoi(argv[3]);
-    const double timeLim = double(atoi(argv[4]));
+    const string robotName = argv[2];
+    const int N_x = atoi(argv[3]);
+    const int N_y = atoi(argv[4]);
+    const double timeLim = double(atoi(argv[5]));
 
     vector<vector<double>> stat(N);
 
@@ -32,6 +33,7 @@ int main(int argc, char** argv) {
 
     // Setup robot
     MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
+    std::string urdfFile = "../resources/3D/urdf/" + robotName + ".urdf";
 
     // Options
     option3D opt;
@@ -60,16 +62,16 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        UtilProbHRM high3D(robot, env3D->getEndPoints(), env3D->getArena(),
-                           env3D->getObstacle(), opt);
-        high3D.planPath(timeLim);
+        UtilProbHRM probHigh3D(robot, urdfFile, env3D->getEndPoints(),
+                               env3D->getArena(), env3D->getObstacle(), opt);
+        probHigh3D.planPath(timeLim);
 
         // Store results
-        file_time << high3D.flag << ',' << high3D.planTime.totalTime << ','
-                  << high3D.N_layers << ',' << high3D.N_dx << ',' << high3D.N_dy
-                  << ',' << high3D.vtxEdge.vertex.size() << ','
-                  << high3D.vtxEdge.edge.size() << ','
-                  << high3D.solutionPathInfo.PathId.size() << "\n";
+        file_time << probHigh3D.flag << ',' << probHigh3D.planTime.totalTime
+                  << ',' << probHigh3D.N_layers << ',' << probHigh3D.N_dx << ','
+                  << probHigh3D.N_dy << ',' << probHigh3D.vtxEdge.vertex.size()
+                  << ',' << probHigh3D.vtxEdge.edge.size() << ','
+                  << probHigh3D.solutionPathInfo.PathId.size() << "\n";
     }
     file_time.close();
 

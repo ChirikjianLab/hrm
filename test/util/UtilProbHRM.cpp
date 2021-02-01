@@ -2,10 +2,11 @@
 
 using namespace std;
 
-UtilProbHRM::UtilProbHRM(MultiBodyTree3D robot, vector<vector<double>> EndPts,
+UtilProbHRM::UtilProbHRM(MultiBodyTree3D robot, std::string urdfFile,
+                         vector<vector<double>> EndPts,
                          vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
                          option3D opt)
-    : ProbHRM3D(robot, EndPts, arena, obs, opt) {}
+    : ProbHRM3D(robot, urdfFile, EndPts, arena, obs, opt) {}
 
 void UtilProbHRM::planPath(const double timeLim) {
     // Highway algorithm
@@ -24,16 +25,17 @@ void UtilProbHRM::planPath(const double timeLim) {
     ofstream file_vtx;
     file_vtx.open("vertex_3D.csv");
     vector<vector<double>> vtx = vtxEdge.vertex;
-    for (size_t i = 0; i < vtx.size(); i++) {
-        file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << ' '
-                 << vtx[i][3] << ' ' << vtx[i][4] << ' ' << vtx[i][5] << ' '
-                 << vtx[i][6] << "\n";
+    for (size_t i = 0; i < vtx.size(); ++i) {
+        for (size_t j = 0; j < vtx[i].size(); ++j) {
+            file_vtx << vtx[i][j] << ' ';
+        }
+        file_vtx << "\n";
     }
     file_vtx.close();
 
     ofstream file_edge;
     file_edge.open("edge_3D.csv");
-    for (size_t i = 0; i < vtxEdge.edge.size(); i++) {
+    for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
         file_edge << vtxEdge.edge[i].first << ' ' << vtxEdge.edge[i].second
                   << "\n";
     }
@@ -42,7 +44,7 @@ void UtilProbHRM::planPath(const double timeLim) {
     ofstream file_paths;
     file_paths.open("paths_3D.csv");
     if (!solutionPathInfo.PathId.empty()) {
-        for (size_t i = 0; i < solutionPathInfo.PathId.size(); i++) {
+        for (size_t i = 0; i < solutionPathInfo.PathId.size(); ++i) {
             file_paths << solutionPathInfo.PathId[i] << ' ';
         }
     }
@@ -51,21 +53,22 @@ void UtilProbHRM::planPath(const double timeLim) {
     ofstream file_path;
     file_path.open("solution_path_3D.csv");
     vector<vector<double>> path = getSolutionPath();
-    for (size_t i = 0; i < path.size(); i++) {
-        file_path << path[i][0] << ' ' << path[i][1] << ' ' << path[i][2] << ' '
-                  << path[i][3] << ' ' << path[i][4] << ' ' << path[i][5] << ' '
-                  << path[i][6] << "\n";
+    for (size_t i = 0; i < path.size(); ++i) {
+        for (size_t j = 0; j < path[i].size(); ++j) {
+            file_path << path[i][j] << ' ';
+        }
+        file_path << "\n";
     }
     file_path.close();
 
     ofstream file_interp_path;
     file_interp_path.open("interpolated_path_3D.csv");
     vector<vector<double>> pathInterp = getInterpolatedSolutionPath(5);
-    for (size_t i = 0; i < pathInterp.size(); i++) {
-        file_interp_path << pathInterp[i][0] << ' ' << pathInterp[i][1] << ' '
-                         << pathInterp[i][2] << ' ' << pathInterp[i][3] << ' '
-                         << pathInterp[i][4] << ' ' << pathInterp[i][5] << ' '
-                         << pathInterp[i][6] << "\n";
+    for (size_t i = 0; i < pathInterp.size(); ++i) {
+        for (size_t j = 0; j < pathInterp[i].size(); ++j) {
+            file_interp_path << pathInterp[i][j] << ' ';
+        }
+        file_interp_path << "\n";
     }
     file_interp_path.close();
 }

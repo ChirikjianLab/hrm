@@ -56,6 +56,9 @@ for i = 1:N_o
         'y', 0);
 end
 
+%% Start and goal poses
 end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
     env_type, '_3D.csv']);
+end_points(:,4:7) = [axang2quat(end_points(1,4:7)); 
+    axang2quat(end_points(2,4:7))];
 end

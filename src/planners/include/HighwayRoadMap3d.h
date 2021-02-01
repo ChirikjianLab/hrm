@@ -92,6 +92,8 @@ class HighwayRoadMap3D {
      * y-coordinates X num of objects
      * \return collision-free cells info
      */
+    virtual void generateVertices(const double tx, const cf_cellYZ* cellYZ);
+
     cf_cellYZ cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
                      Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
                      Eigen::MatrixXd z_o_U);
@@ -105,7 +107,7 @@ class HighwayRoadMap3D {
      * \brief subroutine to first connect vertices within on
      * sweep-plane(vertical to x-axis)
      */
-    void connectOnePlane(double tz, cf_cellYZ cellYZ);
+    void connectOnePlane(const cf_cellYZ* cellYZ);
 
     /*
      * \brief connect within adjacent C-layers, using the idea of "middle
@@ -194,7 +196,6 @@ class HighwayRoadMap3D {
     unsigned int N_step = 5;
 
     struct vertexIdx {
-      public:
         size_t layer;
         std::vector<size_t> plane;
         std::vector<std::vector<size_t>> line;
@@ -202,7 +203,6 @@ class HighwayRoadMap3D {
 
     // graph: vector of vertices, vector of connectable edges
     struct graph {
-      public:
         std::vector<std::vector<double>> vertex;
         Edge edge;
         std::vector<double> weight;

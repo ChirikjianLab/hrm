@@ -28,4 +28,11 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
     const unsigned int N_step);
 
+/*
+ * \brief R^n interpolation using linear interpolation
+ */
+std::vector<std::vector<double>> interpolateRn(
+    const std::vector<double>& vStart, const std::vector<double>& vEnd,
+    const unsigned int N_step);
+
 #endif  // INTERPOLATESE3_H

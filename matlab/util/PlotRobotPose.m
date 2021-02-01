@@ -1,6 +1,16 @@
-function PlotRobotPose(robot, xi)
+function PlotRobotPose(robot, xi, RobotURDF)
 
-robot.Base.q = xi(1,4:7);
-robot.Base.tc = xi(1,1:3)';
-g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
-robot.robotTF(1, g);
+g = [par2rotm(xi(1,4:7)), xi(1,1:3)'; 0,0,0,1];
+
+if isempty(RobotURDF)
+    robot.robotTF(1, g);
+    
+else
+    jointConfig = homeConfiguration(RobotURDF);
+   
+    for i = 1:RobotURDF.NumBodies
+        jointConfig(i).JointPosition = xi(1,7+i);
+    end
+    
+    robot.robotTF(1, g, jointConfig, RobotURDF);
+end

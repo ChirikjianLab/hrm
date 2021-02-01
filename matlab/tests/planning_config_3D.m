@@ -39,8 +39,8 @@ disp('Robot Configurations...');
 %  2. robot_name: name of robot
 %     (1) rigid bodies: rabbit, chair
 %     (2) articulated bodies: snake, tri-snake
-robot_type = "rigid";
-[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'rabbit');
+robot_type = "articulated";
+[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'snake');
 
 %% Store robot info as .csv files
 % Robot configuration
@@ -53,8 +53,11 @@ for i = 1:Robot.numLink
 end
 
 csvwrite(fullfile(outPath,'robot_config_3D.csv'), robot);
-csvwrite(fullfile(outPath,'end_points_3D.csv'), ...
-    endPts(:,1:7+size(jointLimits,2)));
+
+%% Clip extra configurations and store end points info as .csv file
+endPts = endPts(:,1:7+size(jointLimits,2));
+
+csvwrite(fullfile(outPath,'end_points_3D.csv'), endPts);
 
 %% Plot obstacle(s), arena(s)
 % plot the ARENA with color filled, under rotation
@@ -78,31 +81,11 @@ plot3(endPts(1,1), endPts(1,2), endPts(1,3), 'c+', 'LineWidth', 2)
 plot3(endPts(2,1), endPts(2,2), endPts(2,3), 'gd', 'LineWidth', 2)
 
 % plot the robot at start and goal configs
-if robot_type == "rigid"
-    Robot.Base.color = 'r';
-    Robot.robotTF(1, [axang2rotm(endPts(1,4:7)), endPts(1,1:3)';
-        0,0,0,1]);
-    Robot.Base.color = 'g';
-    Robot.robotTF(1, [axang2rotm(endPts(2,4:7)), endPts(2,1:3)';
-        0,0,0,1]);
-    
-elseif robot_type == "articulated"
-    jointConfig = homeConfiguration(RobotURDF);
-    
-    Robot.Base.color = 'r';
-    for i = 1:RobotURDF.NumBodies
-        jointConfig(i).JointPosition = endPts(1,7+i);
-    end
-    Robot.robotTF(1, [axang2rotm(endPts(1,4:7)), endPts(1,1:3)';
-        0,0,0,1], jointConfig, RobotURDF);
-    
-    Robot.Base.color = 'g';
-    for i = 1:RobotURDF.NumBodies
-        jointConfig(i).JointPosition = endPts(2,7+i);
-    end
-    Robot.robotTF(1, [axang2rotm(endPts(2,4:7)), endPts(2,1:3)';
-        0,0,0,1], jointConfig, RobotURDF);
-end
+Robot.Base.color = 'r';
+PlotRobotPose(Robot, endPts(1,:), RobotURDF);
+
+Robot.Base.color = 'g';
+PlotRobotPose(Robot, endPts(2,:), RobotURDF);
 
 % Plot properties
 light('Position',[-1 0 1])
