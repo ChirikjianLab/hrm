@@ -54,7 +54,7 @@ void Hrm3DMultiBody::buildRoadmap() {
         free_cell.push_back(CFcell);
     }
     connectMultiLayer();
-};
+}
 
 // Minkowski Boundary
 boundary3D Hrm3DMultiBody::boundaryGen() {
@@ -219,24 +219,17 @@ bool Hrm3DMultiBody::isRotationMotionFree(const std::vector<double>& V1,
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp = interpolateSE3(V1, V2, N_step);
 
-    for (size_t i = 0; i < N_step; ++i) {
+    for (auto vStep : vInterp) {
         // Transform the robot
-        Eigen::Matrix4d gStep;
-        gStep.topLeftCorner(3, 3) =
-            Eigen::Quaterniond(vInterp[i][3], vInterp[i][4], vInterp[i][5],
-                               vInterp[i][6])
-                .toRotationMatrix();
-        gStep.topRightCorner(3, 1) =
-            Eigen::Vector3d(vInterp[i][0], vInterp[i][1], vInterp[i][2]);
-        gStep.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
-        RobotM.robotTF(gStep);
+        setTransform(vStep);
 
         // Base: determine whether each step is within CF-Line of midLayer
         if (!isPtInCFLine(&mid_cell[0], RobotM.getBase().getPosition())) {
             return false;
         }
 
-        // For each link, check whether its center is within CF-cell of midLayer
+        // For each link, check whether its center is within the simple convex
+        // region between 4 CF-Lines in midLayer
         for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
             if (!isPtInCFLine(&mid_cell[j + 1],
                               RobotM.getLinks()[j].getPosition())) {
@@ -314,15 +307,18 @@ bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
                                              const std::vector<double>& V1,
                                              const std::vector<double>& V2) {
     for (size_t i = 0; i < cell->tx.size(); ++i) {
+        // Locate the point from x-direction
         if (fabs(cell->tx[i] - V1.at(0)) > 1e-8) {
             continue;
         }
 
         for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
+            // Locate the point from y-direction
             if (fabs(cell->cellYZ[i].ty[j] - V1.at(1)) > 1e-8) {
                 continue;
             }
 
+            // Query the point within collision-free line segment
             for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
                 if ((V1.at(2) > cell->cellYZ[i].zL[j][k]) &&
                     (V1.at(2) < cell->cellYZ[i].zU[j][k]) &&
@@ -335,6 +331,17 @@ bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
     }
 
     return false;
+}
+
+// Transform the robot
+void Hrm3DMultiBody::setTransform(const std::vector<double>& V) {
+    Eigen::Matrix4d g;
+    g.topLeftCorner(3, 3) =
+        Eigen::Quaterniond(V[3], V[4], V[5], V[6]).toRotationMatrix();
+    g.topRightCorner(3, 1) = Eigen::Vector3d(V[0], V[1], V[2]);
+    g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
+
+    RobotM.robotTF(g);
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
@@ -359,4 +366,4 @@ std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
     return tfe;
 }
 
-Hrm3DMultiBody::~Hrm3DMultiBody(){};
+Hrm3DMultiBody::~Hrm3DMultiBody() {}

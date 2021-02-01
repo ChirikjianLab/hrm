@@ -32,6 +32,8 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
                                  const std::vector<double>& V2);
     bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>& V);
 
+    virtual void setTransform(const std::vector<double>& V);
+
   protected:
     MultiBodyTree3D RobotM;
 

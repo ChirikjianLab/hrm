@@ -13,7 +13,7 @@ void ProbHRM3D::plan(double timeLim) {
 
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(NULL)));
-    N_layers = 1;
+    N_layers = 0;
 
     // Get the current Transformation
     Eigen::Matrix4d tf;
@@ -24,9 +24,12 @@ void ProbHRM3D::plan(double timeLim) {
         q_r.push_back(Eigen::Quaterniond::UnitRandom());
 
         // Set rotation matrix to robot
-        tf.topLeftCorner(3, 3) = q_r.at(N_layers - 1).toRotationMatrix();
+        tf.topLeftCorner(3, 3) = q_r.at(N_layers).toRotationMatrix();
         RobotM.robotTF(tf);
         Robot.setQuaternion(RobotM.getBase().getQuaternion());
+
+        // Update number of C-layers
+        N_layers++;
 
         // Minkowski operations
         boundary3D bd = boundaryGen();
@@ -48,9 +51,6 @@ void ProbHRM3D::plan(double timeLim) {
 
         // Graph search
         search();
-
-        // Update number of C-layers
-        N_layers++;
 
         planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
     } while (!flag && planTime.totalTime < timeLim);
@@ -108,4 +108,15 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Clear mid_cell and update the number of vertices
     mid_cell.clear();
+}
+
+// Transform the robot
+void ProbHRM3D::setTransform(const std::vector<double>& V) {
+    Eigen::Matrix4d g;
+    g.topLeftCorner(3, 3) =
+        Eigen::Quaterniond(V[3], V[4], V[5], V[6]).toRotationMatrix();
+    g.topRightCorner(3, 1) = Eigen::Vector3d(V[0], V[1], V[2]);
+    g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
+
+    RobotM.robotTF(g);
 }

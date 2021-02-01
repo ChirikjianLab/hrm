@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(HighwayRoadMap LANGUAGES CXX)
+project(HighwayRoadMap VERSION 0.2.1 LANGUAGES CXX)
 
-# Specify the minimum version for CMake
 set(CMAKE_CXX_STANDARD 14)
 set(default_build_type "RelWithDebInfo")
 

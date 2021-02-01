@@ -643,4 +643,4 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-HighwayRoadMap3D::~HighwayRoadMap3D(){};
+HighwayRoadMap3D::~HighwayRoadMap3D() {}

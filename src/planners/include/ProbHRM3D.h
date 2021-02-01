@@ -13,6 +13,9 @@ class ProbHRM3D : public Hrm3DMultiBody {
   public:
     void plan(double timeLim);
     virtual void connectMultiLayer() override;
+
+  protected:
+    virtual void setTransform(const std::vector<double>& V) override;
 };
 
 #endif  // PROBHRM3D_H
