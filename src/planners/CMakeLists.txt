@@ -13,3 +13,5 @@ add_library(HRM_3D
 target_link_libraries(HRM_3D
                       GEOM
                       UTIL)
+
+add_subdirectory(ompl)

@@ -1,4 +1,4 @@
-#include "include/ompl_planner.h"
+#include "planners/include/ompl/ompl_planner.h"
 
 ob::ValidStateSamplerPtr allocUniformStateSampler(
     const ob::SpaceInformation *si) {
@@ -107,6 +107,8 @@ PlannerOMPL::PlannerOMPL(std::vector<double> lowBound,
             allocBridgeTestValidStateSampler);
     }
 }
+
+PlannerOMPL::~PlannerOMPL() {}
 
 bool PlannerOMPL::plan(const std::vector<double> &start,
                        const std::vector<double> &goal) {
@@ -284,7 +286,7 @@ void PlannerOMPL::getVertexEdgeInfo() {
     // Write the output to .csv files
     std::ofstream file_state;
     const ob::State *state;
-    file_state.open("ompl_state3d.csv");
+    file_state.open("ompl_state_3D.csv");
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         state = pd.getVertex(i).getState()->as<ob::State>();
         file_state << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
@@ -302,7 +304,7 @@ void PlannerOMPL::getVertexEdgeInfo() {
     file_state.close();
 
     std::ofstream file_edge;
-    file_edge.open("ompl_edge3d.csv");
+    file_edge.open("ompl_edge_3D.csv");
     std::vector<std::vector<unsigned int>> edge(pd.numVertices());
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         pd.getEdges(i, edge[i]);
@@ -317,7 +319,7 @@ void PlannerOMPL::getPathInfo() {
     ob::State *state;
 
     std::ofstream file_traj;
-    file_traj.open("ompl_path3d.csv");
+    file_traj.open("ompl_path_3D.csv");
     for (size_t i = 0; i < states.size(); ++i) {
         state = states[i]->as<ob::State>();
         file_traj << state->as<ob::SE3StateSpace::StateType>()->getX() << ","
@@ -340,7 +342,7 @@ void PlannerOMPL::getPathInfo() {
         ss_->getSolutionPath().getStates();
 
     std::ofstream file_smooth_traj;
-    file_smooth_traj.open("ompl_smooth_path3d.csv");
+    file_smooth_traj.open("ompl_smooth_path_3D.csv");
     for (size_t i = 0; i < s_states.size(); ++i) {
         state = s_states[i]->as<ob::State>();
         file_smooth_traj
@@ -354,5 +356,3 @@ void PlannerOMPL::getPathInfo() {
     }
     file_smooth_traj.close();
 }
-
-PlannerOMPL::~PlannerOMPL() {}

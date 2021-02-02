@@ -65,8 +65,8 @@ class PlannerOMPL {
     bool compareStates(std::vector<double> goalConfig,
                        std::vector<double> lastConfig);
 
-    void getVertexEdgeInfo();
-    void getPathInfo();
+    virtual void getVertexEdgeInfo();
+    virtual void getPathInfo();
 
     // Variables
   public:
