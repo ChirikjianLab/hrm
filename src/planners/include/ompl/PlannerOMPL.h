@@ -1,25 +1,14 @@
-#ifndef OMPL_PLANNER_H
-#define OMPL_PLANNER_H
+#ifndef PLANNEROMPL_H
+#define PLANNEROMPL_H
 
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/MeshGenerator.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <ompl/base/SpaceInformation.h>
-#include <ompl/base/samplers/BridgeTestValidStateSampler.h>
-#include <ompl/base/samplers/GaussianValidStateSampler.h>
-#include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
-#include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
-#include <ompl/base/samplers/UniformValidStateSampler.h>
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/config.h>
 #include <ompl/geometric/SimpleSetup.h>
-#include <ompl/geometric/planners/est/EST.h>
-#include <ompl/geometric/planners/kpiece/KPIECE1.h>
-#include <ompl/geometric/planners/prm/LazyPRM.h>
-#include <ompl/geometric/planners/prm/PRM.h>
-#include <ompl/geometric/planners/rrt/RRT.h>
-#include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/util/PPM.h>
 
 #include <eigen3/Eigen/Dense>
@@ -49,6 +38,10 @@ class PlannerOMPL {
   public:
     bool plan(const std::vector<double>& start,
               const std::vector<double>& goal);
+
+    virtual void setStateSpace();
+
+    virtual void setStartAndGoalStates();
 
     void setMaxPlanningTime(const double maxTime) {
         maxPlanningTime_ = maxTime;
@@ -82,6 +75,10 @@ class PlannerOMPL {
 
   protected:
     og::SimpleSetupPtr ss_;
+
+    const std::vector<double>& lowBound_;
+    const std::vector<double>& highBound_;
+
     const std::vector<SuperQuadrics>& arena_;
     const std::vector<SuperQuadrics>& robot_;
     const std::vector<SuperQuadrics>& obstacles_;
@@ -90,10 +87,13 @@ class PlannerOMPL {
     std::vector<fcl::CollisionObject<double>> objRobot_;
     std::vector<fcl::CollisionObject<double>> objObs_;
 
+    std::vector<double> start_;
+    std::vector<double> goal_;
+
     const int planner_;
     const int sampler_;
 
     double maxPlanningTime_ = 60.0;
 };
 
-#endif  // OMPL_PLANNER_H
+#endif  // PLANNEROMPL_H

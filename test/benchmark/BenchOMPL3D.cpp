@@ -1,4 +1,4 @@
-#include "planners/include/ompl/ompl_planner.h"
+#include "planners/include/ompl/PlannerOMPL.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;

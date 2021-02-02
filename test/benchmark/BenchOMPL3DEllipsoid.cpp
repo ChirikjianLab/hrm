@@ -1,4 +1,4 @@
-#include "planners/include/ompl/ompl_planner_ellipsoid.h"
+#include "planners/include/ompl/PlannerOMPLEllipsoid.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;

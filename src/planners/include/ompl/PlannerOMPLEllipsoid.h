@@ -1,7 +1,7 @@
-#ifndef OMPL_PLANNER_ELLIPSOID_H
-#define OMPL_PLANNER_ELLIPSOID_H
+#ifndef PLANNEROMPLELLIPSOID_H
+#define PLANNEROMPLELLIPSOID_H
 
-#include "ompl_planner.h"
+#include "PlannerOMPL.h"
 
 class PlannerOMPLEllipsoid : public PlannerOMPL {
   public:
@@ -23,4 +23,4 @@ class PlannerOMPLEllipsoid : public PlannerOMPL {
                             const SuperQuadrics& obs) const;
 };
 
-#endif  // OMPL_PLANNER_ELLIPSOID_H
+#endif  // PLANNEROMPLELLIPSOID_H

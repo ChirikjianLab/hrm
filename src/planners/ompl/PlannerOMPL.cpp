@@ -1,4 +1,16 @@
-#include "planners/include/ompl/ompl_planner.h"
+#include "planners/include/ompl/PlannerOMPL.h"
+
+#include <ompl/base/samplers/BridgeTestValidStateSampler.h>
+#include <ompl/base/samplers/GaussianValidStateSampler.h>
+#include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
+#include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
+#include <ompl/base/samplers/UniformValidStateSampler.h>
+#include <ompl/geometric/planners/est/EST.h>
+#include <ompl/geometric/planners/kpiece/KPIECE1.h>
+#include <ompl/geometric/planners/prm/LazyPRM.h>
+#include <ompl/geometric/planners/prm/PRM.h>
+#include <ompl/geometric/planners/rrt/RRT.h>
+#include <ompl/geometric/planners/rrt/RRTConnect.h>
 
 ob::ValidStateSamplerPtr allocUniformStateSampler(
     const ob::SpaceInformation *si) {
@@ -36,7 +48,9 @@ PlannerOMPL::PlannerOMPL(std::vector<double> lowBound,
                          const std::vector<SuperQuadrics> &obs,
                          const std::vector<Mesh> &obsMesh, const int planner,
                          const int sampler)
-    : arena_(arena),
+    : lowBound_(lowBound),
+      highBound_(highBound),
+      arena_(arena),
       robot_(robot),
       obstacles_(obs),
       obsMesh_(obsMesh),
@@ -45,22 +59,8 @@ PlannerOMPL::PlannerOMPL(std::vector<double> lowBound,
     // Initiate object for collision detection using FCL
     setCollisionObj();
 
-    auto space(std::make_shared<ob::SE3StateSpace>());
-    ob::RealVectorBounds bounds(3);
-    bounds.setLow(0, lowBound[0]);
-    bounds.setLow(1, lowBound[1]);
-    bounds.setLow(2, lowBound[2]);
-    bounds.setHigh(0, highBound[0]);
-    bounds.setHigh(1, highBound[1]);
-    bounds.setHigh(2, highBound[2]);
-    space->setBounds(bounds);
-    ss_ = std::make_shared<og::SimpleSetup>(space);
-
-    ss_->setStateValidityChecker(
-        [this](const ob::State *state) { return isStateValid(state); });
-    space->setup();
-    // ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/
-    // space->getMaximumExtent());
+    // Set state space and bounds
+    setStateSpace();
 
     // Set planner
     if (planner_ == 0) {
@@ -116,30 +116,11 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
         return false;
     }
 
-    ob::ScopedState<> startState(ss_->getStateSpace());
-    startState->as<ob::SE3StateSpace::StateType>()->setXYZ(start[0], start[1],
-                                                           start[2]);
-    startState->as<ob::SE3StateSpace::StateType>()->rotation().setIdentity();
-    startState->as<ob::SE3StateSpace::StateType>()->rotation().w = start[3];
-    startState->as<ob::SE3StateSpace::StateType>()->rotation().x = start[4];
-    startState->as<ob::SE3StateSpace::StateType>()->rotation().y = start[5];
-    startState->as<ob::SE3StateSpace::StateType>()->rotation().z = start[6];
+    // Set start and goal states
+    start_ = start;
+    goal_ = goal;
 
-    ob::ScopedState<> goalState(ss_->getStateSpace());
-    goalState->as<ob::SE3StateSpace::StateType>()->setXYZ(goal[0], goal[1],
-                                                          goal[2]);
-    goalState->as<ob::SE3StateSpace::StateType>()->rotation().setIdentity();
-    goalState->as<ob::SE3StateSpace::StateType>()->rotation().w = goal[3];
-    goalState->as<ob::SE3StateSpace::StateType>()->rotation().x = goal[4];
-    goalState->as<ob::SE3StateSpace::StateType>()->rotation().y = goal[5];
-    goalState->as<ob::SE3StateSpace::StateType>()->rotation().z = goal[6];
-
-    startState.enforceBounds();
-    goalState.enforceBounds();
-
-    ss_->setStartAndGoalStates(startState, goalState);
-    ss_->setup();
-    //        ss_->print();
+    setStartAndGoalStates();
 
     // Path planning
     std::cout << "Planning..." << std::endl;
@@ -180,6 +161,55 @@ bool PlannerOMPL::plan(const std::vector<double> &start,
     validSpace = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 
     return true;
+}
+
+void PlannerOMPL::setStateSpace() {
+    auto space(std::make_shared<ob::SE3StateSpace>());
+
+    ob::RealVectorBounds bounds(3);
+    bounds.setLow(0, lowBound_[0]);
+    bounds.setLow(1, lowBound_[1]);
+    bounds.setLow(2, lowBound_[2]);
+    bounds.setHigh(0, highBound_[0]);
+    bounds.setHigh(1, highBound_[1]);
+    bounds.setHigh(2, highBound_[2]);
+    space->setBounds(bounds);
+
+    ss_ = std::make_shared<og::SimpleSetup>(space);
+    space->setup();
+
+    ss_->setStateValidityChecker(
+        [this](const ob::State *state) { return isStateValid(state); });
+
+    // ss_->getSpaceInformation()->setStateValidityCheckingResolution(1/
+    // space->getMaximumExtent());
+}
+
+void PlannerOMPL::setStartAndGoalStates() {
+    ob::ScopedState<> startState(ss_->getStateSpace());
+    startState->as<ob::SE3StateSpace::StateType>()->setXYZ(start_[0], start_[1],
+                                                           start_[2]);
+    startState->as<ob::SE3StateSpace::StateType>()->rotation().setIdentity();
+    startState->as<ob::SE3StateSpace::StateType>()->rotation().w = start_[3];
+    startState->as<ob::SE3StateSpace::StateType>()->rotation().x = start_[4];
+    startState->as<ob::SE3StateSpace::StateType>()->rotation().y = start_[5];
+    startState->as<ob::SE3StateSpace::StateType>()->rotation().z = start_[6];
+
+    ob::ScopedState<> goalState(ss_->getStateSpace());
+    goalState->as<ob::SE3StateSpace::StateType>()->setXYZ(goal_[0], goal_[1],
+                                                          goal_[2]);
+    goalState->as<ob::SE3StateSpace::StateType>()->rotation().setIdentity();
+    goalState->as<ob::SE3StateSpace::StateType>()->rotation().w = goal_[3];
+    goalState->as<ob::SE3StateSpace::StateType>()->rotation().x = goal_[4];
+    goalState->as<ob::SE3StateSpace::StateType>()->rotation().y = goal_[5];
+    goalState->as<ob::SE3StateSpace::StateType>()->rotation().z = goal_[6];
+
+    startState.enforceBounds();
+    goalState.enforceBounds();
+
+    ss_->setStartAndGoalStates(startState, goalState);
+    ss_->setup();
+    //        ss_->print();
 }
 
 bool PlannerOMPL::isStateValid(const ob::State *state) const {
