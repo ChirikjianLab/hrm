@@ -1,4 +1,4 @@
-#include "include/ompl_planner_ellipsoid.h"
+#include "planners/include/ompl/ompl_planner_ellipsoid.h"
 #include "util/include/EllipsoidSeparation.h"
 
 PlannerOMPLEllipsoid::PlannerOMPLEllipsoid(

@@ -2,7 +2,7 @@ add_executable(BenchOMPL3D BenchOMPL3D.cpp)
 target_link_libraries(BenchOMPL3D
                       UTIL
                       HRM_3D
-                      OMPL_UTIL
+                      OMPL_PLANNER
                       GEOM
                       TESTUTIL
                       ${OMPL}
@@ -13,7 +13,7 @@ add_executable(BenchOMPL3DEllipsoid BenchOMPL3DEllipsoid.cpp)
 target_link_libraries(BenchOMPL3DEllipsoid
                       UTIL
                       HRM_3D
-                      OMPL_UTIL
+                      OMPL_PLANNER
                       GEOM
                       TESTUTIL
                       ${OMPL})

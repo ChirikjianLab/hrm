@@ -1,4 +1,4 @@
-#include "include/ompl_planner.h"
+#include "planners/include/ompl/ompl_planner.h"
 
 ob::ValidStateSamplerPtr allocUniformStateSampler(
     const ob::SpaceInformation *si) {
