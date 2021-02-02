@@ -12,13 +12,17 @@ class MultiBodyTree3D {
   public:
     SuperQuadrics getBase() const { return base_; }
     std::vector<SuperQuadrics> getLinks() const { return link_; }
+    std::vector<SuperQuadrics> getBodyShapes();
+
     double getNumLinks() const { return numLinks_; }
     std::vector<Eigen::Matrix4d> getTF() const { return tf_; }
 
     void addBody(SuperQuadrics link);
+
     void robotTF(Eigen::Matrix4d tf);
     void robotTF(const std::string urdfFile, const Eigen::Matrix4d* gBase,
                  const Eigen::VectorXd* jointConfig);
+
     std::vector<Eigen::MatrixXd> minkSumSQ(SuperQuadrics S1, int K);
 
   public:

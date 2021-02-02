@@ -14,6 +14,7 @@ class ProbHRM3D : public Hrm3DMultiBody {
 
   public:
     void plan(double timeLim);
+
     virtual void connectMultiLayer() override;
 
     virtual void generateVertices(const double tx,
@@ -24,8 +25,6 @@ class ProbHRM3D : public Hrm3DMultiBody {
 
     std::vector<SuperQuadrics> tfeArticulated(const std::vector<double>& v1,
                                               const std::vector<double>& v2);
-
-    std::vector<SuperQuadrics> extractLinkShape();
 
   private:
     ParseURDF* kdl_;

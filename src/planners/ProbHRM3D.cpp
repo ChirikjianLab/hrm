@@ -73,6 +73,7 @@ void ProbHRM3D::plan(double timeLim) {
     solutionPathInfo.solvedPath = getSolutionPath();
 }
 
+// Connect adjacent C-layers
 void ProbHRM3D::connectMultiLayer() {
     if (N_layers == 1) {
         return;
@@ -175,17 +176,6 @@ void ProbHRM3D::setTransform(const std::vector<double>& V) {
     RobotM.robotTF(urdfFile_, &g, &jointConfig);
 }
 
-std::vector<SuperQuadrics> ProbHRM3D::extractLinkShape() {
-    std::vector<SuperQuadrics> links;
-
-    links.push_back(RobotM.getBase());
-    for (auto link : RobotM.getLinks()) {
-        links.push_back(link);
-    }
-
-    return links;
-}
-
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
 std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
     const std::vector<double>& v1, const std::vector<double>& v2) {
@@ -193,9 +183,9 @@ std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
 
     // Get shapes of each link for v1 and v2
     setTransform(v1);
-    std::vector<SuperQuadrics> robotAux1 = extractLinkShape();
+    std::vector<SuperQuadrics> robotAux1 = RobotM.getBodyShapes();
     setTransform(v2);
-    std::vector<SuperQuadrics> robotAux2 = extractLinkShape();
+    std::vector<SuperQuadrics> robotAux2 = RobotM.getBodyShapes();
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions
     // from q1 to q2

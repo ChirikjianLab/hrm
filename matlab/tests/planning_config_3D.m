@@ -40,7 +40,7 @@ disp('Robot Configurations...');
 %     (1) rigid bodies: rabbit, chair
 %     (2) articulated bodies: snake, tri-snake
 robot_type = "articulated";
-[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'tri-snake');
+[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'snake');
 
 %% Store robot info as .csv files
 % Robot configuration
