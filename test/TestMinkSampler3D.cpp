@@ -1,9 +1,9 @@
-#include "samplers/include/Planner3DArticulated.h"
+#include "planners/include/ompl/PlannerOMPL3DArticulated.h"
 #include "util/include/Parse2dCsvFile.h"
 #include "util/include/ParsePlanningSettings.h"
 
 /*
- * \brief Test for SE(3) articulated-robot planners
+ * \brief Test script for 3D articulated-robot planners
  *
  * \param timeLimit: maximum time allowed for planning in seconds
  *

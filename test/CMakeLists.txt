@@ -16,10 +16,11 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES})
 
-add_executable(TestMinkSampler3D TestMinkSampler3D.cpp)
-target_link_libraries(TestMinkSampler3D
-                      TESTUTIL
-                      SAMPLER_3D)
+#add_executable(TestMinkSampler3D TestMinkSampler3D.cpp)
+#target_link_libraries(TestMinkSampler3D
+#                      TESTUTIL
+#                      OMPL_PLANNER
+#                      SAMPLER_3D)
 
 add_subdirectory(benchmark)
 add_subdirectory(gtest)
