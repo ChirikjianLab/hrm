@@ -6,7 +6,9 @@ C3FGenerator3DArticulated::C3FGenerator3DArticulated(
     MultiBodyTree3D *robot, std::vector<SuperQuadrics> *arena,
     std::vector<SuperQuadrics> *obstacle, parameters3D *param,
     og::SimpleSetupPtr ss, ParseURDF *kdl)
-    : C3FGenerator3D(robot, arena, obstacle, param, ss), kdl_(kdl) {}
+    : C3FGenerator3D(robot, arena, obstacle, param, ss), kdl_(kdl) {
+    numJoint_ = kdl_->getKDLTree().getNrOfJoints();
+}
 
 C3FGenerator3DArticulated::~C3FGenerator3DArticulated() {}
 
@@ -33,8 +35,8 @@ void C3FGenerator3DArticulated::fromSweepLine() {
         Eigen::Matrix4d gBase = Eigen::Matrix4d::Identity();
         gBase.topLeftCorner(3, 3) = quat.toRotationMatrix();
 
-        Eigen::VectorXd jointConfig(kdl_->getKDLTree().getNrOfJoints());
-        for (uint i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+        Eigen::VectorXd jointConfig(numJoint_);
+        for (uint i = 0; i < numJoint_; ++i) {
             jointConfig[i] = rng.uniformReal(-maxJointAngle_, maxJointAngle_);
         }
         robot_->robotTF(*kdl_, &gBase, &jointConfig);
@@ -84,8 +86,7 @@ void C3FGenerator3DArticulated::fromSweepLine() {
                         ->rotation()
                         .z = quat.z();
 
-                    for (uint m = 0; m < kdl_->getKDLTree().getNrOfJoints();
-                         ++m) {
+                    for (uint m = 0; m < numJoint_; ++m) {
                         state->as<ob::CompoundStateSpace::StateType>()
                             ->components[1]
                             ->as<ob::RealVectorStateSpace::StateType>()
@@ -185,8 +186,8 @@ void C3FGenerator3DArticulated::fromBoundary() {
         Eigen::Matrix4d gBase = Eigen::Matrix4d::Identity();
         gBase.topLeftCorner(3, 3) = quat.toRotationMatrix();
 
-        Eigen::VectorXd jointConfig(kdl_->getKDLTree().getNrOfJoints());
-        for (uint i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+        Eigen::VectorXd jointConfig(numJoint_);
+        for (uint i = 0; i < numJoint_; ++i) {
             jointConfig[i] = rng.uniformReal(-maxJointAngle_, maxJointAngle_);
         }
         robot_->robotTF(*kdl_, &gBase, &jointConfig);
@@ -234,8 +235,7 @@ void C3FGenerator3DArticulated::fromBoundary() {
                         ->rotation()
                         .z = quat.z();
 
-                    for (uint m = 0; m < kdl_->getKDLTree().getNrOfJoints();
-                         ++m) {
+                    for (uint m = 0; m < numJoint_; ++m) {
                         state->as<ob::CompoundStateSpace::StateType>()
                             ->components[1]
                             ->as<ob::RealVectorStateSpace::StateType>()

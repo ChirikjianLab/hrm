@@ -2,3 +2,6 @@ add_library(OMPL_PLANNER
             OMPL2D.cpp
             OMPL3D.cpp
             OMPL3DArticulated.cpp)
+target_link_libraries(OMPL_PLANNER
+                      SAMPLER_2D
+                      SAMPLER_3D)

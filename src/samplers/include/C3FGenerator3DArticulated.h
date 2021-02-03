@@ -3,7 +3,9 @@
 
 #include "C3FGenerator3D.h"
 
-const double pi = 3.1415926535;
+#include "ompl/base/spaces/RealVectorStateSpace.h"
+
+const double pi = 3.1415926;
 
 class C3FGenerator3DArticulated : C3FGenerator3D {
   public:
@@ -22,6 +24,7 @@ class C3FGenerator3DArticulated : C3FGenerator3D {
 
   private:
     ParseURDF *kdl_;
+    int numJoint_;
     const double maxJointAngle_ = pi / 2;
 };
 

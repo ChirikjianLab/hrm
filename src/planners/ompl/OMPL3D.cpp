@@ -14,33 +14,9 @@ OMPL3D::~OMPL3D() {}
 
 void OMPL3D::setup(const int plannerId, const int stateSamplerId,
                    const int validStateSamplerId) {
-    double f = 1.2;
-    std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0) -
-                                     f * robot_.getBase().getSemiAxis().at(0),
-                                 arena_.at(0).getSemiAxis().at(1) -
-                                     f * robot_.getBase().getSemiAxis().at(0),
-                                 arena_.at(0).getSemiAxis().at(2) -
-                                     f * robot_.getBase().getSemiAxis().at(0)};
-    param_.xLim = {arena_.at(0).getPosition().at(0) - bound.at(0),
-                   arena_.at(0).getPosition().at(0) + bound.at(0)};
-    param_.yLim = {arena_.at(0).getPosition().at(1) - bound.at(1),
-                   arena_.at(0).getPosition().at(1) + bound.at(1)};
-    param_.zLim = {arena_.at(0).getPosition().at(2) - bound.at(2),
-                   arena_.at(0).getPosition().at(2) + bound.at(2)};
-
-    ob::StateSpacePtr space(std::make_shared<ob::SE3StateSpace>());
-
-    ob::RealVectorBounds bounds(3);
-    bounds.setLow(0, param_.xLim.first);
-    bounds.setLow(1, param_.yLim.first);
-    bounds.setLow(2, param_.zLim.first);
-    bounds.setHigh(0, param_.xLim.second);
-    bounds.setHigh(1, param_.yLim.second);
-    bounds.setHigh(2, param_.zLim.second);
-    space->as<ob::SE3StateSpace>()->setBounds(bounds);
-
-    // Setup planner
-    ss_ = std::make_shared<og::SimpleSetup>(space);
+    // Setup state space
+    setArenaBounds();
+    setStateSpace();
 
     // Set collision checker
     ss_->setStateValidityChecker(
@@ -149,6 +125,38 @@ void OMPL3D::getSolution() {
         for (auto edgeI : edgeInfo[i])
             edge_.push_back(std::make_pair(i, edgeI));
     }
+}
+
+// Setup state space
+void OMPL3D::setStateSpace() {
+    ob::StateSpacePtr space(std::make_shared<ob::SE3StateSpace>());
+
+    ob::RealVectorBounds bounds(3);
+    bounds.setLow(0, param_.xLim.first);
+    bounds.setLow(1, param_.yLim.first);
+    bounds.setLow(2, param_.zLim.first);
+    bounds.setHigh(0, param_.xLim.second);
+    bounds.setHigh(1, param_.yLim.second);
+    bounds.setHigh(2, param_.zLim.second);
+    space->as<ob::SE3StateSpace>()->setBounds(bounds);
+
+    ss_ = std::make_shared<og::SimpleSetup>(space);
+}
+
+void OMPL3D::setArenaBounds() {
+    double f = 1.5;
+    std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0) -
+                                     f * robot_.getBase().getSemiAxis().at(0),
+                                 arena_.at(0).getSemiAxis().at(1) -
+                                     f * robot_.getBase().getSemiAxis().at(0),
+                                 arena_.at(0).getSemiAxis().at(2) -
+                                     f * robot_.getBase().getSemiAxis().at(0)};
+    param_.xLim = {arena_.at(0).getPosition().at(0) - bound.at(0),
+                   arena_.at(0).getPosition().at(0) + bound.at(0)};
+    param_.yLim = {arena_.at(0).getPosition().at(1) - bound.at(1),
+                   arena_.at(0).getPosition().at(1) + bound.at(1)};
+    param_.zLim = {arena_.at(0).getPosition().at(2) - bound.at(2),
+                   arena_.at(0).getPosition().at(2) + bound.at(2)};
 }
 
 void OMPL3D::setPlanner(const int plannerId) {

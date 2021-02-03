@@ -2,9 +2,8 @@
 #define OMPL3DARTICULATED_H
 
 #include "OMPL3D.h"
+#include "samplers/include/C3FGenerator3DArticulated.h"
 #include "util/include/ParseURDF.h"
-
-#include "ompl/base/StateSpace.h"
 
 class OMPL3DArticulated : public OMPL3D {
   public:
@@ -12,15 +11,16 @@ class OMPL3DArticulated : public OMPL3D {
                       const std::vector<SuperQuadrics> &arena,
                       const std::vector<SuperQuadrics> &obstacle,
                       const parameters3D &param);
-    virtual ~OMPL3DArticulated();
+    ~OMPL3DArticulated() override;
 
-    void setup(const int plannerId, const int stateSamplerId,
-               const int validSamplerId);
     void plan(const std::vector<std::vector<double>> &endPts,
               const double maxTimeInSec);
 
   protected:
     void getSolution();
+
+    void setStateSpace() override;
+
     bool isStateValid(const ob::State *state);
 
   private:
@@ -30,6 +30,7 @@ class OMPL3DArticulated : public OMPL3D {
 
   private:
     ParseURDF *kdl_;
+    int numJoint_;
     std::string urdfFile_;
     const double maxJointAngle_ = pi / 2;
 };

@@ -26,8 +26,6 @@
 namespace og = ompl::geometric;
 namespace ob = ompl::base;
 
-const double pi = 3.1415926535;
-
 /*
  * \class PlannerSE3 planner for SE(3), OMPL wrapper
  */
@@ -111,8 +109,8 @@ class OMPL3D {
      *  5: valid state sampler from Minkowski sum and sweep-line process
      *  6: valid state sampler from Minkowski sum and C-obstacle boundaries
      */
-    virtual void setup(const int plannerId, const int stateSamplerId,
-                       const int validSamplerId);
+    void setup(const int plannerId, const int stateSamplerId,
+               const int validSamplerId);
 
     /*
      * \brief Start to plan
@@ -124,6 +122,10 @@ class OMPL3D {
 
   protected:
     virtual void getSolution();
+
+    virtual void setStateSpace();
+    void setArenaBounds();
+
     void setPlanner(const int plannerId);
     void setStateSampler(const int stateSamplerId);
     void setValidStateSampler(const int validSamplerId);

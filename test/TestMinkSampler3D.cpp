@@ -1,4 +1,4 @@
-#include "planners/include/ompl/PlannerOMPL3DArticulated.h"
+#include "planners/include/ompl/OMPL3DArticulated.h"
 #include "util/include/Parse2dCsvFile.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -15,8 +15,8 @@
  * Free space library (C-boundary)
  *
  * \param Valid state sampler
- * 0: Minkowski (sweep line), 1: Minkowski (C-boundary), 2: Uniform (default),
- * 3: Gaussian, 4: OB, 5: MC, 6: Bridge
+ * 0: Uniform (default), 1: Gaussian, 2: OB, 3: MC, 4: Bridge, 5: Minkowski
+ * (sweep line), 6: Minkowski (C-boundary)
  */
 int main(int argc, char** argv) {
     if (argc == 1) {
@@ -68,8 +68,8 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Initiate planner
-    Planner3DArticulated planner(robot, urdfFile, env3D->getArena(),
-                                 env3D->getObstacle(), param);
+    OMPL3DArticulated planner(robot, urdfFile, env3D->getArena(),
+                              env3D->getObstacle(), param);
     planner.setup(plannerId, stateSamplerId, validStateSamplerId);
 
     // Plan
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
     // Vertex and edge
     std::vector<std::vector<double>> vertexList = planner.getVertices();
     std::ofstream vertexFile;
-    vertexFile.open("vertex_3D.csv");
+    vertexFile.open("ompl_vertex_3D.csv");
     for (auto vertex : vertexList) {
         for (size_t i = 0; i < vertex.size(); ++i) {
             vertexFile << vertex[i];
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
     std::vector<std::pair<int, int>> edgeList = planner.getEdges();
     std::ofstream edgeFile;
-    edgeFile.open("edge_3D.csv");
+    edgeFile.open("ompl_edge_3D.csv");
     for (auto edge : edgeList) {
         edgeFile << edge.first << ',' << edge.second << '\n';
     }
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 
         // Write solution path into file
         std::ofstream pathFile;
-        pathFile.open("../output/pathSE3.csv");
+        pathFile.open("../output/ompl_path_3D.csv");
         for (auto path : solutionPath) {
             for (size_t i = 0; i < path.size(); ++i) {
                 pathFile << path[i];
