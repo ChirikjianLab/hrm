@@ -1,17 +1,19 @@
-#include "planners/include/ompl/PlannerOMPL3D.h"
+#include "planners/include/ompl/OMPL3D.h"
 
 #include "ompl/base/PrecomputedStateSampler.h"
 #include "ompl/base/spaces/SE3StateSpace.h"
 #include "ompl/tools/benchmark/MachineSpecs.h"
 
-PlannerSE3::PlannerSE3(const MultiBodyTree3D &robot,
-                       const std::vector<SuperQuadrics> &arena,
-                       const std::vector<SuperQuadrics> &obstacle,
-                       const parameters3D &param)
+OMPL3D::OMPL3D(const MultiBodyTree3D &robot,
+               const std::vector<SuperQuadrics> &arena,
+               const std::vector<SuperQuadrics> &obstacle,
+               const parameters3D &param)
     : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
-void PlannerSE3::setup(const int plannerId, const int stateSamplerId,
-                       const int validStateSamplerId) {
+OMPL3D::~OMPL3D() {}
+
+void OMPL3D::setup(const int plannerId, const int stateSamplerId,
+                   const int validStateSamplerId) {
     double f = 1.2;
     std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0) -
                                      f * robot_.getBase().getSemiAxis().at(0),
@@ -53,8 +55,8 @@ void PlannerSE3::setup(const int plannerId, const int stateSamplerId,
     ss_->setup();
 }
 
-void PlannerSE3::plan(const std::vector<std::vector<double>> &endPts,
-                      const double maxTimeInSec) {
+void OMPL3D::plan(const std::vector<std::vector<double>> &endPts,
+                  const double maxTimeInSec) {
     numCollisionChecks_ = 0;
 
     // Set start and goal poses
@@ -91,7 +93,7 @@ void PlannerSE3::plan(const std::vector<std::vector<double>> &endPts,
     ss_->clear();
 }
 
-void PlannerSE3::getSolution() {
+void OMPL3D::getSolution() {
     if (isSolved_) {
         try {
             // Get solution path
@@ -149,7 +151,7 @@ void PlannerSE3::getSolution() {
     }
 }
 
-void PlannerSE3::setPlanner(const int plannerId) {
+void OMPL3D::setPlanner(const int plannerId) {
     // Set the planner
     if (plannerId == 0) {
         ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
@@ -171,7 +173,7 @@ void PlannerSE3::setPlanner(const int plannerId) {
     }
 }
 
-void PlannerSE3::setStateSampler(const int stateSamplerId) {
+void OMPL3D::setStateSampler(const int stateSamplerId) {
     // Set the state sampler
     if (stateSamplerId == 1) {
         OMPL_INFORM("Using Pre-computed state sampler: Minkowski-sweep line");
@@ -180,6 +182,7 @@ void PlannerSE3::setStateSampler(const int stateSamplerId) {
         C3FGenerator3D c3f(&robot_, &arena_, &obstacle_, &param_, ss_);
         c3f.fromSweepLine();
         validStateSet_ = c3f.getValidStates();
+        preComputeTime_ = c3f.getBuildTime();
 
         ss_->getStateSpace()->setStateSamplerAllocator(
             [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
@@ -191,6 +194,7 @@ void PlannerSE3::setStateSampler(const int stateSamplerId) {
         C3FGenerator3D c3f(&robot_, &arena_, &obstacle_, &param_, ss_);
         c3f.fromBoundary();
         validStateSet_ = c3f.getValidStates();
+        preComputeTime_ = c3f.getBuildTime();
 
         OMPL_INFORM("Using pre-computed state sampler: Minkowski-boundary");
 
@@ -204,7 +208,7 @@ void PlannerSE3::setStateSampler(const int stateSamplerId) {
     }
 }
 
-void PlannerSE3::setValidStateSampler(const int validSamplerId) {
+void OMPL3D::setValidStateSampler(const int validSamplerId) {
     // Set the valid state sampler
     if (validSamplerId == 0) {
         // Uniform sampler
@@ -287,7 +291,7 @@ void PlannerSE3::setValidStateSampler(const int validSamplerId) {
     }
 }
 
-void PlannerSE3::setCollisionObject() {
+void OMPL3D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
     robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
@@ -300,7 +304,7 @@ void PlannerSE3::setCollisionObject() {
     }
 }
 
-bool PlannerSE3::isStateValid(const ob::State *state) {
+bool OMPL3D::isStateValid(const ob::State *state) {
     // Get pose info the transform the robot
     const double x = state->as<ob::SE3StateSpace::StateType>()->getX();
     const double y = state->as<ob::SE3StateSpace::StateType>()->getY();

@@ -1,3 +1,4 @@
 add_library(OMPL_PLANNER
-            PlannerOMPL2D.cpp
-            PlannerOMPL3D.cpp)
+            OMPL2D.cpp
+            OMPL3D.cpp
+            OMPL3DArticulated.cpp)

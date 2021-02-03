@@ -1,18 +1,19 @@
-#include "planners/include/ompl/PlannerOMPL2D.h"
+#include "planners/include/ompl/OMPL2D.h"
 
 #include "ompl/base/PrecomputedStateSampler.h"
 #include "ompl/base/spaces/DubinsStateSpace.h"
 #include "ompl/base/spaces/ReedsSheppStateSpace.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
 
-PlannerSE2::PlannerSE2(const MultiBodyTree2D &robot,
-                       const std::vector<SuperEllipse> &arena,
-                       const std::vector<SuperEllipse> &obstacle)
+OMPL2D::OMPL2D(const MultiBodyTree2D &robot,
+               const std::vector<SuperEllipse> &arena,
+               const std::vector<SuperEllipse> &obstacle)
     : robot_(robot), arena_(arena), obstacle_(obstacle) {}
 
-void PlannerSE2::setup(const int spaceId, const int plannerId,
-                       const int stateSamplerId,
-                       const int validStateSamplerId) {
+OMPL2D::~OMPL2D() {}
+
+void OMPL2D::setup(const int spaceId, const int plannerId,
+                   const int stateSamplerId, const int validStateSamplerId) {
     // Setup space bound
     setEnvBound();
 
@@ -44,7 +45,7 @@ void PlannerSE2::setup(const int spaceId, const int plannerId,
     setValidStateSampler(validStateSamplerId);
 }
 
-void PlannerSE2::plan(const std::vector<std::vector<double>> &endPts) {
+void OMPL2D::plan(const std::vector<std::vector<double>> &endPts) {
     numCollisionChecks_ = 0;
 
     // Set start and goal poses
@@ -72,7 +73,7 @@ void PlannerSE2::plan(const std::vector<std::vector<double>> &endPts) {
     ss_->clear();
 }
 
-void PlannerSE2::getSolution() {
+void OMPL2D::getSolution() {
     if (isSolved_) {
         // Get solution path
         ss_->simplifySolution();
@@ -119,7 +120,7 @@ void PlannerSE2::getSolution() {
     }
 }
 
-void PlannerSE2::setEnvBound() {
+void OMPL2D::setEnvBound() {
     // Setup parameters
     param_.numY = 50;
 
@@ -134,7 +135,7 @@ void PlannerSE2::setEnvBound() {
                    arena_.at(0).getPosition().at(1) + bound.at(1)};
 }
 
-void PlannerSE2::setPlanner(const int plannerId) {
+void OMPL2D::setPlanner(const int plannerId) {
     // Set the planner
     if (plannerId == 0) {
         ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
@@ -156,7 +157,7 @@ void PlannerSE2::setPlanner(const int plannerId) {
     }
 }
 
-void PlannerSE2::setStateSampler(const int stateSamplerId) {
+void OMPL2D::setStateSampler(const int stateSamplerId) {
     // Set the state sampler
     if (stateSamplerId == 1) {
         // Build a pre-computed set of free states, sweep line
@@ -183,7 +184,7 @@ void PlannerSE2::setStateSampler(const int stateSamplerId) {
     }
 }
 
-void PlannerSE2::setValidStateSampler(const int validSamplerId) {
+void OMPL2D::setValidStateSampler(const int validSamplerId) {
     // Set the valid state sampler
     if (validSamplerId == 0) {
         // Proposed Minkowski-based sampler
@@ -254,7 +255,7 @@ void PlannerSE2::setValidStateSampler(const int validSamplerId) {
     ss_->setup();
 }
 
-void PlannerSE2::setCollisionObject() {
+void OMPL2D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
     robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
@@ -267,7 +268,7 @@ void PlannerSE2::setCollisionObject() {
     }
 }
 
-bool PlannerSE2::isStateValid(const ob::State *state) {
+bool OMPL2D::isStateValid(const ob::State *state) {
     // Get pose info the transform the robot
     const double x = state->as<ob::SE2StateSpace::StateType>()->getX();
     const double y = state->as<ob::SE2StateSpace::StateType>()->getY();
@@ -313,7 +314,7 @@ bool PlannerSE2::isStateValid(const ob::State *state) {
     return true;
 }
 
-void PlannerSE2::buildFreeStateLibraryFromSweep() {
+void OMPL2D::buildFreeStateLibraryFromSweep() {
     std::cout << "Building free space library using sweep-line process..."
               << std::endl;
     std::cout << "Number of rotation samples: " << param_.numAngle << '\n'
@@ -365,7 +366,7 @@ void PlannerSE2::buildFreeStateLibraryFromSweep() {
               << " seconds" << std::endl;
 }
 
-void PlannerSE2::buildFreeStateLibraryFromBoundary() {
+void OMPL2D::buildFreeStateLibraryFromBoundary() {
     std::cout << "Building free space library from C-obstacle boundary..."
               << std::endl;
     std::cout << "Number of rotation samples: " << param_.numAngle << std::endl;

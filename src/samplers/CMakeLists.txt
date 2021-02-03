@@ -7,6 +7,7 @@ target_link_libraries(SAMPLER_2D
 
 add_library(SAMPLER_3D
             C3FGenerator3D.cpp
+            C3FGenerator3DArticulated.cpp
             MinkowskiSamplerSE3.cpp)
 target_link_libraries(SAMPLER_3D
                       GEOM

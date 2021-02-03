@@ -1,19 +1,18 @@
-#ifndef PLANNERSE3ARTICULATED_H
-#define PLANNERSE3ARTICULATED_H
+#ifndef OMPL3DARTICULATED_H
+#define OMPL3DARTICULATED_H
 
-#include "PlannerOMPL3D.h"
+#include "OMPL3D.h"
 #include "util/include/ParseURDF.h"
 
 #include "ompl/base/StateSpace.h"
 
-class Planner3DArticulated : public PlannerSE3 {
+class OMPL3DArticulated : public OMPL3D {
   public:
-    Planner3DArticulated(const MultiBodyTree3D &robot,
-                         const std::string urdfFile,
-                         const std::vector<SuperQuadrics> &arena,
-                         const std::vector<SuperQuadrics> &obstacle,
-                         const parameters3D &param);
-    virtual ~Planner3DArticulated() {}
+    OMPL3DArticulated(const MultiBodyTree3D &robot, const std::string urdfFile,
+                      const std::vector<SuperQuadrics> &arena,
+                      const std::vector<SuperQuadrics> &obstacle,
+                      const parameters3D &param);
+    virtual ~OMPL3DArticulated();
 
     void setup(const int plannerId, const int stateSamplerId,
                const int validSamplerId);
@@ -23,8 +22,6 @@ class Planner3DArticulated : public PlannerSE3 {
   protected:
     void getSolution();
     bool isStateValid(const ob::State *state);
-    void buildFreeStateLibraryFromSweep();
-    void buildFreeStateLibraryFromBoundary();
 
   private:
     void setStateFromVector(const std::vector<double> *stateVariables,
@@ -37,4 +34,4 @@ class Planner3DArticulated : public PlannerSE3 {
     const double maxJointAngle_ = pi / 2;
 };
 
-#endif  // PLANNERSE3ARTICULATED_H
+#endif  // OMPL3DARTICULATED_H

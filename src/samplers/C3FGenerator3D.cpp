@@ -1,7 +1,5 @@
 #include "include/C3FGenerator3D.h"
 
-#include "ompl/base/spaces/SE3StateSpace.h"
-
 C3FGenerator3D::C3FGenerator3D(MultiBodyTree3D *robot,
                                std::vector<SuperQuadrics> *arena,
                                std::vector<SuperQuadrics> *obstacle,

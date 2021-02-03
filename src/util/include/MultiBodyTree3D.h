@@ -2,6 +2,7 @@
 #define MULTIBODYTREE3D_H
 
 #include "geometry/include/SuperQuadrics.h"
+#include "util/include/ParseURDF.h"
 
 #include "eigen3/Eigen/Geometry"
 
@@ -21,6 +22,8 @@ class MultiBodyTree3D {
 
     void robotTF(Eigen::Matrix4d tf);
     void robotTF(const std::string urdfFile, const Eigen::Matrix4d* gBase,
+                 const Eigen::VectorXd* jointConfig);
+    void robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
                  const Eigen::VectorXd* jointConfig);
 
     std::vector<Eigen::MatrixXd> minkSumSQ(SuperQuadrics S1, int K);

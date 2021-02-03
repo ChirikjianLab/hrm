@@ -1,5 +1,5 @@
-#ifndef PLANNERSE2_H
-#define PLANNERSE2_H
+#ifndef OMPL2D_H
+#define OMPL2D_H
 
 #include "samplers/include/MinkowskiLibrarySamplerSE2.h"
 #include "samplers/include/MinkowskiSamplerSE2.h"
@@ -28,13 +28,12 @@ namespace ob = ompl::base;
 
 const double pi = 3.1415926535;
 
-class PlannerSE2 {
+class OMPL2D {
   public:
-    PlannerSE2(const MultiBodyTree2D &robot,
-               const std::vector<SuperEllipse> &arena,
-               const std::vector<SuperEllipse> &obstacle);
+    OMPL2D(const MultiBodyTree2D &robot, const std::vector<SuperEllipse> &arena,
+           const std::vector<SuperEllipse> &obstacle);
 
-    ~PlannerSE2() {}
+    ~OMPL2D();
 
   public:
     std::vector<std::vector<double>> getSolutionPath() const { return path_; }
@@ -91,4 +90,4 @@ class PlannerSE2 {
     double libraryBuildTime_ = 0.0;
 };
 
-#endif  // PLANNERSE2_H
+#endif  // OMPL2D_H

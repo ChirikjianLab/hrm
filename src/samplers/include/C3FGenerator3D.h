@@ -4,8 +4,9 @@
 #include "geometry/include/FreeSpace3D.h"
 #include "util/include/MultiBodyTree3D.h"
 
-#include <ompl/base/StateSpace.h>
-#include <ompl/geometric/SimpleSetup.h>
+#include "ompl/base/StateSpace.h"
+#include "ompl/base/spaces/SE3StateSpace.h"
+#include "ompl/geometric/SimpleSetup.h"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -37,7 +38,7 @@ class C3FGenerator3D {
      */
     virtual void fromBoundary();
 
-  private:
+  protected:
     // Parameters
     MultiBodyTree3D *robot_;
     std::vector<SuperQuadrics> *arena_;

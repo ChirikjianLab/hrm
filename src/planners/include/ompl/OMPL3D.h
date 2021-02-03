@@ -1,5 +1,5 @@
-#ifndef PLANNEROMPL3D_H
-#define PLANNEROMPL3D_H
+#ifndef OMPL3D_H
+#define OMPL3D_H
 
 #include "samplers/include/C3FGenerator3D.h"
 #include "samplers/include/MinkowskiSamplerSE3.h"
@@ -31,14 +31,14 @@ const double pi = 3.1415926535;
 /*
  * \class PlannerSE3 planner for SE(3), OMPL wrapper
  */
-class PlannerSE3 {
+class OMPL3D {
   public:
-    PlannerSE3(const MultiBodyTree3D &robot,
-               const std::vector<SuperQuadrics> &arena,
-               const std::vector<SuperQuadrics> &obstacle,
-               const parameters3D &param);
+    OMPL3D(const MultiBodyTree3D &robot,
+           const std::vector<SuperQuadrics> &arena,
+           const std::vector<SuperQuadrics> &obstacle,
+           const parameters3D &param);
 
-    virtual ~PlannerSE3() {}
+    virtual ~OMPL3D();
 
   public:
     /*
@@ -164,4 +164,4 @@ class PlannerSE3 {
     std::vector<const ob::State *> validStateSet_;
 };
 
-#endif  // PLANNEROMPL3D_H
+#endif  // OMPL3D_H

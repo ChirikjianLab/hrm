@@ -1,5 +1,4 @@
 #include "include/MultiBodyTree3D.h"
-#include "util/include/ParseURDF.h"
 
 MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(base) {}
 
@@ -55,6 +54,35 @@ void MultiBodyTree3D::robotTF(const std::string urdfFile,
                               const Eigen::VectorXd* jointConfig) {
     ParseURDF kdl(urdfFile);
 
+    // Set transform of base
+    base_.setPosition(
+        {gBase->coeff(0, 3), gBase->coeff(1, 3), gBase->coeff(2, 3)});
+
+    Eigen::Matrix3d rotMat = gBase->topLeftCorner(3, 3);
+    Eigen::Quaterniond quat(rotMat);
+    base_.setQuaternion(quat);
+
+    // Set transform for each link
+    Eigen::Matrix4d gLink;
+    KDL::JntArray jointArray;
+    jointArray.data = *jointConfig;
+
+    for (size_t i = 0; i < numLinks_; i++) {
+        gLink = *gBase *
+                kdl.getTransform(&jointArray, "body" + std::to_string(i + 1)) *
+                tf_.at(i);
+
+        link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
+
+        rotMat = gLink.topLeftCorner(3, 3);
+        quat.matrix() = rotMat;
+        link_.at(i).setQuaternion(quat);
+    }
+}
+
+// Tranform articulated body
+void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
+                              const Eigen::VectorXd* jointConfig) {
     // Set transform of base
     base_.setPosition(
         {gBase->coeff(0, 3), gBase->coeff(1, 3), gBase->coeff(2, 3)});
