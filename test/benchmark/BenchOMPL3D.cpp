@@ -1,4 +1,4 @@
-#include "planners/include/ompl/PlannerOMPL3D.h"
+#include "planners/include/ompl/ompl_planner.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
     const int id_plan_end = atoi(argv[4]);
     const int id_sample_start = atoi(argv[5]);
     const int id_sample_end = atoi(argv[6]);
+    const double max_planning_time = atoi(argv[7]);
 
     for (int m = id_plan_start; m <= id_plan_end; m++) {
         for (int n = id_sample_start; n <= id_sample_end; n++) {
@@ -75,25 +76,21 @@ int main(int argc, char** argv) {
                 cout << "Sampler: " << n << endl;
                 cout << "Num of trials: " << i << endl;
 
-                PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh, m, n);
-
-                // Max planning time limit
-                if (argc == 8) {
-                    const double max_planning_time = atoi(argv[7]);
-                    tester.setMaxPlanningTime(max_planning_time);
-                }
+                PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh);
+                tester.setup(m, 0, n);
 
                 tester.plan(env3D->getEndPoints().at(0),
-                            env3D->getEndPoints().at(1));
+                            env3D->getEndPoints().at(1), max_planning_time);
 
-                outfile << m << ',' << n << ',' << tester.flag << ','
-                        << tester.totalTime << ',' << tester.numGraphNodes
-                        << "," << tester.numGraphEdges << ","
-                        << tester.numPathNodes << "," << tester.validSpace
-                        << ',' << tester.numCheckedNodes << ','
-                        << tester.numValidNodes << endl;
+                outfile << m << ',' << n << ',' << tester.isSolved() << ','
+                        << tester.getPlanningTime() << ','
+                        << tester.getNumVertex() << "," << tester.getNumEdges()
+                        << "," << tester.getPathLength() << ","
+                        << tester.getValidStatePercent() << ','
+                        << tester.getNumCollisionChecks() << ','
+                        << tester.getNumValidStates() << endl;
 
-                if (tester.flag) {
+                if (tester.isSolved()) {
                     tester.getVertexEdgeInfo();
                     tester.getPathInfo();
                 }

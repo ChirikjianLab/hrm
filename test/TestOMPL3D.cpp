@@ -45,13 +45,6 @@ int main(int argc, char** argv) {
     int stateSamplerId = argc > 3 ? (argv[3][0] - '0') : -1;
     int validStateSamplerId = argc > 4 ? (argv[4][0] - '0') : -1;
 
-    // Load parameters
-    parameters3D param;
-    param.numX = argc > 5 ? size_t(std::stoi(argv[5])) : 30;
-    param.numY = argc > 6 ? size_t(std::stoi(argv[6])) : 30;
-    param.numPointOnFreeSegment = argc > 7 ? size_t(std::stoi(argv[7])) : 20;
-    param.numRotation = argc > 8 ? size_t(std::stoi(argv[9])) : 60;
-
     // Load robot
     std::string quat_file = "0";
     if (argc > 9 && strcmp(argv[9], "0") != 0) {
@@ -59,6 +52,30 @@ int main(int argc, char** argv) {
     }
     MultiBodyTree3D robot =
         loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+
+    // Load parameters
+    parameters3D param;
+    param.numX = argc > 5 ? size_t(std::stoi(argv[5])) : 30;
+    param.numY = argc > 6 ? size_t(std::stoi(argv[6])) : 30;
+    param.numPointOnFreeSegment = argc > 7 ? size_t(std::stoi(argv[7])) : 20;
+    param.numRotation = argc > 8 ? size_t(std::stoi(argv[9])) : 60;
+
+    double f = 1.5;
+    param.xLim = std::make_pair<double, double>(
+        env3D->getArena().at(0).getSemiAxis().at(0) -
+            f * robot.getBase().getSemiAxis().at(0),
+        -(env3D->getArena().at(0).getSemiAxis().at(0) -
+          f * robot.getBase().getSemiAxis().at(0)));
+    param.yLim = std::make_pair<double, double>(
+        env3D->getArena().at(0).getSemiAxis().at(1) -
+            f * robot.getBase().getSemiAxis().at(0),
+        -(env3D->getArena().at(0).getSemiAxis().at(1) -
+          f * robot.getBase().getSemiAxis().at(0)));
+    param.zLim = std::make_pair<double, double>(
+        env3D->getArena().at(0).getSemiAxis().at(2) -
+            f * robot.getBase().getSemiAxis().at(0),
+        -(env3D->getArena().at(0).getSemiAxis().at(2) -
+          f * robot.getBase().getSemiAxis().at(0)));
 
     // Initiate planner
     OMPL3D planner(robot, env3D->getArena(), env3D->getObstacle(), param);

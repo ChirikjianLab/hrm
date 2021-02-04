@@ -19,7 +19,8 @@ target_link_libraries(TestHRM3D
 add_executable(TestOMPL3D TestOMPL3D.cpp)
 target_link_libraries(TestOMPL3D
                       TESTUTIL
-                      OMPL_PLANNER)
+                      OMPL_PLANNER
+                      ${OMPL_LIBRARIES})
 
 add_executable(TestOMPL3DArticulated TestMinkSampler3D.cpp)
 target_link_libraries(TestOMPL3DArticulated

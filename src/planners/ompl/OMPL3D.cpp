@@ -1,17 +1,10 @@
 #include "planners/include/ompl/OMPL3D.h"
 
-#include "ompl/base/PrecomputedStateSampler.h"
-#include "ompl/base/spaces/SE3StateSpace.h"
-#include "ompl/tools/benchmark/MachineSpecs.h"
-
 OMPL3D::OMPL3D(const MultiBodyTree3D &robot,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obstacle,
                const parameters3D &param)
-    : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {
-    // Set boundary of planning arena
-    setArenaBounds();
-}
+    : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
 OMPL3D::~OMPL3D() {}
 
@@ -143,23 +136,9 @@ void OMPL3D::setStateSpace() {
     bounds.setHigh(2, param_.zLim.second);
     space->as<ob::SE3StateSpace>()->setBounds(bounds);
 
-    ss_ = std::make_shared<og::SimpleSetup>(space);
-}
+    space->setup();
 
-void OMPL3D::setArenaBounds() {
-    double f = 1.5;
-    std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0) -
-                                     f * robot_.getBase().getSemiAxis().at(0),
-                                 arena_.at(0).getSemiAxis().at(1) -
-                                     f * robot_.getBase().getSemiAxis().at(0),
-                                 arena_.at(0).getSemiAxis().at(2) -
-                                     f * robot_.getBase().getSemiAxis().at(0)};
-    param_.xLim = {arena_.at(0).getPosition().at(0) - bound.at(0),
-                   arena_.at(0).getPosition().at(0) + bound.at(0)};
-    param_.yLim = {arena_.at(0).getPosition().at(1) - bound.at(1),
-                   arena_.at(0).getPosition().at(1) + bound.at(1)};
-    param_.zLim = {arena_.at(0).getPosition().at(2) - bound.at(2),
-                   arena_.at(0).getPosition().at(2) + bound.at(2)};
+    ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
 void OMPL3D::setPlanner(const int plannerId) {
@@ -219,8 +198,8 @@ void OMPL3D::setStateSampler(const int stateSamplerId) {
     }
 }
 
+// Set the valid state sampler
 void OMPL3D::setValidStateSampler(const int validSamplerId) {
-    // Set the valid state sampler
     if (validSamplerId == 0) {
         // Uniform sampler
         OMPL_INFORM("Using Uniform valid state sampler");

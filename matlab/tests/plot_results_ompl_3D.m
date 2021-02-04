@@ -62,9 +62,9 @@ axis off
 %% Path from OMPL
 disp("Plotting results from OMPL planner...")
 
-path_ompl = load([loadPath, 'ompl_smooth_path3d.csv']);
-state_ompl = load([loadPath, 'ompl_state3d.csv']);
-edge_ompl = load([loadPath, 'ompl_edge3d.csv']);
+path_ompl = load([loadPath, 'ompl_smooth_path_3D.csv']);
+state_ompl = load([loadPath, 'ompl_state_3D.csv']);
+edge_ompl = load([loadPath, 'ompl_edge_3D.csv']);
 
 plot3([start(1) path_ompl(1,1)],...
     [start(2) path_ompl(1,2)],...
@@ -81,7 +81,7 @@ for i = 1:size(path_ompl,1)-1
     robot.Base.q = path_ompl(i+1,4:7);
     robot.Base.tc = path_ompl(i+1,1:3)';
     g = [quat2rotm(robot.Base.q), robot.Base.tc; 0,0,0,1];
-    robot.robotTF(g,1);
+    robot.robotTF(1, g);
 end
 
 for i = 1:size(state_ompl,1)-1

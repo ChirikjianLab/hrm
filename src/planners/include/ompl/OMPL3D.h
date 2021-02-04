@@ -6,8 +6,13 @@
 #include "util/include/EllipsoidSQCollisionFCL.h"
 #include "util/include/EllipsoidSeparation.h"
 
+#include "ompl/base/PrecomputedStateSampler.h"
+#include "ompl/base/SpaceInformation.h"
 #include "ompl/base/StateSpace.h"
+#include "ompl/base/spaces/SE3StateSpace.h"
+#include "ompl/config.h"
 #include "ompl/geometric/SimpleSetup.h"
+#include "ompl/util/PPM.h"
 
 #include "ompl/base/samplers/BridgeTestValidStateSampler.h"
 #include "ompl/base/samplers/GaussianValidStateSampler.h"
@@ -124,7 +129,6 @@ class OMPL3D {
     virtual void getSolution();
 
     virtual void setStateSpace();
-    void setArenaBounds();
 
     void setPlanner(const int plannerId);
     void setStateSampler(const int stateSamplerId);
@@ -162,7 +166,7 @@ class OMPL3D {
     std::vector<std::vector<double>> path_;
 
     // Pre-computed C3F seeds set
-    double preComputeTime_;
+    double preComputeTime_ = 0.0;
     std::vector<const ob::State *> validStateSet_;
 };
 
