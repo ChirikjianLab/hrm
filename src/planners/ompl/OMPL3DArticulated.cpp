@@ -23,6 +23,9 @@ void OMPL3DArticulated::plan(const std::vector<std::vector<double>> &endPts,
     setStateFromVector(&endPts[1], &goal);
     ss_->setStartAndGoalStates(start, goal);
 
+    ss_->print();
+    ss_->setup();
+
     // Solve the planning problem
     try {
         bool solve = ss_->solve(maxTimeInSec);
@@ -90,8 +93,8 @@ void OMPL3DArticulated::getSolution() {
 
 void OMPL3DArticulated::setStateSpace() {
     // Create compound state space
-    ob::StateSpacePtr SE3(new ob::SE3StateSpace());
-    ob::StateSpacePtr Sn(new ob::RealVectorStateSpace(numJoint_));
+    ob::StateSpacePtr SE3(std::make_shared<ob::SE3StateSpace>());
+    ob::StateSpacePtr Sn(std::make_shared<ob::RealVectorStateSpace>(numJoint_));
     ob::StateSpacePtr space = SE3 + Sn;
 
     // Setup bounds

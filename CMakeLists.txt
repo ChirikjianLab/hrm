@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 
 # Project's name
 project(HighwayRoadMap VERSION 0.2.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(default_build_type "RelWithDebInfo")
 
 # Specify Binary dir
@@ -52,10 +52,10 @@ link_libraries(${orocos_kdl_LIBRARIES})
 find_package(kdl_parser)
 link_libraries(${kdl_parser_LIBRARIES})
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost REQUIRED)
+find_package(Boost 1.55 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)

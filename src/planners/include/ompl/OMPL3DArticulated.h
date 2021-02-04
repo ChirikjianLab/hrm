@@ -21,7 +21,7 @@ class OMPL3DArticulated : public OMPL3D {
 
     void setStateSpace() override;
 
-    bool isStateValid(const ob::State *state);
+    bool isStateValid(const ob::State *state) override;
 
   private:
     void setStateFromVector(const std::vector<double> *stateVariables,

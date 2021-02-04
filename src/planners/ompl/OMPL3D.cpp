@@ -8,27 +8,27 @@ OMPL3D::OMPL3D(const MultiBodyTree3D &robot,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obstacle,
                const parameters3D &param)
-    : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
+    : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {
+    // Set boundary of planning arena
+    setArenaBounds();
+}
 
 OMPL3D::~OMPL3D() {}
 
 void OMPL3D::setup(const int plannerId, const int stateSamplerId,
                    const int validStateSamplerId) {
     // Setup state space
-    setArenaBounds();
     setStateSpace();
 
     // Set collision checker
     ss_->setStateValidityChecker(
         [this](const ob::State *state) { return isStateValid(state); });
-    ss_->getSpaceInformation()->setStateValidityCheckingResolution(0.01);
+    //    ss_->getSpaceInformation()->setStateValidityCheckingResolution(0.01);
     setCollisionObject();
 
     setPlanner(plannerId);
     setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
-
-    ss_->setup();
 }
 
 void OMPL3D::plan(const std::vector<std::vector<double>> &endPts,
@@ -51,6 +51,9 @@ void OMPL3D::plan(const std::vector<std::vector<double>> &endPts,
     goal->rotation().z = endPts[1][6];
     goal.enforceBounds();
     ss_->setStartAndGoalStates(start, goal);
+
+    ss_->print();
+    ss_->setup();
 
     // Solve the planning problem
     try {

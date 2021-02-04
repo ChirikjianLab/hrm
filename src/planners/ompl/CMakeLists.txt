@@ -4,4 +4,6 @@ add_library(OMPL_PLANNER
             OMPL3DArticulated.cpp)
 target_link_libraries(OMPL_PLANNER
                       SAMPLER_2D
-                      SAMPLER_3D)
+                      SAMPLER_3D
+                      GEOM
+                      UTIL)
