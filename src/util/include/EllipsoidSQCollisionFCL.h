@@ -5,9 +5,9 @@
 #include "geometry/include/SuperEllipse.h"
 
 bool isCollision(const SuperQuadrics& obj1,
-                 fcl::CollisionObject<double>* colObj1,
+                 fcl::CollisionObject<double> colObj1,
                  const SuperQuadrics& obj2,
-                 fcl::CollisionObject<double>* colObj2);
+                 fcl::CollisionObject<double> colObj2);
 
 bool isCollision(const SuperEllipse& obj1,
                  fcl::CollisionObject<double>* colObj1,

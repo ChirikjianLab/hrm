@@ -1,38 +1,40 @@
-#ifndef OMPL3DARTICULATED_H
-#define OMPL3DARTICULATED_H
+#ifndef OMPL_PLANNER_ARTICULATED_H
+#define OMPL_PLANNER_ARTICULATED_H
 
 #include "OMPL3D.h"
 #include "samplers/include/C3FGenerator3DArticulated.h"
 #include "util/include/ParseURDF.h"
 
-class OMPL3DArticulated : public OMPL3D {
-  public:
-    OMPL3DArticulated(const MultiBodyTree3D &robot, const std::string urdfFile,
-                      const std::vector<SuperQuadrics> &arena,
-                      const std::vector<SuperQuadrics> &obstacle,
-                      const parameters3D &param);
-    ~OMPL3DArticulated() override;
+#include "ompl/base/spaces/RealVectorStateSpace.h"
 
-    void plan(const std::vector<std::vector<double>> &endPts,
-              const double maxTimeInSec);
+class PlannerOMPLArticulated : public PlannerOMPL {
+  public:
+    PlannerOMPLArticulated(std::vector<double> lowBound,
+                           std::vector<double> highBound,
+                           const MultiBodyTree3D& robot,
+                           const std::string urdfFile,
+                           const std::vector<SuperQuadrics>& arena,
+                           const std::vector<SuperQuadrics>& obs,
+                           const std::vector<Mesh>& obsMesh);
+    ~PlannerOMPLArticulated() override;
 
   protected:
-    void getSolution();
+    void setStateSpace(const std::vector<double>& lowBound,
+                       const std::vector<double>& highBound) override;
 
-    void setStateSpace() override;
+    MultiBodyTree3D transformRobot(const ob::State* state) const override;
 
-    bool isStateValid(const ob::State *state) override;
+    void setStateFromVector(
+        const std::vector<double>* stateVariables,
+        ob::ScopedState<ob::CompoundStateSpace>* state) const override;
+    std::vector<double> setVectorFromState(
+        const ob::State* state) const override;
 
   private:
-    void setStateFromVector(const std::vector<double> *stateVariables,
-                            ob::ScopedState<ob::CompoundStateSpace> *state);
-    std::vector<double> getStateToVector(const ob::State *state);
-
-  private:
-    ParseURDF *kdl_;
+    ParseURDF* kdl_;
+    const std::string urdfFile_;
     int numJoint_;
-    std::string urdfFile_;
     const double maxJointAngle_ = pi / 2;
 };
 
-#endif  // OMPL3DARTICULATED_H
+#endif  // OMPL_PLANNER_ARTICULATED_H

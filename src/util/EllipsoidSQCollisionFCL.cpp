@@ -3,21 +3,21 @@
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 bool isCollision(const SuperQuadrics& obj1,
-                 fcl::CollisionObject<double>* colObj1,
+                 fcl::CollisionObject<double> colObj1,
                  const SuperQuadrics& obj2,
-                 fcl::CollisionObject<double>* colObj2) {
-    colObj1->setTransform(
+                 fcl::CollisionObject<double> colObj2) {
+    colObj1.setTransform(
         obj1.getQuaternion().toRotationMatrix(),
         fcl::Vector3d(obj1.getPosition().at(0), obj1.getPosition().at(1),
                       obj1.getPosition().at(2)));
-    colObj2->setTransform(
+    colObj2.setTransform(
         obj2.getQuaternion().toRotationMatrix(),
         fcl::Vector3d(obj2.getPosition().at(0), obj2.getPosition().at(1),
                       obj2.getPosition().at(2)));
 
     fcl::CollisionRequest<double> request;
     fcl::CollisionResult<double> result;
-    fcl::collide(colObj1, colObj2, request, result);
+    fcl::collide(&colObj1, &colObj2, request, result);
 
     return result.isCollision();
 }

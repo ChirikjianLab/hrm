@@ -1,23 +1,32 @@
-#include "planners/include/ompl/OMPL3D.h"
+#include "planners/include/ompl/OMPL3DArticulated.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
 
 int main(int argc, char** argv) {
     if (argc < 7) {
-        cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
-                "Planner start ID 4) Planner end ID 5) Sampler start ID 6) "
-                "Sampler end ID 7) Max planning time (in seconds, default: "
-                "60.0s)"
+        cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
+                "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Robot "
+                "name 7) Max planning time (in seconds, default: 60.0s)"
              << endl;
         return 1;
     }
 
     // Record planning time for N trials
     int N = atoi(argv[1]);
-    int n = atoi(argv[2]);
 
-    vector<vector<double>> time_stat;
+    /*
+     * \brief Planner and sampler inputs
+     *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, SBL:5,
+     * KPIECE:6
+     *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
+     */
+    const int id_plan_start = atoi(argv[2]);
+    const int id_plan_end = atoi(argv[3]);
+    const int id_sample_start = atoi(argv[4]);
+    const int id_sample_end = atoi(argv[5]);
+    const string robot_name = argv[6];
+    const double max_planning_time = atoi(argv[7]);
 
     // Read and setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();
@@ -32,8 +41,9 @@ int main(int argc, char** argv) {
         obs_mesh.emplace_back(getMeshFromSQ(obs.at(i)));
     }
 
-    // Setup robot config
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", n);
+    // Setup robot
+    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
+    std::string urdfFile = "../resources/3D/urdf/" + robot_name + ".urdf";
 
     // Boundary
     double f = 1.5;
@@ -45,23 +55,13 @@ int main(int argc, char** argv) {
                              f * robot.getBase().getSemiAxis().at(0)},
                    b2 = {-b1[0], -b1[1], -b1[2]};
 
+    // Store results
     std::ofstream outfile;
     outfile.open("time_ompl_3D.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
             << "CHECKED_NODES" << ',' << "VALID_NODES" << endl;
-
-    /*
-     * \brief Planner and sampler inputs
-     *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
-     *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
-     */
-    const int id_plan_start = atoi(argv[3]);
-    const int id_plan_end = atoi(argv[4]);
-    const int id_sample_start = atoi(argv[5]);
-    const int id_sample_end = atoi(argv[6]);
-    const double max_planning_time = atoi(argv[7]);
 
     for (int m = id_plan_start; m <= id_plan_end; m++) {
         for (int n = id_sample_start; n <= id_sample_end; n++) {
@@ -75,7 +75,8 @@ int main(int argc, char** argv) {
                 cout << "Sampler: " << n << endl;
                 cout << "Num of trials: " << i + 1 << endl;
 
-                PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh);
+                PlannerOMPLArticulated tester(b1, b2, robot, urdfFile, arena,
+                                              obs, obs_mesh);
                 tester.setup(m, 0, n);
 
                 tester.plan(env3D->getEndPoints().at(0),

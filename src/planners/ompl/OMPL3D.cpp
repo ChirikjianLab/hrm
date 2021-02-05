@@ -1,117 +1,102 @@
 #include "planners/include/ompl/OMPL3D.h"
 
-OMPL3D::OMPL3D(const MultiBodyTree3D &robot,
-               const std::vector<SuperQuadrics> &arena,
-               const std::vector<SuperQuadrics> &obstacle,
-               const parameters3D &param)
-    : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
-
-OMPL3D::~OMPL3D() {}
-
-void OMPL3D::setup(const int plannerId, const int stateSamplerId,
-                   const int validStateSamplerId) {
+PlannerOMPL::PlannerOMPL(std::vector<double> lowBound,
+                         std::vector<double> highBound,
+                         const MultiBodyTree3D &robot,
+                         const std::vector<SuperQuadrics> &arena,
+                         const std::vector<SuperQuadrics> &obs,
+                         const std::vector<Mesh> &obsMesh)
+    : robot_(robot), arena_(arena), obstacles_(obs), obsMesh_(obsMesh) {
     // Setup state space
-    setStateSpace();
+    setStateSpace(lowBound, highBound);
+}
 
+PlannerOMPL::~PlannerOMPL() {}
+
+void PlannerOMPL::setup(const int plannerId, const int stateSamplerId,
+                        const int validStateSamplerId) {
     // Set collision checker
     ss_->setStateValidityChecker(
         [this](const ob::State *state) { return isStateValid(state); });
-    //    ss_->getSpaceInformation()->setStateValidityCheckingResolution(0.01);
     setCollisionObject();
 
+    // Set planner and sampler
     setPlanner(plannerId);
-    setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
+
+    ss_->setup();
+    //        ss_->print();
 }
 
-void OMPL3D::plan(const std::vector<std::vector<double>> &endPts,
-                  const double maxTimeInSec) {
-    numCollisionChecks_ = 0;
+bool PlannerOMPL::plan(const std::vector<double> &start,
+                       const std::vector<double> &goal,
+                       const double maxTimeInSec) {
+    if (!ss_) {
+        return false;
+    }
 
-    // Set start and goal poses
-    ob::ScopedState<ob::SE3StateSpace> start(ss_->getSpaceInformation());
-    start->setXYZ(endPts[0][0], endPts[0][1], endPts[0][2]);
-    start->rotation().w = endPts[0][3];
-    start->rotation().x = endPts[0][4];
-    start->rotation().y = endPts[0][5];
-    start->rotation().z = endPts[0][6];
-    start.enforceBounds();
-    ob::ScopedState<ob::SE3StateSpace> goal(ss_->getSpaceInformation());
-    goal->setXYZ(endPts[1][0], endPts[1][1], endPts[1][2]);
-    goal->rotation().w = endPts[1][3];
-    goal->rotation().x = endPts[1][4];
-    goal->rotation().y = endPts[1][5];
-    goal->rotation().z = endPts[1][6];
-    goal.enforceBounds();
-    ss_->setStartAndGoalStates(start, goal);
+    // Set start and goal states for planning
+    setStartAndGoalState(start, goal);
 
-    ss_->print();
-    ss_->setup();
+    // Path planning
+    OMPL_INFORM("Planning...");
 
-    // Solve the planning problem
     try {
-        bool solve = ss_->solve(maxTimeInSec);
-        if (solve && ss_->getLastPlanComputationTime() < maxTimeInSec) {
+        ob::PlannerStatus solved = ss_->solve(maxTimeInSec);
+
+        // Get solution status
+        totalTime_ = ss_->getLastPlanComputationTime();
+
+        if (!solved || totalTime_ > maxTimeInSec) {
+            isSolved_ = false;
+        } else {
+            // Number of nodes in solved path
+            lengthPath_ = ss_->getSolutionPath().getStates().size();
             isSolved_ = true;
         }
+
     } catch (ompl::Exception &ex) {
         std::stringstream es;
         es << ex.what() << std::endl;
-        std::cerr << es.str();
         OMPL_WARN(es.str().c_str());
     }
 
+    // Get planning results
     getSolution();
-    ss_->clear();
+
+    return true;
 }
 
-void OMPL3D::getSolution() {
+void PlannerOMPL::getSolution() {
     if (isSolved_) {
         try {
             // Get solution path
             ss_->simplifySolution();
             auto path = ss_->getSolutionPath();
-            lengthPath_ = ss_->getSolutionPath().getStates().size();
 
             // Save interpolated path
             path.interpolate(200);
             for (auto state : path.getStates()) {
-                path_.push_back(
-                    {state->as<ob::SE3StateSpace::StateType>()->getX(),
-                     state->as<ob::SE3StateSpace::StateType>()->getY(),
-                     state->as<ob::SE3StateSpace::StateType>()->getZ(),
-                     state->as<ob::SE3StateSpace::StateType>()->rotation().w,
-                     state->as<ob::SE3StateSpace::StateType>()->rotation().x,
-                     state->as<ob::SE3StateSpace::StateType>()->rotation().y,
-                     state->as<ob::SE3StateSpace::StateType>()->rotation().z});
+                path_.push_back(setVectorFromState(state));
             }
         } catch (ompl::Exception &ex) {
         }
     }
 
     // Retrieve planning data
-    totalTime_ = ss_->getLastPlanComputationTime();
-
     ob::PlannerData pd(ss_->getSpaceInformation());
     ss_->getPlannerData(pd);
 
     // Number of vertices, edges
-    numValidStates_ = pd.numVertices();
-    numValidEdges_ = pd.numEdges();
+    numGraphVertex_ = pd.numVertices();
+    numGraphEdges_ = pd.numEdges();
 
     // Save vertices and edges
     const ob::State *state;
     vertex_.clear();
     for (unsigned int i = 0; i < numValidStates_; ++i) {
         state = pd.getVertex(i).getState()->as<ob::State>();
-        vertex_.push_back(
-            {state->as<ob::SE3StateSpace::StateType>()->getX(),
-             state->as<ob::SE3StateSpace::StateType>()->getY(),
-             state->as<ob::SE3StateSpace::StateType>()->getZ(),
-             state->as<ob::SE3StateSpace::StateType>()->rotation().w,
-             state->as<ob::SE3StateSpace::StateType>()->rotation().x,
-             state->as<ob::SE3StateSpace::StateType>()->rotation().y,
-             state->as<ob::SE3StateSpace::StateType>()->rotation().z});
+        vertex_.push_back(setVectorFromState(state));
     }
 
     std::vector<std::vector<unsigned int>> edgeInfo(numValidStates_);
@@ -121,28 +106,34 @@ void OMPL3D::getSolution() {
         for (auto edgeI : edgeInfo[i])
             edge_.push_back(std::make_pair(i, edgeI));
     }
+
+    // Total number of checked and valid motions
+    numCollisionChecks_ =
+        pd.getSpaceInformation()->getMotionValidator()->getCheckedMotionCount();
+    numValidStates_ =
+        pd.getSpaceInformation()->getMotionValidator()->getValidMotionCount();
+
+    validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-// Setup state space
-void OMPL3D::setStateSpace() {
-    ob::StateSpacePtr space(std::make_shared<ob::SE3StateSpace>());
+void PlannerOMPL::setStateSpace(const std::vector<double> &lowBound,
+                                const std::vector<double> &highBound) {
+    auto space(std::make_shared<ob::SE3StateSpace>());
 
     ob::RealVectorBounds bounds(3);
-    bounds.setLow(0, param_.xLim.first);
-    bounds.setLow(1, param_.yLim.first);
-    bounds.setLow(2, param_.zLim.first);
-    bounds.setHigh(0, param_.xLim.second);
-    bounds.setHigh(1, param_.yLim.second);
-    bounds.setHigh(2, param_.zLim.second);
-    space->as<ob::SE3StateSpace>()->setBounds(bounds);
-
-    space->setup();
+    bounds.setLow(0, lowBound[0]);
+    bounds.setLow(1, lowBound[1]);
+    bounds.setLow(2, lowBound[2]);
+    bounds.setHigh(0, highBound[0]);
+    bounds.setHigh(1, highBound[1]);
+    bounds.setHigh(2, highBound[2]);
+    space->setBounds(bounds);
 
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL3D::setPlanner(const int plannerId) {
-    // Set the planner
+void PlannerOMPL::setPlanner(const int plannerId) {
+    // Set planner
     if (plannerId == 0) {
         ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
     } else if (plannerId == 1) {
@@ -163,43 +154,10 @@ void OMPL3D::setPlanner(const int plannerId) {
     }
 }
 
-void OMPL3D::setStateSampler(const int stateSamplerId) {
-    // Set the state sampler
-    if (stateSamplerId == 1) {
-        OMPL_INFORM("Using Pre-computed state sampler: Minkowski-sweep line");
-
-        // Build a pre-computed set of free states, using sweep line
-        C3FGenerator3D c3f(&robot_, &arena_, &obstacle_, &param_, ss_);
-        c3f.fromSweepLine();
-        validStateSet_ = c3f.getValidStates();
-        preComputeTime_ = c3f.getBuildTime();
-
-        ss_->getStateSpace()->setStateSamplerAllocator(
-            [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
-                return std::make_shared<ob::PrecomputedStateSampler>(
-                    ss, validStateSet_);
-            });
-    } else if (stateSamplerId == 2) {
-        // Build a pre-computed set of free states, using C-obstacle boundary
-        C3FGenerator3D c3f(&robot_, &arena_, &obstacle_, &param_, ss_);
-        c3f.fromBoundary();
-        validStateSet_ = c3f.getValidStates();
-        preComputeTime_ = c3f.getBuildTime();
-
-        OMPL_INFORM("Using pre-computed state sampler: Minkowski-boundary");
-
-        ss_->getStateSpace()->setStateSamplerAllocator(
-            [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
-                return std::make_shared<ob::PrecomputedStateSampler>(
-                    ss, validStateSet_);
-            });
-    } else {
-        OMPL_INFORM("Using default state sampler");
-    }
-}
+void PlannerOMPL::setStateSampler(const int stateSamplerId) {}
 
 // Set the valid state sampler
-void OMPL3D::setValidStateSampler(const int validSamplerId) {
+void PlannerOMPL::setValidStateSampler(const int validSamplerId) {
     if (validSamplerId == 0) {
         // Uniform sampler
         OMPL_INFORM("Using Uniform valid state sampler");
@@ -244,105 +202,234 @@ void OMPL3D::setValidStateSampler(const int validSamplerId) {
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::BridgeTestValidStateSampler>(si);
             });
-    } else if (validSamplerId == 5) {
-        // Proposed Minkowski-based sampler
-        OMPL_INFORM("Using Minkowski-sweep line valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto sampler =
-                    std::make_shared<MinkowskiSweepLineSamplerSE3>(si);
-
-                // Setup robot and environment for sampler
-                sampler->setRobot(&robot_);
-                sampler->setArena(&arena_);
-                sampler->setObstacle(&obstacle_);
-                sampler->setParam(&param_);
-
-                return sampler;
-            });
-    } else if (validSamplerId == 6) {
-        // Proposed Minkowski-based sampler, sample on boundary
-        OMPL_INFORM("Using Minkowski-boundary valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto sampler =
-                    std::make_shared<MinkowskiBoundarySamplerSE3>(si);
-
-                // Setup robot and environment for sampler
-                sampler->setRobot(&robot_);
-                sampler->setArena(&arena_);
-                sampler->setObstacle(&obstacle_);
-                sampler->setParam(&param_);
-
-                return sampler;
-            });
     }
 }
 
-void OMPL3D::setCollisionObject() {
+void PlannerOMPL::setStartAndGoalState(const std::vector<double> &start,
+                                       const std::vector<double> &goal) {
+    ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
+    setStateFromVector(&start, &startState);
+
+    ob::ScopedState<ob::CompoundStateSpace> goalState(ss_->getStateSpace());
+    setStateFromVector(&goal, &goalState);
+
+    ss_->setStartAndGoalStates(startState, goalState);
+}
+
+void PlannerOMPL::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
-    robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
+    GeometryPtr_t ellip(
+        new fcl::Ellipsoidd(robot_.getBase().getSemiAxis().at(0),
+                            robot_.getBase().getSemiAxis().at(1),
+                            robot_.getBase().getSemiAxis().at(2)));
+    objRobot_.push_back(fcl::CollisionObjectd(ellip));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
-        robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getLinks().at(i)));
+        GeometryPtr_t ellip(
+            new fcl::Ellipsoidd(robot_.getLinks().at(i).getSemiAxis().at(0),
+                                robot_.getLinks().at(i).getSemiAxis().at(1),
+                                robot_.getLinks().at(i).getSemiAxis().at(2)));
+        objRobot_.push_back(fcl::CollisionObjectd(ellip));
     }
 
     // Setup collision object for superquadric obstacles
-    for (SuperQuadrics obs : obstacle_) {
-        obsGeom_.push_back(setCollisionObjectFromSQ(obs));
+    for (size_t i = 0; i < obstacles_.size(); i++) {
+        if (std::fabs(obstacles_.at(i).getEpsilon().at(0) - 1.0) < 1e-6 &&
+            std::fabs(obstacles_.at(i).getEpsilon().at(1) - 1.0) < 1e-6) {
+            GeometryPtr_t ellip(
+                new fcl::Ellipsoidd(obstacles_.at(i).getSemiAxis().at(0),
+                                    obstacles_.at(i).getSemiAxis().at(1),
+                                    obstacles_.at(i).getSemiAxis().at(2)));
+            objObs_.push_back(fcl::CollisionObjectd(ellip));
+        } else {
+            objObs_.push_back(setCollisionObjectFromSQ(obstacles_.at(i)));
+        }
     }
 }
 
-bool OMPL3D::isStateValid(const ob::State *state) {
-    // Get pose info the transform the robot
-    const double x = state->as<ob::SE3StateSpace::StateType>()->getX();
-    const double y = state->as<ob::SE3StateSpace::StateType>()->getY();
-    const double z = state->as<ob::SE3StateSpace::StateType>()->getZ();
+bool PlannerOMPL::isStateValid(const ob::State *state) const {
+    return isSeparated(transformRobot(state));
+}
 
-    const Eigen::Quaterniond quat(
-        state->as<ob::SE3StateSpace::StateType>()->rotation().w,
-        state->as<ob::SE3StateSpace::StateType>()->rotation().x,
-        state->as<ob::SE3StateSpace::StateType>()->rotation().y,
-        state->as<ob::SE3StateSpace::StateType>()->rotation().z);
+// Get pose info and transform the robot
+MultiBodyTree3D PlannerOMPL::transformRobot(const ob::State *state) const {
+    std::vector<double> stateVar = setVectorFromState(state);
 
     Eigen::Matrix4d tf;
-    tf.topLeftCorner(3, 3) = quat.toRotationMatrix();
-    tf.topRightCorner(3, 1) = Eigen::Array3d({x, y, z});
+    tf.topRightCorner(3, 1) =
+        Eigen::Array3d({stateVar.at(0), stateVar.at(1), stateVar.at(2)});
+    tf.topLeftCorner(3, 3) = Eigen::Quaterniond(stateVar.at(3), stateVar.at(4),
+                                                stateVar.at(5), stateVar.at(6))
+                                 .toRotationMatrix();
     tf.bottomRows(1) << 0.0, 0.0, 0.0, 1.0;
-    robot_.robotTF(tf);
 
-    // Checking collision with obstacles
-    for (size_t i = 0; i < obstacle_.size(); ++i) {
-        if (std::fabs(obstacle_[i].getEpsilon().at(0) - 1.0) < 1e-6 &&
-            std::fabs(obstacle_[i].getEpsilon().at(1) - 1.0) < 1e-6) {
-            // For two ellipsoids, use ASC algorithm
-            if (!isEllipsoidSeparated(robot_.getBase(), obstacle_.at(i))) {
+    MultiBodyTree3D robotAux = robot_;
+    robotAux.robotTF(tf);
+
+    //    std::vector<SuperQuadrics> robotAux;
+    //    for (size_t i = 0; i < robot_.size(); ++i) {
+    //        robotAux.push_back(robot_.at(i));
+    //        robotAux.back().setPosition(
+    //            {state->as<ob::SE3StateSpace::StateType>()->getX(),
+    //             state->as<ob::SE3StateSpace::StateType>()->getY(),
+    //             state->as<ob::SE3StateSpace::StateType>()->getZ()});
+
+    //        robotAux.back().setQuaternion(Eigen::Quaterniond(
+    //            state->as<ob::SE3StateSpace::StateType>()->rotation().w,
+    //            state->as<ob::SE3StateSpace::StateType>()->rotation().x,
+    //            state->as<ob::SE3StateSpace::StateType>()->rotation().y,
+    //            state->as<ob::SE3StateSpace::StateType>()->rotation().z));
+    //    }
+
+    return robotAux;
+}
+
+// Checking collision with obstacles
+bool PlannerOMPL::isSeparated(const MultiBodyTree3D &robotAux) const {
+    for (size_t i = 0; i < obstacles_.size(); ++i) {
+        //        if (std::fabs(obstacles_.at(i).getEpsilon().at(0) - 1.0) <
+        //        1e-6 &&
+        //            std::fabs(obstacles_.at(i).getEpsilon().at(1) - 1.0) <
+        //            1e-6) {
+        //            // For two ellipsoids, use ASC algorithm
+        //            for (size_t j = 0; j < robotAux.size(); ++j) {
+        //                if (!isEllipsoidSeparated(robotAux.at(j),
+        //                obstacles_.at(i))) {
+        //                    return false;
+        //                }
+        //            }
+        //        } else {
+        // For an ellipsoid and superquadrics, use FCL
+        if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacles_.at(i),
+                        objObs_.at(i))) {
+            return false;
+        }
+
+        for (size_t j = 0; j < robotAux.getNumLinks(); ++j) {
+            if (isCollision(robotAux.getLinks().at(j), objRobot_.at(j + 1),
+                            obstacles_.at(i), objObs_.at(i))) {
                 return false;
             }
+        }
+        //        }
+    }
 
-            for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-                if (!isEllipsoidSeparated(robot_.getLinks().at(j),
-                                          obstacle_.at(i))) {
-                    return false;
-                }
-            }
-        } else {
-            // For an ellipsoid and superquadrics, use FCL
-            if (isCollision(robot_.getBase(), &robotGeom_[0], obstacle_[i],
-                            &obsGeom_[i])) {
-                return false;
-            }
+    return true;
+}
 
-            for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-                if (isCollision(robot_.getLinks().at(j), &robotGeom_.at(j + 1),
-                                obstacle_.at(i), &obsGeom_.at(i))) {
-                    return false;
-                }
+bool PlannerOMPL::compareStates(std::vector<double> goal_config,
+                                std::vector<double> last_config) {
+    bool res = true;
+    for (size_t i = 0; i < 7; i++) {
+        if (std::fabs(last_config[i] - goal_config[i]) > 0.1) {
+            res = false;
+        }
+    }
+    return res;
+}
+
+void PlannerOMPL::saveVertexEdgeInfo() {
+    ob::PlannerData pd(ss_->getSpaceInformation());
+
+    // Write the output to .csv files
+    std::ofstream file_state;
+    std::vector<double> state;
+
+    file_state.open("ompl_state_3D.csv");
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        state = setVectorFromState(pd.getVertex(i).getState()->as<ob::State>());
+
+        for (size_t j = 0; j < state.size(); ++j) {
+            file_state << state[j];
+            if (j == state.size() - 1) {
+                file_state << '\n';
+            } else {
+                file_state << ',';
             }
         }
     }
-    numCollisionChecks_++;
+    file_state.close();
 
-    return true;
+    std::ofstream file_edge;
+    file_edge.open("ompl_edge_3D.csv");
+    std::vector<std::vector<unsigned int>> edge(pd.numVertices());
+    for (unsigned int i = 0; i < pd.numVertices(); i++) {
+        pd.getEdges(i, edge[i]);
+        for (unsigned int j = 0; j < edge[i].size(); j++)
+            file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+    }
+    file_edge.close();
+}
+
+void PlannerOMPL::savePathInfo() {
+    const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
+    std::vector<double> state;
+
+    std::ofstream file_traj;
+    file_traj.open("ompl_path_3D.csv");
+    for (size_t i = 0; i < states.size(); ++i) {
+        state = setVectorFromState(states[i]->as<ob::State>());
+
+        for (size_t j = 0; j < state.size(); ++j) {
+            file_traj << state[j];
+            if (j == state.size() - 1) {
+                file_traj << '\n';
+            } else {
+                file_traj << ',';
+            }
+        }
+    }
+    file_traj.close();
+
+    // Smooth path
+    ss_->getSolutionPath().interpolate(50);
+    const std::vector<ob::State *> &s_states =
+        ss_->getSolutionPath().getStates();
+
+    std::ofstream file_smooth_traj;
+    file_smooth_traj.open("ompl_smooth_path_3D.csv");
+    for (size_t i = 0; i < s_states.size(); ++i) {
+        state = setVectorFromState(s_states[i]->as<ob::State>());
+
+        for (size_t j = 0; j < state.size(); ++j) {
+            file_smooth_traj << state[j];
+            if (j == state.size() - 1) {
+                file_smooth_traj << '\n';
+            } else {
+                file_smooth_traj << ',';
+            }
+        }
+    }
+    file_smooth_traj.close();
+}
+
+void PlannerOMPL::setStateFromVector(
+    const std::vector<double> *stateVariables,
+    ob::ScopedState<ob::CompoundStateSpace> *state) const {
+    ob::ScopedState<ob::SE3StateSpace> stateTemp(ss_->getStateSpace());
+
+    stateTemp->setXYZ(stateVariables->at(0), stateVariables->at(1),
+                      stateVariables->at(2));
+    stateTemp->rotation().w = stateVariables->at(3);
+    stateTemp->rotation().x = stateVariables->at(4);
+    stateTemp->rotation().y = stateVariables->at(5);
+    stateTemp->rotation().z = stateVariables->at(6);
+    stateTemp.enforceBounds();
+
+    stateTemp >> *state;
+}
+
+std::vector<double> PlannerOMPL::setVectorFromState(
+    const ob::State *state) const {
+    std::vector<double> stateVariables(7, 0.0);
+
+    // Store state in a vector
+    stateVariables[0] = state->as<ob::SE3StateSpace::StateType>()->getX();
+    stateVariables[1] = state->as<ob::SE3StateSpace::StateType>()->getY();
+    stateVariables[2] = state->as<ob::SE3StateSpace::StateType>()->getZ();
+    stateVariables[3] = state->as<ob::SE3StateSpace::StateType>()->rotation().w;
+    stateVariables[4] = state->as<ob::SE3StateSpace::StateType>()->rotation().x;
+    stateVariables[5] = state->as<ob::SE3StateSpace::StateType>()->rotation().y;
+    stateVariables[6] = state->as<ob::SE3StateSpace::StateType>()->rotation().z;
+
+    return stateVariables;
 }

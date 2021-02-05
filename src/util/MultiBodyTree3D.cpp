@@ -58,9 +58,9 @@ void MultiBodyTree3D::robotTF(const std::string urdfFile,
     base_.setPosition(
         {gBase->coeff(0, 3), gBase->coeff(1, 3), gBase->coeff(2, 3)});
 
-    Eigen::Matrix3d rotMat = gBase->topLeftCorner(3, 3);
-    Eigen::Quaterniond quat(rotMat);
-    base_.setQuaternion(quat);
+    Eigen::Matrix3d rotBase = gBase->topLeftCorner(3, 3);
+    Eigen::Quaterniond quatBase(rotBase);
+    base_.setQuaternion(quatBase);
 
     // Set transform for each link
     Eigen::Matrix4d gLink;
@@ -68,15 +68,15 @@ void MultiBodyTree3D::robotTF(const std::string urdfFile,
     jointArray.data = *jointConfig;
 
     for (size_t i = 0; i < numLinks_; i++) {
-        gLink = *gBase *
-                kdl.getTransform(&jointArray, "body" + std::to_string(i + 1)) *
-                tf_.at(i);
+        gLink = kdl.getTransform(&jointArray, "body" + std::to_string(i + 1));
+
+        gLink = *gBase * gLink * tf_.at(i);
 
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
-        rotMat = gLink.topLeftCorner(3, 3);
-        quat.matrix() = rotMat;
-        link_.at(i).setQuaternion(quat);
+        Eigen::Matrix3d rotLink = gLink.topLeftCorner(3, 3);
+        Eigen::Quaterniond quatLink(rotLink);
+        link_.at(i).setQuaternion(quatLink);
     }
 }
 

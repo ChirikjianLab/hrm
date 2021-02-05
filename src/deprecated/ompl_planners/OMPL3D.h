@@ -1,14 +1,14 @@
-#ifndef OMPL_PLANNER_H
-#define OMPL_PLANNER_H
+#ifndef OMPL3D_H
+#define OMPL3D_H
 
 #include "samplers/include/C3FGenerator3D.h"
 #include "samplers/include/MinkowskiSamplerSE3.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 #include "util/include/EllipsoidSeparation.h"
-#include "util/include/MultiBodyTree3D.h"
-#include "util/include/Parse2dCsvFile.h"
 
+#include "ompl/base/PrecomputedStateSampler.h"
 #include "ompl/base/SpaceInformation.h"
+#include "ompl/base/StateSpace.h"
 #include "ompl/base/spaces/SE3StateSpace.h"
 #include "ompl/config.h"
 #include "ompl/geometric/SimpleSetup.h"
@@ -28,28 +28,20 @@
 #include "ompl/geometric/planners/rrt/RRTConnect.h"
 #include "ompl/geometric/planners/sbl/SBL.h"
 
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Geometry"
-
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
-namespace ob = ompl::base;
 namespace og = ompl::geometric;
+namespace ob = ompl::base;
 
-using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
-
-class PlannerOMPL {
+/*
+ * \class PlannerSE3 planner for SE(3), OMPL wrapper
+ */
+class OMPL3D {
   public:
-    PlannerOMPL(std::vector<double> lowBound, std::vector<double> highBound,
-                const MultiBodyTree3D& robot,
-                const std::vector<SuperQuadrics>& arena,
-                const std::vector<SuperQuadrics>& obs,
-                const std::vector<Mesh>& obsMesh);
-    virtual ~PlannerOMPL();
+    OMPL3D(const MultiBodyTree3D &robot,
+           const std::vector<SuperQuadrics> &arena,
+           const std::vector<SuperQuadrics> &obstacle,
+           const parameters3D &param);
+
+    virtual ~OMPL3D();
 
   public:
     /*
@@ -84,19 +76,9 @@ class PlannerOMPL {
     unsigned int getNumValidStates() const { return numValidStates_; }
 
     /*
-     * \brief Get the percentage of valid states
-     */
-    double getValidStatePercent() const { return validSpace_; }
-
-    /*
-     * \brief Get the number of valid vertices in graph
-     */
-    unsigned int getNumVertex() const { return numGraphVertex_; }
-
-    /*
      * \brief Get the number of valid edges connecting two milestones
      */
-    unsigned int getNumEdges() const { return numGraphEdges_; }
+    unsigned int getNumEdges() const { return numValidEdges_; }
 
     /*
      * \brief Get the length of the solved path
@@ -140,60 +122,43 @@ class PlannerOMPL {
      * \param endPts start and goal poses
      * \param maxTimeInSec maximum planning time in seconds
      */
-    bool plan(const std::vector<double>& start, const std::vector<double>& goal,
-              const double maxTimeInSec);
-
-    void saveVertexEdgeInfo();
-    void savePathInfo();
+    virtual void plan(const std::vector<std::vector<double>> &endPts,
+                      const double maxTimeInSec);
 
   protected:
-    void getSolution();
+    virtual void getSolution();
 
-    virtual void setStateSpace(const std::vector<double>& lowBound,
-                               const std::vector<double>& highBound);
+    virtual void setStateSpace();
 
     void setPlanner(const int plannerId);
-    virtual void setStateSampler(const int stateSamplerId);
+    void setStateSampler(const int stateSamplerId);
     void setValidStateSampler(const int validSamplerId);
 
-    void setStartAndGoalState(const std::vector<double>& start,
-                              const std::vector<double>& goal);
-    bool compareStates(std::vector<double> goalConfig,
-                       std::vector<double> lastConfig);
-
-    // Collision detection module
     void setCollisionObject();
-    bool isStateValid(const ob::State* state) const;
-    virtual MultiBodyTree3D transformRobot(const ob::State* state) const;
-    bool isSeparated(const MultiBodyTree3D& robotAux) const;
+    virtual bool isStateValid(const ob::State *state);
 
-    virtual void setStateFromVector(
-        const std::vector<double>* stateVariables,
-        ob::ScopedState<ob::CompoundStateSpace>* state) const;
-    virtual std::vector<double> setVectorFromState(
-        const ob::State* state) const;
-
-    // Variables
   protected:
+    // Planner simple setup pointer
     og::SimpleSetupPtr ss_;
 
+    // Geometric objects for planning
     MultiBodyTree3D robot_;
-    const std::vector<SuperQuadrics>& arena_;
-    const std::vector<SuperQuadrics>& obstacles_;
-    const std::vector<Mesh>& obsMesh_;
+    std::vector<SuperQuadrics> arena_;
+    std::vector<SuperQuadrics> obstacle_;
 
-    std::vector<fcl::CollisionObject<double>> objRobot_;
-    std::vector<fcl::CollisionObject<double>> objObs_;
+    // Parameters from planner
+    parameters3D param_;
+
+    // Collision objects for robot and obstacles
+    std::vector<fcl::CollisionObject<double>> robotGeom_;
+    std::vector<fcl::CollisionObject<double>> obsGeom_;
 
     // Planning results
     bool isSolved_ = false;
     double totalTime_ = 0.0;
-
     unsigned int numCollisionChecks_ = 0;
     unsigned int numValidStates_ = 0;
-    double validSpace_ = 0.0;
-    unsigned int numGraphVertex_ = 0;
-    unsigned int numGraphEdges_ = 0;
+    unsigned int numValidEdges_ = 0;
     size_t lengthPath_ = 0;
 
     std::vector<std::vector<double>> vertex_;
@@ -202,7 +167,7 @@ class PlannerOMPL {
 
     // Pre-computed C3F seeds set
     double preComputeTime_ = 0.0;
-    std::vector<const ob::State*> validStateSet_;
+    std::vector<const ob::State *> validStateSet_;
 };
 
-#endif  // OMPL_PLANNER_H
+#endif  // OMPL3D_H

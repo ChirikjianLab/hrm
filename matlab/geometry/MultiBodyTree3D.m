@@ -60,11 +60,11 @@ classdef MultiBodyTree3D < handle
                 if nargin == 3
                     g_Link = g * obj.tf{i};
                 else
-                    g_Link = g * getTransform(robotURDF, jointConfig,...
+                    g_Link = getTransform(robotURDF, jointConfig,...
                         strcat('body',num2str(i)));
                     
                     % offset from body frame to ellipsoid center
-                    g_Link = g_Link * obj.tf{i};
+                    g_Link = g * g_Link * obj.tf{i};
                 end
                 
                 obj.setLinkTransform(i, g_Link);
