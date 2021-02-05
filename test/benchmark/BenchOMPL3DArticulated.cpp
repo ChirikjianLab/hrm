@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     const int id_sample_start = atoi(argv[4]);
     const int id_sample_end = atoi(argv[5]);
     const string robot_name = argv[6];
-    const double max_planning_time = atoi(argv[7]);
+    const double max_planning_time = double(atoi(argv[7]));
 
     // Read and setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();

@@ -25,7 +25,6 @@ void PlannerOMPL::setup(const int plannerId, const int stateSamplerId,
     setValidStateSampler(validStateSamplerId);
 
     ss_->setup();
-    //        ss_->print();
 }
 
 bool PlannerOMPL::plan(const std::vector<double> &start,
@@ -209,9 +208,11 @@ void PlannerOMPL::setStartAndGoalState(const std::vector<double> &start,
                                        const std::vector<double> &goal) {
     ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
     setStateFromVector(&start, &startState);
+    startState.enforceBounds();
 
     ob::ScopedState<ob::CompoundStateSpace> goalState(ss_->getStateSpace());
     setStateFromVector(&goal, &goalState);
+    goalState.enforceBounds();
 
     ss_->setStartAndGoalStates(startState, goalState);
 }

@@ -1,5 +1,5 @@
-#ifndef OMPL_PLANNER_ARTICULATED_H
-#define OMPL_PLANNER_ARTICULATED_H
+#ifndef OMPL3DARTICULATED_H
+#define OMPL3DARTICULATED_H
 
 #include "OMPL3D.h"
 #include "samplers/include/C3FGenerator3DArticulated.h"
@@ -37,4 +37,4 @@ class PlannerOMPLArticulated : public PlannerOMPL {
     const double maxJointAngle_ = pi / 2;
 };
 
-#endif  // OMPL_PLANNER_ARTICULATED_H
+#endif  // OMPL3DARTICULATED_H

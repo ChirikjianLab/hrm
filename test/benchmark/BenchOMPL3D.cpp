@@ -4,20 +4,27 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc < 7) {
-        cerr << "Usage: Please add 1) Num of trials 2) Param for vertex 3) "
-                "Planner start ID 4) Planner end ID 5) Sampler start ID 6) "
-                "Sampler end ID 7) Max planning time (in seconds, default: "
-                "60.0s)"
+    if (argc < 6) {
+        cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
+                "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Max "
+                "planning time (in seconds, default: 60.0s)"
              << endl;
         return 1;
     }
 
     // Record planning time for N trials
     int N = atoi(argv[1]);
-    int n = atoi(argv[2]);
 
-    vector<vector<double>> time_stat;
+    /*
+     * \brief Planner and sampler inputs
+     *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
+     *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
+     */
+    const int id_plan_start = atoi(argv[2]);
+    const int id_plan_end = atoi(argv[3]);
+    const int id_sample_start = atoi(argv[4]);
+    const int id_sample_end = atoi(argv[5]);
+    const double max_planning_time = atoi(argv[6]);
 
     // Read and setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();
@@ -33,7 +40,7 @@ int main(int argc, char** argv) {
     }
 
     // Setup robot config
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", n);
+    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
 
     // Boundary
     double f = 1.5;
@@ -51,17 +58,6 @@ int main(int argc, char** argv) {
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
             << "CHECKED_NODES" << ',' << "VALID_NODES" << endl;
-
-    /*
-     * \brief Planner and sampler inputs
-     *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
-     *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
-     */
-    const int id_plan_start = atoi(argv[3]);
-    const int id_plan_end = atoi(argv[4]);
-    const int id_sample_start = atoi(argv[5]);
-    const int id_sample_end = atoi(argv[6]);
-    const double max_planning_time = atoi(argv[7]);
 
     for (int m = id_plan_start; m <= id_plan_end; m++) {
         for (int n = id_sample_start; n <= id_sample_end; n++) {

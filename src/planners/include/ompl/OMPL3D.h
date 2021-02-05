@@ -1,5 +1,5 @@
-#ifndef OMPL_PLANNER_H
-#define OMPL_PLANNER_H
+#ifndef OMPL3D_H
+#define OMPL3D_H
 
 #include "samplers/include/C3FGenerator3D.h"
 #include "samplers/include/MinkowskiSamplerSE3.h"
@@ -205,4 +205,4 @@ class PlannerOMPL {
     std::vector<const ob::State*> validStateSet_;
 };
 
-#endif  // OMPL_PLANNER_H
+#endif  // OMPL3D_H

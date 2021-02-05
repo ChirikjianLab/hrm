@@ -14,9 +14,9 @@ path_highway = load([loadPath, 'interpolated_path_3D.csv']);
 if size(path_highway, 2) == 7
     urdf_file = [];
 elseif size(path_highway, 2) == 10
-    urdf_file = '../../resources/3D/urdf/snake.urdf';
+    urdf_file = [path_prefix, 'urdf/snake.urdf'];
 elseif size(path_highway, 2) == 16
-    urdf_file = '../../resources/3D/urdf/tri-snake.urdf';
+    urdf_file = [path_prefix, 'urdf/tri-snake.urdf'];
 end
 
 [robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file);
