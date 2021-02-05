@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
                 cout << "Sampler: " << n << endl;
                 cout << "Num of trials: " << i + 1 << endl;
 
-                PlannerOMPL tester(b1, b2, robot, arena, obs, obs_mesh);
+                OMPL3D tester(b1, b2, robot, arena, obs, obs_mesh);
                 tester.setup(m, 0, n);
 
                 tester.plan(env3D->getEndPoints().at(0),

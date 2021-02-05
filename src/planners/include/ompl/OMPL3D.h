@@ -42,14 +42,14 @@ namespace og = ompl::geometric;
 
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-class PlannerOMPL {
+class OMPL3D {
   public:
-    PlannerOMPL(std::vector<double> lowBound, std::vector<double> highBound,
-                const MultiBodyTree3D& robot,
-                const std::vector<SuperQuadrics>& arena,
-                const std::vector<SuperQuadrics>& obs,
-                const std::vector<Mesh>& obsMesh);
-    virtual ~PlannerOMPL();
+    OMPL3D(std::vector<double> lowBound, std::vector<double> highBound,
+           const MultiBodyTree3D& robot,
+           const std::vector<SuperQuadrics>& arena,
+           const std::vector<SuperQuadrics>& obs,
+           const std::vector<Mesh>& obsMesh);
+    virtual ~OMPL3D();
 
   public:
     /*

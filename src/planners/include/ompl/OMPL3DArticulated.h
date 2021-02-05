@@ -7,16 +7,15 @@
 
 #include "ompl/base/spaces/RealVectorStateSpace.h"
 
-class PlannerOMPLArticulated : public PlannerOMPL {
+class OMPL3DArticulated : public OMPL3D {
   public:
-    PlannerOMPLArticulated(std::vector<double> lowBound,
-                           std::vector<double> highBound,
-                           const MultiBodyTree3D& robot,
-                           const std::string urdfFile,
-                           const std::vector<SuperQuadrics>& arena,
-                           const std::vector<SuperQuadrics>& obs,
-                           const std::vector<Mesh>& obsMesh);
-    ~PlannerOMPLArticulated() override;
+    OMPL3DArticulated(std::vector<double> lowBound,
+                      std::vector<double> highBound,
+                      const MultiBodyTree3D& robot, const std::string urdfFile,
+                      const std::vector<SuperQuadrics>& arena,
+                      const std::vector<SuperQuadrics>& obs,
+                      const std::vector<Mesh>& obsMesh);
+    ~OMPL3DArticulated() override;
 
   protected:
     void setStateSpace(const std::vector<double>& lowBound,
