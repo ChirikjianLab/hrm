@@ -15,7 +15,7 @@ if obs_shape == 1
             env_type = 'maze';
     end
     
-% Superelliptical obstacles
+    % Superelliptical obstacles
 elseif obs_shape == 2
     shape_prefix = 'superquadrics';
     
@@ -28,6 +28,8 @@ elseif obs_shape == 2
             env_type = 'maze';
         case 4
             env_type = 'home';
+        case 5
+            env_type = 'narrow';
     end
 end
 
@@ -59,6 +61,6 @@ end
 %% Start and goal poses
 end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
     env_type, '_3D.csv']);
-end_points(:,4:7) = [axang2quat(end_points(1,4:7)); 
+end_points(:,4:7) = [axang2quat(end_points(1,4:7));
     axang2quat(end_points(2,4:7))];
 end
