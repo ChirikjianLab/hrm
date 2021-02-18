@@ -217,7 +217,8 @@ bool Hrm3DMultiBody::isCollisionFree(const cf_cell3D* cell,
 bool Hrm3DMultiBody::isRotationMotionFree(const std::vector<double>& V1,
                                           const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
-    std::vector<std::vector<double>> vInterp = interpolateSE3(V1, V2, N_step);
+    std::vector<std::vector<double>> vInterp =
+        interpolateCompoundSE3Rn(V1, V2, N_step);
 
     for (auto vStep : vInterp) {
         // Transform the robot
