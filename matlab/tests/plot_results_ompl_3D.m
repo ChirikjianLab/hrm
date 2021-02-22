@@ -77,7 +77,7 @@ plot3([goal(1) path_ompl(end,1)],...
 plot3(path_ompl(:,1), path_ompl(:,2), path_ompl(:,3),...
         'm-', 'LineWidth', 2)
 
-for i = 1:floor(size(path_ompl,1)/10):size(path_ompl,1)
+for i = 1:floor(size(path_ompl,1)/50):size(path_ompl,1)
     PlotRobotPose(robot, path_ompl(i,:), robotURDF);
 end
 

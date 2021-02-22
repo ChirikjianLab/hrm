@@ -73,7 +73,6 @@ if ~isempty(path_highway)
     
     for i = 1:ceil(size(path_highway,1)/50):size(path_highway,1)
         PlotRobotPose(robot, path_highway(i,:), robotURDF);
-        pause(.5);
     end
 end
 
