@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="tri-snake">
-  <xacro:property name="baselen" value="10"/>
-  <xacro:property name="baseheight" value="4"/>
-  <xacro:property name="bodylen" value="7.6"/>
+  <xacro:property name="baselen" value="6"/>
+  <xacro:property name="baseheight" value="2.6"/>
+  <xacro:property name="bodylen" value="4.6"/>
   <xacro:property name="joint_offset" value="0.5"/>
     
   <material name="blue">
@@ -16,7 +16,7 @@
   <link name="base">
     <visual>
       <geometry>
-        <box size="10 5 4"/>
+        <box size="${baselen} 5 ${baseheight}"/>
       </geometry>
       <material name="green"/>
     </visual>
@@ -34,7 +34,7 @@
   <link name="body1">
     <visual>
       <geometry>
-        <box size="7.6 4.7 2.6"/>
+        <box size="${bodylen} 3.7 1.6"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>
@@ -52,7 +52,7 @@
   <link name="body2">
     <visual>
       <geometry>
-        <box size="7.6 2.4 5.3"/>
+        <box size="${bodylen} 1.4 3.3"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>
@@ -70,7 +70,7 @@
   <link name="body3">
     <visual>
       <geometry>
-        <box size="7.6 6.4 2.16"/>
+        <box size="${bodylen} 3.4 1.16"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>
@@ -89,7 +89,7 @@
   <link name="body4">
     <visual>
       <geometry>
-        <box size="7.6 3.27 1.4"/>
+        <box size="${bodylen} 2.27 1.4"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${-(bodylen-joint_offset)} 0 0"/>
       <material name="blue"/>
@@ -107,7 +107,7 @@
   <link name="body5">
     <visual>
       <geometry>
-        <box size="7.6 2.7 4.4"/>
+        <box size="${bodylen} 1.7 2.4"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${-(bodylen-joint_offset)} 0 0"/>
       <material name="blue"/>
@@ -125,7 +125,7 @@
   <link name="body6">
     <visual>
       <geometry>
-        <box size="7.6 4.7 2.4"/>
+        <box size="${bodylen} 2.7 1.4"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${-(bodylen-joint_offset)} 0 0"/>
       <material name="blue"/>
@@ -144,7 +144,7 @@
   <link name="body7">
     <visual>
       <geometry>
-        <box size="3.5 4.7 7.6"/>
+        <box size="3.5 2.7 ${bodylen}"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 ${bodylen-joint_offset} "/>
       <material name="blue"/>
@@ -162,7 +162,7 @@
   <link name="body8">
     <visual>
       <geometry>
-        <box size="1.2 4.7 7.6"/>
+        <box size="1.2 2.7 ${bodylen}"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 ${bodylen-joint_offset}"/>
       <material name="blue"/>
@@ -180,7 +180,7 @@
   <link name="body9">
     <visual>
       <geometry>
-        <box size="6.5 4.7 7.6"/>
+        <box size="3.5 2.7 ${bodylen}"/>
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 ${bodylen-joint_offset}"/>
       <material name="blue"/>

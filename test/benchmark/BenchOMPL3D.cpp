@@ -52,6 +52,9 @@ int main(int argc, char** argv) {
                              f * robot.getBase().getSemiAxis().at(0)},
                    b2 = {-b1[0], -b1[1], -b1[2]};
 
+    // Save results
+    std::string filename_prefix = "ompl";
+
     std::ofstream outfile;
     outfile.open("time_ompl_3D.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
@@ -86,8 +89,8 @@ int main(int argc, char** argv) {
                         << tester.getNumValidStates() << endl;
 
                 if (tester.isSolved()) {
-                    tester.saveVertexEdgeInfo();
-                    tester.savePathInfo();
+                    tester.saveVertexEdgeInfo(filename_prefix);
+                    tester.savePathInfo(filename_prefix);
                 }
             }
         }

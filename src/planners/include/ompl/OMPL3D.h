@@ -143,8 +143,8 @@ class OMPL3D {
     bool plan(const std::vector<double>& start, const std::vector<double>& goal,
               const double maxTimeInSec);
 
-    void saveVertexEdgeInfo();
-    void savePathInfo();
+    void saveVertexEdgeInfo(const std::string filename_prefix);
+    void savePathInfo(const std::string filename_prefix);
 
   protected:
     void getSolution();

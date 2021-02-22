@@ -326,14 +326,14 @@ bool OMPL3D::compareStates(std::vector<double> goal_config,
     return res;
 }
 
-void OMPL3D::saveVertexEdgeInfo() {
+void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
     ob::PlannerData pd(ss_->getSpaceInformation());
 
     // Write the output to .csv files
     std::ofstream file_state;
     std::vector<double> state;
 
-    file_state.open("ompl_state_3D.csv");
+    file_state.open(filename_prefix + "_state_3D.csv");
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         state = setVectorFromState(pd.getVertex(i).getState()->as<ob::State>());
 
@@ -349,7 +349,7 @@ void OMPL3D::saveVertexEdgeInfo() {
     file_state.close();
 
     std::ofstream file_edge;
-    file_edge.open("ompl_edge_3D.csv");
+    file_edge.open(filename_prefix + "_edge_3D.csv");
     std::vector<std::vector<unsigned int>> edge(pd.numVertices());
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         pd.getEdges(i, edge[i]);
@@ -359,12 +359,12 @@ void OMPL3D::saveVertexEdgeInfo() {
     file_edge.close();
 }
 
-void OMPL3D::savePathInfo() {
+void OMPL3D::savePathInfo(const std::string filename_prefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
     std::vector<double> state;
 
     std::ofstream file_traj;
-    file_traj.open("ompl_path_3D.csv");
+    file_traj.open(filename_prefix + "_path_3D.csv");
     for (size_t i = 0; i < states.size(); ++i) {
         state = setVectorFromState(states[i]->as<ob::State>());
 
@@ -385,7 +385,7 @@ void OMPL3D::savePathInfo() {
         ss_->getSolutionPath().getStates();
 
     std::ofstream file_smooth_traj;
-    file_smooth_traj.open("ompl_smooth_path_3D.csv");
+    file_smooth_traj.open(filename_prefix + "_smooth_path_3D.csv");
     for (size_t i = 0; i < s_states.size(); ++i) {
         state = setVectorFromState(s_states[i]->as<ob::State>());
 

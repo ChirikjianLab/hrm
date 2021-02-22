@@ -79,25 +79,38 @@ void ProbHRM3D::connectMultiLayer() {
         return;
     }
 
-    size_t start = 0;
-    size_t n_1 = vtxId.at(N_layers - 2).layer;
-    size_t n_12 = vtxId.at(N_layers - 2).layer;
-    size_t n_2 = vtxId.at(N_layers - 1).layer;
-    std::vector<double> V1;
-    std::vector<double> V2;
-
-    // Find vertex only in adjacent layers
-    if (N_layers > 2) {
-        start = vtxId.at(N_layers - 3).layer;
+    // Find the nearest C-layers
+    double minDist = 100;
+    int minIdx = 0;
+    for (size_t i = 0; i < N_layers; ++i) {
+        double dist = vectorEuclidean(v_.back(), v_.at(i));
+        if (dist < minDist) {
+            minDist = dist;
+            minIdx = i;
+        }
     }
 
+    // Find vertex only in adjacent layers
+    // Start and end vertics in the recent added layer
+    size_t n_12 = vtxId.at(N_layers - 2).layer;
+    size_t n_2 = vtxId.at(N_layers - 1).layer;
+
+    // Start and end vertics in the nearest layer
+    size_t start = 0;
+    if (N_layers > 2) {
+        start = vtxId.at(minIdx - 1).layer;
+    }
+    size_t n_1 = vtxId.at(minIdx).layer;
+
     // Middle layer TFE and cell
-    mid = tfeArticulated(v_.at(N_layers - 2), v_.at(N_layers - 1));
+    mid = tfeArticulated(v_.back(), v_.at(minIdx));
     for (size_t j = 0; j < mid.size(); ++j) {
         mid_cell.push_back(midLayer(mid.at(j)));
     }
 
     // Nearest vertex btw layers
+    std::vector<double> V1;
+    std::vector<double> V2;
     for (size_t m0 = start; m0 < n_1; ++m0) {
         V1 = vtxEdge.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
