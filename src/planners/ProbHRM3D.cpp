@@ -97,7 +97,7 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Start and end vertics in the nearest layer
     size_t start = 0;
-    if (N_layers > 2) {
+    if (minIdx != 0) {
         start = vtxId.at(minIdx - 1).layer;
     }
     size_t n_1 = vtxId.at(minIdx).layer;
