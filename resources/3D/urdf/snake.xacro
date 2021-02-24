@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="snake">
-  <xacro:property name="baselen" value="10"/>
-  <xacro:property name="bodylen" value="7.6"/>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="tri-snake">
+  <xacro:property name="baselen" value="7.5"/>
+  <xacro:property name="baseheight" value="2.8"/>
+  <xacro:property name="bodylen" value="4.6"/>
   <xacro:property name="joint_offset" value="0.5"/>
     
   <material name="blue">
@@ -15,24 +16,25 @@
   <link name="base">
     <visual>
       <geometry>
-        <box size="10 5 4"/>
+        <box size="${baselen} 5 ${baseheight}"/>
       </geometry>
       <material name="green"/>
     </visual>
   </link>
 
+  <!-- First chain -->
   <joint name="body1_to_base" type="revolute">
     <parent link="base"/>
     <child link="body1"/>
     <origin rpy="0 0 0" xyz="${baselen-joint_offset} 0 0"/>
     <axis xyz="0 1 0"/>
-    <limit lower="${-pi/3}" upper="${pi/3}" effort="100" velocity="5"/>
+    <limit lower="${-pi/2}" upper="${pi/2}" effort="100" velocity="5"/>
   </joint>
   	
   <link name="body1">
     <visual>
       <geometry>
-        <box size="7.6 4.7 2.4"/>
+        <box size="${bodylen} 3.7 1.6"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>
@@ -44,13 +46,13 @@
     <child link="body2"/>
     <origin rpy="0 0 0" xyz="${bodylen*2-joint_offset*2} 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="${-pi/4}" upper="${pi/4}" effort="100" velocity="5"/>
+    <limit lower="${-pi/2}" upper="${pi/2}" effort="100" velocity="5"/>
   </joint>
     
   <link name="body2">
     <visual>
       <geometry>
-        <box size="7.6 4.7 2.4"/>
+        <box size="${bodylen} 1.4 3.3"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>
@@ -68,7 +70,7 @@
   <link name="body3">
     <visual>
       <geometry>
-        <box size="7.6 4.7 2.4"/>
+        <box size="${bodylen} 3.4 1.16"/>
       </geometry>
       <origin rpy="0 0 0" xyz="${bodylen-joint_offset} 0 0"/>
       <material name="blue"/>

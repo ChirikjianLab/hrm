@@ -82,7 +82,7 @@ void ProbHRM3D::connectMultiLayer() {
     // Find the nearest C-layers
     double minDist = 100;
     int minIdx = 0;
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < N_layers - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
         if (dist < minDist) {
             minDist = dist;
