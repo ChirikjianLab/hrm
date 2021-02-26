@@ -463,30 +463,38 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     std::vector<std::vector<double>> path_interp;
     std::vector<std::vector<double>> path_solved = getSolutionPath();
 
-    // Default motion primitive: first rotate, then translate
-    const unsigned num_rotate = num / 2;
-    const unsigned num_trans = num - num_rotate;
+    //    // Default motion primitive: first rotate, then translate
+    //    const unsigned num_rotate = num / 2;
+    //    const unsigned num_trans = num - num_rotate;
 
     // Iteratively store interpolated poses along the solved path
     for (size_t i = 0; i < path_solved.size() - 1; ++i) {
-        // Middle step: {V1_trans, V2_rot}
-        std::vector<double> mid_step = path_solved[i];
+        std::vector<std::vector<double>> step_interp =
+            interpolateCompoundSE3Rn(path_solved[i], path_solved[i + 1], num);
 
-        for (size_t j = 3; j < path_solved[i].size(); ++j) {
-            path_solved[i][j] = path_solved[i + 1][j];
-        }
+        path_interp.insert(path_interp.end(), step_interp.begin(),
+                           step_interp.end());
 
-        // Two motion sequences
-        std::vector<std::vector<double>> path_rotate =
-            interpolateCompoundSE3Rn(path_solved[i], mid_step, num_rotate);
-        std::vector<std::vector<double>> path_trans =
-            interpolateCompoundSE3Rn(mid_step, path_solved[i + 1], num_trans);
+        //        // Middle step: {V1_trans, V2_rot}
+        //        std::vector<double> mid_step = path_solved[i];
 
-        // Combine the motion sequences
-        path_interp.insert(path_interp.end(), path_rotate.begin(),
-                           path_rotate.end());
-        path_interp.insert(path_interp.end(), path_trans.begin(),
-                           path_trans.end());
+        //        for (size_t j = 3; j < path_solved[i].size(); ++j) {
+        //            mid_step[j] = path_solved[i + 1][j];
+        //        }
+
+        //        // Two motion sequences
+        //        std::vector<std::vector<double>> path_rotate =
+        //            interpolateCompoundSE3Rn(path_solved[i], mid_step,
+        //            num_rotate);
+        //        std::vector<std::vector<double>> path_trans =
+        //            interpolateCompoundSE3Rn(mid_step, path_solved[i + 1],
+        //            num_trans);
+
+        //        // Combine the motion sequences
+        //        path_interp.insert(path_interp.end(), path_rotate.begin(),
+        //                           path_rotate.end());
+        //        path_interp.insert(path_interp.end(), path_trans.begin(),
+        //                           path_trans.end());
     }
 
     return path_interp;
