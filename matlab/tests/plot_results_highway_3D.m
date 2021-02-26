@@ -23,6 +23,10 @@ end
 
 %% Environment
 figure; hold on; axis equal;
+
+% Plot properties
+light('Position',[-1 0 1])
+
 disp('Environment Initialization...')
 
 % start and goal
@@ -75,9 +79,6 @@ if ~isempty(path_highway)
         PlotRobotPose(robot, path_highway(i,:), robotURDF);
     end
 end
-
-% Plot properties
-light('Position',[-1 0 1])
 
 %% Validation
 is_validation = false;
