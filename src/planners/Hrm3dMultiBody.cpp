@@ -86,11 +86,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         return;
     }
 
-    size_t n_1;
-    size_t n_12;
-    size_t n_2;
-    size_t start = 0;
-    size_t j = 0;
+    //    size_t j = 0;
 
     std::vector<double> V1;
     std::vector<double> V2;
@@ -99,70 +95,49 @@ void Hrm3DMultiBody::connectMultiLayer() {
     //    int n_connect = 0;
 
     for (size_t i = 0; i < N_layers; ++i) {
-        n_1 = vtxId[i].layer;
-        // Construct the middle layer
-        if (i == N_layers - 1 && N_layers != 2) {
-            j = 0;
+        //        size_t n_1 = vtxId[i].layer;
 
-            //
-            //            std::ofstream file_pose;
-            // file_pose.open("robot_pose_mid.csv");
-            //            file_pose << q_r[i].w() << ',' <<  q_r[i].x() <<
-            //            ',' <<
-            //            q_r[i].y()
-            //                      << ',' << q_r[i].z() << std::endl
-            //                      << q_r[0].w() << ',' <<  q_r[0].x() <<
-            //                      ',' <<
-            //                      q_r[0].y()
-            //                      << ',' << q_r[0].z() <<  std::endl;
-            //            file_pose.close();
-            //
-        } else {
-            j = i + 1;
-
-            //
-            //            std::ofstream file_pose;
-            // file_pose.open("robot_pose_mid.csv");
-            //            file_pose << q_r[i].w() << ',' <<  q_r[i].x() <<
-            //            ',' <<
-            //            q_r[i].y()
-            //                      << ',' << q_r[i].z() << std::endl
-            //                      << q_r[i + 1].w() << ','  << q_r[i +
-            //                      1].x()
-            //                      << ','
-            //                      << q_r[i + 1].y() << ','  << q_r[i +
-            //                      1].z()
-            //                      << std::endl;
-            //            file_pose.close();
-            //
-        }
-
-        if (j != 0) {
-            n_12 = vtxId[j - 1].layer;
-        } else {
-            n_12 = 0;
-        }
-        n_2 = vtxId[j].layer;
-
-        mid = tfe_multi(q_r[i], q_r[j]);
-
-        //
-        //        std::ofstream file_mid;
-        //        file_mid.open("mid_3d.csv");
-        //        for (size_t i = 0; i < mid.size(); i++) {
-        //            file_mid << mid[i].getSemiAxis()[0] << ','
-        //                     << mid[i].getSemiAxis()[1] << ','
-        //                     << mid[i].getSemiAxis()[2] << ','
-        //                     << mid[i].getPosition()[0] << ','
-        //                     << mid[i].getPosition()[1] << ','
-        //                     << mid[i].getPosition()[2] << ','
-        //                     << mid[i].getQuaternion().w() << ','
-        //                     << mid[i].getQuaternion().x() << ','
-        //                     << mid[i].getQuaternion().y() <<  ','
-        //                     << mid[i].getQuaternion().z() << std::endl;
+        //        if (i == N_layers - 1 && N_layers != 2) {
+        //            j = 0;
+        //        } else {
+        //            j = i + 1;
         //        }
-        //        file_mid.close();
-        //
+
+        //        if (j != 0) {
+        //            n_12 = vtxId[j - 1].layer;
+        //        } else {
+        //            n_12 = 0;
+        //        }
+        //        n_2 = vtxId[j].layer;
+
+        // Find the nearest C-layers
+        double minDist = 100;
+        int minIdx = 0;
+        for (size_t j = 0; j != i && j < N_layers; ++j) {
+            double dist = q_r.at(i).angularDistance(q_r.at(j));
+            if (dist < minDist) {
+                minDist = dist;
+                minIdx = j;
+            }
+        }
+
+        // Find vertex only in adjacent layers
+        // Start and end vertics in the current layer
+        size_t n_12 = 0;
+        if (i != 0) {
+            n_12 = vtxId.at(i - 1).layer;
+        }
+        size_t n_2 = vtxId.at(i).layer;
+
+        // Start and end vertics in the nearest layer
+        size_t start = 0;
+        if (minIdx != 0) {
+            start = vtxId.at(minIdx - 1).layer;
+        }
+        size_t n_1 = vtxId.at(minIdx).layer;
+
+        // Construct the middle layer
+        mid = tfe_multi(q_r[i], q_r[minIdx]);
 
         for (size_t k = 0; k < mid.size(); ++k) {
             mid_cell.push_back(midLayer(mid[k]));
@@ -182,7 +157,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
                 //                n_check++;
 
-                if (isCollisionFree(&free_cell.at(i), V1, V2)) {
+                if (isTransitionFree(V1, V2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
@@ -204,18 +179,17 @@ void Hrm3DMultiBody::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-bool Hrm3DMultiBody::isCollisionFree(const cf_cell3D* cell,
-                                     const std::vector<double>& V1,
-                                     const std::vector<double>& V2) {
-    if (isRotationMotionFree(V1, V2) && isTranslationMotionFree(cell, V1, V2)) {
-        return true;
-    } else {
-        return false;
-    }
-}
+// bool Hrm3DMultiBody::isCollisionFree(const std::vector<double>& V1,
+//                                     const std::vector<double>& V2) {
+//    if (isTransitionFree(V1, V2)) {
+//        return true;
+//    } else {
+//        return false;
+//    }
+//}
 
-bool Hrm3DMultiBody::isRotationMotionFree(const std::vector<double>& V1,
-                                          const std::vector<double>& V2) {
+bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
+                                      const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(V1, V2, N_step);
@@ -304,35 +278,35 @@ bool Hrm3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
     return true;
 }
 
-bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
-                                             const std::vector<double>& V1,
-                                             const std::vector<double>& V2) {
-    for (size_t i = 0; i < cell->tx.size(); ++i) {
-        // Locate the point from x-direction
-        if (fabs(cell->tx[i] - V1.at(0)) > 1e-8) {
-            continue;
-        }
+// bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
+//                                             const std::vector<double>& V1,
+//                                             const std::vector<double>& V2) {
+//    for (size_t i = 0; i < cell->tx.size(); ++i) {
+//        // Locate the point from x-direction
+//        if (fabs(cell->tx[i] - V1.at(0)) > 1e-8) {
+//            continue;
+//        }
 
-        for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
-            // Locate the point from y-direction
-            if (fabs(cell->cellYZ[i].ty[j] - V1.at(1)) > 1e-8) {
-                continue;
-            }
+//        for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
+//            // Locate the point from y-direction
+//            if (fabs(cell->cellYZ[i].ty[j] - V1.at(1)) > 1e-8) {
+//                continue;
+//            }
 
-            // Query the point within collision-free line segment
-            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
-                if ((V1.at(2) > cell->cellYZ[i].zL[j][k]) &&
-                    (V1.at(2) < cell->cellYZ[i].zU[j][k]) &&
-                    (V2.at(2) > cell->cellYZ[i].zL[j][k]) &&
-                    (V2.at(2) < cell->cellYZ[i].zU[j][k])) {
-                    return true;
-                }
-            }
-        }
-    }
+//            // Query the point within collision-free line segment
+//            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
+//                if ((V1.at(2) > cell->cellYZ[i].zL[j][k]) &&
+//                    (V1.at(2) < cell->cellYZ[i].zU[j][k]) &&
+//                    (V2.at(2) > cell->cellYZ[i].zL[j][k]) &&
+//                    (V2.at(2) < cell->cellYZ[i].zU[j][k])) {
+//                    return true;
+//                }
+//            }
+//        }
+//    }
 
-    return false;
-}
+//    return false;
+//}
 
 // Transform the robot
 void Hrm3DMultiBody::setTransform(const std::vector<double>& V) {

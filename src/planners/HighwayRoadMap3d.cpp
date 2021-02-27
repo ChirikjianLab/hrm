@@ -641,7 +641,8 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
         }
     }
 
-    // Find the close vertex within a range at each C-layer
+    // Find the close vertex within a range (relative to the size of sweep line
+    // gaps) at each C-layer
     for (Eigen::Quaterniond quatCur : quatList) {
         Vertex idxLayer = 0;
         minEuclideanDist = std::numeric_limits<double>::infinity();
@@ -657,8 +658,8 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
             }
         }
 
-        if (std::abs(v[0] - vtxEdge.vertex[idxLayer][0]) < Lim[0] / N_dx &&
-            std::abs(v[1] - vtxEdge.vertex[idxLayer][1]) < Lim[1] / N_dy) {
+        if (std::abs(v[0] - vtxEdge.vertex[idxLayer][0]) < 10 * Lim[0] / N_dx &&
+            std::abs(v[1] - vtxEdge.vertex[idxLayer][1]) < 10 * Lim[1] / N_dy) {
             idx.push_back(idxLayer);
         }
     }

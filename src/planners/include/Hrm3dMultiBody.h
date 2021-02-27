@@ -25,13 +25,19 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
   protected:
     std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond q1,
                                          Eigen::Quaterniond q2);
-    bool isCollisionFree(const cf_cell3D* cell, const std::vector<double>& V1,
-                         const std::vector<double>& V2);
-    bool isRotationMotionFree(const std::vector<double>& V1,
-                              const std::vector<double>& V2);
-    bool isTranslationMotionFree(const cf_cell3D* cell,
-                                 const std::vector<double>& V1,
-                                 const std::vector<double>& V2);
+    //    bool isCollisionFree(const cf_cell3D* cell, const std::vector<double>&
+    //    V1,
+    //                         const std::vector<double>& V2);
+
+    bool isTransitionFree(const std::vector<double>& V1,
+                          const std::vector<double>& V2);
+
+    //    bool isRotationMotionFree(const std::vector<double>& V1,
+    //                              const std::vector<double>& V2);
+    //    bool isTranslationMotionFree(const cf_cell3D* cell,
+    //                                 const std::vector<double>& V1,
+    //                                 const std::vector<double>& V2);
+
     bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>& V);
 
     virtual void setTransform(const std::vector<double>& V);

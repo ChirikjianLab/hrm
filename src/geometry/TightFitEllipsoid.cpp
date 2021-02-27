@@ -90,7 +90,7 @@ SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatB,
                        const unsigned int numStep, const unsigned int num) {
     std::vector<Eigen::Quaterniond> interpolatedQuat =
-        interpolateAngleAxis(quatA, quatB, numStep);
+        interpolateSlerp(quatA, quatB, numStep);
 
     // Iteratively compute MVCE and update
     SuperQuadrics enclosedEllipsoid = getMVCE3D(a, a, quatA, quatB, num);

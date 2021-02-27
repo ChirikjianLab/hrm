@@ -1,4 +1,5 @@
 #include "include/ProbHRM3D.h"
+#include "util/include/InterpolateSE3.h"
 
 #include "ompl/util/RandomNumbers.h"
 
@@ -136,9 +137,8 @@ void ProbHRM3D::connectMultiLayer() {
                 continue;
             }
 
-            if (isCollisionFree(&free_cell.back(), V1, V2)) {
+            if (isTransitionFree(V1, V2)) {
                 // Add new connections
-                // motion primitive: first rotate from V1, then translate to V2
                 vtxEdge.edge.push_back(std::make_pair(m0, m1));
                 vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
@@ -208,24 +208,30 @@ std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
     const std::vector<double>& v1, const std::vector<double>& v2) {
     std::vector<SuperQuadrics> tfe;
 
-    // Get shapes of each link for v1 and v2
+    // Interpolated robot motion from V1 to V2
+    std::vector<std::vector<double>> vInterp =
+        interpolateCompoundSE3Rn(v1, v2, N_step);
+
     setTransform(v1);
-    std::vector<SuperQuadrics> robotAux1 = RobotM.getBodyShapes();
-    setTransform(v2);
-    std::vector<SuperQuadrics> robotAux2 = RobotM.getBodyShapes();
+    std::vector<SuperQuadrics> robotAux = RobotM.getBodyShapes();
+    std::vector<SuperQuadrics> mvce = robotAux;
 
-    // Compute a tightly-fitted ellipsoid that bounds rotational motions
-    // from q1 to q2
-    tfe.push_back(getTFE3D(RobotM.getBase().getSemiAxis(),
-                           robotAux1.at(0).getQuaternion(),
-                           robotAux2.at(0).getQuaternion(), N_step,
-                           RobotM.getBase().getNumParam()));
+    for (auto vStep : vInterp) {
+        setTransform(vStep);
+        robotAux = RobotM.getBodyShapes();
 
-    for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-        tfe.push_back(getTFE3D(RobotM.getLinks().at(i).getSemiAxis(),
-                               robotAux1.at(i + 1).getQuaternion(),
-                               robotAux2.at(i + 1).getQuaternion(), N_step,
-                               RobotM.getLinks().at(i).getNumParam()));
+        // Compute a tightly-fitted ellipsoid that bounds rotational motions
+        // from intermediate orientations
+        for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
+            mvce.at(i) = getMVCE3D(
+                mvce.at(i).getSemiAxis(), robotAux.at(i).getSemiAxis(),
+                mvce.at(i).getQuaternion(), robotAux.at(i).getQuaternion(),
+                robotAux.at(i).getNumParam());
+        }
+    }
+
+    for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
+        tfe.push_back(mvce.at(i));
     }
 
     return tfe;

@@ -31,7 +31,7 @@ ob = load(['../../config/', 'obstacle_config_3D.csv']);
 ar = load(['../../config/', 'arena_config_3D.csv']);
 
 id = 1;
-for j = 1:5:size(path_highway,1)
+for j = 1:1:size(path_highway,1)
     % plot the OBSTACLE(s) with color filled, under rotation and translation
     for i = 1:size(ob,1)
         obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
