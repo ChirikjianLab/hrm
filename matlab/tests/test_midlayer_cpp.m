@@ -1,27 +1,49 @@
 close all; clear; clc;
 loadPath = '../../bin/';
+configPath = '../../config/';
 
 mid = load([loadPath, 'mid_3d.csv']);
 pose = load([loadPath, 'robot_pose_mid.csv']);
+pose = [zeros(size(pose, 1),3), pose];
 
-vargin.opt = 'rotation';
-vargin.Hhc3D_path = '../include/Hhc_3D.mat';
+mid_layer = load([loadPath, 'mid_layer_mink_bound_3D.csv']);
 
-robot = robotInit3D(vargin, 0);
+%% Robot
+if size(pose, 2) == 7
+    urdf_file = [];
+elseif size(pose, 2) == 10
+    urdf_file = [path_prefix, 'urdf/snake.urdf'];
+elseif size(pose, 2) == 16
+    urdf_file = [path_prefix, 'urdf/tri-snake.urdf'];
+end
 
-%% First layer
+robot_config = load([configPath, 'robot_config_3D.csv']);
+[robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file);
+
+% First layer
 figure; hold on; axis equal;
-g1 = [quat2rotm(pose(1,:)), [0;0;0]; 0,0,0,1];
-robot.robotTF(g1,1)
+PlotRobotPose(robot, pose(1,:), robotURDF);
 
-%% Second layer
-g2 = [quat2rotm(pose(2,:)), [0;0;0]; 0,0,0,1];
-robot.robotTF(g2,1)
+% Second layer
+PlotRobotPose(robot, pose(2,:), robotURDF);
+
+%% Middle layer
+ob = load(['../../config/', 'obstacle_config_3D.csv']);
+
+% plot the OBSTACLE(s) with color filled, under rotation and translation
+for i = 1:size(ob,1)
+    obs(i) = SuperQuadrics({ob(i,1:3), ob(i,4:5), ob(i,6:8)',...
+        ob(i,9:end), 20},...
+        'y', 0);
+    
+    obs(i).PlotShape;
+end
+
+plot3(mid_layer(1,:), mid_layer(2,:), mid_layer(3,:), '.');
 
 %% Interpolated motions
 N_step = 5;
-vtxInterp = vertexInterpolation([zeros(1,3), pose(1,:)]',...
-    [zeros(1,3), pose(2,:)]', N_step);
+vtxInterp = vertexInterpolation(pose(1,:)', pose(2,:)', N_step);
 for i = 1:N_step
     gInterp = [quat2rotm(vtxInterp(4:end,i)'), [0;0;0]; 0,0,0,1];
     robot.robotTF(gInterp,1);

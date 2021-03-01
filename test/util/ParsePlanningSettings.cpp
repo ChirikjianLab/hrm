@@ -82,10 +82,10 @@ void loadPreDefinedQuaternions(const std::string quat_file,
         std::vector<Eigen::Quaterniond> q_sample;
         for (size_t i = 0; i < quat_sample.size(); i++) {
             Eigen::Quaterniond q;
-            q.w() = quat_sample[i][0];
-            q.x() = quat_sample[i][1];
-            q.y() = quat_sample[i][2];
-            q.z() = quat_sample[i][3];
+            q.w() = quat_sample[i][3];
+            q.x() = quat_sample[i][0];
+            q.y() = quat_sample[i][1];
+            q.z() = quat_sample[i][2];
             q_sample.emplace_back(q);
         }
         robot_base.setQuatSamples(q_sample);

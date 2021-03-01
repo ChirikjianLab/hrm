@@ -10,7 +10,7 @@ disp('Environment Initialization...')
 % Obstacle types:
 %  first input: 1 -- ellipsoid or 2 -- superquadrics
 %  second input: map type
-[ar, obs, endPts] = Environment3D(2, 2);
+[ar, obs, endPts] = Environment3D(2, 3);
 
 %% Store Arena and Obstacles as .csv files
 arena = zeros(size(ar,2),12);
@@ -39,8 +39,8 @@ disp('Robot Configurations...');
 %  2. robot_name: name of robot
 %     (1) rigid bodies: rabbit, chair
 %     (2) articulated bodies: snake, tri-snake
-robot_type = "rigid";
-[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'rabbit');
+robot_type = "articulated";
+[Robot, RobotURDF, jointLimits] = RobotInit3D(robot_type, 'snake');
 
 %% Store robot info as .csv files
 % Robot configuration

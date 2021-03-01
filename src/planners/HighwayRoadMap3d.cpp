@@ -400,14 +400,14 @@ std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     // Reference point to be the center of Ec
     Ec.setPosition({0.0, 0.0, 0.0});
 
-    boundary3D bd;
-    std::vector<MeshMatrix> bdMesh;
+    std::vector<Eigen::MatrixXd> bdCObstacle(N_o);
+    std::vector<MeshMatrix> bdMesh(N_o);
 
     // calculate Minkowski boundary points and meshes for obstacles
     for (size_t i = 0; i < N_o; ++i) {
-        bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
-        bdMesh.push_back(getMeshFromParamSurface(bd.bd_o.back(),
-                                                 int(Obs.at(i).getNumParam())));
+        bdCObstacle.at(i) = Obs.at(i).getMinkSum3D(Ec, +1);
+        bdMesh.at(i) = getMeshFromParamSurface(bdCObstacle.at(i),
+                                               int(Obs.at(i).getNumParam()));
     }
 
     return bdMesh;
@@ -435,18 +435,27 @@ bool HighwayRoadMap3D::isTransitionFree(const std::vector<double>& V1,
 bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
                                    const std::vector<double>& V) {
     Eigen::VectorXd lineZ(6);
-    lineZ << V[0], V[1], 0, 0, 0, 1;
+    lineZ << V[0], V[1], V[2], 0, 0, 1;
 
-    std::vector<Eigen::Vector3d> pts_o;
+    std::vector<Eigen::Vector3d> intersectObs;
 
     // Ray-casting to check point containment within all C-obstacles
     for (size_t i = 0; i < bdMesh->size(); ++i) {
-        pts_o = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
+        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
 
-        if (!pts_o.empty()) {
-            return false;
+        if (!intersectObs.empty()) {
+            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
+                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
+                //                std::cout << "Collide with " <<
+                //                std::to_string(i)
+                //                          << " Obstacle!!!" << std::endl;
+
+                return false;
+            }
         }
     }
+
+    //    std::cout << "In Free Space!" << std::endl;
 
     return true;
 }

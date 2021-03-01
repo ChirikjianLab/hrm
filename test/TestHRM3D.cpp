@@ -94,8 +94,14 @@ int main(int argc, char** argv) {
     PlannerSetting3D* env3D = new PlannerSetting3D();
     env3D->loadEnvironment();
 
+    string quat_file = "0";
+    if (argc == 6 && strcmp(argv[5], "0") != 0) {
+        quat_file = string(argv[5]) + '_' + string(argv[2]) + ".csv";
+    }
+
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D(argv[5], 10);
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
     option3D opt;

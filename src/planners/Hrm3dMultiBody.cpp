@@ -85,62 +85,118 @@ void Hrm3DMultiBody::connectMultiLayer() {
         return;
     }
 
-    //    size_t j = 0;
+    size_t j = 0;
+
+    size_t n_1;
+    size_t n_12;
+    size_t n_2;
+    size_t start = 0;
 
     std::vector<double> V1;
     std::vector<double> V2;
 
-    //    int n_check = 0;
-    //    int n_connect = 0;
+    int n_check = 0;
+    int n_connect = 0;
 
     for (size_t i = 0; i < N_layers; ++i) {
-        //        size_t n_1 = vtxId[i].layer;
+        n_1 = vtxId[i].layer;
+        // Construct the middle layer
+        if (i == N_layers - 1 && N_layers != 2) {
+            j = 0;
 
-        //        if (i == N_layers - 1 && N_layers != 2) {
-        //            j = 0;
-        //        } else {
-        //            j = i + 1;
+            //            ////////////////////////////////////////////////////////////////////
+            //            std::ofstream file_pose;
+            //            file_pose.open("robot_pose_mid.csv");
+            //            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' <<
+            //            q_r[i].y()
+            //                      << ',' << q_r[i].z() << std::endl
+            //                      << q_r[0].w() << ',' << q_r[0].x() << ',' <<
+            //                      q_r[0].y()
+            //                      << ',' << q_r[0].z() << std::endl;
+            //            file_pose.close();
+            //            ////////////////////////////////////////////////////////////////////
+
+        } else {
+            j = i + 1;
+
+            //            ////////////////////////////////////////////////////////////////////
+            //            std::ofstream file_pose;
+            //            file_pose.open("robot_pose_mid.csv");
+            //            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' <<
+            //            q_r[i].y()
+            //                      << ',' << q_r[i].z() << std::endl
+            //                      << q_r[i + 1].w() << ',' << q_r[i + 1].x()
+            //                      << ','
+            //                      << q_r[i + 1].y() << ',' << q_r[i + 1].z()
+            //                      << std::endl;
+            //            file_pose.close();
+            //            ////////////////////////////////////////////////////////////////////
+        }
+
+        if (j != 0) {
+            n_12 = vtxId[j - 1].layer;
+        } else {
+            n_12 = 0;
+        }
+        n_2 = vtxId[j].layer;
+
+        //        // Find the nearest C-layers
+        //        double minDist = 100;
+        //        int minIdx = 0;
+        //        for (size_t j = 0; j != i && j < N_layers; ++j) {
+        //            double dist = q_r.at(i).angularDistance(q_r.at(j));
+        //            if (dist < minDist) {
+        //                minDist = dist;
+        //                minIdx = j;
+        //            }
         //        }
 
-        //        if (j != 0) {
-        //            n_12 = vtxId[j - 1].layer;
-        //        } else {
-        //            n_12 = 0;
+        //        // Find vertex only in adjacent layers
+        //        // Start and end vertics in the current layer
+        //        size_t n_12 = 0;
+        //        if (i != 0) {
+        //            n_12 = vtxId.at(i - 1).layer;
         //        }
-        //        n_2 = vtxId[j].layer;
+        //        size_t n_2 = vtxId.at(i).layer;
 
-        // Find the nearest C-layers
-        double minDist = 100;
-        int minIdx = 0;
-        for (size_t j = 0; j != i && j < N_layers; ++j) {
-            double dist = q_r.at(i).angularDistance(q_r.at(j));
-            if (dist < minDist) {
-                minDist = dist;
-                minIdx = j;
-            }
-        }
-
-        // Find vertex only in adjacent layers
-        // Start and end vertics in the current layer
-        size_t n_12 = 0;
-        if (i != 0) {
-            n_12 = vtxId.at(i - 1).layer;
-        }
-        size_t n_2 = vtxId.at(i).layer;
-
-        // Start and end vertics in the nearest layer
-        size_t start = 0;
-        if (minIdx != 0) {
-            start = vtxId.at(minIdx - 1).layer;
-        }
-        size_t n_1 = vtxId.at(minIdx).layer;
+        //        // Start and end vertics in the nearest layer
+        //        size_t start = 0;
+        //        if (minIdx != 0) {
+        //            start = vtxId.at(minIdx - 1).layer;
+        //        }
+        //        size_t n_1 = vtxId.at(minIdx).layer;
 
         // Construct the middle layer
-        mid = tfe_multi(q_r[i], q_r[minIdx]);
+        mid = tfe_multi(q_r[i], q_r[j]);
 
         for (size_t k = 0; k < mid.size(); ++k) {
             midLayerBdMultiLink.push_back(midLayer(mid[k]));
         }
+
+        //        ////////////////////////////////////////////////////////////
+        //        std::ofstream file_mid;
+        //        file_mid.open("mid_3d.csv");
+        //        for (size_t i = 0; i < mid.size(); i++) {
+        //            file_mid << mid[i].getSemiAxis()[0] << ','
+        //                     << mid[i].getSemiAxis()[1] << ','
+        //                     << mid[i].getSemiAxis()[2] << ','
+        //                     << mid[i].getPosition()[0] << ','
+        //                     << mid[i].getPosition()[1] << ','
+        //                     << mid[i].getPosition()[2] << ','
+        //                     << mid[i].getQuaternion().w() << ','
+        //                     << mid[i].getQuaternion().x() << ','
+        //                     << mid[i].getQuaternion().y() << ','
+        //                     << mid[i].getQuaternion().z() << std::endl;
+        //        }
+        //        file_mid.close();
+        //        /////////////////////////////////////////////////////////////
+
+        //        ////////////////////////////////////////////////////////////////////
+        //        std::ofstream file_bd;
+        //        file_bd.open("mid_layer_mink_bound_3D.csv");
+        //        file_bd << midLayerBdMultiLink.at(0).at(0).vertices << "\n";
+        //        file_bd.close();
+        //        ////////////////////////////////////////////////////////////////////
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
@@ -150,19 +206,18 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
                 // Locate the nearest vertices
                 if (std::fabs(V1.at(0) - V2.at(0)) > Lim[0] / N_dx ||
-                    std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy ||
-                    std::fabs(V1.at(2) - V2.at(2)) > 1.0) {
+                    std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy) {
                     continue;
                 }
 
-                //                n_check++;
+                n_check++;
 
                 if (isTransitionFree(V1, V2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
-                    //                    n_connect++;
+                    n_connect++;
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -176,7 +231,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         midLayerBdMultiLink.clear();
     }
 
-    //    std::cout << n_check << ',' << n_connect << std::endl;
+    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
 // bool Hrm3DMultiBody::isCollisionFree(const std::vector<double>& V1,
@@ -201,6 +256,16 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
         // Base: determine whether each step is within CF-Line of midLayer
         if (!isPtInCFree(&midLayerBdMultiLink.at(0),
                          RobotM.getBase().getPosition())) {
+            //            std::cout << "[Base] Current step: " << vStep[0] << ",
+            //            " << vStep[1]
+            //                      << ", " << vStep[2] << std::endl;
+            //            std::cout << "Actual step: " <<
+            //            RobotM.getBase().getPosition()[0]
+            //                      << ", " << RobotM.getBase().getPosition()[1]
+            //                      << ", "
+            //                      << RobotM.getBase().getPosition()[2] <<
+            //                      std::endl;
+
             return false;
         }
 
@@ -209,6 +274,21 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
         for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
             if (!isPtInCFree(&midLayerBdMultiLink.at(j + 1),
                              RobotM.getLinks()[j].getPosition())) {
+                //                std::cout << "[Link " << std::to_string(j)
+                //                          << "] Current step: " << vStep[0] <<
+                //                          ", " << vStep[1]
+                //                          << ", " << vStep[2] << std::endl;
+                //                std::cout << "Actual step: "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[0]
+                //                          << ", "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[1]
+                //                          << ", "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[2]
+                //                          << std::endl;
+
                 return false;
             }
         }
