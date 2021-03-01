@@ -179,7 +179,7 @@ class HighwayRoadMap3D {
     /*
      * \brief query whether a point is within a collision-free line segment
      */
-    bool isPtinCFLine(std::vector<double>, std::vector<double>);
+    // bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
     /*
      * \brief Variables

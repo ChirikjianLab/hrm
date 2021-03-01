@@ -87,10 +87,10 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
     size_t j = 0;
 
-    size_t n_1;
-    size_t n_12;
-    size_t n_2;
-    size_t start = 0;
+    //    size_t n_1;
+    //    size_t n_12;
+    //    size_t n_2;
+    //    size_t start = 0;
 
     std::vector<double> V1;
     std::vector<double> V2;
@@ -99,72 +99,81 @@ void Hrm3DMultiBody::connectMultiLayer() {
     int n_connect = 0;
 
     for (size_t i = 0; i < N_layers; ++i) {
-        n_1 = vtxId[i].layer;
-        // Construct the middle layer
-        if (i == N_layers - 1 && N_layers != 2) {
-            j = 0;
+        //        n_1 = vtxId[i].layer;
+        //        // Construct the middle layer
+        //        if (i == N_layers - 1 && N_layers != 2) {
+        //            j = 0;
 
-            //            ////////////////////////////////////////////////////////////////////
-            //            std::ofstream file_pose;
-            //            file_pose.open("robot_pose_mid.csv");
-            //            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' <<
-            //            q_r[i].y()
-            //                      << ',' << q_r[i].z() << std::endl
-            //                      << q_r[0].w() << ',' << q_r[0].x() << ',' <<
-            //                      q_r[0].y()
-            //                      << ',' << q_r[0].z() << std::endl;
-            //            file_pose.close();
-            //            ////////////////////////////////////////////////////////////////////
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //            //            std::ofstream file_pose;
+        //            //            file_pose.open("robot_pose_mid.csv");
+        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
+        //            << ',' <<
+        //            //            q_r[i].y()
+        //            //                      << ',' << q_r[i].z() << std::endl
+        //            //                      << q_r[0].w() << ',' << q_r[0].x()
+        //            << ',' <<
+        //            //                      q_r[0].y()
+        //            //                      << ',' << q_r[0].z() << std::endl;
+        //            //            file_pose.close();
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
 
-        } else {
-            j = i + 1;
+        //        } else {
+        //            j = i + 1;
 
-            //            ////////////////////////////////////////////////////////////////////
-            //            std::ofstream file_pose;
-            //            file_pose.open("robot_pose_mid.csv");
-            //            file_pose << q_r[i].w() << ',' << q_r[i].x() << ',' <<
-            //            q_r[i].y()
-            //                      << ',' << q_r[i].z() << std::endl
-            //                      << q_r[i + 1].w() << ',' << q_r[i + 1].x()
-            //                      << ','
-            //                      << q_r[i + 1].y() << ',' << q_r[i + 1].z()
-            //                      << std::endl;
-            //            file_pose.close();
-            //            ////////////////////////////////////////////////////////////////////
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //            //            std::ofstream file_pose;
+        //            //            file_pose.open("robot_pose_mid.csv");
+        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
+        //            << ',' <<
+        //            //            q_r[i].y()
+        //            //                      << ',' << q_r[i].z() << std::endl
+        //            //                      << q_r[i + 1].w() << ',' << q_r[i
+        //            + 1].x()
+        //            //                      << ','
+        //            //                      << q_r[i + 1].y() << ',' << q_r[i
+        //            + 1].z()
+        //            //                      << std::endl;
+        //            //            file_pose.close();
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //        }
+
+        //        if (j != 0) {
+        //            n_12 = vtxId[j - 1].layer;
+        //        } else {
+        //            n_12 = 0;
+        //        }
+        //        n_2 = vtxId[j].layer;
+
+        // Find the nearest C-layers
+        double minDist = 100;
+        int minIdx = 0;
+        for (size_t j = 0; j != i && j < N_layers; ++j) {
+            double dist = q_r.at(i).angularDistance(q_r.at(j));
+            if (dist < minDist) {
+                minDist = dist;
+                minIdx = j;
+            }
         }
 
-        if (j != 0) {
-            n_12 = vtxId[j - 1].layer;
-        } else {
-            n_12 = 0;
+        // Find vertex only in adjacent layers
+        // Start and end vertics in the current layer
+        size_t n_12 = 0;
+        if (i != 0) {
+            n_12 = vtxId.at(i - 1).layer;
         }
-        n_2 = vtxId[j].layer;
+        size_t n_2 = vtxId.at(i).layer;
 
-        //        // Find the nearest C-layers
-        //        double minDist = 100;
-        //        int minIdx = 0;
-        //        for (size_t j = 0; j != i && j < N_layers; ++j) {
-        //            double dist = q_r.at(i).angularDistance(q_r.at(j));
-        //            if (dist < minDist) {
-        //                minDist = dist;
-        //                minIdx = j;
-        //            }
-        //        }
-
-        //        // Find vertex only in adjacent layers
-        //        // Start and end vertics in the current layer
-        //        size_t n_12 = 0;
-        //        if (i != 0) {
-        //            n_12 = vtxId.at(i - 1).layer;
-        //        }
-        //        size_t n_2 = vtxId.at(i).layer;
-
-        //        // Start and end vertics in the nearest layer
-        //        size_t start = 0;
-        //        if (minIdx != 0) {
-        //            start = vtxId.at(minIdx - 1).layer;
-        //        }
-        //        size_t n_1 = vtxId.at(minIdx).layer;
+        // Start and end vertics in the nearest layer
+        size_t start = 0;
+        if (minIdx != 0) {
+            start = vtxId.at(minIdx - 1).layer;
+        }
+        size_t n_1 = vtxId.at(minIdx).layer;
 
         // Construct the middle layer
         mid = tfe_multi(q_r[i], q_r[j]);

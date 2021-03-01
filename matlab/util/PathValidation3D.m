@@ -22,10 +22,10 @@ classdef PathValidation3D < handle
         %% Post operation for found path, collision checking along path
         function valid = validation(Obj)
             % Do collision checking for each vertex to validate.
-            for i = 1:size(Obj.Paths,1)-1
+            for i = 1:size(Obj.Paths,1)
                 g_i = [par2rotm(Obj.Paths(i,4:end)), Obj.Paths(i,1:3)';
                     0,0,0,1];
-                Obj.RobotM.robotTF(g_i,1);
+                Obj.RobotM.robotTF(1,g_i);
                 
                 % surface for obstacles
                 for j = 1:length(Obj.Obs)
@@ -82,7 +82,7 @@ classdef PathValidation3D < handle
                 g = [par2rotm(Obj.RobotM.Base.q'), Obj.RobotM.Base.tc;
                     zeros(1,3), 1];
                 
-                Obj.RobotM.robotTF(g, 1);
+                Obj.RobotM.robotTF(1, g);
             end
             
             % plot the paths

@@ -116,7 +116,7 @@ void ProbHRM3D::connectMultiLayer() {
     }
     size_t n_1 = vtxId.at(minIdx).layer;
 
-    // Middle layer TFE and cell
+    // Middle C-layer TFE and C-obstacle boundary
     mid = tfeArticulated(v_.back(), v_.at(minIdx));
     for (size_t j = 0; j < mid.size(); ++j) {
         midLayerBdMultiLink.push_back(midLayer(mid.at(j)));

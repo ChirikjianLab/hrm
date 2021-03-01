@@ -81,7 +81,7 @@ if ~isempty(path_highway)
 end
 
 %% Validation
-is_validation = false;
+is_validation = true;
 
 if is_validation
     disp('Validating path...')

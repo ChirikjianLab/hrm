@@ -4,6 +4,8 @@
 #include "HighwayRoadMap3d.h"
 #include "src/util/include/MultiBodyTree3D.h"
 
+using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
+
 const double pi = 3.1415926;
 
 class Hrm3DMultiBody : public HighwayRoadMap3D {
@@ -38,7 +40,8 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     //                                 const std::vector<double>& V1,
     //                                 const std::vector<double>& V2);
 
-    bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>& V);
+    //    bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>&
+    //    V);
 
     virtual void setTransform(const std::vector<double>& V) override;
 
