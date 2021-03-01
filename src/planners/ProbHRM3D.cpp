@@ -1,5 +1,4 @@
 #include "include/ProbHRM3D.h"
-#include "util/include/InterpolateSE3.h"
 
 #include "ompl/util/RandomNumbers.h"
 
@@ -120,7 +119,7 @@ void ProbHRM3D::connectMultiLayer() {
     // Middle layer TFE and cell
     mid = tfeArticulated(v_.back(), v_.at(minIdx));
     for (size_t j = 0; j < mid.size(); ++j) {
-        mid_cell.push_back(midLayer(mid.at(j)));
+        midLayerBdMultiLink.push_back(midLayer(mid.at(j)));
     }
 
     // Nearest vertex btw layers
@@ -149,7 +148,7 @@ void ProbHRM3D::connectMultiLayer() {
     }
 
     // Clear mid_cell and update the number of vertices
-    mid_cell.clear();
+    midLayerBdMultiLink.clear();
 }
 
 // Generate collision-free vertices

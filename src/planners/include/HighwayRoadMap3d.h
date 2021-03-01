@@ -5,6 +5,8 @@
 #include "src/geometry/include/TightFitEllipsoid.h"
 #include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
+#include "util/include/InterpolateSE3.h"
+#include "util/include/LineIntersection.h"
 
 #include <ompl/datastructures/NearestNeighbors.h>
 #include <ompl/util/Time.h>
@@ -118,7 +120,21 @@ class HighwayRoadMap3D {
     /*
      * \brief subroutine to first construct the middle C-layer
      */
-    cf_cell3D midLayer(SuperQuadrics);
+    //    cf_cell3D midLayer(SuperQuadrics);
+    std::vector<MeshMatrix> midLayer(SuperQuadrics);
+
+    /*
+     * \brief check whether connection between V1 and V2 is valid through
+     * interpolation
+     */
+    virtual bool isTransitionFree(const std::vector<double>& V1,
+                                  const std::vector<double>& V2);
+
+    /*
+     * \brief check is one point is within C-free
+     */
+    bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                     const std::vector<double>& V);
 
     /*
      * \brief graph search using a-star algorithm
@@ -136,6 +152,11 @@ class HighwayRoadMap3D {
      * \brief uniform random sample SO(3)
      */
     void sampleSO3();
+
+    /*
+     * \brief transformation for robot
+     */
+    virtual void setTransform(const std::vector<double>& V);
 
   private:
     /*
@@ -228,7 +249,8 @@ class HighwayRoadMap3D {
 
   private:
     std::vector<SuperQuadrics> mid;
-    cf_cell3D mid_cell;
+    //    cf_cell3D mid_cell;
+    std::vector<MeshMatrix> midLayerBound;
     std::vector<double> midVtx;
 };
 

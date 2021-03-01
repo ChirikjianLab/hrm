@@ -1,6 +1,4 @@
 #include "include/HighwayRoadMap3d.h"
-#include "util/include/InterpolateSE3.h"
-#include "util/include/LineIntersection.h"
 
 #include <fstream>
 #include <iostream>
@@ -354,7 +352,9 @@ void HighwayRoadMap3D::connectMultiLayer() {
             n_12 = n_1;
             n_2 = vtxId[i + 1].layer;
         }
-        mid_cell = midLayer(mid[i]);
+        // mid_cell = midLayer(mid[i]);
+
+        midLayerBound = midLayer(mid.at(i));
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
@@ -363,7 +363,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
                         1e-8 &&
                     std::fabs(vtxEdge.vertex[m0][1] - vtxEdge.vertex[m1][1]) <=
                         1e-8 &&
-                    isPtinCFLine(vtxEdge.vertex[m0], vtxEdge.vertex[m1])) {
+                    isTransitionFree(vtxEdge.vertex[m0], vtxEdge.vertex[m1])) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(
@@ -378,8 +378,107 @@ void HighwayRoadMap3D::connectMultiLayer() {
         start = n_1;
     }
 }
+
+// Connect vertexes among different layers
+// cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
+//    // Reference point to be the center of Ec
+//    Ec.setPosition({0.0, 0.0, 0.0});
+
+//    boundary3D bd;
+//    // calculate Minkowski boundary points
+//    for (size_t i = 0; i < N_s; ++i) {
+//        bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Ec, -1));
+//    }
+//    for (size_t i = 0; i < N_o; ++i) {
+//        bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
+//    }
+
+//    return sweepLineZ(bd.bd_s, bd.bd_o);
+//}
+
+std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
+    // Reference point to be the center of Ec
+    Ec.setPosition({0.0, 0.0, 0.0});
+
+    boundary3D bd;
+    std::vector<MeshMatrix> bdMesh;
+
+    // calculate Minkowski boundary points and meshes for obstacles
+    for (size_t i = 0; i < N_o; ++i) {
+        bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
+        bdMesh.push_back(getMeshFromParamSurface(bd.bd_o.back(),
+                                                 int(Obs.at(i).getNumParam())));
+    }
+
+    return bdMesh;
+}
+
+bool HighwayRoadMap3D::isTransitionFree(const std::vector<double>& V1,
+                                        const std::vector<double>& V2) {
+    // Interpolated robot motion from V1 to V2
+    std::vector<std::vector<double>> vInterp =
+        interpolateCompoundSE3Rn(V1, V2, N_step);
+
+    for (auto vStep : vInterp) {
+        // Transform the robot
+        setTransform(vStep);
+
+        // Determine whether each step is within C-Free of midLayer
+        if (!isPtInCFree(&midLayerBound, Robot.getPosition())) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                                   const std::vector<double>& V) {
+    Eigen::VectorXd lineZ(6);
+    lineZ << V[0], V[1], 0, 0, 0, 1;
+
+    std::vector<Eigen::Vector3d> pts_o;
+
+    // Ray-casting to check point containment within all C-obstacles
+    for (size_t i = 0; i < bdMesh->size(); ++i) {
+        pts_o = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
+
+        if (!pts_o.empty()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
+//                                    std::vector<double> V2) {
+//    for (size_t i = 0; i < mid_cell.tx.size(); ++i) {
+//        if (fabs(mid_cell.tx[i] - V1[0]) > 1e-8) {
+//            continue;
+//        }
+
+//        for (size_t j = 0; j < mid_cell.cellYZ[i].ty.size(); ++j) {
+//            if (fabs(mid_cell.cellYZ[i].ty[j] - V1[1]) > 1e-8) {
+//                continue;
+//            }
+
+//            for (size_t k = 0; k < mid_cell.cellYZ[i].zM[j].size(); ++k) {
+//                if ((V1[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
+//                    (V1[2] <= mid_cell.cellYZ[i].zU[j][k]) &&
+//                    (V2[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
+//                    (V2[2] <= mid_cell.cellYZ[i].zU[j][k])) {
+//                    return 1;
+//                }
+//            }
+//        }
+//    }
+//    return 0;
+//}
+
 // ******************************************************************** //
 
+// ******************************************************************** //
 void HighwayRoadMap3D::search() {
     std::vector<Vertex> idx_s;
     std::vector<Vertex> idx_g;
@@ -548,46 +647,9 @@ cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
     return cell_new;
 }
 
-// Connect vertexes among different layers
-cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
-    // Reference point to be the center of Ec
-    Ec.setPosition({0.0, 0.0, 0.0});
-
-    boundary3D bd;
-    // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; ++i) {
-        bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Ec, -1));
-    }
-    for (size_t i = 0; i < N_o; ++i) {
-        bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
-    }
-
-    return sweepLineZ(bd.bd_s, bd.bd_o);
-}
-
-bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
-                                    std::vector<double> V2) {
-    for (size_t i = 0; i < mid_cell.tx.size(); ++i) {
-        if (fabs(mid_cell.tx[i] - V1[0]) > 1e-8) {
-            continue;
-        }
-
-        for (size_t j = 0; j < mid_cell.cellYZ[i].ty.size(); ++j) {
-            if (fabs(mid_cell.cellYZ[i].ty[j] - V1[1]) > 1e-8) {
-                continue;
-            }
-
-            for (size_t k = 0; k < mid_cell.cellYZ[i].zM[j].size(); ++k) {
-                if ((V1[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
-                    (V1[2] <= mid_cell.cellYZ[i].zU[j][k]) &&
-                    (V2[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
-                    (V2[2] <= mid_cell.cellYZ[i].zU[j][k])) {
-                    return 1;
-                }
-            }
-        }
-    }
-    return 0;
+void HighwayRoadMap3D::setTransform(const std::vector<double>& V) {
+    Robot.setPosition({V[0], V[1], V[2]});
+    Robot.setQuaternion(Eigen::Quaterniond(V[3], V[4], V[5], V[6]));
 }
 
 // Sampled rotations on SO(3), return a list of Quaternions

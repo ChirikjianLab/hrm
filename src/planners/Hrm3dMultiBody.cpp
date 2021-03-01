@@ -1,5 +1,4 @@
 #include "include/Hrm3dMultiBody.h"
-#include "util/include/InterpolateSE3.h"
 
 #include <fstream>
 #include <iostream>
@@ -140,7 +139,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         mid = tfe_multi(q_r[i], q_r[minIdx]);
 
         for (size_t k = 0; k < mid.size(); ++k) {
-            mid_cell.push_back(midLayer(mid[k]));
+            midLayerBdMultiLink.push_back(midLayer(mid[k]));
         }
 
         // Nearest vertex btw layers
@@ -151,7 +150,8 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
                 // Locate the nearest vertices
                 if (std::fabs(V1.at(0) - V2.at(0)) > Lim[0] / N_dx ||
-                    std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy) {
+                    std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy ||
+                    std::fabs(V1.at(2) - V2.at(2)) > 1.0) {
                     continue;
                 }
 
@@ -173,7 +173,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         start = n_1;
 
         // Clear mid_cell;
-        mid_cell.clear();
+        midLayerBdMultiLink.clear();
     }
 
     //    std::cout << n_check << ',' << n_connect << std::endl;
@@ -199,15 +199,16 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
         setTransform(vStep);
 
         // Base: determine whether each step is within CF-Line of midLayer
-        if (!isPtInCFLine(&mid_cell[0], RobotM.getBase().getPosition())) {
+        if (!isPtInCFree(&midLayerBdMultiLink.at(0),
+                         RobotM.getBase().getPosition())) {
             return false;
         }
 
         // For each link, check whether its center is within the simple convex
         // region between 4 CF-Lines in midLayer
         for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
-            if (!isPtInCFLine(&mid_cell[j + 1],
-                              RobotM.getLinks()[j].getPosition())) {
+            if (!isPtInCFree(&midLayerBdMultiLink.at(j + 1),
+                             RobotM.getLinks()[j].getPosition())) {
                 return false;
             }
         }
@@ -216,67 +217,68 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
     return true;
 }
 
-// Point in collision-free line segment
-bool Hrm3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
-                                  const std::vector<double>& V) {
-    std::vector<bool> isInLine(4, false);
+//// Point in collision-free line segment
+// bool Hrm3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
+//                                  const std::vector<double>& V) {
+//    std::vector<bool> isInLine(4, false);
 
-    for (size_t i = 0; i < cell->tx.size() - 1; ++i) {
-        // Locate to the sweep line of the vertex
-        if (cell->tx[i] < V.at(0)) {
-            continue;
-        }
+//    for (size_t i = 0; i < cell->tx.size() - 1; ++i) {
+//        // Locate to the sweep line of the vertex
+//        if (cell->tx[i] < V.at(0)) {
+//            continue;
+//        }
 
-        for (size_t j = 0; j < cell->cellYZ[i].ty.size() - 1; ++j) {
-            if (cell->cellYZ[i].ty[j] < V.at(1)) {
-                continue;
-            }
+//        for (size_t j = 0; j < cell->cellYZ[i].ty.size() - 1; ++j) {
+//            if (cell->cellYZ[i].ty[j] < V.at(1)) {
+//                continue;
+//            }
 
-            // z-coordinate within the current line
-            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
-                if ((V.at(2) > cell->cellYZ[i].zL[j][k]) &&
-                    (V.at(2) < cell->cellYZ[i].zU[j][k])) {
-                    isInLine[0] = true;
-                    break;
-                }
-            }
+//            // z-coordinate within the current line
+//            for (size_t k = 0; k < cell->cellYZ[i].zM[j].size(); ++k) {
+//                if ((V.at(2) > cell->cellYZ[i].zL[j][k]) &&
+//                    (V.at(2) < cell->cellYZ[i].zU[j][k])) {
+//                    isInLine[0] = true;
+//                    break;
+//                }
+//            }
 
-            // z-coordinate within 3 neighboring lines
-            for (size_t k = 0; k < cell->cellYZ[i].zM[j + 1].size(); ++k) {
-                if ((V.at(2) > cell->cellYZ[i].zL[j + 1][k]) &&
-                    (V.at(2) < cell->cellYZ[i].zU[j + 1][k])) {
-                    isInLine[1] = true;
-                    break;
-                }
-            }
+//            // z-coordinate within 3 neighboring lines
+//            for (size_t k = 0; k < cell->cellYZ[i].zM[j + 1].size(); ++k) {
+//                if ((V.at(2) > cell->cellYZ[i].zL[j + 1][k]) &&
+//                    (V.at(2) < cell->cellYZ[i].zU[j + 1][k])) {
+//                    isInLine[1] = true;
+//                    break;
+//                }
+//            }
 
-            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j].size(); ++k) {
-                if ((V.at(2) > cell->cellYZ[i + 1].zL[j][k]) &&
-                    (V.at(2) < cell->cellYZ[i + 1].zU[j][k])) {
-                    isInLine[2] = true;
-                    break;
-                }
-            }
+//            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j].size(); ++k) {
+//                if ((V.at(2) > cell->cellYZ[i + 1].zL[j][k]) &&
+//                    (V.at(2) < cell->cellYZ[i + 1].zU[j][k])) {
+//                    isInLine[2] = true;
+//                    break;
+//                }
+//            }
 
-            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j + 1].size(); ++k) {
-                if ((V.at(2) > cell->cellYZ[i + 1].zL[j + 1][k]) &&
-                    (V.at(2) < cell->cellYZ[i + 1].zU[j + 1][k])) {
-                    isInLine[3] = true;
-                    break;
-                }
-            }
-        }
-    }
+//            for (size_t k = 0; k < cell->cellYZ[i + 1].zM[j + 1].size(); ++k)
+//            {
+//                if ((V.at(2) > cell->cellYZ[i + 1].zL[j + 1][k]) &&
+//                    (V.at(2) < cell->cellYZ[i + 1].zU[j + 1][k])) {
+//                    isInLine[3] = true;
+//                    break;
+//                }
+//            }
+//        }
+//    }
 
-    // z-coordinate within all neighboring sweep lines, then collision free
-    for (size_t i = 0; i < isInLine.size(); ++i) {
-        if (!isInLine[i]) {
-            return false;
-        }
-    }
+//    // z-coordinate within all neighboring sweep lines, then collision free
+//    for (size_t i = 0; i < isInLine.size(); ++i) {
+//        if (!isInLine[i]) {
+//            return false;
+//        }
+//    }
 
-    return true;
-}
+//    return true;
+//}
 
 // bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
 //                                             const std::vector<double>& V1,

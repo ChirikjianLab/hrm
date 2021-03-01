@@ -30,7 +30,7 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     //                         const std::vector<double>& V2);
 
     bool isTransitionFree(const std::vector<double>& V1,
-                          const std::vector<double>& V2);
+                          const std::vector<double>& V2) override;
 
     //    bool isRotationMotionFree(const std::vector<double>& V1,
     //                              const std::vector<double>& V2);
@@ -40,7 +40,7 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
 
     bool isPtInCFLine(const cf_cell3D* cell, const std::vector<double>& V);
 
-    virtual void setTransform(const std::vector<double>& V);
+    virtual void setTransform(const std::vector<double>& V) override;
 
   protected:
     MultiBodyTree3D RobotM;
@@ -48,7 +48,8 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     std::vector<cf_cell3D> free_cell;
 
     std::vector<SuperQuadrics> mid;
-    std::vector<cf_cell3D> mid_cell;
+    //    std::vector<cf_cell3D> mid_cell;
+    std::vector<std::vector<MeshMatrix>> midLayerBdMultiLink;
     std::vector<double> midVtx;
 };
 
