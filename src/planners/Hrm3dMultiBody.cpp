@@ -95,8 +95,8 @@ void Hrm3DMultiBody::connectMultiLayer() {
     std::vector<double> V1;
     std::vector<double> V2;
 
-    int n_check = 0;
-    int n_connect = 0;
+    //    int n_check = 0;
+    //    int n_connect = 0;
 
     for (size_t i = 0; i < N_layers; ++i) {
         //        n_1 = vtxId[i].layer;
@@ -219,14 +219,14 @@ void Hrm3DMultiBody::connectMultiLayer() {
                     continue;
                 }
 
-                n_check++;
+                //                n_check++;
 
                 if (isTransitionFree(V1, V2)) {
                     // Add new connections
                     vtxEdge.edge.push_back(std::make_pair(m0, m1));
                     vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
 
-                    n_connect++;
+                    //                    n_connect++;
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -240,7 +240,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
         midLayerBdMultiLink.clear();
     }
 
-    std::cout << n_check << ',' << n_connect << std::endl;
+    //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
 // bool Hrm3DMultiBody::isCollisionFree(const std::vector<double>& V1,
