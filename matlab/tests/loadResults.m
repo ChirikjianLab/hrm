@@ -19,7 +19,11 @@ end
 vtx = load([resultPath, 'vertex_', dim, '.csv']);
 edge = load([resultPath, 'edge_', dim, '.csv']);
 
-path = load([resultPath, 'interpolated_path_', dim, '.csv']);
+try
+    path = load([resultPath, 'interpolated_path_', dim, '.csv']);
+catch
+    path = load([resultPath, 'paths_', dim, '.csv']);
+end
 
 % Configurations
 configPath = '../../config/';

@@ -104,7 +104,7 @@ pathInterp = [];
 for i = 1:size(path,2)-1
     pathCur = vtx(path(i)+1,:);
     pathNext = vtx(path(i+1)+1,:);
-    numStep = floor(norm(pathNext-pathCur) * 2);
+    numStep = ceil(norm(pathNext-pathCur) * 2);
 
     for j = 1:3
         pathStepInterp(j,:) = linspace(pathCur(j),pathNext(j),numStep);
@@ -114,7 +114,7 @@ for i = 1:size(path,2)-1
     pathStepInterp = [];
 end
 
-figure; hold on; axis equal; axis off;
+% figure; hold on; axis equal; axis off;
 % original
 X_ori = [X_ori, X_ori(:,1)];
 for i = size(X_ori,1)-1

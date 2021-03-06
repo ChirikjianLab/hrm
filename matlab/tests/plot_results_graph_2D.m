@@ -11,7 +11,7 @@ figure; hold on; axis equal; axis off;
 %% environment
 disp('Environment Initialization...')
 
-sc = 20;
+sc = 0.2;
 % start and goal
 start = endPts(1,:)';
 goal = endPts(2,:)';
@@ -59,14 +59,15 @@ end
 %         plot(cf_seg(i,3), cf_seg(i,1),'k*')
 % end
 %
+
 % vertex and connections
-plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-edge = edge+1;
-for i = 1:size(edge,1)
-    plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-        [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-        sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-end
+plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3), 'k.', 'LineWidth', 0.5);
+% edge = edge+1;
+% for i = 1:size(edge,1)
+%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
+%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
+%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
+% end
 
 % Robot motions
 rob = MultiBodyTree2D(SuperEllipse([robot(1,1:6), 50], 'g', 0),...
