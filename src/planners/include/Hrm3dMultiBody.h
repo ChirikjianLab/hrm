@@ -31,6 +31,9 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     //    V1,
     //                         const std::vector<double>& V2);
 
+    //    bool isOneLayerTransitionFree(const std::vector<double>& V1,
+    //                                  const std::vector<double>& V2);
+
     bool isTransitionFree(const std::vector<double>& V1,
                           const std::vector<double>& V2) override;
 
@@ -50,10 +53,8 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
 
     std::vector<cf_cell3D> free_cell;
 
-    std::vector<SuperQuadrics> mid;
     //    std::vector<cf_cell3D> mid_cell;
     std::vector<std::vector<MeshMatrix>> midLayerBdMultiLink;
-    std::vector<double> midVtx;
 };
 
 #endif  // HRM3DMULTIBODY_H

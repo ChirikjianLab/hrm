@@ -134,6 +134,8 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
             getMeshFromParamSurface(bd_o.at(i), int(Obs.at(0).getNumParam()));
     }
 
+    CLayerBound = P_o;
+
     // Find intersections along each sweep line
     for (size_t i = 0; i < N_dx; ++i) {
         //        time::point tstart = time::now();
@@ -273,14 +275,18 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
                 for (size_t k1 = 0; k1 < cell.cellYZ[i + 1].zM[j].size();
                      k1++) {
                     I1 = N_v.line[i + 1][j];
-                    if (cell.cellYZ[i].zM[j][k0] >
-                            cell.cellYZ[i + 1].zL[j][k1] &&
-                        cell.cellYZ[i].zM[j][k0] <
-                            cell.cellYZ[i + 1].zU[j][k1] &&
-                        cell.cellYZ[i + 1].zM[j][k1] >
-                            cell.cellYZ[i].zL[j][k0] &&
-                        cell.cellYZ[i + 1].zM[j][k1] <
-                            cell.cellYZ[i].zU[j][k0]) {
+                    //                    if (cell.cellYZ[i].zM[j][k0] >
+                    //                            cell.cellYZ[i + 1].zL[j][k1]
+                    //                            &&
+                    //                        cell.cellYZ[i].zM[j][k0] <
+                    //                            cell.cellYZ[i + 1].zU[j][k1]
+                    //                            &&
+                    //                        cell.cellYZ[i + 1].zM[j][k1] >
+                    //                            cell.cellYZ[i].zL[j][k0] &&
+                    //                        cell.cellYZ[i + 1].zM[j][k1] <
+                    //                            cell.cellYZ[i].zU[j][k0])
+                    if (isOneLayerTransitionFree(vtxEdge.vertex[I0 + k0],
+                                                 vtxEdge.vertex[I1 + k1])) {
                         vtxEdge.edge.push_back(
                             std::make_pair(I0 + k0, I1 + k1));
                         vtxEdge.weight.push_back(vectorEuclidean(
@@ -315,10 +321,15 @@ void HighwayRoadMap3D::connectOnePlane(const cf_cellYZ* CFcell) {
             // Connect vertex btw adjacent cells
             if (i != CFcell->ty.size() - 1) {
                 for (size_t j2 = 0; j2 < CFcell->zM[i + 1].size(); ++j2) {
-                    if (CFcell->zM[i][j1] >= CFcell->zL[i + 1][j2] &&
-                        CFcell->zM[i][j1] <= CFcell->zU[i + 1][j2] &&
-                        CFcell->zM[i + 1][j2] >= CFcell->zL[i][j1] &&
-                        CFcell->zM[i + 1][j2] <= CFcell->zU[i][j1]) {
+                    //                    if (CFcell->zM[i][j1] >= CFcell->zL[i
+                    //                    + 1][j2] &&
+                    //                        CFcell->zM[i][j1] <= CFcell->zU[i
+                    //                        + 1][j2] && CFcell->zM[i + 1][j2]
+                    //                        >= CFcell->zL[i][j1] &&
+                    //                        CFcell->zM[i + 1][j2] <=
+                    //                        CFcell->zU[i][j1])
+                    if (isOneLayerTransitionFree(vtxEdge.vertex[N_0 + j1],
+                                                 vtxEdge.vertex[N_1 + j2])) {
                         vtxEdge.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         vtxEdge.weight.push_back(
@@ -411,6 +422,40 @@ std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     }
 
     return bdMesh;
+}
+
+bool HighwayRoadMap3D::isOneLayerTransitionFree(const std::vector<double>& V1,
+                                                const std::vector<double>& V2) {
+    // Define the line connecting V1 and V2
+    Eigen::Vector3d t1{V1[0], V1[1], V1[2]};
+    Eigen::Vector3d t2{V2[0], V2[1], V2[2]};
+    Eigen::Vector3d v12 = t2 - t1;
+    v12.normalize();
+
+    Eigen::VectorXd line(6);
+    line.head(3) = t1;
+    line.tail(3) = v12;
+
+    // Intersection between line and mesh
+    double s0, s1;
+    std::vector<Eigen::Vector3d> intersectObs;
+    for (auto CObstacle : CLayerBound) {
+        intersectObs = intersectVerticalLineMesh3d(line, CObstacle);
+
+        // Check line segments overlapping
+        if (!intersectObs.empty()) {
+            s0 = (intersectObs[0] - t1).norm() / (t2 - t1).norm();
+            s1 = (intersectObs[1] - t1).norm() / (t2 - t1).norm();
+
+            if ((s0 > 0 && s0 < 1) || (s1 > 0 && s1 < 1)) {
+                return false;
+            } else if (s0 < 0 && s1 > 1) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 bool HighwayRoadMap3D::isTransitionFree(const std::vector<double>& V1,

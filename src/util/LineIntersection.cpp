@@ -1,6 +1,32 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
+std::vector<Eigen::Vector3d> intersectLineMesh3d(const Eigen::VectorXd& line,
+                                                 const MeshMatrix& shape) {
+    std::vector<Eigen::Vector3d> points;
+    Eigen::Vector3d t0, u, v, pt;
+
+    for (auto i = 0; i < shape.faces.rows(); ++i) {
+        // find triangle edge vectors
+        t0 = shape.vertices.col(int(shape.faces(i, 0)));
+        u = shape.vertices.col(int(shape.faces(i, 1))) - t0;
+        v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
+
+        // keep only interesting points
+        bool hasIntersect = intersectLineTriangle3d(&line, &t0, &u, &v, &pt);
+
+        if (hasIntersect) {
+            points.push_back(pt);
+        }
+
+        if (points.size() == 2) {
+            break;
+        }
+    }
+
+    return points;
+}
+
 std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
     const Eigen::VectorXd& line, const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
@@ -14,9 +40,7 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
         return points;
     }
 
-    double tol = 1e-12;
-    Eigen::Vector3d t0, u, v, n, pt;
-    double a, b, uu, uv, vv, wu, wv, D, s, t;
+    Eigen::Vector3d t0, u, v, pt;
 
     /*
      * \brief Specifially for vertical sweep lines, first do a quick check
@@ -55,56 +79,72 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
         u = shape.vertices.col(int(shape.faces(i, 1))) - t0;
         v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
-        // triangle normal
-        n = u.cross(v);
-        n.normalize();
-
-        // vector between triangle origin and line origin
-        a = -n.dot(line.head(3) - t0);
-        b = n.dot(line.tail(3));
-        if (!((std::fabs(b) > tol) && (n.norm() > tol))) {
-            continue;
-        }
-
-        /* \brief Compute intersection point of line with supporting plane:
-                  If pos = a/b < 0: point before ray
-                  IF pos = a/b > |dir|: point after edge*/
-        // coordinates of intersection point
-        pt = line.head(3) + a / b * line.tail(3);
-
-        // Test if intersection point is inside triangle
-        // normalize direction vectors of triangle edges
-        uu = u.dot(u);
-        uv = u.dot(v);
-        vv = v.dot(v);
-
-        // coordinates of vector v in triangle basis
-        wu = u.dot(pt - t0);
-        wv = v.dot(pt - t0);
-
-        // normalization constant
-        D = pow(uv, 2) - uu * vv;
-
-        // test first coordinate
-        s = (uv * wv - vv * wu) / D;
-        if ((s < -tol) || (s > 1.0 + tol)) {
-            continue;
-        }
-
-        // test second coordinate and third triangle edge
-        t = (uv * wu - uu * wv) / D;
-        if ((t < -tol) || (s + t > 1.0 + tol)) {
-            continue;
-        }
-
         // keep only interesting points
-        points.push_back(pt);
+        bool hasIntersect = intersectLineTriangle3d(&line, &t0, &u, &v, &pt);
+
+        if (hasIntersect) {
+            points.push_back(pt);
+        }
+
         if (points.size() == 2) {
             break;
         }
     }
 
     return points;
+}
+
+bool intersectLineTriangle3d(const Eigen::VectorXd* line,
+                             const Eigen::Vector3d* t0,
+                             const Eigen::Vector3d* u, const Eigen::Vector3d* v,
+                             Eigen::Vector3d* pt) {
+    double tol = 1e-12;
+    Eigen::Vector3d n;
+    double a, b, uu, uv, vv, wu, wv, D, s, t;
+
+    // triangle normal
+    n = u->cross(*v);
+    n.normalize();
+
+    // vector between triangle origin and line origin
+    a = -n.dot(line->head(3) - *t0);
+    b = n.dot(line->tail(3));
+    if (!((std::fabs(b) > tol) && (n.norm() > tol))) {
+        return false;
+    }
+
+    /* \brief Compute intersection point of line with supporting plane:
+                  If pos = a/b < 0: point before ray
+                  IF pos = a/b > |dir|: point after edge*/
+    // coordinates of intersection point
+    *pt = line->head(3) + a / b * line->tail(3);
+
+    // Test if intersection point is inside triangle
+    // normalize direction vectors of triangle edges
+    uu = u->dot(*u);
+    uv = u->dot(*v);
+    vv = v->dot(*v);
+
+    // coordinates of vector v in triangle basis
+    wu = u->dot(*pt - *t0);
+    wv = v->dot(*pt - *t0);
+
+    // normalization constant
+    D = pow(uv, 2) - uu * vv;
+
+    // test first coordinate
+    s = (uv * wv - vv * wu) / D;
+    if ((s < -tol) || (s > 1.0 + tol)) {
+        return false;
+    }
+
+    // test second coordinate and third triangle edge
+    t = (uv * wu - uu * wv) / D;
+    if ((t < -tol) || (s + t > 1.0 + tol)) {
+        return false;
+    }
+
+    return true;
 }
 
 std::vector<double> intersectHorizontalLinePolygon2d(

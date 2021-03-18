@@ -124,6 +124,13 @@ class HighwayRoadMap3D {
     std::vector<MeshMatrix> midLayer(SuperQuadrics);
 
     /*
+     * \brief check whether connection between V1 and V2 within one C-layer is
+     * valid through interpolation
+     */
+    virtual bool isOneLayerTransitionFree(const std::vector<double>& V1,
+                                          const std::vector<double>& V2);
+
+    /*
      * \brief check whether connection between V1 and V2 is valid through
      * interpolation
      */
@@ -214,7 +221,7 @@ class HighwayRoadMap3D {
     size_t N_layers;
     std::vector<double> Lim;
     std::vector<Eigen::Quaterniond> q_r;
-    unsigned int N_step = 5;
+    unsigned int N_step = 10;
 
     struct vertexIdx {
         size_t layer;
@@ -247,7 +254,8 @@ class HighwayRoadMap3D {
 
     bool flag = false;
 
-  private:
+  protected:
+    std::vector<MeshMatrix> CLayerBound;
     std::vector<SuperQuadrics> mid;
     //    cf_cell3D mid_cell;
     std::vector<MeshMatrix> midLayerBound;

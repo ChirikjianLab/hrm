@@ -252,6 +252,25 @@ void Hrm3DMultiBody::connectMultiLayer() {
 //    }
 //}
 
+// bool Hrm3DMultiBody::isOneLayerTransitionFree(const std::vector<double>& V1,
+//                                              const std::vector<double>& V2) {
+//    // Interpolated robot translation motion from V1 to V2
+//    std::vector<std::vector<double>> vInterp =
+//        interpolateCompoundSE3Rn(V1, V2, N_step);
+
+//    for (auto vStep : vInterp) {
+//        // Transform the robot
+//        setTransform(vStep);
+
+//        // Determine whether each step is within C-Free of midLayer
+//        if (!isPtInCFree(&CLayerBound, RobotM.getBase().getPosition())) {
+//            return false;
+//        }
+//    }
+
+//    return true;
+//}
+
 bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
                                       const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
