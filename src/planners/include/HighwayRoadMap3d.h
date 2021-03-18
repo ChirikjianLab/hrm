@@ -125,10 +125,11 @@ class HighwayRoadMap3D {
 
     /*
      * \brief check whether connection between V1 and V2 within one C-layer is
-     * valid through interpolation
+     * valid through line segment V1-V2 and C-obstacle mesh intersection
+     * checking
      */
-    virtual bool isOneLayerTransitionFree(const std::vector<double>& V1,
-                                          const std::vector<double>& V2);
+    bool isOneLayerTransitionFree(const std::vector<double>& V1,
+                                  const std::vector<double>& V2);
 
     /*
      * \brief check whether connection between V1 and V2 is valid through
