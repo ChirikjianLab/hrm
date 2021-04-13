@@ -29,6 +29,7 @@ sudo apt update
 sudo apt install libboost-all-dev
 
 # cgal install
+sudo apt install libgmp-dev
 sudo apt-get install libcgal-dev
 
 # ompl install

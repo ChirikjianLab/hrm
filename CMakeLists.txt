@@ -38,9 +38,8 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL REQUIRED)
+find_package(CGAL QUIET COMPONENTS)
 include_directories(${CGAL_INCLUDE_DIRS})
-link_libraries(${CGAL_LIBRARIES})
 
 find_package(GMP REQUIRED)
 include_directories(${GMP_INCLUDE_DIRS})

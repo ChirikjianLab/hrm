@@ -7,7 +7,7 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 ## Dependencies
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sample-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
-- [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
+- [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
 - [Boost](https://www.boost.org/) (version >= 1.55.0)
