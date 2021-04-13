@@ -36,10 +36,12 @@ make
 ```
 The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
 
-**Note**: If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
+**Note**: 
+- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
 ```
 cmake ../ -DCMAKE_PREFIX_PATH=/your/ompl/path -DOMPL_PREFIX=/your/ompl/include/dir
 ```
+- We provide an installation script for dependencies: "${ROOT_DIR}/script/install-dependencies.sh". Exectuting it will automatically install all the required dependencies.
 
 ## Testing Instructions
 ### Generate configuration files
