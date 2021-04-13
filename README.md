@@ -7,11 +7,12 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 ## Dependencies
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sample-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
-- [CGAL](https://www.cgal.org/): Mesh generation as a pre-process
+- [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
-- [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
 - [Boost](https://www.boost.org/) (version >= 1.55.0)
+- [google-test](https://github.com/google/googletest) (version >= 1.10.x)
+- (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [cmake-format] (version >= 0.4.5)
     ```
     sudo pip3 install cmake-format==0.4.5
@@ -35,10 +36,12 @@ make
 ```
 The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
 
-**Note**: If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
+**Note**: 
+- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
 ```
 cmake ../ -DCMAKE_PREFIX_PATH=/your/ompl/path -DOMPL_PREFIX=/your/ompl/include/dir
 ```
+- We provide an installation script for dependencies: "${ROOT_DIR}/script/install-dependencies.sh". Exectuting it will automatically install all the required dependencies.
 
 ## Testing Instructions
 ### Generate configuration files

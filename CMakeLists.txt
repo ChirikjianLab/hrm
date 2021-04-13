@@ -38,9 +38,8 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL REQUIRED)
+find_package(CGAL QUIET COMPONENTS)
 include_directories(${CGAL_INCLUDE_DIRS})
-link_libraries(${CGAL_LIBRARIES})
 
 find_package(GMP REQUIRED)
 include_directories(${GMP_INCLUDE_DIRS})
@@ -50,8 +49,11 @@ find_package(orocos_kdl)
 include_directories(${orocos_kdl_INCLUDE_DIRS})
 link_libraries(${orocos_kdl_LIBRARIES})
 
-find_package(kdl_parser)
-link_libraries(${kdl_parser_LIBRARIES})
+# kdl_parser is OPTIONAL for now
+find_package(kdl_parser QUIET)
+IF(kdl_parse_FOUND)
+    link_libraries(${kdl_parser_LIBRARIES})
+ENDIF()
 
 find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
