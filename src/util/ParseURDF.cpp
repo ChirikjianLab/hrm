@@ -6,7 +6,7 @@ ParseURDF::ParseURDF(const std::string urdfFile) {
     }
 }
 
-Eigen::Matrix4d ParseURDF::getTransform(const KDL::JntArray *jointConfig,
+Eigen::Matrix4d ParseURDF::getTransform(const KDL::JntArray* jointConfig,
                                         const std::string bodyName) {
     Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
     KDL::Frame frame;

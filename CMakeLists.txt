@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Project's name
-project(HighwayRoadMap VERSION 0.2.1 LANGUAGES CXX)
+project(HighwayRoadMap VERSION 0.2.2 LANGUAGES CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(default_build_type "RelWithDebInfo")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(default_build_type "Release")
 
 # Specify Binary dir
 set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
@@ -37,7 +37,7 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL QUIET COMPONENTS)
+find_package(CGAL REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 
 find_package(GMP REQUIRED)
@@ -54,7 +54,7 @@ IF(kdl_parse_FOUND)
     link_libraries(${kdl_parser_LIBRARIES})
 ENDIF()
 
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
 find_package(Boost 1.55 REQUIRED)
