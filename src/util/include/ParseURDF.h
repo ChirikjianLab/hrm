@@ -3,12 +3,12 @@
 
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
-#include <kdl_parser/kdl_parser.hpp>
 
 #include <Eigen/Dense>
 
 class ParseURDF {
   public:
+    ParseURDF(const KDL::Tree& kdlTree);
     ParseURDF(const std::string urdfFile);
 
     /** \brief Retrieve KDL tree */

@@ -1,3 +1,7 @@
+if(NOT kdl_parser_FOUND)
+    add_subdirectory(urdf-to-kdl)
+endif()
+
 add_library(UTIL
             EllipsoidSeparation.cpp
             EllipsoidSQCollisionFCL.cpp
@@ -9,9 +13,13 @@ add_library(UTIL
             MeshGenerator.cpp
             MultiBodyTree2D.cpp
             MultiBodyTree3D.cpp
-	    Parse2dCsvFile.cpp
+            Parse2dCsvFile.cpp
             ParseURDF.cpp
             PointInPoly.cpp)
-target_link_libraries(UTIL
-                      ${orocos_kdl_LIBRARIES}
-                      ${kdl_parser_LIBRARIES})
+if(kdl_parser_FOUND)
+    target_link_libraries(UTIL
+                          ${kdl_parser_LIBRARIES})
+else()
+    target_link_libraries(UTIL
+                          KDL_Parser)
+endif()

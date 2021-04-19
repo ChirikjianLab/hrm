@@ -1,5 +1,9 @@
 #include "include/ParseURDF.h"
 
+#include <kdl_parser/kdl_parser.hpp>
+
+ParseURDF::ParseURDF(const KDL::Tree& kdlTree) : kdlTree_(kdlTree) {}
+
 ParseURDF::ParseURDF(const std::string urdfFile) {
     if (!kdl_parser::treeFromFile(urdfFile, kdlTree_)) {
         std::cout << "Failed to parse and construct KDL tree..." << std::endl;
