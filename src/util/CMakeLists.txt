@@ -22,4 +22,5 @@ if(kdl_parser_FOUND)
 else()
     target_link_libraries(UTIL
                           KDL_Parser)
+    target_include_directories(UTIL PUBLIC urdf-to-kdl/include)
 endif()

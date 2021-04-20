@@ -65,7 +65,7 @@ bool Model::initXml(TiXmlDocument* xml_doc) {
 // My take on that method. It is however, necessary to ckeck if COLLADA is
 // needed in some cases...
 bool Model::initString(const std::string& xml_string) {
-    boost::shared_ptr<ModelInterface> model;
+    std::shared_ptr<ModelInterface> model;
 
     // necessary for COLLADA compatibility
     model = parseURDF(xml_string);

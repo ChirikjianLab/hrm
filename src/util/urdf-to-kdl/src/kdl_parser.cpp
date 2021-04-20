@@ -64,7 +64,7 @@ Frame toKdl(urdf::Pose p) {
 }
 
 // construct joint
-Joint toKdl(boost::shared_ptr<urdf::Joint> jnt) {
+Joint toKdl(std::shared_ptr<urdf::Joint> jnt) {
     Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
 
     switch (jnt->type) {
@@ -98,7 +98,7 @@ Joint toKdl(boost::shared_ptr<urdf::Joint> jnt) {
 }
 
 // construct inertia
-RigidBodyInertia toKdl(boost::shared_ptr<urdf::Inertial> i) {
+RigidBodyInertia toKdl(std::shared_ptr<urdf::Inertial> i) {
     Frame origin = toKdl(i->origin);
 
     // the mass is frame indipendent
@@ -130,8 +130,8 @@ RigidBodyInertia toKdl(boost::shared_ptr<urdf::Inertial> i) {
 }
 
 // recursive function to walk through tree
-bool addChildrenToTree(boost::shared_ptr<const urdf::Link> root, Tree& tree) {
-    std::vector<boost::shared_ptr<urdf::Link> > children = root->child_links;
+bool addChildrenToTree(std::shared_ptr<const urdf::Link> root, Tree& tree) {
+    std::vector<std::shared_ptr<urdf::Link> > children = root->child_links;
 
     // constructs the optional inertia
     RigidBodyInertia inert(0);
