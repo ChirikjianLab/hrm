@@ -13,6 +13,8 @@ if obs_shape == 1
             env_type = 'cluttered';
         case 3
             env_type = 'maze';
+        case 4
+            env_type = 'gym_maze';
     end
     
 % Superelliptical obstacles
