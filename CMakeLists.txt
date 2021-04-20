@@ -49,7 +49,7 @@ include_directories(${orocos_kdl_INCLUDE_DIRS})
 link_libraries(${orocos_kdl_LIBRARIES})
 
 # kdl_parser is OPTIONAL for now
-find_package(kdl_parser)
+find_package(kdl_parser QUIET)
 if(kdl_parser_FOUND)
     link_libraries(${kdl_parser_LIBRARIES})
 endif()
