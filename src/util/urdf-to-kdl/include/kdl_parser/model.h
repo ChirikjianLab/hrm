@@ -32,7 +32,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Wim Meeussen */
+/* Author: Wim Meeussen
+ *
+ * Modified: Pouya Mohammadi
+ *   This is based on ROS stack and code by Wim, which I unROSed!
+ *   There are prbably some unused functions and there might be some errors in
+ *   some cases. Use this at your own risk!
+ *
+ * Further modified: Sipu Ruan
+ *   changed boost::shared_ptr into urdf::*ShredPtr
+ */
 
 #ifndef URDF_MODEL_H
 #define URDF_MODEL_H

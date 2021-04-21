@@ -37,7 +37,7 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL REQUIRED)
+find_package(CGAL 5.2 REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 
 find_package(GMP REQUIRED)
@@ -51,10 +51,13 @@ link_libraries(${orocos_kdl_LIBRARIES})
 # kdl_parser is OPTIONAL for now
 find_package(kdl_parser QUIET)
 if(kdl_parser_FOUND)
+    message("Found KDL_Parser from ROS dependencies")
     link_libraries(${kdl_parser_LIBRARIES})
+else()
+    message("Not found ROS KDL_Parser, will use pure CMake version")
 endif()
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.0 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
 find_package(Boost 1.55 REQUIRED)

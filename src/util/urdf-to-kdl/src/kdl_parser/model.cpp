@@ -32,21 +32,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Wim Meeussen */
+/* Author: Wim Meeussen
+ *
+ * Modified: Pouya Mohammadi
+ *   This is based on ROS stack and code by Wim, which I unROSed!
+ *   There are prbably some unused functions and there might be some errors in
+ *   some cases. Use this at your own risk!
+ *
+ * Further modified: Sipu Ruan
+ *   changed boost::shared_ptr into urdf::*ShredPtr
+ */
 
-#include "model.h"
+#include "kdl_parser/model.h"
 
-/* we include the default parser for plain URDF files;
+/* include the default parser for plain URDF files;
    other parsers are loaded via plugins (if available) */
 #include <urdf_parser/urdf_parser.h>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/thread.hpp>
-
 #include <fstream>
 #include <iostream>
-#include <vector>
 
 namespace urdf {
 
@@ -65,7 +69,7 @@ bool Model::initXml(TiXmlDocument* xml_doc) {
 // My take on that method. It is however, necessary to ckeck if COLLADA is
 // needed in some cases...
 bool Model::initString(const std::string& xml_string) {
-    std::shared_ptr<ModelInterface> model;
+    ModelInterfaceSharedPtr model;
 
     // necessary for COLLADA compatibility
     model = parseURDF(xml_string);

@@ -32,159 +32,174 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Wim Meeussen */
-
-/* Modified: Pouya Mohammadi
- * This is based on ROS stack and code by Wim, which I unROSed!
- * There are prbably some unused functions and there might be some errors in
- * some cases. Use this at your own risk!
+/* Author: Wim Meeussen
+ *
+ * Modified: Pouya Mohammadi
+ *   This is based on ROS stack and code by Wim, which I unROSed!
+ *   There are prbably some unused functions and there might be some errors in
+ *   some cases. Use this at your own risk!
+ *
+ * Further modified: Sipu Ruan
+ *   changed boost::shared_ptr into urdf::*ShredPtr
  */
 
-#include "kdl_parser.hpp"
-#include "model.h"
+#include "kdl_parser/kdl_parser.hpp"
+#include "kdl_parser/model.h"
 
 #include <iostream>
-
-using namespace std;
-using namespace KDL;
 
 namespace kdl_parser {
 
 // construct vector
-Vector toKdl(urdf::Vector3 v) { return Vector(v.x, v.y, v.z); }
+KDL::Vector toKdl(urdf::Vector3 v) { return KDL::Vector(v.x, v.y, v.z); }
 
 // construct rotation
-Rotation toKdl(urdf::Rotation r) {
-    return Rotation::Quaternion(r.x, r.y, r.z, r.w);
+KDL::Rotation toKdl(urdf::Rotation r) {
+    return KDL::Rotation::Quaternion(r.x, r.y, r.z, r.w);
 }
 
 // construct pose
-Frame toKdl(urdf::Pose p) {
-    return Frame(toKdl(p.rotation), toKdl(p.position));
+KDL::Frame toKdl(urdf::Pose p) {
+    return KDL::Frame(toKdl(p.rotation), toKdl(p.position));
 }
 
 // construct joint
-Joint toKdl(std::shared_ptr<urdf::Joint> jnt) {
-    Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
+KDL::Joint toKdl(urdf::JointSharedPtr jnt) {
+    KDL::Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
 
     switch (jnt->type) {
         case urdf::Joint::FIXED: {
-            return Joint(jnt->name, Joint::None);
+            return KDL::Joint(jnt->name, KDL::Joint::None);
         }
         case urdf::Joint::REVOLUTE: {
-            Vector axis = toKdl(jnt->axis);
-            return Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
-                         Joint::RotAxis);
+            KDL::Vector axis = toKdl(jnt->axis);
+            return KDL::Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
+                              KDL::Joint::RotAxis);
         }
         case urdf::Joint::CONTINUOUS: {
-            Vector axis = toKdl(jnt->axis);
-            return Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
-                         Joint::RotAxis);
+            KDL::Vector axis = toKdl(jnt->axis);
+            return KDL::Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
+                              KDL::Joint::RotAxis);
         }
         case urdf::Joint::PRISMATIC: {
-            Vector axis = toKdl(jnt->axis);
-            return Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
-                         Joint::TransAxis);
+            KDL::Vector axis = toKdl(jnt->axis);
+            return KDL::Joint(jnt->name, F_parent_jnt.p, F_parent_jnt.M * axis,
+                              KDL::Joint::TransAxis);
         }
         default: {
-            std::cout << "Converting unknown joint type of joint "
-                      << jnt->name.c_str() << " into a fixed joint."
-                      << std::endl;
-
-            return Joint(jnt->name, Joint::None);
+            std::cout << "Converting unknown joint type of joint '"
+                      << jnt->name.c_str() << "' into a fixed joint";
+            return KDL::Joint(jnt->name, KDL::Joint::None);
         }
     }
-    return Joint();
+    return KDL::Joint();
 }
 
 // construct inertia
-RigidBodyInertia toKdl(std::shared_ptr<urdf::Inertial> i) {
-    Frame origin = toKdl(i->origin);
+KDL::RigidBodyInertia toKdl(urdf::InertialSharedPtr i) {
+    KDL::Frame origin = toKdl(i->origin);
 
-    // the mass is frame indipendent
+    // the mass is frame independent
     double kdl_mass = i->mass;
 
     // kdl and urdf both specify the com position in the reference frame of the
     // link
-    Vector kdl_com = origin.p;
+    KDL::Vector kdl_com = origin.p;
 
     // kdl specifies the inertia matrix in the reference frame of the link,
     // while the urdf specifies the inertia matrix in the inertia reference
     // frame
-    RotationalInertia urdf_inertia =
-        RotationalInertia(i->ixx, i->iyy, i->izz, i->ixy, i->ixz, i->iyz);
+    KDL::RotationalInertia urdf_inertia =
+        KDL::RotationalInertia(i->ixx, i->iyy, i->izz, i->ixy, i->ixz, i->iyz);
 
     // Rotation operators are not defined for rotational inertia,
     // so we use the RigidBodyInertia operators (with com = 0) as a workaround
-    RigidBodyInertia kdl_inertia_wrt_com_workaround =
-        origin.M * RigidBodyInertia(0, Vector::Zero(), urdf_inertia);
+    KDL::RigidBodyInertia kdl_inertia_wrt_com_workaround =
+        origin.M * KDL::RigidBodyInertia(0, KDL::Vector::Zero(), urdf_inertia);
 
     // Note that the RigidBodyInertia constructor takes the 3d inertia wrt the
     // com while the getRotationalInertia method returns the 3d inertia wrt the
     // frame origin (but having com = Vector::Zero() in
     // kdl_inertia_wrt_com_workaround they match)
-    RotationalInertia kdl_inertia_wrt_com =
+    KDL::RotationalInertia kdl_inertia_wrt_com =
         kdl_inertia_wrt_com_workaround.getRotationalInertia();
 
-    return RigidBodyInertia(kdl_mass, kdl_com, kdl_inertia_wrt_com);
+    return KDL::RigidBodyInertia(kdl_mass, kdl_com, kdl_inertia_wrt_com);
 }
 
 // recursive function to walk through tree
-bool addChildrenToTree(std::shared_ptr<const urdf::Link> root, Tree& tree) {
-    std::vector<std::shared_ptr<urdf::Link> > children = root->child_links;
+bool addChildrenToTree(urdf::LinkConstSharedPtr root, KDL::Tree& tree) {
+    std::vector<urdf::LinkSharedPtr> children = root->child_links;
 
     // constructs the optional inertia
-    RigidBodyInertia inert(0);
-    if (root->inertial) inert = toKdl(root->inertial);
+    KDL::RigidBodyInertia inert(0);
+    if (root->inertial) {
+        inert = toKdl(root->inertial);
+    }
 
     // constructs the kdl joint
-    Joint jnt = toKdl(root->parent_joint);
+    KDL::Joint jnt = toKdl(root->parent_joint);
 
     // construct the kdl segment
-    Segment sgm(root->name, jnt,
-                toKdl(root->parent_joint->parent_to_joint_origin_transform),
-                inert);
+    KDL::Segment sgm(
+        root->name, jnt,
+        toKdl(root->parent_joint->parent_to_joint_origin_transform), inert);
 
     // add segment to tree
     tree.addSegment(sgm, root->parent_joint->parent_link_name);
 
     // recurslively add all children
     for (size_t i = 0; i < children.size(); i++) {
-        if (!addChildrenToTree(children[i], tree)) return false;
+        if (!addChildrenToTree(children[i], tree)) {
+            return false;
+        }
     }
     return true;
 }
 
-bool treeFromFile(const string& file, Tree& tree) {
+bool treeFromFile(const std::string& file, KDL::Tree& tree) {
     TiXmlDocument urdf_xml;
     urdf_xml.LoadFile(file);
     return treeFromXml(&urdf_xml, tree);
 }
 
-bool treeFromXml(TiXmlDocument* xml_doc, Tree& tree) {
+bool treeFromString(const std::string& xml, KDL::Tree& tree) {
+    TiXmlDocument urdf_xml;
+    urdf_xml.Parse(xml.c_str());
+    return treeFromXml(&urdf_xml, tree);
+}
+
+bool treeFromXml(TiXmlDocument* xml_doc, KDL::Tree& tree) {
     urdf::Model robot_model;
     if (!robot_model.initXml(xml_doc)) {
-        std::cout << "Could not generate robot model" << std::endl;
+        std::cout << "Could not generate robot model";
         return false;
     }
     return treeFromUrdfModel(robot_model, tree);
 }
 
-bool treeFromUrdfModel(const urdf::ModelInterface& robot_model, Tree& tree) {
-    tree = Tree(robot_model.getRoot()->name);
+bool treeFromUrdfModel(const urdf::ModelInterface& robot_model,
+                       KDL::Tree& tree) {
+    if (!robot_model.getRoot()) {
+        return false;
+    }
+
+    tree = KDL::Tree(robot_model.getRoot()->name);
 
     // warn if root link has inertia. KDL does not support this
-    if (robot_model.getRoot()->inertial)
-        std::cout << "The root link " << robot_model.getRoot()->name.c_str()
+    if (robot_model.getRoot()->inertial) {
+        std::cout << "The root link" << robot_model.getRoot()->name.c_str()
                   << " has an inertia specified in the URDF, but KDL does not "
                      "support a root link with an inertia.  As a workaround, "
-                     "you can add an extra dummy link to your URDF."
-                  << std::endl;
+                     "you can add an extra dummy link to your URDF.";
+    }
 
     //  add all children
-    for (size_t i = 0; i < robot_model.getRoot()->child_links.size(); i++)
-        if (!addChildrenToTree(robot_model.getRoot()->child_links[i], tree))
+    for (size_t i = 0; i < robot_model.getRoot()->child_links.size(); i++) {
+        if (!addChildrenToTree(robot_model.getRoot()->child_links[i], tree)) {
             return false;
+        }
+    }
 
     return true;
 }

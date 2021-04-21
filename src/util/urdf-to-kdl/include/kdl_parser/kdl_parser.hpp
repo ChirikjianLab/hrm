@@ -32,12 +32,15 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Wim Meeussen */
-
-/* Modified: Pouya Mohammadi
- * This is based on ROS stack and code by Wim, which I unROSed!
- * There are prbably some unused functions and there might be some errors in
- * some cases. Use this at your own risk!
+/* Author: Wim Meeussen
+ *
+ * Modified: Pouya Mohammadi
+ *   This is based on ROS stack and code by Wim, which I unROSed!
+ *   There are prbably some unused functions and there might be some errors in
+ *   some cases. Use this at your own risk!
+ *
+ * Further modified: Sipu Ruan
+ *   changed boost::shared_ptr into urdf::*ShredPtr
  */
 
 #ifndef KDL_PARSER_H
@@ -57,17 +60,10 @@ namespace kdl_parser {
  */
 bool treeFromFile(const std::string& file, KDL::Tree& tree);
 
-/** Constructs a KDL tree from the parameter server, given the parameter name
- * \param param the name of the parameter on the parameter server
- * \param tree The resulting KDL Tree
- * returns true on success, false on failure
- */
-bool treeFromParam(const std::string& param, KDL::Tree& tree);
-
 /** Constructs a KDL tree from a TiXmlDocument
- * \param xml_doc The TiXmlDocument containting the xml description of the robot
- * \param tree The resulting KDL Tree
- * returns true on success, false on failure
+ * \param xml_doc The TiXmlDocument containting the xml description of the
+ * robot \param tree The resulting KDL Tree returns true on success, false
+ * on failure
  */
 bool treeFromXml(TiXmlDocument* xml_doc, KDL::Tree& tree);
 

@@ -1,7 +1,7 @@
 project(KDL_Parser)
 cmake_minimum_required(VERSION 3.5)
 
-file(GLOB KDL_Parser_SOURCES src/*.cpp)
+file(GLOB KDL_Parser_SOURCES src/kdl_parser/*.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
