@@ -29,7 +29,7 @@ find_package(OMPL REQUIRED)
 include_directories(${OMPL_INCLUDE_DIRS})
 link_libraries(${OMPL_LIBRARIES})
 
-find_package(FCL REQUIRED)
+find_package(FCL 0.6 REQUIRED)
 include_directories(${FCL_INCLUDE_DIRS})
 link_libraries(${FCL_LIBRARIES})
 
@@ -54,13 +54,13 @@ if(kdl_parser_FOUND)
     message("Found KDL_Parser from ROS dependencies")
     link_libraries(${kdl_parser_LIBRARIES})
 else()
-    message("Not found ROS KDL_Parser, will use pure CMake version")
+    message("ROS version of KDL_Parser NOT FOUND, will use pure CMake version")
 endif()
 
-find_package(Eigen3 3.0 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost 1.55 REQUIRED)
+find_package(Boost 1.58 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
