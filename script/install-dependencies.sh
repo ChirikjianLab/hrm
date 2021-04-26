@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# TODO : temporary solution to resolve ssh priviledge. Set the owner of .ssh to the owner of docker, a.k.a, robot
+# docker's username : robot
+# docker's sudo password : robot
+sudo chown -R robot:robot "$HOME"/.ssh
+# Note: After exiting docker, you will need to reset the owner of .ssh on your localhost
+
+eval "$(ssh-agent -s)"
+ssh-add "$HOME"/.ssh/id_rsa
+
 # Use ninja build system for fast speed
 sudo apt-get install -y ninja-build
 

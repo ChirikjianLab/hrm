@@ -9,15 +9,19 @@ fi
 
 # Name of the docker container
 name="highway-roadmap"
+user="robot"
 
 # Workspace to mount to docker container
-workspace="$HOME/HighwayRoadMap_WS"
+workspace="$HOME"
 
 docker run \
     -it \
     --rm \
+    --privileged \
     --name $name \
+    --user $user \
     --env="TERM=xterm-256color" \
-    -v $workspace/HighwayRoadMap:$HOME/HighwayRoadMap \
+    -v "$workspace/.ssh/":/home/robot/.ssh/ \
+    -v "$workspace/HighwayRoadMap_WS/":/home/robot/HighwayRoadMap_WS/ \
     "$dockerImage" \
     /bin/bash
