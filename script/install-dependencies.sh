@@ -22,24 +22,27 @@ buildAndInstall() {
   cd .. && rm -rf build && rm -rf "$1"
 }
 
-# libcdd build and install
-git clone git@github.com:danfis/libccd.git
+# Boost 1.58 install
+wget -O - https://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download | tar zxf -
+cd boost_1_58_0/
+./bootstrap.sh && sudo ./b2 install
+
+# libccd install from source
+git clone https://github.com/danfis/libccd.git
 srcDir="libccd"
 buildAndInstall "$srcDir"
 
-# fcl bulid and install
-git clone git@github.com:flexible-collision-library/fcl.git
+# fcl 0.6 install from source
+git clone https://github.com/flexible-collision-library/fcl.git
 srcDir="fcl"
 buildAndInstall "$srcDir"
 
-# boost install
-sudo add-apt-repository ppa:mhier/libboost-latest
-sudo apt update
-sudo apt install libboost-all-dev
-
-# cgal install
+# cgal 5.2 install from source
 sudo apt install libgmp-dev
-sudo apt-get install libcgal-dev
+
+git clone https://github.com/CGAL/cgal.git
+srcDir="cgal"
+buildAndInstall "$srcDir"
 
 # ompl install
 sudo apt-get install libompl-dev ompl-demos
