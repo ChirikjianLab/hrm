@@ -1,7 +1,3 @@
-if(NOT kdl_parser_FOUND)
-    add_subdirectory(urdf-to-kdl)
-endif()
-
 add_library(UTIL
             EllipsoidSeparation.cpp
             EllipsoidSQCollisionFCL.cpp
@@ -22,5 +18,5 @@ if(kdl_parser_FOUND)
 else()
     target_link_libraries(UTIL
                           KDL_Parser)
-    target_include_directories(UTIL PUBLIC urdf-to-kdl/include)
+    target_include_directories(UTIL PUBLIC external/kdl_parser/include)
 endif()

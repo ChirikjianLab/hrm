@@ -48,14 +48,15 @@ find_package(orocos_kdl)
 include_directories(${orocos_kdl_INCLUDE_DIRS})
 link_libraries(${orocos_kdl_LIBRARIES})
 
-# kdl_parser is OPTIONAL for now
+# kdl_parser is OPTIONAL for now, we have provided a lite-version of KDL_parser
 find_package(kdl_parser QUIET)
 if(kdl_parser_FOUND)
-    message("-- Found KDL_Parser from ROS dependencies")
+    message(STATUS "Found KDL_Parser from ROS dependencies")
     link_libraries(${kdl_parser_LIBRARIES})
     include_directories(${kdl_parser_INCLUDE_DIRS})
 else()
-    message("-- ROS version of KDL_Parser NOT FOUND, will use pure CMake version")
+    message(STATUS "ROS version of KDL_Parser NOT FOUND, will use pure CMake version")
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/util/external/kdl_parser)
 endif()
 
 find_package(Eigen3 3.3 REQUIRED)
