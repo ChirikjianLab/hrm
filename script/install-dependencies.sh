@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# TODO : temporary solution to resolve ssh priviledge. Set the owner of .ssh to the owner of docker, a.k.a, robot
+# docker's username : robot
+# docker's sudo password : robot
+sudo chown -R robot:robot "$HOME"/.ssh
+# Note: After exiting docker, you will need to reset the owner of .ssh on your localhost
+
+eval "$(ssh-agent -s)"
+ssh-add "$HOME"/.ssh/id_rsa
+
 # Use ninja build system for fast speed
 sudo apt-get install -y ninja-build
 
@@ -13,24 +22,27 @@ buildAndInstall() {
   cd .. && rm -rf build && rm -rf "$1"
 }
 
-# libcdd build and install
-git clone git@github.com:danfis/libccd.git
+# Boost 1.58 install
+wget -O - https://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download | tar zxf -
+cd boost_1_58_0/
+./bootstrap.sh && sudo ./b2 install
+
+# libccd install from source
+git clone https://github.com/danfis/libccd.git
 srcDir="libccd"
 buildAndInstall "$srcDir"
 
-# fcl bulid and install
-git clone git@github.com:flexible-collision-library/fcl.git
+# fcl 0.6 install from source
+git clone https://github.com/flexible-collision-library/fcl.git
 srcDir="fcl"
 buildAndInstall "$srcDir"
 
-# boost install
-sudo add-apt-repository ppa:mhier/libboost-latest
-sudo apt update
-sudo apt install libboost-all-dev
-
-# cgal install
+# cgal 5.2 install from source
 sudo apt install libgmp-dev
-sudo apt-get install libcgal-dev
+
+git clone https://github.com/CGAL/cgal.git
+srcDir="cgal"
+buildAndInstall "$srcDir"
 
 # ompl install
 sudo apt-get install libompl-dev ompl-demos
@@ -47,3 +59,6 @@ cd "$HOME"/tmpHRM || exit
 git clone https://github.com/google/googletest.git -b release-1.10.0
 srcDir="googletest"
 buildAndInstall "$srcDir"
+
+# install deb package for urdfdom and tinmyxml
+sudo apt install liburdfdom-dev

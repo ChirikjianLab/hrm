@@ -9,8 +9,8 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 - [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
-- [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 2.91.0)
-- [Boost](https://www.boost.org/) (version >= 1.55.0)
+- [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 3.3.0)
+- [Boost](https://www.boost.org/) (version = 1.58.0)
 - [google-test](https://github.com/google/googletest) (version >= 1.10.x)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [cmake-format] (version >= 0.4.5)
@@ -34,12 +34,12 @@ cd build
 cmake ../
 make
 ```
-The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.10). All the binaries are then located in "/bin" folder.
+The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.5). All the binaries are then located in "/bin" folder.
 
 **Note**: 
 - If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
 ```
-cmake ../ -DCMAKE_PREFIX_PATH=/your/ompl/path -DOMPL_PREFIX=/your/ompl/include/dir
+cmake ../ -DOMPL_PREFIX=/your/ompl/include/dir
 ```
 - We provide an installation script for dependencies: "${ROOT_DIR}/script/install-dependencies.sh". Exectuting it will automatically install all the required dependencies.
 
