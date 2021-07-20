@@ -284,6 +284,25 @@ void HighwayRoadMap::connectMultiLayer() {
     }
 }
 
+// exception for termination
+struct AStarFoundGoal {};
+
+// visitor that terminates when we find the goal
+template <class Vertex>
+class AStarGoalVisitor : public boost::default_astar_visitor {
+  public:
+    AStarGoalVisitor(Vertex goal) : goal_(goal) {}
+    template <class Graph>
+    void examine_vertex(Vertex u, Graph& g) {
+        if (u == goal_) {
+            throw AStarFoundGoal();
+        }
+    }
+
+  private:
+    Vertex goal_;
+};
+
 void HighwayRoadMap::search() {
     Vertex idx_s, idx_g, num;
 
@@ -312,7 +331,8 @@ void HighwayRoadMap::search() {
         boost::predecessor_map(boost::make_iterator_property_map(
                                    p.begin(), get(boost::vertex_index, g)))
             .distance_map(make_iterator_property_map(
-                d.begin(), get(boost::vertex_index, g))));
+                d.begin(), get(boost::vertex_index, g)))
+            .visitor(AStarGoalVisitor<Vertex>(idx_g)));
 
     // Record path and cost
     num = 0;

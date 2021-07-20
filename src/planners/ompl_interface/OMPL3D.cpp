@@ -1,4 +1,4 @@
-#include "planners/include/ompl/OMPL3D.h"
+#include "planners/include/ompl_interface/OMPL3D.h"
 
 OMPL3D::OMPL3D(std::vector<double> lowBound, std::vector<double> highBound,
                const MultiBodyTree3D &robot,

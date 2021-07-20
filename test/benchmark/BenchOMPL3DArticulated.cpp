@@ -1,4 +1,4 @@
-#include "planners/include/ompl/OMPL3DArticulated.h"
+#include "planners/include/ompl_interface/OMPL3DArticulated.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;

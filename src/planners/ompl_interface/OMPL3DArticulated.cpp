@@ -1,4 +1,4 @@
-#include "planners/include/ompl/OMPL3DArticulated.h"
+#include "planners/include/ompl_interface/OMPL3DArticulated.h"
 
 OMPL3DArticulated::OMPL3DArticulated(std::vector<double> lowBound,
                                      std::vector<double> highBound,
