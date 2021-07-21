@@ -10,16 +10,6 @@ HRM2DMultiBody::HRM2DMultiBody(const MultiBodyTree2D& robotM,
     : HighwayRoadMap2D(robotM.getBase(), endpt, arena, obs, param),
       RobotM(robotM) {}
 
-void HRM2DMultiBody::plan() {
-    ompl::time::point start = ompl::time::now();
-    buildRoadmap();
-    planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
-
-    start = ompl::time::now();
-    search();
-    planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
-}
-
 // Build the roadmap for multi-rigid-body planning
 void HRM2DMultiBody::buildRoadmap() {
     // angle steps

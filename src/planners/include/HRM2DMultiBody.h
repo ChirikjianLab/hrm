@@ -13,7 +13,6 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
     virtual ~HRM2DMultiBody() override;
 
   public:
-    void plan() override;
     void buildRoadmap() override;
     boundary boundaryGen() override;
     virtual void connectMultiLayer() override;

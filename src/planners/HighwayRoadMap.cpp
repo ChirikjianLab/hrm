@@ -78,30 +78,34 @@ void HighwayRoadMap::search() {
     // Search for shortest path
     std::vector<Vertex> p(num_vertices(g));
     std::vector<double> d(num_vertices(g));
-    boost::astar_search(
-        g, idx_s,
-        [this, idx_g](Vertex v) {
-            return vectorEuclidean(vtxEdge.vertex[v], vtxEdge.vertex[idx_g]);
-        },
-        boost::predecessor_map(boost::make_iterator_property_map(
-                                   p.begin(), get(boost::vertex_index, g)))
-            .distance_map(make_iterator_property_map(
-                d.begin(), get(boost::vertex_index, g)))
-            .visitor(AStarGoalVisitor<Vertex>(idx_g)));
 
-    // Record path and cost
-    num = 0;
-    Paths.push_back(int(idx_g));
-    while (Paths[num] != int(idx_s) && num <= num_vtx) {
-        Paths.push_back(int(p[size_t(Paths[num])]));
-        Cost += d[size_t(Paths[num])];
-        num++;
-    }
+    try {
+        boost::astar_search(
+            g, idx_s,
+            [this, idx_g](Vertex v) {
+                return vectorEuclidean(vtxEdge.vertex[v],
+                                       vtxEdge.vertex[idx_g]);
+            },
+            boost::predecessor_map(boost::make_iterator_property_map(
+                                       p.begin(), get(boost::vertex_index, g)))
+                .distance_map(make_iterator_property_map(
+                    d.begin(), get(boost::vertex_index, g)))
+                .visitor(AStarGoalVisitor<Vertex>(idx_g)));
+    } catch (AStarFoundGoal found) {
+        // Record path and cost
+        num = 0;
+        Paths.push_back(int(idx_g));
+        while (Paths[num] != int(idx_s) && num <= num_vtx) {
+            Paths.push_back(int(p[size_t(Paths[num])]));
+            Cost += d[size_t(Paths[num])];
+            num++;
+        }
 
-    std::reverse(std::begin(Paths), std::end(Paths));
+        std::reverse(std::begin(Paths), std::end(Paths));
 
-    if (num == num_vtx + 1) {
-        Paths.clear();
-        Cost = std::numeric_limits<double>::infinity();
+        if (num == num_vtx + 1) {
+            Paths.clear();
+            Cost = std::numeric_limits<double>::infinity();
+        }
     }
 }

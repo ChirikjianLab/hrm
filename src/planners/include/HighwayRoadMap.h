@@ -112,7 +112,7 @@ class HighwayRoadMap {
 
     AdjGraph Graph;
 
-    double Cost = 0.0;
+    double Cost = std::numeric_limits<double>::infinity();
     std::vector<int> Paths;
     polyCSpace polyVtx;
 

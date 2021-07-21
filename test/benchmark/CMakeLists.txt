@@ -21,20 +21,19 @@ target_link_libraries(BenchOMPL3DArticulated
 #                      TESTUTIL
 #                      ${OMPL})
 
+add_executable(BenchHRM2D BenchHRM2D.cpp)
+target_link_libraries(BenchHRM2D
+                      HRM_2D
+                      TESTUTIL)
+
 add_executable(BenchHighway3D BenchHighway3D.cpp)
 target_link_libraries(BenchHighway3D
-                      UTIL
                       HRM_3D
                       HIGHWAY_UTIL
-                      GEOM
-                      TESTUTIL
-                      ${OMPL})
+                      TESTUTIL)
 
 add_executable(BenchProbHRM3D BenchProbHRM3D.cpp)
 target_link_libraries(BenchProbHRM3D
-                      UTIL
                       HRM_3D
                       HIGHWAY_UTIL
-                      GEOM
-                      TESTUTIL
-                      ${OMPL})
+                      TESTUTIL)

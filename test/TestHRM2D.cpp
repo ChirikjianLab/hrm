@@ -10,31 +10,54 @@
 #include <iostream>
 #include <vector>
 
+#include "gtest/gtest.h"
+
 using namespace Eigen;
 using namespace std;
 
-#define pi 3.1415926
+param defineParam(const MultiBodyTree2D* robot, const PlannerSetting2D* env2D) {
+    param par;
+
+    par.N_layers = 50;
+    par.N_dy = 30;
+    par.sampleNum = 5;
+
+    par.N_o = env2D->getObstacle().size();
+    par.N_s = env2D->getArena().size();
+
+    double f = 1.5;
+    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                f * robot->getBase().getSemiAxis().at(0),
+                            env2D->getArena().at(0).getSemiAxis().at(1) -
+                                f * robot->getBase().getSemiAxis().at(0)};
+    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+
+    return par;
+}
 
 HRM2DMultiBody plan(const MultiBodyTree2D& robot,
                     const std::vector<std::vector<double>>& EndPts,
                     const std::vector<SuperEllipse>& arena,
                     const std::vector<SuperEllipse>& obs, const param& par) {
-    HRM2DMultiBody high(robot, EndPts, arena, obs, par);
-    high.plan();
+    HRM2DMultiBody hrm(robot, EndPts, arena, obs, par);
+    hrm.plan();
 
     // calculate original boundary points
     boundary bd_ori;
     for (size_t i = 0; i < par.N_s; i++) {
-        bd_ori.bd_s.push_back(high.Arena.at(i).getOriginShape());
+        bd_ori.bd_s.push_back(hrm.Arena.at(i).getOriginShape());
     }
     for (size_t i = 0; i < par.N_o; i++) {
-        bd_ori.bd_o.push_back(high.Obs.at(i).getOriginShape());
+        bd_ori.bd_o.push_back(hrm.Obs.at(i).getOriginShape());
     }
 
     // Output boundary and cell info
-    boundary bd = high.boundaryGen();
-    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
-    high.connectOneLayer(cell);
+    boundary bd = hrm.boundaryGen();
+    cf_cell cell = hrm.rasterScan(bd.bd_s, bd.bd_o);
+    hrm.connectOneLayer(cell);
 
     // write to .csv file
     ofstream file_ori_bd;
@@ -67,113 +90,76 @@ HRM2DMultiBody plan(const MultiBodyTree2D& robot,
     }
     file_cell.close();
 
-    return high;
+    return hrm;
 }
 
-int main(int argc, char** argv) {
-    if (argc != 4) {
-        cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep lines"
-             << endl;
-        return 1;
-    }
-
-    // Record planning time for N trials
-    int N = atoi(argv[1]);
-    int N_l = atoi(argv[2]);
-    int N_y = atoi(argv[3]);
-    vector<vector<double>> time_stat;
-
+TEST(TestHRMPlanning2D, MultiBody) {
     // Load Robot and Environment settings
     MultiBodyTree2D robot = loadRobotMultiBody2D(50);
     PlannerSetting2D* env2D = new PlannerSetting2D();
     env2D->loadEnvironment();
 
     // Parameters
-    param par;
-    par.N_layers = static_cast<size_t>(N_l);
-    par.N_dy = static_cast<size_t>(N_y);
-    par.sampleNum = 5;
+    param par = defineParam(&robot, env2D);
 
-    par.N_o = env2D->getObstacle().size();
-    par.N_s = env2D->getArena().size();
+    // Main algorithm
+    cout << "hrmway RoadMap for 2D rigid-body planning" << endl;
+    cout << "----------" << endl;
 
-    double f = 1.5;
-    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                f * robot.getBase().getSemiAxis().at(0),
-                            env2D->getArena().at(0).getSemiAxis().at(1) -
-                                f * robot.getBase().getSemiAxis().at(0)};
-    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+    cout << "Number of C-layers: " << par.N_layers << endl;
+    cout << "Number of sweep lines: " << par.N_dy << endl;
+    cout << "----------" << endl;
 
-    // Multiple planning trials
-    for (int i = 0; i < N; i++) {
-        HRM2DMultiBody high =
-            plan(robot, env2D->getEndPoints(), env2D->getArena(),
-                 env2D->getObstacle(), par);
+    cout << "Start planning..." << endl;
 
-        time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
-                             high.planTime.buildTime + high.planTime.searchTime,
-                             static_cast<double>(high.vtxEdge.vertex.size()),
-                             static_cast<double>(high.vtxEdge.edge.size()),
-                             static_cast<double>(high.Paths.size())});
+    HRM2DMultiBody hrm = plan(robot, env2D->getEndPoints(), env2D->getArena(),
+                              env2D->getObstacle(), par);
 
-        // Planning Time and Path Cost
-        cout << "Roadmap build time: " << high.planTime.buildTime << "s"
-             << endl;
-        cout << "Path search time: " << high.planTime.searchTime << "s" << endl;
-        cout << "Total Planning Time: "
-             << high.planTime.buildTime + high.planTime.searchTime << 's'
-             << endl;
+    // Planning Time and Path Cost
+    cout << "----------" << endl;
+    cout << "Roadmap build time: " << hrm.planTime.buildTime << "s" << endl;
+    cout << "Path search time: " << hrm.planTime.searchTime << "s" << endl;
+    cout << "Total Planning Time: "
+         << hrm.planTime.buildTime + hrm.planTime.searchTime << 's' << endl;
 
-        cout << "Number of valid configurations: " << high.vtxEdge.vertex.size()
-             << endl;
-        cout << "Number of configurations in Path: " << high.Paths.size()
-             << endl;
-        cout << "Cost: " << high.Cost << endl;
+    cout << "Number of valid configurations: " << hrm.vtxEdge.vertex.size()
+         << endl;
+    cout << "Number of configurations in Path: " << hrm.Paths.size() << endl;
+    cout << "Cost: " << hrm.Cost << endl;
 
-        // Write the output to .csv files
-        ofstream file_vtx;
-        file_vtx.open("vertex_2D.csv");
-        vector<vector<double>> vtx = high.vtxEdge.vertex;
-        for (size_t i = 0; i < vtx.size(); i++) {
-            file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2]
-                     << "\n";
-        }
-        file_vtx.close();
-
-        ofstream file_edge;
-        file_edge.open("edge_2D.csv");
-        vector<pair<int, int>> edge = high.vtxEdge.edge;
-        for (size_t i = 0; i < edge.size(); i++) {
-            file_edge << edge[i].first << ' ' << edge[i].second << "\n";
-        }
-        file_edge.close();
-
-        ofstream file_paths;
-        file_paths.open("paths_2D.csv");
-        vector<int> paths = high.Paths;
-        for (size_t i = 0; i < paths.size(); i++) {
-            file_paths << paths[i] << ' ';
-        }
-        file_paths.close();
+    // Write the output to .csv files
+    ofstream file_vtx;
+    file_vtx.open("vertex_2D.csv");
+    vector<vector<double>> vtx = hrm.vtxEdge.vertex;
+    for (size_t i = 0; i < vtx.size(); i++) {
+        file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2] << "\n";
     }
+    file_vtx.close();
 
-    // Store results
-    ofstream file_time;
-    file_time.open("time_high_2D.csv");
-    file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
-              << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
-              << "\n";
-    for (size_t i = 0; i < static_cast<size_t>(N); i++) {
-        file_time << time_stat[i][0] << ',' << time_stat[i][1] << ','
-                  << time_stat[i][2] << ',' << time_stat[i][3] << ','
-                  << time_stat[i][4] << ',' << time_stat[i][5] << "\n";
+    ofstream file_edge;
+    file_edge.open("edge_2D.csv");
+    vector<pair<int, int>> edge = hrm.vtxEdge.edge;
+    for (size_t i = 0; i < edge.size(); i++) {
+        file_edge << edge[i].first << ' ' << edge[i].second << "\n";
     }
-    file_time.close();
+    file_edge.close();
 
-    return 0;
+    ofstream file_paths;
+    file_paths.open("paths_2D.csv");
+    vector<int> paths = hrm.Paths;
+    for (size_t i = 0; i < paths.size(); i++) {
+        file_paths << paths[i] << ' ';
+    }
+    file_paths.close();
+
+    // GTest planning result
+    EXPECT_TRUE(hrm.Paths.size() > 0);
+    ASSERT_GE(hrm.vtxEdge.vertex.size(), 0);
+    ASSERT_GE(hrm.vtxEdge.edge.size(), 0);
+    ASSERT_GE(hrm.Cost, 0.0);
+}
+
+int main(int ac, char* av[]) {
+    testing::InitGoogleTest(&ac, av);
+    return RUN_ALL_TESTS();
 }
