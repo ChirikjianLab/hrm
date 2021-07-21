@@ -12,6 +12,8 @@
 #include <limits>
 #include <vector>
 
+static const double pi = 3.1415926;
+
 using Weight = boost::property<boost::edge_weight_t, double>;
 using AdjGraph =
     boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
@@ -67,37 +69,33 @@ class HighwayRoadMap {
 
   public:
     virtual void plan();
-    virtual void buildRoadmap();
-    virtual boundary boundaryGen();
-    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                       std::vector<Eigen::MatrixXd> bd_o);
-    void connectOneLayer(cf_cell cell);
-    virtual void connectMultiLayer();
+    virtual void buildRoadmap() = 0;
+    virtual boundary boundaryGen() = 0;
+    virtual void connectOneLayer(cf_cell cell) = 0;
+    virtual void connectMultiLayer() = 0;
     void search();
 
-  private:
-    cf_cell enhanceDecomp(cf_cell cell);
-    std::vector<double> addMidVtx(std::vector<double> vtx1,
-                                  std::vector<double> vtx2);
-    size_t getNearestVtxOnGraph(std::vector<double> v);
+  protected:
+    virtual cf_cell enhanceDecomp(cf_cell cell) = 0;
+    virtual size_t getNearestVtxOnGraph(std::vector<double> v) = 0;
 
     /* \brief Variables
-     * N_o       : number of obstacles;
-     * N_s       : number of arenas;
-     * N_dy      : number of sweep lines in each C-layer;
-     * infla     : inflation factor for the robot;
-     * N_layers  : number of C-layers;
-     * N_KCsample: number of samples for searching in the intersection between
-     * two local c-space;
-     * ang_r     : sampled orientations of the robot;
-     * N_v_layer : number of vertex in each layer;
+     * N_o         : number of obstacles;
+     * N_s         : number of arenas;
+     * N_dy        : number of sweep lines in each C-layer;
+     * infla       : inflation factor for the robot;
+     * N_layers    : number of C-layers;
+     * numMidSample: number of samples for searching in the intersection between
+     two local c-space;
+     * ang_r       : sampled orientations of the robot;
+     * N_v_layer   : number of vertex in each layer;
 
-     * graph     : a structure consisting of vertex and edges;
-     * Cost      : cost of the searched path;
-     * Endpt     : start and goal configurations;
-     * Path      : valid path of motions;
-     * polyVtx   : descriptions of polyhedron local c-space
-     * planTime  : planning time: roadmap building time and path search time
+     * graph       : a structure consisting of vertex and edges;
+     * Cost        : cost of the searched path;
+     * Endpt       : start and goal configurations;
+     * Path        : valid path of motions;
+     * polyVtx     : descriptions of polyhedron local c-space
+     * planTime    : planning time: roadmap building time and path search time
      */
   public:
     SuperEllipse Robot;

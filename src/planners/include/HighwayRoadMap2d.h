@@ -13,14 +13,19 @@ class HighwayRoadMap2D : public HighwayRoadMap {
     virtual ~HighwayRoadMap2D() override;
 
   public:
-    virtual void plan() override;
     virtual void buildRoadmap() override;
     virtual boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
 
+    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
+                       std::vector<Eigen::MatrixXd> bd_o);
+    void connectOneLayer(cf_cell cell);
+
   protected:
+    cf_cell enhanceDecomp(cf_cell cell) override;
     cf_cell midLayer(SuperEllipse Ec);
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
+    size_t getNearestVtxOnGraph(std::vector<double> v) override;
 
     /*
      * \brief Variables
