@@ -16,8 +16,6 @@ class Hrm3DMultiBody : public HighwayRoadMap3D {
     virtual ~Hrm3DMultiBody() override;
 
   public:
-    virtual void plan() override;
-
     void buildRoadmap() override;
 
     boundary3D boundaryGen() override;

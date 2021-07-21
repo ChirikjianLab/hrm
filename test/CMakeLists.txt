@@ -31,6 +31,7 @@ target_link_libraries(TestHRM3D
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES}
                       ${GTEST_LIBRARIES})
+add_test(TestHRM3D ${EXECUTABLE_OUTPUT_PATH}/TestHRM3D)
 
 add_subdirectory(benchmark)
 add_subdirectory(util)

@@ -245,7 +245,7 @@ class HighwayRoadMap3D {
         std::vector<int> PathId;
         std::vector<std::vector<double>> solvedPath;
         std::vector<std::vector<double>> interpolatedPath;
-        double Cost = 0.0;
+        double Cost = std::numeric_limits<double>::infinity();
     } solutionPathInfo;
 
     struct Time {

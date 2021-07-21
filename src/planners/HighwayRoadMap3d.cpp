@@ -20,9 +20,7 @@ HighwayRoadMap3D::HighwayRoadMap3D(SuperQuadrics robot,
       N_dx(opt.N_dx),
       N_dy(opt.N_dy),
       N_layers(opt.N_layers),
-      Lim(opt.Lim) {
-    std::cout << "Planning ..." << std::endl;
-}
+      Lim(opt.Lim) {}
 
 void HighwayRoadMap3D::plan() {
     ompl::time::point start = ompl::time::now();
@@ -575,40 +573,44 @@ void HighwayRoadMap3D::search() {
         for (Vertex idxG : idx_g) {
             std::vector<Vertex> p(num_vertices(g));
             std::vector<double> d(num_vertices(g));
-            boost::astar_search(
-                g, idxS,
-                [this, idxG](Vertex v) {
-                    return vectorEuclidean(vtxEdge.vertex[v],
-                                           vtxEdge.vertex[idxG]);
-                },
-                boost::predecessor_map(
-                    boost::make_iterator_property_map(
-                        p.begin(), get(boost::vertex_index, g)))
-                    .distance_map(make_iterator_property_map(
-                        d.begin(), get(boost::vertex_index, g)))
-                    .visitor(AStarGoalVisitor<Vertex>(idxG)));
 
-            // Record path and cost
-            num = 0;
-            solutionPathInfo.Cost = 0;
-            solutionPathInfo.PathId.push_back(int(idxG));
-            while (solutionPathInfo.PathId[num] != int(idxS) &&
-                   num <= num_vtx) {
-                solutionPathInfo.PathId.push_back(
-                    int(p[size_t(solutionPathInfo.PathId[num])]));
-                solutionPathInfo.Cost +=
-                    vtxEdge.weight[size_t(solutionPathInfo.PathId[num])];
-                num++;
-            }
-            std::reverse(std::begin(solutionPathInfo.PathId),
-                         std::end(solutionPathInfo.PathId));
+            try {
+                boost::astar_search(
+                    g, idxS,
+                    [this, idxG](Vertex v) {
+                        return vectorEuclidean(vtxEdge.vertex[v],
+                                               vtxEdge.vertex[idxG]);
+                    },
+                    boost::predecessor_map(
+                        boost::make_iterator_property_map(
+                            p.begin(), get(boost::vertex_index, g)))
+                        .distance_map(make_iterator_property_map(
+                            d.begin(), get(boost::vertex_index, g)))
+                        .visitor(AStarGoalVisitor<Vertex>(idxG)));
+            } catch (AStarFoundGoal found) {
+                // Record path and cost
+                num = 0;
+                solutionPathInfo.Cost = 0;
+                solutionPathInfo.PathId.push_back(int(idxG));
+                while (solutionPathInfo.PathId[num] != int(idxS) &&
+                       num <= num_vtx) {
+                    solutionPathInfo.PathId.push_back(
+                        int(p[size_t(solutionPathInfo.PathId[num])]));
+                    solutionPathInfo.Cost +=
+                        vtxEdge.weight[size_t(solutionPathInfo.PathId[num])];
+                    num++;
+                }
+                std::reverse(std::begin(solutionPathInfo.PathId),
+                             std::end(solutionPathInfo.PathId));
 
-            if (num == num_vtx + 1) {
-                solutionPathInfo.PathId.clear();
-                solutionPathInfo.Cost = std::numeric_limits<double>::infinity();
-            } else {
-                flag = true;
-                return;
+                if (num == num_vtx + 1) {
+                    solutionPathInfo.PathId.clear();
+                    solutionPathInfo.Cost =
+                        std::numeric_limits<double>::infinity();
+                } else {
+                    flag = true;
+                    return;
+                }
             }
         }
     }
@@ -616,8 +618,10 @@ void HighwayRoadMap3D::search() {
 
 std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
     std::vector<std::vector<double>> path;
+    auto poseSize = vtxEdge.vertex.at(0).size();
 
     // Start pose
+    Endpt.at(0).resize(poseSize);
     path.push_back(Endpt.at(0));
 
     // Iteratively store intermediate poses along the solved path
@@ -626,6 +630,7 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
     }
 
     // Goal pose
+    Endpt.at(1).resize(poseSize);
     path.push_back(Endpt.at(1));
 
     return path;

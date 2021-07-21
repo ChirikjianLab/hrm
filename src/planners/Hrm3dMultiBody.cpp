@@ -11,22 +11,6 @@ Hrm3DMultiBody::Hrm3DMultiBody(MultiBodyTree3D robot,
                                          opt),
       RobotM(robot) {}
 
-void Hrm3DMultiBody::plan() {
-    ompl::time::point start = ompl::time::now();
-    buildRoadmap();
-    planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
-
-    start = ompl::time::now();
-    search();
-    planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
-
-    planTime.totalTime = planTime.buildTime + planTime.searchTime;
-
-    // Retrieve coordinates of solved path
-    solutionPathInfo.solvedPath = getSolutionPath();
-    solutionPathInfo.interpolatedPath = getInterpolatedSolutionPath(5);
-}
-
 // Build the roadmap for multi-rigid-body planning
 void Hrm3DMultiBody::buildRoadmap() {
     // Samples from SO(3)
