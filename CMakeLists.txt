@@ -67,4 +67,7 @@ link_libraries(${GTEST_LIBRARIES})
 
 # Subdirectories
 add_subdirectory(src)
+
+set(BUILD_TESTING "" ON)
+enable_testing()
 add_subdirectory(test)
