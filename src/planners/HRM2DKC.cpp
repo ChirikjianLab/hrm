@@ -1,24 +1,24 @@
 #include "include/HRM2DKC.h"
 
 HRM2DKC::HRM2DKC(const SuperEllipse& robot,
-                 const std::vector<std::vector<double>>& endpt,
                  const std::vector<SuperEllipse>& arena,
-                 const std::vector<SuperEllipse>& obs, const param& param)
-    : HighwayRoadMap2D(robot, endpt, arena, obs, param) {}
+                 const std::vector<SuperEllipse>& obs,
+                 const PlanningRequest& req)
+    : HighwayRoadMap2D(robot, arena, obs, req) {}
 
 HRM2DKC::~HRM2DKC() {}
 
 void HRM2DKC::buildRoadmap() {
     // angle steps
-    double dr = 2 * pi / (N_layers - 1);
+    double dr = 2 * pi / (param_.NUM_LAYER - 1);
 
     // Setup rotation angles: angle range [-pi,pi]
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         ang_r.push_back(-pi + dr * i);
     }
 
-    for (size_t i = 0; i < N_layers; ++i) {
-        Robot.setAngle(ang_r.at(i));
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        robot_.setAngle(ang_r.at(i));
         // boundary for obstacles and arenas
         boundary bd = boundaryGen();
 
@@ -35,7 +35,7 @@ void HRM2DKC::buildRoadmap() {
 }
 
 boundary HRM2DKC::boundaryGen() {
-    SuperEllipse robot_infla = Robot;
+    SuperEllipse robot_infla = robot_;
     boundary bd;
 
     // Enlarge the robot
@@ -44,10 +44,10 @@ boundary HRM2DKC::boundaryGen() {
 
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd.bd_s.emplace_back(Arena[i].getMinkSum2D(robot_infla, -1));
+        bd.bd_s.emplace_back(arena_[i].getMinkSum2D(robot_infla, -1));
     }
     for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd.bd_o.emplace_back(Obs[i].getMinkSum2D(robot_infla, +1));
+        bd.bd_o.emplace_back(obs_[i].getMinkSum2D(robot_infla, +1));
     }
 
     return bd;
@@ -64,10 +64,10 @@ void HRM2DKC::connectMultiLayer() {
     std::vector<double> v2;
     std::vector<double> midVtx;
 
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Find vertex only in adjecent layers
         n_11 = N_v_layer[i];
-        if (i != N_layers - 1) {
+        if (i != param_.NUM_LAYER - 1) {
             n_2 = N_v_layer[i + 1];
             n_12 = n_11;
         } else {
@@ -111,7 +111,7 @@ std::vector<double> HRM2DKC::addMidVtx(std::vector<double> vtx1,
     std::vector<double> midVtx, pt, pt1, pt2;
     bool flag;
 
-    for (size_t iter = 0; iter < numMidSample; iter++) {
+    for (size_t iter = 0; iter < param_.NUM_POINT; iter++) {
         pt.clear();
         pt1.clear();
         pt2.clear();

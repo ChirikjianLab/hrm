@@ -62,22 +62,22 @@ class HighwayRoadMap3D {
     virtual ~HighwayRoadMap3D();
 
   public:
-    /*
+    /**
      * \brief main function for planning
      */
     virtual void plan();
 
-    /*
+    /**
      * \brief main function for building the roadmap
      */
     virtual void buildRoadmap();
 
-    /*
+    /**
      * \brief compute Minkowski sum boundary
      */
     virtual boundary3D boundaryGen();
 
-    /*
+    /**
      * \brief sweep-line process for cell decomposition, vertical lines parallel
      * to z-axis
      * \param bd_s, bd_o Minkowski boundry of obstacles and arenas
@@ -86,7 +86,7 @@ class HighwayRoadMap3D {
     cf_cell3D sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
                          std::vector<Eigen::MatrixXd> bd_o);
 
-    /*
+    /**
      * \brief subroutine for generating collision-free vertices on the yz-plane
      * \param ty a vector of incremented y-coordinates
      * \param z_s_L, z_s_U, z_o_L, z_o_U upper(U) and lower(L) z-coordinates of
@@ -111,19 +111,19 @@ class HighwayRoadMap3D {
      */
     void connectOnePlane(const cf_cellYZ* cellYZ);
 
-    /*
-     * \brief connect within adjacent C-layers, using the idea of "middle
+    /**
+     * \brief connect within adjacent C-layers, using the idea of "bridge
      * C-layer"
      */
     virtual void connectMultiLayer();
 
-    /*
+    /**
      * \brief subroutine to first construct the middle C-layer
      */
     //    cf_cell3D midLayer(SuperQuadrics);
     std::vector<MeshMatrix> midLayer(SuperQuadrics);
 
-    /*
+    /**
      * \brief check whether connection between V1 and V2 within one C-layer is
      * valid through line segment V1-V2 and C-obstacle mesh intersection
      * checking
@@ -131,50 +131,50 @@ class HighwayRoadMap3D {
     bool isOneLayerTransitionFree(const std::vector<double>& V1,
                                   const std::vector<double>& V2);
 
-    /*
+    /**
      * \brief check whether connection between V1 and V2 is valid through
      * interpolation
      */
     virtual bool isTransitionFree(const std::vector<double>& V1,
                                   const std::vector<double>& V2);
 
-    /*
+    /**
      * \brief check is one point is within C-free
      */
     bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
                      const std::vector<double>& V);
 
-    /*
+    /**
      * \brief graph search using a-star algorithm
      */
     void search();
 
-    /*
+    /**
      * \brief get the resulting solved path and the interpolated one
      */
     std::vector<std::vector<double>> getSolutionPath();
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
 
-    /*
+    /**
      * \brief uniform random sample SO(3)
      */
     void sampleSO3();
 
-    /*
+    /**
      * \brief transformation for robot
      */
     virtual void setTransform(const std::vector<double>& V);
 
   private:
-    /*
+    /**
      * \brief enhanced cell decomposition, connect vertices within one
      * collision-free line segment, all connections between vertexes are within
      * one convex cell
      */
     cf_cellYZ enhanceDecomp(cf_cellYZ cell);
 
-    /*
+    /**
      * \brief find the nearest neighbors of a pose on the graph
      * \param v the queried vertex
      * \param k number of neighbors
@@ -184,12 +184,12 @@ class HighwayRoadMap3D {
                                                    const size_t k,
                                                    const double r);
 
-    /*
+    /**
      * \brief query whether a point is within a collision-free line segment
      */
     // bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
-    /*
+    /**
      * \brief Variables
      * N_o       : number of obstacles;
      * N_s       : number of arenas;

@@ -7,9 +7,10 @@
 class HRM2DMultiBody : public HighwayRoadMap2D {
   public:
     HRM2DMultiBody(const MultiBodyTree2D& robotM,
-                   const std::vector<std::vector<double>>& endpt,
                    const std::vector<SuperEllipse>& arena,
-                   const std::vector<SuperEllipse>& obs, const param& param);
+                   const std::vector<SuperEllipse>& obs,
+                   const PlanningRequest& req);
+
     virtual ~HRM2DMultiBody() override;
 
   public:

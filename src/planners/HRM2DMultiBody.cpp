@@ -3,20 +3,18 @@
 #define pi 3.1415926
 
 HRM2DMultiBody::HRM2DMultiBody(const MultiBodyTree2D& robotM,
-                               const std::vector<std::vector<double>>& endpt,
                                const std::vector<SuperEllipse>& arena,
                                const std::vector<SuperEllipse>& obs,
-                               const param& param)
-    : HighwayRoadMap2D(robotM.getBase(), endpt, arena, obs, param),
-      RobotM(robotM) {}
+                               const PlanningRequest& req)
+    : HighwayRoadMap2D(robotM.getBase(), arena, obs, req), RobotM(robotM) {}
 
 // Build the roadmap for multi-rigid-body planning
 void HRM2DMultiBody::buildRoadmap() {
     // angle steps
-    double dr = 2 * pi / (N_layers - 1);
+    double dr = 2 * pi / (param_.NUM_LAYER - 1);
 
     // Setup rotation angles: angle range [-pi,pi]
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         ang_r.push_back(-pi + dr * i);
     }
 
@@ -25,12 +23,12 @@ void HRM2DMultiBody::buildRoadmap() {
     tf.setIdentity();
 
     // Construct roadmap
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Set rotation matrix to robot
         tf.topLeftCorner(2, 2) =
             Eigen::Rotation2Dd(ang_r.at(i)).toRotationMatrix();
         RobotM.robotTF(tf);
-        Robot.setAngle(ang_r.at(i));
+        robot_.setAngle(ang_r.at(i));
 
         boundary bd = boundaryGen();
         cf_cell CFcell = rasterScan(bd.bd_s, bd.bd_o);
@@ -40,7 +38,7 @@ void HRM2DMultiBody::buildRoadmap() {
 
     // Connect adjacent layers using middle C-layer
     connectMultiLayer();
-};
+}
 
 // Minkowski Boundary
 boundary HRM2DMultiBody::boundaryGen() {
@@ -49,14 +47,14 @@ boundary HRM2DMultiBody::boundaryGen() {
     // Minkowski boundary points
     std::vector<Eigen::MatrixXd> bd_aux;
     for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd_aux = RobotM.minkSum(Arena.at(i), -1);
+        bd_aux = RobotM.minkSum(arena_.at(i), -1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.bd_s.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
     for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd_aux = RobotM.minkSum(Obs.at(i), 1);
+        bd_aux = RobotM.minkSum(obs_.at(i), 1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.bd_o.push_back(bd_aux.at(j));
         }
@@ -68,7 +66,7 @@ boundary HRM2DMultiBody::boundaryGen() {
 
 // Connect layers
 void HRM2DMultiBody::connectMultiLayer() {
-    if (N_layers == 1) {
+    if (param_.NUM_LAYER == 1) {
         return;
     }
 
@@ -81,10 +79,10 @@ void HRM2DMultiBody::connectMultiLayer() {
     std::vector<double> V1;
     std::vector<double> V2;
 
-    for (size_t i = 0; i < N_layers; ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         n_1 = N_v_layer[i];
         // Construct the middle layer
-        if (i == N_layers - 1 && N_layers != 2) {
+        if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
             j = 0;
         } else {
             j = i + 1;
@@ -111,7 +109,7 @@ void HRM2DMultiBody::connectMultiLayer() {
 
                 // Locate the neighbor vertices
                 if (vectorEuclidean({V1[0], V1[1]}, {V2[0], V2[1]}) >
-                    Lim[1] / N_dy) {
+                    param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
                     continue;
                 }
 
@@ -135,8 +133,8 @@ void HRM2DMultiBody::connectMultiLayer() {
 
 bool HRM2DMultiBody::isCollisionFree(const std::vector<double>& V1,
                                      const std::vector<double>& V2) {
-    double dt = 1.0 / (numMidSample - 1);
-    for (size_t i = 0; i < numMidSample; ++i) {
+    double dt = 1.0 / (param_.NUM_POINT - 1);
+    for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolated robot motion from V1 to V2
         std::vector<double> VStep;
         for (size_t j = 0; j < V1.size(); ++j) {
@@ -212,7 +210,7 @@ std::vector<SuperEllipse> HRM2DMultiBody::tfe_multi(const double thetaA,
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
     tfe.push_back(getTFE2D(RobotM.getBase().getSemiAxis(), thetaA, thetaB,
-                           uint(numMidSample), RobotM.getBase().getNum()));
+                           uint(param_.NUM_POINT), RobotM.getBase().getNum()));
 
     for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
         Eigen::Rotation2Dd rotLink(
@@ -222,9 +220,9 @@ std::vector<SuperEllipse> HRM2DMultiBody::tfe_multi(const double thetaA,
         Eigen::Rotation2Dd rotB(Eigen::Rotation2Dd(thetaB).toRotationMatrix() *
                                 rotLink);
 
-        tfe.push_back(getTFE2D(RobotM.getLinks().at(i).getSemiAxis(),
-                               rotA.angle(), rotB.angle(), uint(numMidSample),
-                               RobotM.getLinks().at(i).getNum()));
+        tfe.push_back(getTFE2D(
+            RobotM.getLinks().at(i).getSemiAxis(), rotA.angle(), rotB.angle(),
+            uint(param_.NUM_POINT), RobotM.getLinks().at(i).getNum()));
     }
 
     return tfe;

@@ -4,12 +4,13 @@
 #include "HighwayRoadMap.h"
 #include "src/geometry/include/TightFitEllipsoid.h"
 
-class HighwayRoadMap2D : public HighwayRoadMap {
+class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
   public:
     HighwayRoadMap2D(const SuperEllipse& robot,
-                     const std::vector<std::vector<double>>& endpt,
                      const std::vector<SuperEllipse>& arena,
-                     const std::vector<SuperEllipse>& obs, const param& param);
+                     const std::vector<SuperEllipse>& obs,
+                     const PlanningRequest& req);
+
     virtual ~HighwayRoadMap2D() override;
 
   public:
@@ -27,13 +28,15 @@ class HighwayRoadMap2D : public HighwayRoadMap {
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
     size_t getNearestVtxOnGraph(std::vector<double> v) override;
 
-    /*
-     * \brief Variables
-     * mid      : Ellipses for middle C-layers
-     * mid_cell : Middle C-layer as a cf_cell structure
-     */
+  protected:
+    /** \brief ang_r sampled orientations of the robot */
+    std::vector<double> ang_r;
+
   private:
+    /** \brief mid Ellipses for middle C-layers */
     std::vector<SuperEllipse> mid;
+
+    /** \brief mid_cell Middle C-layer as a cf_cell structure */
     cf_cell mid_cell;
 };
 

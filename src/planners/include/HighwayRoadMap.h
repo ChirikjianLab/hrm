@@ -1,18 +1,21 @@
 #ifndef HIGHWAYROADMAP_H
 #define HIGHWAYROADMAP_H
 
-#include "geometry/include/SuperEllipse.h"
+#include "planners/include/PlanningRequest.h"
 #include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
-#include <algorithm>
+
+#include "Eigen/Dense"
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <limits>
-#include <vector>
 
-static const double pi = 3.1415926;
+#include <algorithm>
+#include <limits>
+#include <list>
+#include <random>
 
 using Weight = boost::property<boost::edge_weight_t, double>;
 using AdjGraph =
@@ -21,10 +24,13 @@ using AdjGraph =
 using Vertex = AdjGraph::vertex_descriptor;
 using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
-using Edge = std::vector<std::pair<int, int>>;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
-// cf_cell: collision-free points
+using Edge = std::vector<std::pair<int, int>>;
+
+static const double pi = 3.1415926;
+
+/** \brief freeSegment collision-free line segments */
 struct cf_cell {
   public:
     std::vector<double> ty;
@@ -33,76 +39,124 @@ struct cf_cell {
     std::vector<std::vector<double>> xM;
 };
 
-// boundary: Minkowski boundary points for obstacles and arenas
+/** \brief boundary Minkowski boundary points for obstacles and arenas */
 struct boundary {
   public:
     std::vector<Eigen::MatrixXd> bd_s;
     std::vector<Eigen::MatrixXd> bd_o;
 };
 
-// Parameters for the polyhedron local c-space
-struct polyCSpace {
+/** \brief visitor that terminates when we find the goal */
+struct AStarFoundGoal {};
+
+template <class Vertex>
+class AStarGoalVisitor : public boost::default_astar_visitor {
   public:
-    std::vector<std::vector<double>> vertex;
-    std::vector<std::vector<double>> invMat;
+    AStarGoalVisitor(Vertex goal) : goal_(goal) {}
+    template <class Graph>
+    void examine_vertex(Vertex u, Graph& g) {
+        if (u == goal_) {
+            throw AStarFoundGoal();
+        }
+    }
+
+  private:
+    Vertex goal_;
 };
 
-struct param {
-    double infla;
-    size_t N_layers, N_dy, sampleNum, N_o, N_s;
-    polyCSpace polyVtx;
-
-    /*
-     * \brief Boundary limit of the planning arena
-     * \param Lim: {xLowBound, xHighBound, yLowbound, yHighBound}
-     */
-    std::vector<double> Lim;
-};
-
+/** \class HighwayRoadMap superclass for HRM-based planners */
+template <class RobotType, class ObjectType>
 class HighwayRoadMap {
   public:
-    HighwayRoadMap(const SuperEllipse& robot,
-                   const std::vector<std::vector<double>>& endpt,
-                   const std::vector<SuperEllipse>& arena,
-                   const std::vector<SuperEllipse>& obs, const param& param);
-    virtual ~HighwayRoadMap();
+    HighwayRoadMap(const RobotType& robot, const std::vector<ObjectType>& arena,
+                   const std::vector<ObjectType>& obs,
+                   const PlanningRequest& req)
+        : robot_(robot),
+          arena_(arena),
+          obs_(obs),
+          start_(req.start),
+          goal_(req.goal),
+          param_(req.planner_parameters),
+          N_o(obs.size()),
+          N_s(arena.size()) {}
+
+    virtual ~HighwayRoadMap() {}
 
   public:
-    virtual void plan();
+    virtual void plan() {
+        ompl::time::point start = ompl::time::now();
+        buildRoadmap();
+        planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
+
+        start = ompl::time::now();
+        search();
+        planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
+    }
+
     virtual void buildRoadmap() = 0;
     virtual boundary boundaryGen() = 0;
     virtual void connectOneLayer(cf_cell cell) = 0;
     virtual void connectMultiLayer() = 0;
-    void search();
+
+    void search() {
+        Vertex idx_s, idx_g, num;
+
+        // Construct the roadmap
+        size_t num_vtx = vtxEdge.vertex.size();
+        AdjGraph g(num_vtx);
+
+        for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
+            boost::add_edge(size_t(vtxEdge.edge[i].first),
+                            size_t(vtxEdge.edge[i].second),
+                            Weight(vtxEdge.weight[i]), g);
+        }
+
+        // Locate the nearest vertex for start and goal in the roadmap
+        idx_s = getNearestVtxOnGraph(start_);
+        idx_g = getNearestVtxOnGraph(goal_);
+
+        // Search for shortest path
+        std::vector<Vertex> p(num_vertices(g));
+        std::vector<double> d(num_vertices(g));
+
+        try {
+            boost::astar_search(
+                g, idx_s,
+                [this, idx_g](Vertex v) {
+                    return vectorEuclidean(vtxEdge.vertex[v],
+                                           vtxEdge.vertex[idx_g]);
+                },
+                boost::predecessor_map(
+                    boost::make_iterator_property_map(
+                        p.begin(), get(boost::vertex_index, g)))
+                    .distance_map(make_iterator_property_map(
+                        d.begin(), get(boost::vertex_index, g)))
+                    .visitor(AStarGoalVisitor<Vertex>(idx_g)));
+        } catch (AStarFoundGoal found) {
+            // Record path and cost
+            num = 0;
+            Paths.push_back(int(idx_g));
+            while (Paths[num] != int(idx_s) && num <= num_vtx) {
+                Paths.push_back(int(p[size_t(Paths[num])]));
+                Cost += d[size_t(Paths[num])];
+                num++;
+            }
+
+            std::reverse(std::begin(Paths), std::end(Paths));
+
+            if (num == num_vtx + 1) {
+                Paths.clear();
+                Cost = std::numeric_limits<double>::infinity();
+            }
+        }
+    }
 
   protected:
     virtual cf_cell enhanceDecomp(cf_cell cell) = 0;
     virtual size_t getNearestVtxOnGraph(std::vector<double> v) = 0;
 
-    /* \brief Variables
-     * N_o         : number of obstacles;
-     * N_s         : number of arenas;
-     * N_dy        : number of sweep lines in each C-layer;
-     * infla       : inflation factor for the robot;
-     * N_layers    : number of C-layers;
-     * numMidSample: number of samples for searching in the intersection between
-     two local c-space;
-     * ang_r       : sampled orientations of the robot;
-     * N_v_layer   : number of vertex in each layer;
-
-     * graph       : a structure consisting of vertex and edges;
-     * Cost        : cost of the searched path;
-     * Endpt       : start and goal configurations;
-     * Path        : valid path of motions;
-     * polyVtx     : descriptions of polyhedron local c-space
-     * planTime    : planning time: roadmap building time and path search time
-     */
   public:
-    SuperEllipse Robot;
-    std::vector<SuperEllipse> Arena, Obs;
-    std::vector<std::vector<double>> Endpt;
-
-    // graph: vector of vertices, vector of connectable edges
+    /** \param graph vector of vertices, vector of connectable edges */
     struct graph {
       public:
         std::vector<std::vector<double>> vertex;
@@ -110,27 +164,35 @@ class HighwayRoadMap {
         std::vector<double> weight;
     } vtxEdge;
 
-    AdjGraph Graph;
+    /** \param Cost cost of the searched path */
+    double Cost = 0.0;
 
-    double Cost = std::numeric_limits<double>::infinity();
+    /** \param Path valid path of motions */
     std::vector<int> Paths;
-    polyCSpace polyVtx;
 
+    /** \param Time roadmap building time and path search time */
     struct Time {
       public:
         double buildTime, searchTime;
     } planTime;
 
-  protected:
-    Eigen::Index N_o;
-    Eigen::Index N_s;
-    Eigen::Index N_dy;
-    size_t N_layers;
-    double infla;
-    size_t numMidSample;
-    std::vector<double> ang_r;
+    RobotType robot_;
+    std::vector<ObjectType> arena_;
+    std::vector<ObjectType> obs_;
+
+    std::vector<double> start_;
+    std::vector<double> goal_;
+
+    /** \param N_o number of obstacles */
+    size_t N_o;
+
+    /** \param N_s number of arenas */
+    size_t N_s;
+
+    /** \param N_v_layer number of vertex in each layer */
     std::vector<size_t> N_v_layer;
-    std::vector<double> Lim;
+
+    PlannerParameter param_;
 };
 
 #endif  // HIGHWAYROADMAP_H

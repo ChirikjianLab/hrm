@@ -36,37 +36,39 @@ int main(int argc, char** argv) {
     env2D->loadEnvironment();
 
     // Parameters
-    param par;
-    par.N_layers = static_cast<size_t>(N_l);
-    par.N_dy = static_cast<size_t>(N_y);
-    par.sampleNum = 5;
-
-    par.N_o = env2D->getObstacle().size();
-    par.N_s = env2D->getArena().size();
+    PlannerParameter par;
+    par.NUM_LAYER = static_cast<size_t>(N_l);
+    par.NUM_LINE_Y = static_cast<size_t>(N_y);
+    par.NUM_POINT = 5;
 
     double f = 1.5;
     vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
                                 f * robot.getBase().getSemiAxis().at(0),
                             env2D->getArena().at(0).getSemiAxis().at(1) -
                                 f * robot.getBase().getSemiAxis().at(0)};
-    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+    par.BOUND_LIMIT = {
+        env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
-    cout << "Number of C-layers: " << par.N_layers << endl;
-    cout << "Number of sweep lines: " << par.N_dy << endl;
+    cout << "Number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Number of sweep lines: " << par.NUM_LINE_Y << endl;
     cout << "----------" << endl;
 
     cout << "Start benchmark..." << endl;
 
     // Multiple planning trials
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env2D->getEndPoints().at(0);
+    req.goal = env2D->getEndPoints().at(1);
 
     for (int i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        HRM2DMultiBody hrm(robot, env2D->getEndPoints(), env2D->getArena(),
-                           env2D->getObstacle(), par);
+        HRM2DMultiBody hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
         hrm.plan();
 
         // Store statistics

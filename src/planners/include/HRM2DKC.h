@@ -6,10 +6,9 @@
 
 class HRM2DKC : public HighwayRoadMap2D {
   public:
-    HRM2DKC(const SuperEllipse& robot,
-            const std::vector<std::vector<double>>& endpt,
-            const std::vector<SuperEllipse>& arena,
-            const std::vector<SuperEllipse>& obs, const param& param);
+    HRM2DKC(const SuperEllipse& robot, const std::vector<SuperEllipse>& arena,
+            const std::vector<SuperEllipse>& obs, const PlanningRequest& req);
+
     virtual ~HRM2DKC();
 
   public:
@@ -21,6 +20,13 @@ class HRM2DKC : public HighwayRoadMap2D {
   private:
     std::vector<double> addMidVtx(std::vector<double> vtx1,
                                   std::vector<double> vtx2);
+
+  private:
+    /** \param polyVtx descriptions of polyhedron local c-space */
+    polyCSpace polyVtx;
+
+    /** \param infla inflation factor for the robot */
+    double infla;
 };
 
 #endif  // HRM2DKC_H

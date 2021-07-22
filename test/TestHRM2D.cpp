@@ -15,43 +15,44 @@
 using namespace Eigen;
 using namespace std;
 
-param defineParam(const MultiBodyTree2D* robot, const PlannerSetting2D* env2D) {
-    param par;
+PlannerParameter defineParam(const MultiBodyTree2D* robot,
+                             const PlannerSetting2D* env2D) {
+    PlannerParameter par;
 
-    par.N_layers = 50;
-    par.N_dy = 30;
-    par.sampleNum = 5;
-
-    par.N_o = env2D->getObstacle().size();
-    par.N_s = env2D->getArena().size();
+    par.NUM_LAYER = 50;
+    par.NUM_LINE_Y = 30;
+    par.NUM_POINT = 5;
 
     double f = 1.5;
     vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
                                 f * robot->getBase().getSemiAxis().at(0),
                             env2D->getArena().at(0).getSemiAxis().at(1) -
                                 f * robot->getBase().getSemiAxis().at(0)};
-    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+    par.BOUND_LIMIT = {
+        env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
     return par;
 }
 
 HRM2DMultiBody plan(const MultiBodyTree2D& robot,
-                    const std::vector<std::vector<double>>& EndPts,
                     const std::vector<SuperEllipse>& arena,
-                    const std::vector<SuperEllipse>& obs, const param& par) {
-    HRM2DMultiBody hrm(robot, EndPts, arena, obs, par);
+                    const std::vector<SuperEllipse>& obs,
+                    const PlanningRequest& req) {
+    HRM2DMultiBody hrm(robot, arena, obs, req);
     hrm.plan();
+
+    cout << "Finished planning!" << endl;
 
     // calculate original boundary points
     boundary bd_ori;
-    for (size_t i = 0; i < par.N_s; i++) {
-        bd_ori.bd_s.push_back(hrm.Arena.at(i).getOriginShape());
+    for (size_t i = 0; i < hrm.N_s; i++) {
+        bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
     }
-    for (size_t i = 0; i < par.N_o; i++) {
-        bd_ori.bd_o.push_back(hrm.Obs.at(i).getOriginShape());
+    for (size_t i = 0; i < hrm.N_o; i++) {
+        bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
     }
 
     // Output boundary and cell info
@@ -100,20 +101,26 @@ TEST(TestHRMPlanning2D, MultiBody) {
     env2D->loadEnvironment();
 
     // Parameters
-    param par = defineParam(&robot, env2D);
+    PlannerParameter par = defineParam(&robot, env2D);
 
     // Main algorithm
     cout << "hrmway RoadMap for 2D rigid-body planning" << endl;
     cout << "----------" << endl;
 
-    cout << "Number of C-layers: " << par.N_layers << endl;
-    cout << "Number of sweep lines: " << par.N_dy << endl;
+    cout << "Number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Number of sweep lines: " << par.NUM_LINE_Y << endl;
     cout << "----------" << endl;
 
     cout << "Start planning..." << endl;
 
-    HRM2DMultiBody hrm = plan(robot, env2D->getEndPoints(), env2D->getArena(),
-                              env2D->getObstacle(), par);
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env2D->getEndPoints().at(0);
+    req.goal = env2D->getEndPoints().at(1);
+
+    HRM2DMultiBody hrm =
+        plan(robot, env2D->getArena(), env2D->getObstacle(), req);
 
     // Planning Time and Path Cost
     cout << "----------" << endl;
