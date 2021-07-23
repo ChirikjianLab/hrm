@@ -160,18 +160,18 @@ void ProbHRM3D::connectMultiLayer() {
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const double tx, const cf_cellYZ* cellYZ) {
+void ProbHRM3D::generateVertices(const double tx, const cf_cell2D* cellYZ) {
     N_v.plane.clear();
     std::vector<double> vertex(v_.back().size());
 
     for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
         N_v.plane.push_back(vtxEdge.vertex.size());
 
-        for (size_t j = 0; j < cellYZ->zM[i].size(); ++j) {
+        for (size_t j = 0; j < cellYZ->xM[i].size(); ++j) {
             // Configuration of the base
             vertex.at(0) = tx;
             vertex.at(1) = cellYZ->ty[i];
-            vertex.at(2) = cellYZ->zM[i][j];
+            vertex.at(2) = cellYZ->xM[i][j];
             vertex.at(3) = robot_.getQuaternion().w();
             vertex.at(4) = robot_.getQuaternion().x();
             vertex.at(5) = robot_.getQuaternion().y();

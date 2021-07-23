@@ -31,7 +31,7 @@ void HRM2DMultiBody::buildRoadmap() {
         robot_.setAngle(ang_r.at(i));
 
         boundary bd = boundaryGen();
-        cf_cell CFcell = rasterScan(bd.bd_s, bd.bd_o);
+        cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
         connectOneLayer(CFcell);
         N_v_layer.push_back(vtxEdge.vertex.size());
     }
@@ -167,7 +167,7 @@ bool HRM2DMultiBody::isCollisionFree(const std::vector<double>& V1,
 }
 
 // Point in collision-free line segment
-bool HRM2DMultiBody::isPtInCFLine(const cf_cell& cell,
+bool HRM2DMultiBody::isPtInCFLine(const cf_cell2D& cell,
                                   const std::vector<double>& V) {
     std::vector<bool> isInLine(2, false);
 

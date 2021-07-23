@@ -179,11 +179,11 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
 }
 
 // Sweep Line process at each sweep plane
-cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
+cf_cell2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
                                    Eigen::MatrixXd z_s_L, Eigen::MatrixXd z_s_U,
                                    Eigen::MatrixXd z_o_L,
                                    Eigen::MatrixXd z_o_U) {
-    cf_cellYZ cellYZ;
+    cf_cell2D cellYZ;
 
     Interval op;
     std::vector<Interval> cf_seg[param_.NUM_LINE_Y], obs_seg, arena_seg,
@@ -219,9 +219,9 @@ cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
             zU.push_back(cf_seg[i][j].e());
             zM.push_back((cf_seg[i][j].s() + cf_seg[i][j].e()) / 2.0);
         }
-        cellYZ.zL.push_back(zL);
-        cellYZ.zU.push_back(zU);
-        cellYZ.zM.push_back(zM);
+        cellYZ.xL.push_back(zL);
+        cellYZ.xU.push_back(zU);
+        cellYZ.xM.push_back(zM);
 
         // Clear memory
         arena_seg.clear();
@@ -239,14 +239,14 @@ cf_cellYZ HighwayRoadMap3D::cfLine(std::vector<double> ty,
 // ******************************************************************** //
 // Generate vertices //
 void HighwayRoadMap3D::generateVertices(const double tx,
-                                        const cf_cellYZ* cellYZ) {
+                                        const cf_cell2D* cellYZ) {
     N_v.plane.clear();
     for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
         N_v.plane.push_back(vtxEdge.vertex.size());
-        for (size_t j = 0; j < cellYZ->zM[i].size(); ++j) {
+        for (size_t j = 0; j < cellYZ->xM[i].size(); ++j) {
             // Construct a std::vector of vertex
             vtxEdge.vertex.push_back(
-                {tx, cellYZ->ty[i], cellYZ->zM[i][j],
+                {tx, cellYZ->ty[i], cellYZ->xM[i][j],
                  robot_.getQuaternion().w(), robot_.getQuaternion().x(),
                  robot_.getQuaternion().y(), robot_.getQuaternion().z()});
         }
@@ -273,9 +273,9 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
         for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
             // Connect vertex btw adjacent planes, only connect with same ty
-            for (size_t k0 = 0; k0 < cell.cellYZ[i].zM[j].size(); k0++) {
+            for (size_t k0 = 0; k0 < cell.cellYZ[i].xM[j].size(); k0++) {
                 I0 = N_v.line[i][j];
-                for (size_t k1 = 0; k1 < cell.cellYZ[i + 1].zM[j].size();
+                for (size_t k1 = 0; k1 < cell.cellYZ[i + 1].xM[j].size();
                      k1++) {
                     I1 = N_v.line[i + 1][j];
                     //                    if (cell.cellYZ[i].zM[j][k0] >
@@ -301,17 +301,19 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     }
 }
 
-void HighwayRoadMap3D::connectOnePlane(const cf_cellYZ* CFcell) {
+void HighwayRoadMap3D::connectOneLayer(cf_cell2D cell) {}
+
+void HighwayRoadMap3D::connectOnePlane(const cf_cell2D* CFcell) {
     size_t N_0 = 0, N_1 = 0;
 
     // Connect vertices within one plane
     for (size_t i = 0; i < CFcell->ty.size(); ++i) {
         N_0 = N_v.plane[i];
         N_1 = N_v.plane[i + 1];
-        for (size_t j1 = 0; j1 < CFcell->zM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < CFcell->xM[i].size(); ++j1) {
             // Connect vertex within one sweep line
-            if (j1 != CFcell->zM[i].size() - 1) {
-                if (std::fabs(CFcell->zU[i][j1] - CFcell->zL[i][j1 + 1]) <
+            if (j1 != CFcell->xM[i].size() - 1) {
+                if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
                     1e-5) {
                     vtxEdge.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
@@ -323,7 +325,7 @@ void HighwayRoadMap3D::connectOnePlane(const cf_cellYZ* CFcell) {
 
             // Connect vertex btw adjacent cells
             if (i != CFcell->ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell->zM[i + 1].size(); ++j2) {
+                for (size_t j2 = 0; j2 < CFcell->xM[i + 1].size(); ++j2) {
                     //                    if (CFcell->zM[i][j1] >= CFcell->zL[i
                     //                    + 1][j2] &&
                     //                        CFcell->zM[i][j1] <= CFcell->zU[i
@@ -669,43 +671,43 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
 /************************************************************************/
 
 // Make sure all connections between vertexes are within one convex cell
-cf_cellYZ HighwayRoadMap3D::enhanceDecomp(cf_cellYZ cell) {
-    cf_cellYZ cell_new = cell;
+cf_cell2D HighwayRoadMap3D::enhanceDecomp(cf_cell2D cell) {
+    cf_cell2D cell_new = cell;
 
     for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < cell.zM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < cell.zM[i + 1].size(); ++j2) {
-                if (cell_new.zM[i][j1] < cell_new.zL[i + 1][j2] &&
-                    cell_new.zU[i][j1] >= cell_new.zL[i + 1][j2]) {
-                    cell_new.zU[i].push_back(cell_new.zL[i + 1][j2]);
-                    cell_new.zL[i].push_back(cell_new.zL[i + 1][j2]);
-                    cell_new.zM[i].push_back(cell_new.zL[i + 1][j2]);
-                } else if (cell_new.zM[i][j1] > cell_new.zU[i + 1][j2] &&
-                           cell_new.zL[i][j1] <= cell_new.zU[i + 1][j2]) {
-                    cell_new.zU[i].push_back(cell_new.zU[i + 1][j2]);
-                    cell_new.zL[i].push_back(cell_new.zU[i + 1][j2]);
-                    cell_new.zM[i].push_back(cell_new.zU[i + 1][j2]);
+        for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); ++j2) {
+                if (cell_new.xM[i][j1] < cell_new.xL[i + 1][j2] &&
+                    cell_new.xU[i][j1] >= cell_new.xL[i + 1][j2]) {
+                    cell_new.xU[i].push_back(cell_new.xL[i + 1][j2]);
+                    cell_new.xL[i].push_back(cell_new.xL[i + 1][j2]);
+                    cell_new.xM[i].push_back(cell_new.xL[i + 1][j2]);
+                } else if (cell_new.xM[i][j1] > cell_new.xU[i + 1][j2] &&
+                           cell_new.xL[i][j1] <= cell_new.xU[i + 1][j2]) {
+                    cell_new.xU[i].push_back(cell_new.xU[i + 1][j2]);
+                    cell_new.xL[i].push_back(cell_new.xU[i + 1][j2]);
+                    cell_new.xM[i].push_back(cell_new.xU[i + 1][j2]);
                 }
 
-                if (cell_new.zM[i + 1][j2] < cell_new.zL[i][j1] &&
-                    cell_new.zU[i + 1][j2] >= cell_new.zL[i][j1]) {
-                    cell_new.zU[i + 1].push_back(cell_new.zL[i][j1]);
-                    cell_new.zL[i + 1].push_back(cell_new.zL[i][j1]);
-                    cell_new.zM[i + 1].push_back(cell_new.zL[i][j1]);
-                } else if (cell_new.zM[i + 1][j2] > cell_new.zU[i][j1] &&
-                           cell_new.zL[i + 1][j2] <= cell_new.zU[i][j1]) {
-                    cell_new.zU[i + 1].push_back(cell_new.zU[i][j1]);
-                    cell_new.zL[i + 1].push_back(cell_new.zU[i][j1]);
-                    cell_new.zM[i + 1].push_back(cell_new.zU[i][j1]);
+                if (cell_new.xM[i + 1][j2] < cell_new.xL[i][j1] &&
+                    cell_new.xU[i + 1][j2] >= cell_new.xL[i][j1]) {
+                    cell_new.xU[i + 1].push_back(cell_new.xL[i][j1]);
+                    cell_new.xL[i + 1].push_back(cell_new.xL[i][j1]);
+                    cell_new.xM[i + 1].push_back(cell_new.xL[i][j1]);
+                } else if (cell_new.xM[i + 1][j2] > cell_new.xU[i][j1] &&
+                           cell_new.xL[i + 1][j2] <= cell_new.xU[i][j1]) {
+                    cell_new.xU[i + 1].push_back(cell_new.xU[i][j1]);
+                    cell_new.xL[i + 1].push_back(cell_new.xU[i][j1]);
+                    cell_new.xM[i + 1].push_back(cell_new.xU[i][j1]);
                 }
             }
         }
 
-        sort(cell_new.zL[i].begin(), cell_new.zL[i].end(),
+        sort(cell_new.xL[i].begin(), cell_new.xL[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell_new.zU[i].begin(), cell_new.zU[i].end(),
+        sort(cell_new.xU[i].begin(), cell_new.xU[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell_new.zM[i].begin(), cell_new.zM[i].end(),
+        sort(cell_new.xM[i].begin(), cell_new.xM[i].end(),
              [](double a, double b) { return a < b; });
     }
 
@@ -794,4 +796,8 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     }
 
     return idx;
+}
+
+size_t HighwayRoadMap3D::getNearestVtxOnGraph(std::vector<double> v) {
+    return 0;
 }

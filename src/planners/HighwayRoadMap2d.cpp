@@ -42,7 +42,7 @@ void HighwayRoadMap2D::buildRoadmap() {
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         robot_.setAngle(ang_r.at(i));
         boundary bd = boundaryGen();
-        cf_cell CFcell = rasterScan(bd.bd_s, bd.bd_o);
+        cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
         connectOneLayer(CFcell);
         N_v_layer.push_back(vtxEdge.vertex.size());
     }
@@ -112,9 +112,9 @@ void HighwayRoadMap2D::connectMultiLayer() {
     }
 }
 
-cf_cell HighwayRoadMap2D::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                                     std::vector<Eigen::MatrixXd> bd_o) {
-    cf_cell cell;
+cf_cell2D HighwayRoadMap2D::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
+                                       std::vector<Eigen::MatrixXd> bd_o) {
+    cf_cell2D cell;
     Eigen::MatrixXd x_s_L = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd_s.size()), param_.BOUND_LIMIT[0]);
     Eigen::MatrixXd x_s_U = Eigen::MatrixXd::Constant(
@@ -220,7 +220,7 @@ cf_cell HighwayRoadMap2D::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
     return enhanceDecomp(cell);
 }
 
-void HighwayRoadMap2D::connectOneLayer(cf_cell CFcell) {
+void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
     std::vector<unsigned int> N_v_line;
     unsigned int N_0 = 0, N_1 = 0;
 
@@ -272,9 +272,9 @@ void HighwayRoadMap2D::connectOneLayer(cf_cell CFcell) {
 /*************************************************/
 /**************** Private Functions **************/
 /*************************************************/
-cf_cell HighwayRoadMap2D::enhanceDecomp(cf_cell cell) {
+cf_cell2D HighwayRoadMap2D::enhanceDecomp(cf_cell2D cell) {
     // Make sure all connections between vertexes are within one convex cell
-    cf_cell cell_new = cell;
+    cf_cell2D cell_new = cell;
 
     for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
         for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
@@ -317,7 +317,7 @@ cf_cell HighwayRoadMap2D::enhanceDecomp(cf_cell cell) {
 }
 
 // Connect vertexes among different layers
-cf_cell HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
+cf_cell2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
     boundary bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {

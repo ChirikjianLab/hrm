@@ -19,7 +19,7 @@ class ProbHRM3D : public Hrm3DMultiBody {
     virtual void connectMultiLayer() override;
 
     virtual void generateVertices(const double tx,
-                                  const cf_cellYZ* cellYZ) override;
+                                  const cf_cell2D* cellYZ) override;
 
   protected:
     virtual void setTransform(const std::vector<double>& V) override;

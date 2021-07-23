@@ -10,16 +10,9 @@
 #include <ompl/datastructures/NearestNeighbors.h>
 
 // cf_cell: collision-free points
-struct cf_cellYZ {
-    std::vector<double> ty;
-    std::vector<std::vector<double>> zL;
-    std::vector<std::vector<double>> zU;
-    std::vector<std::vector<double>> zM;
-};
-
 struct cf_cell3D {
     std::vector<double> tx;
-    std::vector<cf_cellYZ> cellYZ;
+    std::vector<cf_cell2D> cellYZ;
 };
 
 class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
@@ -58,26 +51,25 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
      * y-coordinates X num of objects
      * \return collision-free cells info
      */
-    virtual void generateVertices(const double tx, const cf_cellYZ* cellYZ);
+    virtual void generateVertices(const double tx, const cf_cell2D* cellYZ);
 
-    cf_cellYZ cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
+    cf_cell2D cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
                      Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
                      Eigen::MatrixXd z_o_U);
 
     /** \brief connect within one C-layer */
     void connectOneLayer(cf_cell3D cell);
+    void connectOneLayer(cf_cell2D cell) override;
 
     /** \brief subroutine to first connect vertices within on
      * sweep-plane(vertical to x-axis) */
-    void connectOnePlane(const cf_cellYZ* cellYZ);
+    void connectOnePlane(const cf_cell2D* cellYZ);
 
     /** \brief connect within adjacent C-layers, using the idea of "bridge
      * C-layer" */
     virtual void connectMultiLayer() override;
 
-    /**
-     * \brief subroutine to first construct the middle C-layer
-     */
+    /** \brief subroutine to first construct the middle C-layer */
     //    cf_cell3D midLayer(SuperQuadrics);
     std::vector<MeshMatrix> midLayer(SuperQuadrics);
 
@@ -114,7 +106,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     /** \brief enhanced cell decomposition, connect vertices within one
      * collision-free line segment, all connections between vertexes are within
      * one convex cell */
-    cf_cellYZ enhanceDecomp(cf_cellYZ cell);
+    cf_cell2D enhanceDecomp(cf_cell2D cell);
 
     /**
      * \brief find the nearest neighbors of a pose on the graph
@@ -125,6 +117,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     std::vector<Vertex> getNearestNeighborsOnGraph(const std::vector<double>& v,
                                                    const size_t k,
                                                    const double r);
+    size_t getNearestVtxOnGraph(std::vector<double> v) override;
 
     /**
      * \brief query whether a point is within a collision-free line segment

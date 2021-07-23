@@ -2,11 +2,11 @@
 
 using namespace std;
 
-UtilProbHRM::UtilProbHRM(MultiBodyTree3D robot, std::string urdfFile,
-                         vector<vector<double>> EndPts,
-                         vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                         option3D opt)
-    : ProbHRM3D(robot, urdfFile, EndPts, arena, obs, opt) {}
+UtilProbHRM::UtilProbHRM(const MultiBodyTree3D robot, std::string urdfFile,
+                         const std::vector<SuperQuadrics>& arena,
+                         const std::vector<SuperQuadrics>& obs,
+                         const PlanningRequest& req)
+    : ProbHRM3D(robot, urdfFile, arena, obs, req) {}
 
 void UtilProbHRM::planPath(const double timeLim) {
     // Highway algorithm
@@ -16,7 +16,7 @@ void UtilProbHRM::planPath(const double timeLim) {
     cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
 
     cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
-    cout << "Number of C-layers: " << N_layers << endl;
+    cout << "Number of C-layers: " << param_.NUM_LAYER << endl;
     cout << "Number of configurations in Path: "
          << solutionPathInfo.PathId.size() << endl;
     cout << "Cost: " << solutionPathInfo.Cost << endl;

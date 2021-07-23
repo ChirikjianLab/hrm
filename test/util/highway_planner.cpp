@@ -2,11 +2,11 @@
 
 using namespace std;
 
-PlannerHighway3D::PlannerHighway3D(MultiBodyTree3D robot,
-                                   vector<vector<double>> EndPts,
-                                   vector<SuperQuadrics> arena,
-                                   vector<SuperQuadrics> obs, option3D opt)
-    : Hrm3DMultiBody(robot, EndPts, arena, obs, opt) {}
+PlannerHighway3D::PlannerHighway3D(const MultiBodyTree3D robot,
+                                   const std::vector<SuperQuadrics>& arena,
+                                   const std::vector<SuperQuadrics>& obs,
+                                   const PlanningRequest& req)
+    : Hrm3DMultiBody(robot, arena, obs, req) {}
 
 void PlannerHighway3D::getGraphAndPath() {
     plan();

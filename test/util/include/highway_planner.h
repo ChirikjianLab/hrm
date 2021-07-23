@@ -5,10 +5,10 @@
 
 class PlannerHighway3D : public Hrm3DMultiBody {
   public:
-    PlannerHighway3D(MultiBodyTree3D robot,
-                     std::vector<std::vector<double>> endPts,
-                     std::vector<SuperQuadrics> arena,
-                     std::vector<SuperQuadrics> obs, option3D opt);
+    PlannerHighway3D(const MultiBodyTree3D robot,
+                     const std::vector<SuperQuadrics>& arena,
+                     const std::vector<SuperQuadrics>& obs,
+                     const PlanningRequest& req);
 
     void getGraphAndPath();
 

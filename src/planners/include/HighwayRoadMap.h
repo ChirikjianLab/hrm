@@ -31,7 +31,7 @@ using Edge = std::vector<std::pair<int, int>>;
 static const double pi = 3.1415926;
 
 /** \brief freeSegment collision-free line segments */
-struct cf_cell {
+struct cf_cell2D {
   public:
     std::vector<double> ty;
     std::vector<std::vector<double>> xL;
@@ -97,7 +97,7 @@ class HighwayRoadMap {
 
     virtual void buildRoadmap() = 0;
     virtual boundary boundaryGen() = 0;
-    virtual void connectOneLayer(cf_cell cell) = 0;
+    virtual void connectOneLayer(cf_cell2D cell) = 0;
     virtual void connectMultiLayer() = 0;
 
     void search() {
@@ -154,7 +154,7 @@ class HighwayRoadMap {
     }
 
   protected:
-    virtual cf_cell enhanceDecomp(cf_cell cell) = 0;
+    virtual cf_cell2D enhanceDecomp(cf_cell2D cell) = 0;
     virtual size_t getNearestVtxOnGraph(std::vector<double> v) = 0;
 
   public:

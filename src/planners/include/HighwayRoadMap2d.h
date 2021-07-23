@@ -18,13 +18,13 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
     virtual boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
 
-    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                       std::vector<Eigen::MatrixXd> bd_o);
-    void connectOneLayer(cf_cell cell);
+    cf_cell2D rasterScan(std::vector<Eigen::MatrixXd> bd_s,
+                         std::vector<Eigen::MatrixXd> bd_o);
+    void connectOneLayer(cf_cell2D cell);
 
   protected:
-    cf_cell enhanceDecomp(cf_cell cell) override;
-    cf_cell midLayer(SuperEllipse Ec);
+    cf_cell2D enhanceDecomp(cf_cell2D cell) override;
+    cf_cell2D midLayer(SuperEllipse Ec);
     bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
     size_t getNearestVtxOnGraph(std::vector<double> v) override;
 
@@ -36,8 +36,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
     /** \brief mid Ellipses for middle C-layers */
     std::vector<SuperEllipse> mid;
 
-    /** \brief mid_cell Middle C-layer as a cf_cell structure */
-    cf_cell mid_cell;
+    /** \brief mid_cell Middle C-layer as a cf_cell2D structure */
+    cf_cell2D mid_cell;
 };
 
 #endif  // HIGHWAYROADMAP2D_H

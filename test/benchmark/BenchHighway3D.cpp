@@ -38,19 +38,24 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
-    option3D opt;
-    opt.N_o = env3D->getObstacle().size();
-    opt.N_s = env3D->getArena().size();
-    opt.N_layers = size_t(N_l);
-    opt.N_dx = size_t(N_x);
-    opt.N_dy = size_t(N_y);
+    PlannerParameter par;
+    par.NUM_LAYER = size_t(N_l);
+    par.NUM_LINE_X = size_t(N_x);
+    par.NUM_LINE_Y = size_t(N_y);
+
     double f = 1.5;
-    opt.Lim = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(1) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(2) -
-                   f * robot.getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(1) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(2) -
+                           f * robot.getBase().getSemiAxis().at(0)};
+
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env3D->getEndPoints().at(0);
+    req.goal = env3D->getEndPoints().at(1);
 
     // Store results
     ofstream file_time;
@@ -65,8 +70,8 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        PlannerHighway3D high3D(robot, env3D->getEndPoints(), env3D->getArena(),
-                                env3D->getObstacle(), opt);
+        PlannerHighway3D high3D(robot, env3D->getArena(), env3D->getObstacle(),
+                                req);
         high3D.getGraphAndPath();
 
         // Store results

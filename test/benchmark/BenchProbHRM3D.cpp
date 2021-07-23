@@ -35,19 +35,24 @@ int main(int argc, char** argv) {
     std::string urdfFile = "../resources/3D/urdf/" + robotName + ".urdf";
 
     // Options
-    option3D opt;
-    opt.N_o = env3D->getObstacle().size();
-    opt.N_s = env3D->getArena().size();
-    opt.N_layers = 0;
-    opt.N_dx = size_t(N_x);
-    opt.N_dy = size_t(N_y);
+    PlannerParameter par;
+    par.NUM_LAYER = 0;
+    par.NUM_LINE_X = size_t(N_x);
+    par.NUM_LINE_Y = size_t(N_y);
+
     double f = 1.5;
-    opt.Lim = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(1) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(2) -
-                   f * robot.getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(1) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(2) -
+                           f * robot.getBase().getSemiAxis().at(0)};
+
+    PlanningRequest req;
+    req.is_robot_rigid = false;
+    req.planner_parameters = par;
+    req.start = env3D->getEndPoints().at(0);
+    req.goal = env3D->getEndPoints().at(1);
 
     // Store results
     ofstream file_time;
@@ -61,15 +66,17 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        UtilProbHRM probHigh3D(robot, urdfFile, env3D->getEndPoints(),
-                               env3D->getArena(), env3D->getObstacle(), opt);
+        UtilProbHRM probHigh3D(robot, urdfFile, env3D->getArena(),
+                               env3D->getObstacle(), req);
         probHigh3D.planPath(timeLim);
 
         // Store results
         file_time << probHigh3D.flag << ',' << probHigh3D.planTime.totalTime
-                  << ',' << probHigh3D.N_layers << ',' << probHigh3D.N_dx << ','
-                  << probHigh3D.N_dy << ',' << probHigh3D.vtxEdge.vertex.size()
-                  << ',' << probHigh3D.vtxEdge.edge.size() << ','
+                  << ',' << probHigh3D.param_.NUM_LAYER << ','
+                  << probHigh3D.param_.NUM_LINE_X << ','
+                  << probHigh3D.param_.NUM_LINE_Y << ','
+                  << probHigh3D.vtxEdge.vertex.size() << ','
+                  << probHigh3D.vtxEdge.edge.size() << ','
                   << probHigh3D.solutionPathInfo.PathId.size() << "\n";
     }
     file_time.close();

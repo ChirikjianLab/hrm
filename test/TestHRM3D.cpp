@@ -59,11 +59,11 @@ Hrm3DMultiBody plan(const MultiBodyTree3D& robot,
     file_cell.open("cell_3D.csv");
     for (size_t i = 0; i < CF_cell.tx.size(); i++) {
         for (size_t j = 0; j < CF_cell.cellYZ[i].ty.size(); j++) {
-            for (size_t k = 0; k < CF_cell.cellYZ[i].zM[j].size(); k++) {
+            for (size_t k = 0; k < CF_cell.cellYZ[i].xM[j].size(); k++) {
                 file_cell << CF_cell.tx[i] << ',' << CF_cell.cellYZ[i].ty[j]
-                          << ',' << CF_cell.cellYZ[i].zL[j][k] << ','
-                          << CF_cell.cellYZ[i].zM[j][k] << ','
-                          << CF_cell.cellYZ[i].zU[j][k] << "\n";
+                          << ',' << CF_cell.cellYZ[i].xL[j][k] << ','
+                          << CF_cell.cellYZ[i].xM[j][k] << ','
+                          << CF_cell.cellYZ[i].xU[j][k] << "\n";
             }
         }
     }
@@ -79,7 +79,7 @@ Hrm3DMultiBody plan(const MultiBodyTree3D& robot,
 }
 
 TEST(TestHRMPlanning3D, MultiBody) {
-    cout << "hrmway RoadMap for 3D rigid-body planning" << endl;
+    cout << "Highway RoadMap for 3D rigid-body planning" << endl;
     cout << "----------" << endl;
 
     // Setup environment config

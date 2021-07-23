@@ -5,10 +5,10 @@
 
 class UtilProbHRM : public ProbHRM3D {
   public:
-    UtilProbHRM(MultiBodyTree3D robot, std::string urdfFile,
-                std::vector<std::vector<double>> EndPts,
-                std::vector<SuperQuadrics> arena,
-                std::vector<SuperQuadrics> obs, option3D opt);
+    UtilProbHRM(const MultiBodyTree3D robot, std::string urdfFile,
+                const std::vector<SuperQuadrics>& arena,
+                const std::vector<SuperQuadrics>& obs,
+                const PlanningRequest& req);
     void planPath(const double timeLim);
 };
 

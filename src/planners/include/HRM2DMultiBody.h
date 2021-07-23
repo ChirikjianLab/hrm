@@ -23,12 +23,12 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
                                         const double thetaB);
     bool isCollisionFree(const std::vector<double>& V1,
                          const std::vector<double>& V2);
-    bool isPtInCFLine(const cf_cell& cell, const std::vector<double>& V);
+    bool isPtInCFLine(const cf_cell2D& cell, const std::vector<double>& V);
 
   public:
     MultiBodyTree2D RobotM;
     std::vector<SuperEllipse> mid;
-    std::vector<cf_cell> midCell;
+    std::vector<cf_cell2D> midCell;
 };
 
 #endif  // HRM2DMULTIBODY_H

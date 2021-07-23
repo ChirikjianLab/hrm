@@ -70,7 +70,7 @@ algorithm planTest(const robotType& robot,
 
         // Output boundary and cell info
         boundary bd = hrm.boundaryGen();
-        cf_cell cell = hrm.rasterScan(bd.bd_s, bd.bd_o);
+        cf_cell2D cell = hrm.rasterScan(bd.bd_s, bd.bd_o);
         hrm.connectOneLayer(cell);
 
         // write to .csv file
