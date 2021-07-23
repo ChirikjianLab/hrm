@@ -9,21 +9,22 @@
 using namespace Eigen;
 using namespace std;
 
-Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
-                    vector<SuperQuadrics> arena, vector<SuperQuadrics> obs,
-                    option3D opt) {
+Hrm3DMultiBody plan(const MultiBodyTree3D& robot,
+                    const vector<SuperQuadrics>& arena,
+                    const vector<SuperQuadrics>& obs,
+                    const PlanningRequest& req) {
     //****************//
     // Main Algorithm //
     //****************//
-    Hrm3DMultiBody hrm(robot, EndPts, arena, obs, opt);
+    Hrm3DMultiBody hrm(robot, arena, obs, req);
 
     // calculate original boundary points
-    boundary3D bd_ori;
-    for (size_t i = 0; i < opt.N_s; i++) {
-        bd_ori.bd_s.push_back(hrm.Arena.at(i).getOriginShape());
+    boundary bd_ori;
+    for (size_t i = 0; i < hrm.N_s; i++) {
+        bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
     }
-    for (size_t i = 0; i < opt.N_o; i++) {
-        bd_ori.bd_o.push_back(hrm.Obs.at(i).getOriginShape());
+    for (size_t i = 0; i < hrm.N_o; i++) {
+        bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
     }
 
     // write to .csv file
@@ -38,7 +39,7 @@ Hrm3DMultiBody plan(MultiBodyTree3D robot, vector<vector<double>> EndPts,
     file_ori_bd.close();
 
     // TEST: Minkowski boundary
-    boundary3D bd_mink = hrm.boundaryGen();
+    boundary bd_mink = hrm.boundaryGen();
 
     // write to .csv file
     ofstream file_bd;
@@ -93,29 +94,35 @@ TEST(TestHRMPlanning3D, MultiBody) {
         loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
-    option3D opt;
-    opt.N_o = env3D->getObstacle().size();
-    opt.N_s = env3D->getArena().size();
-    opt.N_layers = robot.getBase().getQuatSamples().size();
-    opt.N_dx = 35;
-    opt.N_dy = 20;
+    PlannerParameter par;
+    par.NUM_LAYER = robot.getBase().getQuatSamples().size();
+    par.NUM_LINE_X = 35;
+    par.NUM_LINE_Y = 20;
+
     double f = 1.0;
-    opt.Lim = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(1) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(2) -
-                   f * robot.getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(1) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(2) -
+                           f * robot.getBase().getSemiAxis().at(0)};
 
     // Main algorithm
-    cout << "Number of C-layers: " << opt.N_layers << endl;
-    cout << "Number of sweep lines: " << opt.N_dx * opt.N_dy << endl;
+    cout << "Number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Number of sweep lines: " << par.NUM_LINE_X * par.NUM_LINE_Y
+         << endl;
     cout << "----------" << endl;
 
     cout << "Start planning..." << endl;
 
-    Hrm3DMultiBody hrm = plan(robot, env3D->getEndPoints(), env3D->getArena(),
-                              env3D->getObstacle(), opt);
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env3D->getEndPoints().at(0);
+    req.goal = env3D->getEndPoints().at(1);
+
+    Hrm3DMultiBody hrm =
+        plan(robot, env3D->getArena(), env3D->getObstacle(), req);
 
     // Planning Time and Path Cost
     cout << "----------" << endl;
@@ -125,6 +132,7 @@ TEST(TestHRMPlanning3D, MultiBody) {
 
     cout << "Number of valid configurations: " << hrm.vtxEdge.vertex.size()
          << endl;
+    cout << "Number of valid edges: " << hrm.vtxEdge.edge.size() << endl;
     cout << "Number of configurations in Path: "
          << hrm.solutionPathInfo.PathId.size() << endl;
     cout << "Cost: " << hrm.solutionPathInfo.Cost << endl;

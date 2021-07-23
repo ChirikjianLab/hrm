@@ -7,9 +7,10 @@
 class ProbHRM3D : public Hrm3DMultiBody {
   public:
     ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
-              const std::vector<std::vector<double>>& endPts,
               const std::vector<SuperQuadrics>& arena,
-              const std::vector<SuperQuadrics>& obs, const option3D& opt);
+              const std::vector<SuperQuadrics>& obs,
+              const PlanningRequest& req);
+
     virtual ~ProbHRM3D() override;
 
   public:

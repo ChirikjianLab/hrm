@@ -91,6 +91,8 @@ class HighwayRoadMap {
         start = ompl::time::now();
         search();
         planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
+
+        planTime.totalTime = planTime.buildTime + planTime.searchTime;
     }
 
     virtual void buildRoadmap() = 0;
@@ -118,7 +120,7 @@ class HighwayRoadMap {
         // Search for shortest path
         std::vector<Vertex> p(num_vertices(g));
         std::vector<double> d(num_vertices(g));
-
+        planTime.totalTime = planTime.buildTime + planTime.searchTime;
         try {
             boost::astar_search(
                 g, idx_s,
@@ -173,7 +175,9 @@ class HighwayRoadMap {
     /** \param Time roadmap building time and path search time */
     struct Time {
       public:
-        double buildTime, searchTime;
+        double buildTime = 0.0;
+        double searchTime = 0.0;
+        double totalTime = 0.0;
     } planTime;
 
     RobotType robot_;

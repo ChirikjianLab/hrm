@@ -6,19 +6,19 @@
 
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-const double pi = 3.1415926;
-
 class Hrm3DMultiBody : public HighwayRoadMap3D {
   public:
-    Hrm3DMultiBody(MultiBodyTree3D, std::vector<std::vector<double>>,
-                   std::vector<SuperQuadrics>, std::vector<SuperQuadrics>,
-                   option3D);
+    Hrm3DMultiBody(const MultiBodyTree3D& robot,
+                   const std::vector<SuperQuadrics>& arena,
+                   const std::vector<SuperQuadrics>& obs,
+                   const PlanningRequest& req);
+
     virtual ~Hrm3DMultiBody() override;
 
   public:
     void buildRoadmap() override;
 
-    boundary3D boundaryGen() override;
+    boundary boundaryGen() override;
 
     virtual void connectMultiLayer() override;
 
