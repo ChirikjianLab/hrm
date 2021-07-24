@@ -1,5 +1,7 @@
 #include "include/PointInPoly.h"
 
+#include "Eigen/Dense"
+
 bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt) {
     bool flag = 0;
     Eigen::Matrix4d invMat;

@@ -74,14 +74,15 @@ int main(int argc, char** argv) {
                                 req);
         high3D.getGraphAndPath();
 
+        PlanningResult res = high3D.getPlanningResult();
+
         // Store results
-        file_time << high3D.flag << ',' << high3D.planTime.buildTime << ','
-                  << high3D.planTime.searchTime << ','
-                  << high3D.planTime.buildTime + high3D.planTime.searchTime
-                  << ',' << N_l << ',' << N_x << ',' << N_y << ','
-                  << high3D.vtxEdge.vertex.size() << ','
-                  << high3D.vtxEdge.edge.size() << ','
-                  << high3D.solutionPathInfo.PathId.size() << "\n";
+        file_time << res.solved << ',' << res.planning_time.buildTime << ','
+                  << res.planning_time.searchTime << ','
+                  << res.planning_time.totalTime << ',' << N_l << ',' << N_x
+                  << ',' << N_y << ',' << res.graph_structure.vertex.size()
+                  << ',' << res.graph_structure.edge.size() << ','
+                  << res.solution_path.PathId.size() << "\n";
     }
     file_time.close();
 

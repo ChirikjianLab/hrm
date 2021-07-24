@@ -108,31 +108,34 @@ algorithm planTest(const robotType& robot,
     return hrm;
 }
 
-template <class algorithm>
-void showResult(const algorithm* hrm, const bool isStore) {
-    cout << "----------" << endl;
-    cout << "Roadmap build time: " << hrm->planTime.buildTime << "s" << endl;
-    cout << "Path search time: " << hrm->planTime.searchTime << "s" << endl;
-    cout << "Total Planning Time: "
-         << hrm->planTime.buildTime + hrm->planTime.searchTime << 's' << endl;
+void showResult(const PlanningResult* res, const bool isStore) {
+    Time planTime = res->planning_time;
+    Graph vtxEdge = res->graph_structure;
+    SolutionPathInfo pathInfo = res->solution_path;
 
-    cout << "Number of valid configurations: " << hrm->vtxEdge.vertex.size()
+    cout << "----------" << endl;
+    cout << "Roadmap build time: " << planTime.buildTime << "s" << endl;
+    cout << "Path search time: " << planTime.searchTime << "s" << endl;
+    cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
+
+    cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
+    cout << "Number of valid edges: " << vtxEdge.edge.size() << endl;
+    cout << "Number of configurations in Path: " << pathInfo.PathId.size()
          << endl;
-    cout << "Number of valid edges: " << hrm->vtxEdge.edge.size() << endl;
-    cout << "Number of configurations in Path: " << hrm->Paths.size() << endl;
-    cout << "Cost: " << hrm->Cost << endl;
+    cout << "Cost: " << pathInfo.cost << endl;
 
     // GTest planning result
-    EXPECT_TRUE(hrm->Paths.size() > 0);
-    ASSERT_GE(hrm->vtxEdge.vertex.size(), 0);
-    ASSERT_GE(hrm->vtxEdge.edge.size(), 0);
-    ASSERT_GE(hrm->Cost, 0.0);
+    EXPECT_TRUE(res->solved);
+    ASSERT_GE(pathInfo.PathId.size(), 0);
+    ASSERT_GE(vtxEdge.vertex.size(), 0);
+    ASSERT_GE(vtxEdge.edge.size(), 0);
+    ASSERT_GE(pathInfo.cost, 0.0);
 
     if (isStore) {
         // Write the output to .csv files
         ofstream file_vtx;
         file_vtx.open("vertex_2D.csv");
-        vector<vector<double>> vtx = hrm->vtxEdge.vertex;
+        vector<vector<double>> vtx = vtxEdge.vertex;
         for (size_t i = 0; i < vtx.size(); i++) {
             file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2]
                      << "\n";
@@ -141,7 +144,7 @@ void showResult(const algorithm* hrm, const bool isStore) {
 
         ofstream file_edge;
         file_edge.open("edge_2D.csv");
-        vector<pair<int, int>> edge = hrm->vtxEdge.edge;
+        vector<pair<int, int>> edge = vtxEdge.edge;
         for (size_t i = 0; i < edge.size(); i++) {
             file_edge << edge[i].first << ' ' << edge[i].second << "\n";
         }
@@ -149,7 +152,7 @@ void showResult(const algorithm* hrm, const bool isStore) {
 
         ofstream file_paths;
         file_paths.open("paths_2D.csv");
-        vector<int> paths = hrm->Paths;
+        vector<int> paths = pathInfo.PathId;
         for (size_t i = 0; i < paths.size(); i++) {
             file_paths << paths[i] << ' ';
         }
@@ -174,9 +177,10 @@ TEST(TestHRMPlanning2D, MultiBody) {
 
     auto hrmMultiBody = planTest<HRM2DMultiBody, MultiBodyTree2D>(
         robot, env2D->getArena(), env2D->getObstacle(), req, true);
+    PlanningResult res = hrmMultiBody.getPlanningResult();
 
     // Planning Time and Path Cost
-    showResult<HRM2DMultiBody>(&hrmMultiBody, true);
+    showResult(&res, true);
 }
 
 int main(int ac, char* av[]) {

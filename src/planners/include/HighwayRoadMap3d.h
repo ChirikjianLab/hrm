@@ -25,9 +25,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual ~HighwayRoadMap3D();
 
   public:
-    /** \brief main function for planning */
-    virtual void plan() override;
-
     /** \brief main function for building the roadmap */
     virtual void buildRoadmap() override;
 
@@ -89,10 +86,9 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
                      const std::vector<double>& V);
 
     /** \brief graph search using a-star algorithm */
-    void search();
+    void search() override;
 
     /** \brief get the resulting solved path and the interpolated one */
-    std::vector<std::vector<double>> getSolutionPath();
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
 
@@ -124,12 +120,8 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
      */
     // bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
-    /**
-     * \brief Variables
-     * q_r sampled orientations (Quaternion) of the robot;
-     */
   public:
-    // Parameters for the roadmap
+    /** \param q_r sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_r;
 
     struct vertexIdx {
@@ -140,16 +132,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
     // Vertex index info
     std::vector<vertexIdx> vtxId;
-
-    // Solution info
-    struct SolutionPathInfo {
-        std::vector<int> PathId;
-        std::vector<std::vector<double>> solvedPath;
-        std::vector<std::vector<double>> interpolatedPath;
-        double Cost = std::numeric_limits<double>::infinity();
-    } solutionPathInfo;
-
-    bool flag = false;
 
   protected:
     std::vector<MeshMatrix> CLayerBound;

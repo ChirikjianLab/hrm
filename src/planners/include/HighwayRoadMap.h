@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP_H
 
 #include "planners/include/PlanningRequest.h"
+#include "planners/include/PlanningResult.h"
 #include "util/include/DistanceMetric.h"
 
 #include <ompl/util/Time.h>
@@ -26,9 +27,8 @@ using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
-using Edge = std::vector<std::pair<int, int>>;
-
 static const double pi = 3.1415926;
+static const double inf = std::numeric_limits<double>::infinity();
 
 /** \brief freeSegment collision-free line segments */
 struct cf_cell2D {
@@ -83,16 +83,21 @@ class HighwayRoadMap {
     virtual ~HighwayRoadMap() {}
 
   public:
+    PlanningResult getPlanningResult() const { return res_; }
+
     virtual void plan() {
         ompl::time::point start = ompl::time::now();
         buildRoadmap();
-        planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
+        res_.planning_time.buildTime =
+            ompl::time::seconds(ompl::time::now() - start);
 
         start = ompl::time::now();
         search();
-        planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
+        res_.planning_time.searchTime =
+            ompl::time::seconds(ompl::time::now() - start);
 
-        planTime.totalTime = planTime.buildTime + planTime.searchTime;
+        res_.planning_time.totalTime =
+            res_.planning_time.buildTime + res_.planning_time.searchTime;
     }
 
     virtual void buildRoadmap() = 0;
@@ -100,17 +105,19 @@ class HighwayRoadMap {
     virtual void connectOneLayer(cf_cell2D cell) = 0;
     virtual void connectMultiLayer() = 0;
 
-    void search() {
-        Vertex idx_s, idx_g, num;
+    virtual void search() {
+        Vertex idx_s;
+        Vertex idx_g;
+        size_t num;
 
         // Construct the roadmap
-        size_t num_vtx = vtxEdge.vertex.size();
+        size_t num_vtx = res_.graph_structure.vertex.size();
         AdjGraph g(num_vtx);
 
-        for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
-            boost::add_edge(size_t(vtxEdge.edge[i].first),
-                            size_t(vtxEdge.edge[i].second),
-                            Weight(vtxEdge.weight[i]), g);
+        for (size_t i = 0; i < res_.graph_structure.edge.size(); ++i) {
+            boost::add_edge(size_t(res_.graph_structure.edge[i].first),
+                            size_t(res_.graph_structure.edge[i].second),
+                            Weight(res_.graph_structure.weight[i]), g);
         }
 
         // Locate the nearest vertex for start and goal in the roadmap
@@ -120,13 +127,13 @@ class HighwayRoadMap {
         // Search for shortest path
         std::vector<Vertex> p(num_vertices(g));
         std::vector<double> d(num_vertices(g));
-        planTime.totalTime = planTime.buildTime + planTime.searchTime;
+
         try {
             boost::astar_search(
                 g, idx_s,
                 [this, idx_g](Vertex v) {
-                    return vectorEuclidean(vtxEdge.vertex[v],
-                                           vtxEdge.vertex[idx_g]);
+                    return vectorEuclidean(res_.graph_structure.vertex[v],
+                                           res_.graph_structure.vertex[idx_g]);
                 },
                 boost::predecessor_map(
                     boost::make_iterator_property_map(
@@ -137,20 +144,47 @@ class HighwayRoadMap {
         } catch (AStarFoundGoal found) {
             // Record path and cost
             num = 0;
-            Paths.push_back(int(idx_g));
-            while (Paths[num] != int(idx_s) && num <= num_vtx) {
-                Paths.push_back(int(p[size_t(Paths[num])]));
-                Cost += d[size_t(Paths[num])];
+            res_.solution_path.PathId.push_back(int(idx_g));
+            while (res_.solution_path.PathId[num] != int(idx_s) &&
+                   num <= num_vtx) {
+                res_.solution_path.PathId.push_back(
+                    int(p[size_t(res_.solution_path.PathId[num])]));
+                res_.solution_path.cost +=
+                    d[size_t(res_.solution_path.PathId[num])];
                 num++;
             }
 
-            std::reverse(std::begin(Paths), std::end(Paths));
+            std::reverse(std::begin(res_.solution_path.PathId),
+                         std::end(res_.solution_path.PathId));
 
             if (num == num_vtx + 1) {
-                Paths.clear();
-                Cost = std::numeric_limits<double>::infinity();
+                res_.solution_path.PathId.clear();
+                res_.solution_path.cost = inf;
+            } else {
+                res_.solved = true;
+                return;
             }
         }
+    }
+
+    std::vector<std::vector<double>> getSolutionPath() {
+        std::vector<std::vector<double>> path;
+        auto poseSize = res_.graph_structure.vertex.at(0).size();
+
+        // Start pose
+        start_.resize(poseSize);
+        path.push_back(start_);
+
+        // Iteratively store intermediate poses along the solved path
+        for (auto pathId : res_.solution_path.PathId) {
+            path.push_back(res_.graph_structure.vertex.at(size_t(pathId)));
+        }
+
+        // Goal pose
+        goal_.resize(poseSize);
+        path.push_back(goal_);
+
+        return path;
     }
 
   protected:
@@ -158,34 +192,16 @@ class HighwayRoadMap {
     virtual size_t getNearestVtxOnGraph(std::vector<double> v) = 0;
 
   public:
-    /** \param graph vector of vertices, vector of connectable edges */
-    struct graph {
-      public:
-        std::vector<std::vector<double>> vertex;
-        Edge edge;
-        std::vector<double> weight;
-    } vtxEdge;
-
-    /** \param Cost cost of the searched path */
-    double Cost = 0.0;
-
-    /** \param Path valid path of motions */
-    std::vector<int> Paths;
-
-    /** \param Time roadmap building time and path search time */
-    struct Time {
-      public:
-        double buildTime = 0.0;
-        double searchTime = 0.0;
-        double totalTime = 0.0;
-    } planTime;
-
     RobotType robot_;
     std::vector<ObjectType> arena_;
     std::vector<ObjectType> obs_;
 
     std::vector<double> start_;
     std::vector<double> goal_;
+
+    PlannerParameter param_;
+
+    PlanningResult res_;
 
     /** \param N_o number of obstacles */
     size_t N_o;
@@ -195,8 +211,6 @@ class HighwayRoadMap {
 
     /** \param N_v_layer number of vertex in each layer */
     std::vector<size_t> N_v_layer;
-
-    PlannerParameter param_;
 };
 
 #endif  // HIGHWAYROADMAP_H

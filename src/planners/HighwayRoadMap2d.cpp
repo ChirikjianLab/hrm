@@ -44,7 +44,7 @@ void HighwayRoadMap2D::buildRoadmap() {
         boundary bd = boundaryGen();
         cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
         connectOneLayer(CFcell);
-        N_v_layer.push_back(vtxEdge.vertex.size());
+        N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
 
     // Connect adjacent layers using middle C-layer
@@ -91,18 +91,19 @@ void HighwayRoadMap2D::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
-            v1 = vtxEdge.vertex[m0];
+            v1 = res_.graph_structure.vertex[m0];
 
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                v2 = vtxEdge.vertex[m1];
+                v2 = res_.graph_structure.vertex[m1];
 
                 // Only connect v1 and v2 that are close to each other
                 if (std::fabs(v1[1] - v2[1]) <
                         param_.BOUND_LIMIT[0] / param_.NUM_LINE_Y &&
                     isPtinCFLine(v1, v2)) {
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(v1, v2));
+                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(v1, v2));
                     break;
                 }
             }
@@ -226,11 +227,11 @@ void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
 
     // Append new vertex to vertex list
     for (size_t i = 0; i < CFcell.ty.size(); ++i) {
-        N_v_line.push_back(uint(vtxEdge.vertex.size()));
+        N_v_line.push_back(uint(res_.graph_structure.vertex.size()));
 
         for (size_t j = 0; j < CFcell.xM[i].size(); ++j) {
             // Construct a vector of vertex
-            vtxEdge.vertex.push_back(
+            res_.graph_structure.vertex.push_back(
                 {CFcell.xM[i][j], CFcell.ty[i], robot_.getAngle()});
         }
     }
@@ -243,11 +244,11 @@ void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
             // Connect vertex within one collision-free sweep line segment
             if (j1 != CFcell.xM[i].size() - 1) {
                 if (std::fabs(CFcell.xU[i][j1] - CFcell.xL[i][j1 + 1]) < 1e-5) {
-                    vtxEdge.edge.push_back(
+                    res_.graph_structure.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[N_0 + j1],
-                                        vtxEdge.vertex[N_0 + j1 + 1]));
+                    res_.graph_structure.weight.push_back(vectorEuclidean(
+                        res_.graph_structure.vertex[N_0 + j1],
+                        res_.graph_structure.vertex[N_0 + j1 + 1]));
                 }
             }
             // Connect vertex btw adjacent cells
@@ -257,11 +258,11 @@ void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
                           CFcell.xM[i][j1] <= CFcell.xU[i + 1][j2]) &&
                          (CFcell.xM[i + 1][j2] >= CFcell.xL[i][j1] &&
                           CFcell.xM[i + 1][j2] <= CFcell.xU[i][j1]))) {
-                        vtxEdge.edge.push_back(
+                        res_.graph_structure.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
-                        vtxEdge.weight.push_back(
-                            vectorEuclidean(vtxEdge.vertex[N_0 + j1],
-                                            vtxEdge.vertex[N_1 + j2]));
+                        res_.graph_structure.weight.push_back(vectorEuclidean(
+                            res_.graph_structure.vertex[N_0 + j1],
+                            res_.graph_structure.vertex[N_1 + j2]));
                     }
                 }
             }
@@ -354,27 +355,27 @@ size_t HighwayRoadMap2D::getNearestVtxOnGraph(std::vector<double> v) {
     // Find the closest roadmap vertex
     double minEuclideanDist;
     double minAngleDist;
-    double minAngle = vtxEdge.vertex[0][2];
+    double minAngle = res_.graph_structure.vertex[0][2];
     double angleDist;
     double euclideanDist;
     size_t idx = 0;
 
     // Find the closest C-layer
     minAngleDist = std::fabs(v[2] - minAngle);
-    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
-        angleDist = std::fabs(v[2] - vtxEdge.vertex[i][2]);
+    for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
+        angleDist = std::fabs(v[2] - res_.graph_structure.vertex[i][2]);
         if (angleDist < minAngleDist) {
             minAngleDist = angleDist;
-            minAngle = vtxEdge.vertex[i][2];
+            minAngle = res_.graph_structure.vertex[i][2];
         }
     }
 
     // Find the closest vertex at this C-layer
-    minEuclideanDist = vectorEuclidean(v, vtxEdge.vertex[0]);
-    for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
-        euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
+    minEuclideanDist = vectorEuclidean(v, res_.graph_structure.vertex[0]);
+    for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
+        euclideanDist = vectorEuclidean(v, res_.graph_structure.vertex[i]);
         if ((euclideanDist < minEuclideanDist) &&
-            std::fabs(vtxEdge.vertex[i][2] - minAngle) < 1e-6) {
+            std::fabs(res_.graph_structure.vertex[i][2] - minAngle) < 1e-6) {
             minEuclideanDist = euclideanDist;
             idx = i;
         }

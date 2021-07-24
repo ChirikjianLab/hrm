@@ -33,7 +33,7 @@ void HRM2DMultiBody::buildRoadmap() {
         boundary bd = boundaryGen();
         cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
         connectOneLayer(CFcell);
-        N_v_layer.push_back(vtxEdge.vertex.size());
+        N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
 
     // Connect adjacent layers using middle C-layer
@@ -103,9 +103,9 @@ void HRM2DMultiBody::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
-            V1 = vtxEdge.vertex[m0];
+            V1 = res_.graph_structure.vertex[m0];
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                V2 = vtxEdge.vertex[m1];
+                V2 = res_.graph_structure.vertex[m1];
 
                 // Locate the neighbor vertices
                 if (vectorEuclidean({V1[0], V1[1]}, {V2[0], V2[1]}) >
@@ -115,8 +115,9 @@ void HRM2DMultiBody::connectMultiLayer() {
 
                 if (isCollisionFree(V1, V2)) {
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
+                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(V1, V2));
 
                     // Continue from where it pauses
                     n_12 = m1;

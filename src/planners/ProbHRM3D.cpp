@@ -86,11 +86,12 @@ void ProbHRM3D::plan(double timeLim) {
         // Graph search
         search();
 
-        planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
-    } while (!flag && planTime.totalTime < timeLim);
+        res_.planning_time.totalTime =
+            ompl::time::seconds(ompl::time::now() - start);
+    } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 
     // Retrieve coordinates of solved path
-    solutionPathInfo.solvedPath = getSolutionPath();
+    res_.solution_path.solvedPath = getSolutionPath();
 }
 
 // Connect adjacent C-layers
@@ -132,9 +133,9 @@ void ProbHRM3D::connectMultiLayer() {
     std::vector<double> V1;
     std::vector<double> V2;
     for (size_t m0 = start; m0 < n_1; ++m0) {
-        V1 = vtxEdge.vertex.at(m0);
+        V1 = res_.graph_structure.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
-            V2 = vtxEdge.vertex.at(m1);
+            V2 = res_.graph_structure.vertex.at(m1);
 
             // Locate the nearest vertices
             if (std::fabs(V1.at(0) - V2.at(0)) >
@@ -146,8 +147,8 @@ void ProbHRM3D::connectMultiLayer() {
 
             if (isTransitionFree(V1, V2)) {
                 // Add new connections
-                vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(V1, V2));
 
                 n_12 = m1;
                 break;
@@ -165,7 +166,7 @@ void ProbHRM3D::generateVertices(const double tx, const cf_cell2D* cellYZ) {
     std::vector<double> vertex(v_.back().size());
 
     for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
-        N_v.plane.push_back(vtxEdge.vertex.size());
+        N_v.plane.push_back(res_.graph_structure.vertex.size());
 
         for (size_t j = 0; j < cellYZ->xM[i].size(); ++j) {
             // Configuration of the base
@@ -183,13 +184,13 @@ void ProbHRM3D::generateVertices(const double tx, const cf_cell2D* cellYZ) {
             }
 
             // Construct a std::vector of vertex
-            vtxEdge.vertex.push_back(vertex);
+            res_.graph_structure.vertex.push_back(vertex);
         }
     }
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = vtxEdge.vertex.size();
+    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Transform the robot

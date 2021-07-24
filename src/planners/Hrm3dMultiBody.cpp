@@ -194,9 +194,9 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
-            V1 = vtxEdge.vertex.at(m0);
+            V1 = res_.graph_structure.vertex.at(m0);
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                V2 = vtxEdge.vertex[m1];
+                V2 = res_.graph_structure.vertex[m1];
 
                 // Locate the nearest vertices
                 if (std::fabs(V1.at(0) - V2.at(0)) >
@@ -210,8 +210,9 @@ void Hrm3DMultiBody::connectMultiLayer() {
 
                 if (isTransitionFree(V1, V2)) {
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
+                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(V1, V2));
 
                     //                    n_connect++;
 

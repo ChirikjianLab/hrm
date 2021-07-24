@@ -16,23 +16,6 @@ HighwayRoadMap3D::HighwayRoadMap3D(const SuperQuadrics& robot,
 
 HighwayRoadMap3D::~HighwayRoadMap3D() {}
 
-void HighwayRoadMap3D::plan() {
-    ompl::time::point start = ompl::time::now();
-    buildRoadmap();
-    planTime.buildTime = ompl::time::seconds(ompl::time::now() - start);
-
-    start = ompl::time::now();
-    search();
-    planTime.searchTime = ompl::time::seconds(ompl::time::now() - start);
-
-    planTime.totalTime = planTime.buildTime + planTime.searchTime;
-
-    // Retrieve coordinates of solved path
-    solutionPathInfo.solvedPath = getSolutionPath();
-    solutionPathInfo.interpolatedPath =
-        getInterpolatedSolutionPath(param_.NUM_POINT);
-}
-
 void HighwayRoadMap3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
@@ -242,10 +225,10 @@ void HighwayRoadMap3D::generateVertices(const double tx,
                                         const cf_cell2D* cellYZ) {
     N_v.plane.clear();
     for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
-        N_v.plane.push_back(vtxEdge.vertex.size());
+        N_v.plane.push_back(res_.graph_structure.vertex.size());
         for (size_t j = 0; j < cellYZ->xM[i].size(); ++j) {
             // Construct a std::vector of vertex
-            vtxEdge.vertex.push_back(
+            res_.graph_structure.vertex.push_back(
                 {tx, cellYZ->ty[i], cellYZ->xM[i][j],
                  robot_.getQuaternion().w(), robot_.getQuaternion().x(),
                  robot_.getQuaternion().y(), robot_.getQuaternion().z()});
@@ -254,7 +237,7 @@ void HighwayRoadMap3D::generateVertices(const double tx,
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = vtxEdge.vertex.size();
+    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Connect vertices within one C-layer //
@@ -288,12 +271,14 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
                     //                            cell.cellYZ[i].zL[j][k0] &&
                     //                        cell.cellYZ[i + 1].zM[j][k1] <
                     //                            cell.cellYZ[i].zU[j][k0])
-                    if (isOneLayerTransitionFree(vtxEdge.vertex[I0 + k0],
-                                                 vtxEdge.vertex[I1 + k1])) {
-                        vtxEdge.edge.push_back(
+                    if (isOneLayerTransitionFree(
+                            res_.graph_structure.vertex[I0 + k0],
+                            res_.graph_structure.vertex[I1 + k1])) {
+                        res_.graph_structure.edge.push_back(
                             std::make_pair(I0 + k0, I1 + k1));
-                        vtxEdge.weight.push_back(vectorEuclidean(
-                            vtxEdge.vertex[I0 + k0], vtxEdge.vertex[I1 + k1]));
+                        res_.graph_structure.weight.push_back(vectorEuclidean(
+                            res_.graph_structure.vertex[I0 + k0],
+                            res_.graph_structure.vertex[I1 + k1]));
                     }
                 }
             }
@@ -315,11 +300,11 @@ void HighwayRoadMap3D::connectOnePlane(const cf_cell2D* CFcell) {
             if (j1 != CFcell->xM[i].size() - 1) {
                 if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
                     1e-5) {
-                    vtxEdge.edge.push_back(
+                    res_.graph_structure.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
-                    vtxEdge.weight.push_back(
-                        vectorEuclidean(vtxEdge.vertex[N_0 + j1],
-                                        vtxEdge.vertex[N_0 + j1 + 1]));
+                    res_.graph_structure.weight.push_back(vectorEuclidean(
+                        res_.graph_structure.vertex[N_0 + j1],
+                        res_.graph_structure.vertex[N_0 + j1 + 1]));
                 }
             }
 
@@ -333,13 +318,14 @@ void HighwayRoadMap3D::connectOnePlane(const cf_cell2D* CFcell) {
                     //                        >= CFcell->zL[i][j1] &&
                     //                        CFcell->zM[i + 1][j2] <=
                     //                        CFcell->zU[i][j1])
-                    if (isOneLayerTransitionFree(vtxEdge.vertex[N_0 + j1],
-                                                 vtxEdge.vertex[N_1 + j2])) {
-                        vtxEdge.edge.push_back(
+                    if (isOneLayerTransitionFree(
+                            res_.graph_structure.vertex[N_0 + j1],
+                            res_.graph_structure.vertex[N_1 + j2])) {
+                        res_.graph_structure.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
-                        vtxEdge.weight.push_back(
-                            vectorEuclidean(vtxEdge.vertex[N_0 + j1],
-                                            vtxEdge.vertex[N_1 + j2]));
+                        res_.graph_structure.weight.push_back(vectorEuclidean(
+                            res_.graph_structure.vertex[N_0 + j1],
+                            res_.graph_structure.vertex[N_1 + j2]));
                     }
                 }
             }
@@ -375,15 +361,17 @@ void HighwayRoadMap3D::connectMultiLayer() {
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                if (std::fabs(vtxEdge.vertex[m0][0] - vtxEdge.vertex[m1][0]) <=
-                        1e-8 &&
-                    std::fabs(vtxEdge.vertex[m0][1] - vtxEdge.vertex[m1][1]) <=
-                        1e-8 &&
-                    isTransitionFree(vtxEdge.vertex[m0], vtxEdge.vertex[m1])) {
+                if (std::fabs(res_.graph_structure.vertex[m0][0] -
+                              res_.graph_structure.vertex[m1][0]) <= 1e-8 &&
+                    std::fabs(res_.graph_structure.vertex[m0][1] -
+                              res_.graph_structure.vertex[m1][1]) <= 1e-8 &&
+                    isTransitionFree(res_.graph_structure.vertex[m0],
+                                     res_.graph_structure.vertex[m1])) {
                     // Add new connections
-                    vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                    vtxEdge.weight.push_back(vectorEuclidean(
-                        vtxEdge.vertex[m0], vtxEdge.vertex[m1]));
+                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(res_.graph_structure.vertex[m0],
+                                        res_.graph_structure.vertex[m1]));
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -544,12 +532,13 @@ void HighwayRoadMap3D::search() {
     size_t num;
 
     // Construct the roadmap
-    size_t num_vtx = vtxEdge.vertex.size();
+    size_t num_vtx = res_.graph_structure.vertex.size();
     AdjGraph g(num_vtx);
 
-    for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
-        add_edge(size_t(vtxEdge.edge[i].first), size_t(vtxEdge.edge[i].second),
-                 Weight(vtxEdge.weight[i]), g);
+    for (size_t i = 0; i < res_.graph_structure.edge.size(); ++i) {
+        add_edge(size_t(res_.graph_structure.edge[i].first),
+                 size_t(res_.graph_structure.edge[i].second),
+                 Weight(res_.graph_structure.weight[i]), g);
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
@@ -566,8 +555,9 @@ void HighwayRoadMap3D::search() {
                 boost::astar_search(
                     g, idxS,
                     [this, idxG](Vertex v) {
-                        return vectorEuclidean(vtxEdge.vertex[v],
-                                               vtxEdge.vertex[idxG]);
+                        return vectorEuclidean(
+                            res_.graph_structure.vertex[v],
+                            res_.graph_structure.vertex[idxG]);
                     },
                     boost::predecessor_map(
                         boost::make_iterator_property_map(
@@ -578,50 +568,30 @@ void HighwayRoadMap3D::search() {
             } catch (AStarFoundGoal found) {
                 // Record path and cost
                 num = 0;
-                solutionPathInfo.Cost = 0;
-                solutionPathInfo.PathId.push_back(int(idxG));
-                while (solutionPathInfo.PathId[num] != int(idxS) &&
+                res_.solution_path.cost = 0.0;
+                res_.solution_path.PathId.push_back(int(idxG));
+                while (res_.solution_path.PathId[num] != int(idxS) &&
                        num <= num_vtx) {
-                    solutionPathInfo.PathId.push_back(
-                        int(p[size_t(solutionPathInfo.PathId[num])]));
-                    solutionPathInfo.Cost +=
-                        vtxEdge.weight[size_t(solutionPathInfo.PathId[num])];
+                    res_.solution_path.PathId.push_back(
+                        int(p[size_t(res_.solution_path.PathId[num])]));
+                    res_.solution_path.cost +=
+                        res_.graph_structure
+                            .weight[size_t(res_.solution_path.PathId[num])];
                     num++;
                 }
-                std::reverse(std::begin(solutionPathInfo.PathId),
-                             std::end(solutionPathInfo.PathId));
+                std::reverse(std::begin(res_.solution_path.PathId),
+                             std::end(res_.solution_path.PathId));
 
                 if (num == num_vtx + 1) {
-                    solutionPathInfo.PathId.clear();
-                    solutionPathInfo.Cost =
-                        std::numeric_limits<double>::infinity();
+                    res_.solution_path.PathId.clear();
+                    res_.solution_path.cost = inf;
                 } else {
-                    flag = true;
+                    res_.solved = true;
                     return;
                 }
             }
         }
     }
-}
-
-std::vector<std::vector<double>> HighwayRoadMap3D::getSolutionPath() {
-    std::vector<std::vector<double>> path;
-    auto poseSize = vtxEdge.vertex.at(0).size();
-
-    // Start pose
-    start_.resize(poseSize);
-    path.push_back(start_);
-
-    // Iteratively store intermediate poses along the solved path
-    for (auto pathId : solutionPathInfo.PathId) {
-        path.push_back(vtxEdge.vertex.at(size_t(pathId)));
-    }
-
-    // Goal pose
-    goal_.resize(poseSize);
-    path.push_back(goal_);
-
-    return path;
 }
 
 std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
@@ -775,21 +745,23 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     for (Eigen::Quaterniond quatCur : quatList) {
         Vertex idxLayer = 0;
         minEuclideanDist = std::numeric_limits<double>::infinity();
-        for (size_t i = 0; i < vtxEdge.vertex.size(); ++i) {
-            euclideanDist = vectorEuclidean(v, vtxEdge.vertex[i]);
+        for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
+            euclideanDist = vectorEuclidean(v, res_.graph_structure.vertex[i]);
 
             if (euclideanDist < minEuclideanDist &&
                 quatCur.angularDistance(Eigen::Quaterniond(
-                    vtxEdge.vertex[i][3], vtxEdge.vertex[i][4],
-                    vtxEdge.vertex[i][5], vtxEdge.vertex[i][6])) < 1e-6) {
+                    res_.graph_structure.vertex[i][3],
+                    res_.graph_structure.vertex[i][4],
+                    res_.graph_structure.vertex[i][5],
+                    res_.graph_structure.vertex[i][6])) < 1e-6) {
                 minEuclideanDist = euclideanDist;
                 idxLayer = i;
             }
         }
 
-        if (std::abs(v[0] - vtxEdge.vertex[idxLayer][0]) <
+        if (std::abs(v[0] - res_.graph_structure.vertex[idxLayer][0]) <
                 10 * param_.BOUND_LIMIT[0] / param_.NUM_LINE_X &&
-            std::abs(v[1] - vtxEdge.vertex[idxLayer][1]) <
+            std::abs(v[1] - res_.graph_structure.vertex[idxLayer][1]) <
                 10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }

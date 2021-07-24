@@ -71,24 +71,31 @@ int main(int argc, char** argv) {
         HRM2DMultiBody hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
         hrm.plan();
 
+        PlanningResult res = hrm.getPlanningResult();
+
         // Store statistics
-        time_stat.push_back({hrm.planTime.buildTime, hrm.planTime.searchTime,
-                             hrm.planTime.buildTime + hrm.planTime.searchTime,
-                             static_cast<double>(hrm.vtxEdge.vertex.size()),
-                             static_cast<double>(hrm.vtxEdge.edge.size()),
-                             static_cast<double>(hrm.Paths.size())});
+        time_stat.push_back(
+            {res.planning_time.buildTime, res.planning_time.searchTime,
+             res.planning_time.totalTime,
+             static_cast<double>(res.graph_structure.vertex.size()),
+             static_cast<double>(res.graph_structure.edge.size()),
+             static_cast<double>(res.solution_path.PathId.size())});
 
         // Planning Time and Path Cost
-        cout << "Roadmap build time: " << hrm.planTime.buildTime << "s" << endl;
-        cout << "Path search time: " << hrm.planTime.searchTime << "s" << endl;
-        cout << "Total Planning Time: "
-             << hrm.planTime.buildTime + hrm.planTime.searchTime << 's' << endl;
+        cout << "Roadmap build time: " << res.planning_time.buildTime << "s"
+             << endl;
+        cout << "Path search time: " << res.planning_time.searchTime << "s"
+             << endl;
+        cout << "Total Planning Time: " << res.planning_time.totalTime << 's'
+             << endl;
 
-        cout << "Number of valid configurations: " << hrm.vtxEdge.vertex.size()
+        cout << "Number of valid configurations: "
+             << res.graph_structure.vertex.size() << endl;
+        cout << "Number of valid edges: " << res.graph_structure.edge.size()
              << endl;
-        cout << "Number of configurations in Path: " << hrm.Paths.size()
-             << endl;
-        cout << "Cost: " << hrm.Cost << endl;
+        cout << "Number of configurations in Path: "
+             << res.solution_path.PathId.size() << endl;
+        cout << "Cost: " << res.solution_path.cost << endl;
     }
 
     // Store results

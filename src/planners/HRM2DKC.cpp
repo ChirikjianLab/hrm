@@ -29,7 +29,7 @@ void HRM2DKC::buildRoadmap() {
         connectOneLayer(CFcell);
 
         // Store the number of vertex before the current layer
-        N_v_layer.push_back(vtxEdge.vertex.size());
+        N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
     connectMultiLayer();
 }
@@ -54,7 +54,7 @@ boundary HRM2DKC::boundaryGen() {
 }
 
 void HRM2DKC::connectMultiLayer() {
-    size_t n = vtxEdge.vertex.size();
+    size_t n = res_.graph_structure.vertex.size();
     size_t n_11;
     size_t n_12;
     size_t n_2;
@@ -77,20 +77,22 @@ void HRM2DKC::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m = start; m < n_11; ++m) {
-            v1 = vtxEdge.vertex[m];
+            v1 = res_.graph_structure.vertex[m];
 
             for (size_t m2 = n_12; m2 < n_2; ++m2) {
-                v2 = vtxEdge.vertex[m2];
+                v2 = res_.graph_structure.vertex[m2];
 
                 // Judge connectivity using Kinematics of Containment
                 midVtx = addMidVtx(v1, v2);
                 if (!midVtx.empty()) {
-                    vtxEdge.vertex.push_back(midVtx);
+                    res_.graph_structure.vertex.push_back(midVtx);
 
-                    vtxEdge.edge.push_back(std::make_pair(m, n));
-                    vtxEdge.weight.push_back(vectorEuclidean(v1, midVtx));
-                    vtxEdge.edge.push_back(std::make_pair(m2, n));
-                    vtxEdge.weight.push_back(vectorEuclidean(v2, midVtx));
+                    res_.graph_structure.edge.push_back(std::make_pair(m, n));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(v1, midVtx));
+                    res_.graph_structure.edge.push_back(std::make_pair(m2, n));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(v2, midVtx));
                     n++;
                     break;
                 }

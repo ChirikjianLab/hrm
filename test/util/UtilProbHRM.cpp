@@ -12,19 +12,29 @@ void UtilProbHRM::planPath(const double timeLim) {
     // Highway algorithm
     plan(timeLim);
 
-    // Planning Time
-    cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
+    /** \brief Get solutions */
+    // Graph info
+    cout << "Number of valid configurations: "
+         << res_.graph_structure.vertex.size() << endl;
+    cout << "Number of valid edges: " << res_.graph_structure.edge.size()
+         << endl;
 
-    cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
-    cout << "Number of C-layers: " << param_.NUM_LAYER << endl;
+    // Planning Time
+    cout << "Roadmap build time: " << res_.planning_time.buildTime << "s"
+         << endl;
+    cout << "Path search time: " << res_.planning_time.searchTime << "s"
+         << endl;
+    cout << "Total Planning Time: " << res_.planning_time.totalTime << 's'
+         << endl;
+
     cout << "Number of configurations in Path: "
-         << solutionPathInfo.PathId.size() << endl;
-    cout << "Cost: " << solutionPathInfo.Cost << endl;
+         << res_.solution_path.PathId.size() << endl;
+    cout << "Cost: " << res_.solution_path.cost << endl;
 
     // Write the output to .csv files
     ofstream file_vtx;
     file_vtx.open("vertex_3D.csv");
-    vector<vector<double>> vtx = vtxEdge.vertex;
+    vector<vector<double>> vtx = res_.graph_structure.vertex;
     for (size_t i = 0; i < vtx.size(); ++i) {
         for (size_t j = 0; j < vtx[i].size(); ++j) {
             file_vtx << vtx[i][j] << ' ';
@@ -35,17 +45,17 @@ void UtilProbHRM::planPath(const double timeLim) {
 
     ofstream file_edge;
     file_edge.open("edge_3D.csv");
-    for (size_t i = 0; i < vtxEdge.edge.size(); ++i) {
-        file_edge << vtxEdge.edge[i].first << ' ' << vtxEdge.edge[i].second
-                  << "\n";
+    for (size_t i = 0; i < res_.graph_structure.edge.size(); ++i) {
+        file_edge << res_.graph_structure.edge[i].first << ' '
+                  << res_.graph_structure.edge[i].second << "\n";
     }
     file_edge.close();
 
     ofstream file_paths;
     file_paths.open("paths_3D.csv");
-    if (!solutionPathInfo.PathId.empty()) {
-        for (size_t i = 0; i < solutionPathInfo.PathId.size(); ++i) {
-            file_paths << solutionPathInfo.PathId[i] << ' ';
+    if (!res_.solution_path.PathId.empty()) {
+        for (size_t i = 0; i < res_.solution_path.PathId.size(); ++i) {
+            file_paths << res_.solution_path.PathId[i] << ' ';
         }
     }
     file_paths.close();

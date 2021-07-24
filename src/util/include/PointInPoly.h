@@ -1,11 +1,14 @@
 #ifndef PTINPOLY_H
 #define PTINPOLY_H
 
-#include "src/planners/include/HighwayRoadMap.h"
-
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
 #include <vector>
+
+// Parameters for the polyhedron local c-space
+struct polyCSpace {
+  public:
+    std::vector<std::vector<double>> vertex;
+    std::vector<std::vector<double>> invMat;
+};
 
 bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt);
 

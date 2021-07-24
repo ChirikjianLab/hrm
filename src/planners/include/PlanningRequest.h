@@ -3,13 +3,6 @@
 
 #include <vector>
 
-// Parameters for the polyhedron local c-space
-struct polyCSpace {
-  public:
-    std::vector<std::vector<double>> vertex;
-    std::vector<std::vector<double>> invMat;
-};
-
 /** \brief Parameters for planner
  * \param BOUND_LIMIT Boundary limit of the planning arena, format {xLowBound,
  *xHighBound, yLowbound, yHighBound}

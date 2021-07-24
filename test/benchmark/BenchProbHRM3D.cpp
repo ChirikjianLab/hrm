@@ -70,14 +70,16 @@ int main(int argc, char** argv) {
                                env3D->getObstacle(), req);
         probHigh3D.planPath(timeLim);
 
+        PlanningResult res = probHigh3D.getPlanningResult();
+
         // Store results
-        file_time << probHigh3D.flag << ',' << probHigh3D.planTime.totalTime
-                  << ',' << probHigh3D.param_.NUM_LAYER << ','
+        file_time << res.solved << ',' << res.planning_time.totalTime << ','
+                  << probHigh3D.param_.NUM_LAYER << ','
                   << probHigh3D.param_.NUM_LINE_X << ','
                   << probHigh3D.param_.NUM_LINE_Y << ','
-                  << probHigh3D.vtxEdge.vertex.size() << ','
-                  << probHigh3D.vtxEdge.edge.size() << ','
-                  << probHigh3D.solutionPathInfo.PathId.size() << "\n";
+                  << res.graph_structure.vertex.size() << ','
+                  << res.graph_structure.edge.size() << ','
+                  << res.solution_path.PathId.size() << "\n";
     }
     file_time.close();
 
