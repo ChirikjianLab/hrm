@@ -14,7 +14,6 @@
 #include <boost/graph/graph_traits.hpp>
 
 #include <algorithm>
-#include <limits>
 #include <list>
 #include <random>
 
@@ -26,9 +25,6 @@ using Vertex = AdjGraph::vertex_descriptor;
 using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
-
-static const double pi = 3.1415926;
-static const double inf = std::numeric_limits<double>::infinity();
 
 /** \brief freeSegment collision-free line segments */
 struct cf_cell2D {
@@ -105,9 +101,9 @@ class HighwayRoadMap {
     virtual void connectOneLayer(cf_cell2D cell) = 0;
     virtual void connectMultiLayer() = 0;
 
-    virtual void search() {
-        Vertex idx_s;
-        Vertex idx_g;
+    void search() {
+        std::vector<Vertex> idx_s;
+        std::vector<Vertex> idx_g;
         size_t num;
 
         // Construct the roadmap
@@ -121,48 +117,56 @@ class HighwayRoadMap {
         }
 
         // Locate the nearest vertex for start and goal in the roadmap
-        idx_s = getNearestVtxOnGraph(start_);
-        idx_g = getNearestVtxOnGraph(goal_);
+        idx_s = getNearestNeighborsOnGraph(start_, param_.NUM_SEARCH_NEIGHBOR,
+                                           param_.SEARCH_RADIUS);
+        idx_g = getNearestNeighborsOnGraph(goal_, param_.NUM_SEARCH_NEIGHBOR,
+                                           param_.SEARCH_RADIUS);
 
-        // Search for shortest path
-        std::vector<Vertex> p(num_vertices(g));
-        std::vector<double> d(num_vertices(g));
+        // Search for shortest path in the searching regions
+        for (Vertex idxS : idx_s) {
+            for (Vertex idxG : idx_g) {
+                std::vector<Vertex> p(num_vertices(g));
+                std::vector<double> d(num_vertices(g));
 
-        try {
-            boost::astar_search(
-                g, idx_s,
-                [this, idx_g](Vertex v) {
-                    return vectorEuclidean(res_.graph_structure.vertex[v],
-                                           res_.graph_structure.vertex[idx_g]);
-                },
-                boost::predecessor_map(
-                    boost::make_iterator_property_map(
-                        p.begin(), get(boost::vertex_index, g)))
-                    .distance_map(make_iterator_property_map(
-                        d.begin(), get(boost::vertex_index, g)))
-                    .visitor(AStarGoalVisitor<Vertex>(idx_g)));
-        } catch (AStarFoundGoal found) {
-            // Record path and cost
-            num = 0;
-            res_.solution_path.PathId.push_back(int(idx_g));
-            while (res_.solution_path.PathId[num] != int(idx_s) &&
-                   num <= num_vtx) {
-                res_.solution_path.PathId.push_back(
-                    int(p[size_t(res_.solution_path.PathId[num])]));
-                res_.solution_path.cost +=
-                    d[size_t(res_.solution_path.PathId[num])];
-                num++;
-            }
+                try {
+                    boost::astar_search(
+                        g, idxS,
+                        [this, idxG](Vertex v) {
+                            return vectorEuclidean(
+                                res_.graph_structure.vertex[v],
+                                res_.graph_structure.vertex[idxG]);
+                        },
+                        boost::predecessor_map(
+                            boost::make_iterator_property_map(
+                                p.begin(), get(boost::vertex_index, g)))
+                            .distance_map(make_iterator_property_map(
+                                d.begin(), get(boost::vertex_index, g)))
+                            .visitor(AStarGoalVisitor<Vertex>(idxG)));
+                } catch (AStarFoundGoal found) {
+                    // Record path and cost
+                    num = 0;
+                    res_.solution_path.cost = 0.0;
+                    res_.solution_path.PathId.push_back(int(idxG));
+                    while (res_.solution_path.PathId[num] != int(idxS) &&
+                           num <= num_vtx) {
+                        res_.solution_path.PathId.push_back(
+                            int(p[size_t(res_.solution_path.PathId[num])]));
+                        res_.solution_path.cost +=
+                            res_.graph_structure
+                                .weight[size_t(res_.solution_path.PathId[num])];
+                        num++;
+                    }
+                    std::reverse(std::begin(res_.solution_path.PathId),
+                                 std::end(res_.solution_path.PathId));
 
-            std::reverse(std::begin(res_.solution_path.PathId),
-                         std::end(res_.solution_path.PathId));
-
-            if (num == num_vtx + 1) {
-                res_.solution_path.PathId.clear();
-                res_.solution_path.cost = inf;
-            } else {
-                res_.solved = true;
-                return;
+                    if (num == num_vtx + 1) {
+                        res_.solution_path.PathId.clear();
+                        res_.solution_path.cost = inf;
+                    } else {
+                        res_.solved = true;
+                        return;
+                    }
+                }
             }
         }
     }
@@ -188,8 +192,59 @@ class HighwayRoadMap {
     }
 
   protected:
-    virtual cf_cell2D enhanceDecomp(cf_cell2D cell) = 0;
-    virtual size_t getNearestVtxOnGraph(std::vector<double> v) = 0;
+    cf_cell2D enhanceDecomp(cf_cell2D cell) {
+        // Make sure all connections between vertexes are within one convex cell
+        cf_cell2D cell_new = cell;
+
+        for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
+            for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
+                for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); ++j2) {
+                    if (cell_new.xM[i][j1] < cell_new.xL[i + 1][j2] &&
+                        cell_new.xU[i][j1] >= cell_new.xL[i + 1][j2]) {
+                        cell_new.xU[i].push_back(cell_new.xL[i + 1][j2]);
+                        cell_new.xL[i].push_back(cell_new.xL[i + 1][j2]);
+                        cell_new.xM[i].push_back(cell_new.xL[i + 1][j2]);
+                    } else if (cell_new.xM[i][j1] > cell_new.xU[i + 1][j2] &&
+                               cell_new.xL[i][j1] <= cell_new.xU[i + 1][j2]) {
+                        cell_new.xU[i].push_back(cell_new.xU[i + 1][j2]);
+                        cell_new.xL[i].push_back(cell_new.xU[i + 1][j2]);
+                        cell_new.xM[i].push_back(cell_new.xU[i + 1][j2]);
+                    }
+
+                    if (cell_new.xM[i + 1][j2] < cell_new.xL[i][j1] &&
+                        cell_new.xU[i + 1][j2] >= cell_new.xL[i][j1]) {
+                        cell_new.xU[i + 1].push_back(cell_new.xL[i][j1]);
+                        cell_new.xL[i + 1].push_back(cell_new.xL[i][j1]);
+                        cell_new.xM[i + 1].push_back(cell_new.xL[i][j1]);
+                    } else if (cell_new.xM[i + 1][j2] > cell_new.xU[i][j1] &&
+                               cell_new.xL[i + 1][j2] <= cell_new.xU[i][j1]) {
+                        cell_new.xU[i + 1].push_back(cell_new.xU[i][j1]);
+                        cell_new.xL[i + 1].push_back(cell_new.xU[i][j1]);
+                        cell_new.xM[i + 1].push_back(cell_new.xU[i][j1]);
+                    }
+                }
+            }
+
+            sort(cell_new.xL[i].begin(), cell_new.xL[i].end(),
+                 [](double a, double b) { return a < b; });
+            sort(cell_new.xU[i].begin(), cell_new.xU[i].end(),
+                 [](double a, double b) { return a < b; });
+            sort(cell_new.xM[i].begin(), cell_new.xM[i].end(),
+                 [](double a, double b) { return a < b; });
+        }
+
+        return cell_new;
+    }
+
+    /**
+     * \brief find the nearest neighbors of a pose on the graph
+     * \param vertex the queried vertex
+     * \param k number of neighbors
+     * \param radius radius of a neighboring ball around v
+     */
+    virtual std::vector<Vertex> getNearestNeighborsOnGraph(
+        const std::vector<double>& vertex, const size_t k,
+        const double radius) = 0;
 
   public:
     RobotType robot_;

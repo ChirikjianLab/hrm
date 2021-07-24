@@ -85,9 +85,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
                      const std::vector<double>& V);
 
-    /** \brief graph search using a-star algorithm */
-    void search() override;
-
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
@@ -99,21 +96,10 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual void setTransform(const std::vector<double>& V);
 
   private:
-    /** \brief enhanced cell decomposition, connect vertices within one
-     * collision-free line segment, all connections between vertexes are within
-     * one convex cell */
-    cf_cell2D enhanceDecomp(cf_cell2D cell);
-
-    /**
-     * \brief find the nearest neighbors of a pose on the graph
-     * \param v the queried vertex
-     * \param k number of neighbors
-     * \param r radius of a neighboring ball around v
-     */
-    std::vector<Vertex> getNearestNeighborsOnGraph(const std::vector<double>& v,
-                                                   const size_t k,
-                                                   const double r);
-    size_t getNearestVtxOnGraph(std::vector<double> v) override;
+    /** \brief find the nearest neighbors of a pose on the graph */
+    std::vector<Vertex> getNearestNeighborsOnGraph(
+        const std::vector<double>& vertex, const size_t k,
+        const double radius) override;
 
     /**
      * \brief query whether a point is within a collision-free line segment

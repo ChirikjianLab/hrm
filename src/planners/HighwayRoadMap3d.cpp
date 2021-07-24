@@ -5,8 +5,6 @@
 #include <list>
 #include <random>
 
-#define pi 3.1415926
-
 HighwayRoadMap3D::HighwayRoadMap3D(const SuperQuadrics& robot,
                                    const std::vector<SuperQuadrics>& arena,
                                    const std::vector<SuperQuadrics>& obs,
@@ -524,76 +522,6 @@ bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
 //}
 
 // ******************************************************************** //
-
-// ******************************************************************** //
-void HighwayRoadMap3D::search() {
-    std::vector<Vertex> idx_s;
-    std::vector<Vertex> idx_g;
-    size_t num;
-
-    // Construct the roadmap
-    size_t num_vtx = res_.graph_structure.vertex.size();
-    AdjGraph g(num_vtx);
-
-    for (size_t i = 0; i < res_.graph_structure.edge.size(); ++i) {
-        add_edge(size_t(res_.graph_structure.edge[i].first),
-                 size_t(res_.graph_structure.edge[i].second),
-                 Weight(res_.graph_structure.weight[i]), g);
-    }
-
-    // Locate the nearest vertex for start and goal in the roadmap
-    idx_s = getNearestNeighborsOnGraph(start_, 10, pi / 2);
-    idx_g = getNearestNeighborsOnGraph(goal_, 10, pi / 2);
-
-    // Search for shortest path
-    for (Vertex idxS : idx_s) {
-        for (Vertex idxG : idx_g) {
-            std::vector<Vertex> p(num_vertices(g));
-            std::vector<double> d(num_vertices(g));
-
-            try {
-                boost::astar_search(
-                    g, idxS,
-                    [this, idxG](Vertex v) {
-                        return vectorEuclidean(
-                            res_.graph_structure.vertex[v],
-                            res_.graph_structure.vertex[idxG]);
-                    },
-                    boost::predecessor_map(
-                        boost::make_iterator_property_map(
-                            p.begin(), get(boost::vertex_index, g)))
-                        .distance_map(make_iterator_property_map(
-                            d.begin(), get(boost::vertex_index, g)))
-                        .visitor(AStarGoalVisitor<Vertex>(idxG)));
-            } catch (AStarFoundGoal found) {
-                // Record path and cost
-                num = 0;
-                res_.solution_path.cost = 0.0;
-                res_.solution_path.PathId.push_back(int(idxG));
-                while (res_.solution_path.PathId[num] != int(idxS) &&
-                       num <= num_vtx) {
-                    res_.solution_path.PathId.push_back(
-                        int(p[size_t(res_.solution_path.PathId[num])]));
-                    res_.solution_path.cost +=
-                        res_.graph_structure
-                            .weight[size_t(res_.solution_path.PathId[num])];
-                    num++;
-                }
-                std::reverse(std::begin(res_.solution_path.PathId),
-                             std::end(res_.solution_path.PathId));
-
-                if (num == num_vtx + 1) {
-                    res_.solution_path.PathId.clear();
-                    res_.solution_path.cost = inf;
-                } else {
-                    res_.solved = true;
-                    return;
-                }
-            }
-        }
-    }
-}
-
 std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     const unsigned int num) {
     std::vector<std::vector<double>> path_interp;
@@ -639,51 +567,6 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
 /************************************************************************/
 /*************************  Private Functions ***************************/
 /************************************************************************/
-
-// Make sure all connections between vertexes are within one convex cell
-cf_cell2D HighwayRoadMap3D::enhanceDecomp(cf_cell2D cell) {
-    cf_cell2D cell_new = cell;
-
-    for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); ++j2) {
-                if (cell_new.xM[i][j1] < cell_new.xL[i + 1][j2] &&
-                    cell_new.xU[i][j1] >= cell_new.xL[i + 1][j2]) {
-                    cell_new.xU[i].push_back(cell_new.xL[i + 1][j2]);
-                    cell_new.xL[i].push_back(cell_new.xL[i + 1][j2]);
-                    cell_new.xM[i].push_back(cell_new.xL[i + 1][j2]);
-                } else if (cell_new.xM[i][j1] > cell_new.xU[i + 1][j2] &&
-                           cell_new.xL[i][j1] <= cell_new.xU[i + 1][j2]) {
-                    cell_new.xU[i].push_back(cell_new.xU[i + 1][j2]);
-                    cell_new.xL[i].push_back(cell_new.xU[i + 1][j2]);
-                    cell_new.xM[i].push_back(cell_new.xU[i + 1][j2]);
-                }
-
-                if (cell_new.xM[i + 1][j2] < cell_new.xL[i][j1] &&
-                    cell_new.xU[i + 1][j2] >= cell_new.xL[i][j1]) {
-                    cell_new.xU[i + 1].push_back(cell_new.xL[i][j1]);
-                    cell_new.xL[i + 1].push_back(cell_new.xL[i][j1]);
-                    cell_new.xM[i + 1].push_back(cell_new.xL[i][j1]);
-                } else if (cell_new.xM[i + 1][j2] > cell_new.xU[i][j1] &&
-                           cell_new.xL[i + 1][j2] <= cell_new.xU[i][j1]) {
-                    cell_new.xU[i + 1].push_back(cell_new.xU[i][j1]);
-                    cell_new.xL[i + 1].push_back(cell_new.xU[i][j1]);
-                    cell_new.xM[i + 1].push_back(cell_new.xU[i][j1]);
-                }
-            }
-        }
-
-        sort(cell_new.xL[i].begin(), cell_new.xL[i].end(),
-             [](double a, double b) { return a < b; });
-        sort(cell_new.xU[i].begin(), cell_new.xU[i].end(),
-             [](double a, double b) { return a < b; });
-        sort(cell_new.xM[i].begin(), cell_new.xM[i].end(),
-             [](double a, double b) { return a < b; });
-    }
-
-    return cell_new;
-}
-
 void HighwayRoadMap3D::setTransform(const std::vector<double>& V) {
     robot_.setPosition({V[0], V[1], V[2]});
     robot_.setQuaternion(Eigen::Quaterniond(V[3], V[4], V[5], V[6]));
@@ -708,14 +591,14 @@ void HighwayRoadMap3D::sampleSO3() {
 // Find the cell that an arbitrary vertex locates, and find the closest
 // roadmap vertex
 std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
-    const std::vector<double>& v, const size_t k, const double r) {
+    const std::vector<double>& vertex, const size_t k, const double radius) {
     double minEuclideanDist;
     double minQuatDist;
     double quatDist;
     double euclideanDist;
     std::vector<Vertex> idx;
 
-    Eigen::Quaterniond queryQuat(v[3], v[4], v[5], v[6]);
+    Eigen::Quaterniond queryQuat(vertex[3], vertex[4], vertex[5], vertex[6]);
     Eigen::Quaterniond minQuat;
 
     // Find the closest C-layer
@@ -731,7 +614,7 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     // Search for k-nn C-layers
     std::vector<Eigen::Quaterniond> quatList;
     for (size_t i = 0; i < q_r.size(); ++i) {
-        if (minQuat.angularDistance(q_r[i]) < r) {
+        if (minQuat.angularDistance(q_r[i]) < radius) {
             quatList.push_back(q_r[i]);
         }
 
@@ -746,7 +629,8 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
         Vertex idxLayer = 0;
         minEuclideanDist = std::numeric_limits<double>::infinity();
         for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
-            euclideanDist = vectorEuclidean(v, res_.graph_structure.vertex[i]);
+            euclideanDist =
+                vectorEuclidean(vertex, res_.graph_structure.vertex[i]);
 
             if (euclideanDist < minEuclideanDist &&
                 quatCur.angularDistance(Eigen::Quaterniond(
@@ -759,17 +643,13 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
             }
         }
 
-        if (std::abs(v[0] - res_.graph_structure.vertex[idxLayer][0]) <
+        if (std::abs(vertex[0] - res_.graph_structure.vertex[idxLayer][0]) <
                 10 * param_.BOUND_LIMIT[0] / param_.NUM_LINE_X &&
-            std::abs(v[1] - res_.graph_structure.vertex[idxLayer][1]) <
+            std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
                 10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }
     }
 
     return idx;
-}
-
-size_t HighwayRoadMap3D::getNearestVtxOnGraph(std::vector<double> v) {
-    return 0;
 }

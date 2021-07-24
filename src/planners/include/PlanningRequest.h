@@ -1,7 +1,11 @@
 #ifndef PLANNERREQUEST_H
 #define PLANNERREQUEST_H
 
+#include <limits>
 #include <vector>
+
+static const double pi = 3.1415926;
+static const double inf = std::numeric_limits<double>::infinity();
 
 /** \brief Parameters for planner
  * \param BOUND_LIMIT Boundary limit of the planning arena, format {xLowBound,
@@ -19,6 +23,9 @@ struct PlannerParameter {
     size_t NUM_LINE_X;
     size_t NUM_LINE_Y;
     size_t NUM_POINT = 5;
+
+    size_t NUM_SEARCH_NEIGHBOR = 10;
+    double SEARCH_RADIUS = pi / 2;
 };
 
 /**
