@@ -82,6 +82,7 @@ class HighwayRoadMap {
     PlanningResult getPlanningResult() const { return res_; }
 
     virtual void plan() {
+        // Plan and timing
         ompl::time::point start = ompl::time::now();
         buildRoadmap();
         res_.planning_time.buildTime =
@@ -94,6 +95,9 @@ class HighwayRoadMap {
 
         res_.planning_time.totalTime =
             res_.planning_time.buildTime + res_.planning_time.searchTime;
+
+        // Get solution path
+        res_.solution_path.solvedPath = getSolutionPath();
     }
 
     virtual void buildRoadmap() = 0;

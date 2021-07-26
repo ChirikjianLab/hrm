@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
 
         // Display and store results
         displayPlanningTimeInfo(&res.planning_time);
-        displayGraphInfo(&res.graph_structure, false);
-        displayPathInfo(&res.solution_path, false);
+        displayGraphInfo(&res.graph_structure);
+        displayPathInfo(&res.solution_path);
 
         file_time << res.solved << ',' << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','

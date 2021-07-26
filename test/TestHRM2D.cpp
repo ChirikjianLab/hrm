@@ -1,14 +1,6 @@
 #include "planners/include/HRM2DMultiBody.h"
+#include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
-
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
-
-#include <math.h>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <vector>
 
 #include "gtest/gtest.h"
 
@@ -109,55 +101,26 @@ algorithm planTest(const robotType& robot,
 }
 
 void showResult(const PlanningResult* res, const bool isStore) {
-    Time planTime = res->planning_time;
-    Graph vtxEdge = res->graph_structure;
-    SolutionPathInfo pathInfo = res->solution_path;
-
     cout << "----------" << endl;
-    cout << "Roadmap build time: " << planTime.buildTime << "s" << endl;
-    cout << "Path search time: " << planTime.searchTime << "s" << endl;
-    cout << "Total Planning Time: " << planTime.totalTime << 's' << endl;
 
-    cout << "Number of valid configurations: " << vtxEdge.vertex.size() << endl;
-    cout << "Number of valid edges: " << vtxEdge.edge.size() << endl;
-    cout << "Number of configurations in Path: " << pathInfo.PathId.size()
-         << endl;
-    cout << "Cost: " << pathInfo.cost << endl;
+    displayPlanningTimeInfo(&res->planning_time);
+
+    if (isStore) {
+        displayGraphInfo(&res->graph_structure, "2D");
+        displayPathInfo(&res->solution_path, "2D");
+    } else {
+        displayGraphInfo(&res->graph_structure);
+        displayPathInfo(&res->solution_path);
+    }
 
     // GTest planning result
     EXPECT_TRUE(res->solved);
-    ASSERT_GE(pathInfo.PathId.size(), 0);
-    ASSERT_GE(vtxEdge.vertex.size(), 0);
-    ASSERT_GE(vtxEdge.edge.size(), 0);
-    ASSERT_GE(pathInfo.cost, 0.0);
 
-    if (isStore) {
-        // Write the output to .csv files
-        ofstream file_vtx;
-        file_vtx.open("vertex_2D.csv");
-        vector<vector<double>> vtx = vtxEdge.vertex;
-        for (size_t i = 0; i < vtx.size(); i++) {
-            file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2]
-                     << "\n";
-        }
-        file_vtx.close();
+    ASSERT_GE(res->graph_structure.vertex.size(), 0);
+    ASSERT_GE(res->graph_structure.edge.size(), 0);
 
-        ofstream file_edge;
-        file_edge.open("edge_2D.csv");
-        vector<pair<int, int>> edge = vtxEdge.edge;
-        for (size_t i = 0; i < edge.size(); i++) {
-            file_edge << edge[i].first << ' ' << edge[i].second << "\n";
-        }
-        file_edge.close();
-
-        ofstream file_paths;
-        file_paths.open("paths_2D.csv");
-        vector<int> paths = pathInfo.PathId;
-        for (size_t i = 0; i < paths.size(); i++) {
-            file_paths << paths[i] << ' ';
-        }
-        file_paths.close();
-    }
+    ASSERT_GE(res->solution_path.PathId.size(), 0);
+    ASSERT_GE(res->solution_path.cost, 0.0);
 }
 
 TEST(TestHRMPlanning2D, MultiBody) {

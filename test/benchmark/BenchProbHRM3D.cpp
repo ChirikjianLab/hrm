@@ -73,8 +73,8 @@ int main(int argc, char** argv) {
 
         // Store results
         displayPlanningTimeInfo(&res.planning_time);
-        displayGraphInfo(&res.graph_structure, false);
-        displayPathInfo(&res.solution_path, false);
+        displayGraphInfo(&res.graph_structure);
+        displayPathInfo(&res.solution_path);
 
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
                   << probHRM.param_.NUM_LAYER << ','
