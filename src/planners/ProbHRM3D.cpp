@@ -6,7 +6,7 @@ ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
-    : Hrm3DMultiBody::Hrm3DMultiBody(robot, arena, obs, req),
+    : HRM3DMultiBody::HRM3DMultiBody(robot, arena, obs, req),
       urdfFile_(urdfFile) {
     kdl_ = new ParseURDF(urdfFile_);
 }

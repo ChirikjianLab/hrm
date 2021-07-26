@@ -1,10 +1,10 @@
 #ifndef PROBHRM3D_H
 #define PROBHRM3D_H
 
-#include "Hrm3dMultiBody.h"
+#include "HRM3DMultiBody.h"
 #include "util/include/ParseURDF.h"
 
-class ProbHRM3D : public Hrm3DMultiBody {
+class ProbHRM3D : public HRM3DMultiBody {
   public:
     ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
               const std::vector<SuperQuadrics>& arena,

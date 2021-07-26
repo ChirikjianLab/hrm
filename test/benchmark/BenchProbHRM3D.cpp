@@ -1,5 +1,6 @@
+#include "planners/include/ProbHRM3D.h"
+#include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
-#include "util/include/UtilProbHRM.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -23,8 +24,6 @@ int main(int argc, char** argv) {
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
     const double timeLim = double(atoi(argv[5]));
-
-    vector<vector<double>> stat(N);
 
     // Setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();
@@ -66,17 +65,21 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        UtilProbHRM probHigh3D(robot, urdfFile, env3D->getArena(),
-                               env3D->getObstacle(), req);
-        probHigh3D.planPath(timeLim);
+        ProbHRM3D probHRM(robot, urdfFile, env3D->getArena(),
+                          env3D->getObstacle(), req);
+        probHRM.plan(timeLim);
 
-        PlanningResult res = probHigh3D.getPlanningResult();
+        PlanningResult res = probHRM.getPlanningResult();
 
         // Store results
+        displayPlanningTimeInfo(&res.planning_time);
+        displayGraphInfo(&res.graph_structure, false);
+        displayPathInfo(&res.solution_path, false);
+
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << probHigh3D.param_.NUM_LAYER << ','
-                  << probHigh3D.param_.NUM_LINE_X << ','
-                  << probHigh3D.param_.NUM_LINE_Y << ','
+                  << probHRM.param_.NUM_LAYER << ','
+                  << probHRM.param_.NUM_LINE_X << ','
+                  << probHRM.param_.NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

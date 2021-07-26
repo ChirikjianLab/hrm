@@ -1,9 +1,9 @@
 #ifndef HIGHWAY_PLANNER_H
 #define HIGHWAY_PLANNER_H
 
-#include "planners/include/Hrm3dMultiBody.h"
+#include "planners/include/HRM3DMultiBody.h"
 
-class PlannerHighway3D : public Hrm3DMultiBody {
+class PlannerHighway3D : public HRM3DMultiBody {
   public:
     PlannerHighway3D(const MultiBodyTree3D robot,
                      const std::vector<SuperQuadrics>& arena,

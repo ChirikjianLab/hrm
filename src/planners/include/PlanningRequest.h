@@ -28,9 +28,7 @@ struct PlannerParameter {
     double SEARCH_RADIUS = pi / 2;
 };
 
-/**
- * \brief PlanningRequest user-defined parameters for planning
- */
+/** \brief PlanningRequest user-defined parameters for planning */
 struct PlanningRequest {
     bool is_robot_rigid = true;
 

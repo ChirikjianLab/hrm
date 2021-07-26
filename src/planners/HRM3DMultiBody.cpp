@@ -1,19 +1,19 @@
-#include "include/Hrm3dMultiBody.h"
+#include "include/HRM3DMultiBody.h"
 
 #include <fstream>
 #include <iostream>
 
-Hrm3DMultiBody::Hrm3DMultiBody(const MultiBodyTree3D& robot,
+HRM3DMultiBody::HRM3DMultiBody(const MultiBodyTree3D& robot,
                                const std::vector<SuperQuadrics>& arena,
                                const std::vector<SuperQuadrics>& obs,
                                const PlanningRequest& req)
     : HighwayRoadMap3D::HighwayRoadMap3D(robot.getBase(), arena, obs, req),
       RobotM(robot) {}
 
-Hrm3DMultiBody::~Hrm3DMultiBody() {}
+HRM3DMultiBody::~HRM3DMultiBody() {}
 
 // Build the roadmap for multi-rigid-body planning
-void Hrm3DMultiBody::buildRoadmap() {
+void HRM3DMultiBody::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
 
@@ -41,7 +41,7 @@ void Hrm3DMultiBody::buildRoadmap() {
 }
 
 // Minkowski Boundary
-boundary Hrm3DMultiBody::boundaryGen() {
+boundary HRM3DMultiBody::boundaryGen() {
     boundary bd;
 
     // Minkowski boundary points
@@ -65,7 +65,7 @@ boundary Hrm3DMultiBody::boundaryGen() {
 }
 
 // Connect layers
-void Hrm3DMultiBody::connectMultiLayer() {
+void HRM3DMultiBody::connectMultiLayer() {
     if (param_.NUM_LAYER == 1) {
         return;
     }
@@ -231,7 +231,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-// bool Hrm3DMultiBody::isCollisionFree(const std::vector<double>& V1,
+// bool HRM3DMultiBody::isCollisionFree(const std::vector<double>& V1,
 //                                     const std::vector<double>& V2) {
 //    if (isTransitionFree(V1, V2)) {
 //        return true;
@@ -240,7 +240,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
 //    }
 //}
 
-// bool Hrm3DMultiBody::isOneLayerTransitionFree(const std::vector<double>& V1,
+// bool HRM3DMultiBody::isOneLayerTransitionFree(const std::vector<double>& V1,
 //                                              const std::vector<double>& V2) {
 //    // Interpolated robot translation motion from V1 to V2
 //    std::vector<std::vector<double>> vInterp =
@@ -259,7 +259,7 @@ void Hrm3DMultiBody::connectMultiLayer() {
 //    return true;
 //}
 
-bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
+bool HRM3DMultiBody::isTransitionFree(const std::vector<double>& V1,
                                       const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
@@ -314,7 +314,7 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
 }
 
 //// Point in collision-free line segment
-// bool Hrm3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
+// bool HRM3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
 //                                  const std::vector<double>& V) {
 //    std::vector<bool> isInLine(4, false);
 
@@ -376,7 +376,7 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
 //    return true;
 //}
 
-// bool Hrm3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
+// bool HRM3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
 //                                             const std::vector<double>& V1,
 //                                             const std::vector<double>& V2) {
 //    for (size_t i = 0; i < cell->tx.size(); ++i) {
@@ -407,7 +407,7 @@ bool Hrm3DMultiBody::isTransitionFree(const std::vector<double>& V1,
 //}
 
 // Transform the robot
-void Hrm3DMultiBody::setTransform(const std::vector<double>& V) {
+void HRM3DMultiBody::setTransform(const std::vector<double>& V) {
     Eigen::Matrix4d g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(V[3], V[4], V[5], V[6]).toRotationMatrix();
@@ -418,7 +418,7 @@ void Hrm3DMultiBody::setTransform(const std::vector<double>& V) {
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
-std::vector<SuperQuadrics> Hrm3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
+std::vector<SuperQuadrics> HRM3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
                                                      Eigen::Quaterniond q2) {
     std::vector<SuperQuadrics> tfe;
 

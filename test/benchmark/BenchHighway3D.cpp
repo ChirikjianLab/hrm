@@ -1,5 +1,6 @@
+#include "planners/include/HRM3DMultiBody.h"
+#include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
-#include "util/include/highway_planner.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -22,8 +23,6 @@ int main(int argc, char** argv) {
     const int N_l = atoi(argv[2]);
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
-
-    vector<vector<double>> stat(N);
 
     // Setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();
@@ -70,13 +69,16 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         // Path planning using HRM3DMultiBody
-        PlannerHighway3D high3D(robot, env3D->getArena(), env3D->getObstacle(),
-                                req);
-        high3D.getGraphAndPath();
+        HRM3DMultiBody hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
+        hrm.plan();
 
-        PlanningResult res = high3D.getPlanningResult();
+        PlanningResult res = hrm.getPlanningResult();
 
-        // Store results
+        // Display and store results
+        displayPlanningTimeInfo(&res.planning_time);
+        displayGraphInfo(&res.graph_structure, false);
+        displayPathInfo(&res.solution_path, false);
+
         file_time << res.solved << ',' << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','
                   << res.planning_time.totalTime << ',' << N_l << ',' << N_x

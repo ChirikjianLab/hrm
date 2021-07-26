@@ -6,7 +6,7 @@ PlannerHighway3D::PlannerHighway3D(const MultiBodyTree3D robot,
                                    const std::vector<SuperQuadrics>& arena,
                                    const std::vector<SuperQuadrics>& obs,
                                    const PlanningRequest& req)
-    : Hrm3DMultiBody(robot, arena, obs, req) {}
+    : HRM3DMultiBody(robot, arena, obs, req) {}
 
 void PlannerHighway3D::getGraphAndPath() {
     plan();

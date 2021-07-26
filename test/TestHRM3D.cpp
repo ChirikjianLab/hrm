@@ -1,4 +1,4 @@
-#include "planners/include/Hrm3dMultiBody.h"
+#include "planners/include/HRM3DMultiBody.h"
 #include "util/include/ParsePlanningSettings.h"
 
 #include <fstream>
@@ -28,7 +28,7 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
     return par;
 }
 
-Hrm3DMultiBody planTest(const MultiBodyTree3D& robot,
+HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
                         const vector<SuperQuadrics>& arena,
                         const vector<SuperQuadrics>& obs,
                         const PlanningRequest& req, const bool isStore) {
@@ -43,7 +43,7 @@ Hrm3DMultiBody planTest(const MultiBodyTree3D& robot,
 
     cout << "Start planning..." << endl;
 
-    Hrm3DMultiBody hrm(robot, arena, obs, req);
+    HRM3DMultiBody hrm(robot, arena, obs, req);
     hrm.plan();
 
     if (isStore) {

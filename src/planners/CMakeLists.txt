@@ -13,7 +13,7 @@ target_link_libraries(HRM_2D
 
 add_library(HRM_3D
             HighwayRoadMap3d.cpp
-            Hrm3dMultiBody.cpp
+            HRM3DMultiBody.cpp
             ProbHRM3D.cpp)
 target_link_libraries(HRM_3D
                       HighwayRoadMap)

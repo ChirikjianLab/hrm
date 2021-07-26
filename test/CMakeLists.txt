@@ -14,20 +14,16 @@ add_test(TestGeometry ${EXECUTABLE_OUTPUT_PATH}/TestGeometry)
 # 2D version
 add_executable(TestHRM2D TestHRM2D.cpp)
 target_link_libraries(TestHRM2D
-                      UTIL
-                      GEOM
                       HRM_2D
-                      TESTUTIL
+                      TEST_UTIL
                       ${GTEST_LIBRARIES})
 add_test(TestHRM2D ${EXECUTABLE_OUTPUT_PATH}/TestHRM2D)
 
 # 3D version
 add_executable(TestHRM3D TestHRM3D.cpp)
 target_link_libraries(TestHRM3D
-                      UTIL
                       HRM_3D
-                      GEOM
-                      TESTUTIL
+                      TEST_UTIL
                       ${FCL_LIBRARIES}
                       ${CCD_LIBRARIES}
                       ${GTEST_LIBRARIES})
