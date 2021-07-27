@@ -113,7 +113,7 @@ void HRM2DMultiBody::connectMultiLayer() {
                     continue;
                 }
 
-                if (isCollisionFree(V1, V2)) {
+                if (isMultiLayerTransitionFree(V1, V2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
@@ -132,8 +132,8 @@ void HRM2DMultiBody::connectMultiLayer() {
     }
 }
 
-bool HRM2DMultiBody::isCollisionFree(const std::vector<double>& V1,
-                                     const std::vector<double>& V2) {
+bool HRM2DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                                const std::vector<double>& V2) {
     double dt = 1.0 / (param_.NUM_POINT - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolated robot motion from V1 to V2

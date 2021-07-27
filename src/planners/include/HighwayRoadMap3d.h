@@ -76,32 +76,27 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     //    cf_cell3D midLayer(SuperQuadrics);
     std::vector<MeshMatrix> midLayer(SuperQuadrics);
 
-    /** \brief check whether connection between V1 and V2 within one C-layer is
-     * valid through line segment V1-V2 and C-obstacle mesh intersection
-     * checking */
-    bool isOneLayerTransitionFree(const std::vector<double>& V1,
-                                  const std::vector<double>& V2);
-
-    /** \brief check whether connection between V1 and V2 is valid through
-     * interpolation */
-    virtual bool isTransitionFree(const std::vector<double>& V1,
-                                  const std::vector<double>& V2);
-
-    /** \brief check is one point is within C-free */
-    bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                     const std::vector<double>& V);
-
-    /** \brief get the resulting solved path and the interpolated one */
-    std::vector<std::vector<double>> getInterpolatedSolutionPath(
-        const unsigned int num);
-
     /** \brief uniform random sample SO(3) */
     void sampleSO3();
 
     /** \brief transformation for robot */
     virtual void setTransform(const std::vector<double>& V);
 
-  private:
+    /** \brief get the resulting solved path and the interpolated one */
+    std::vector<std::vector<double>> getInterpolatedSolutionPath(
+        const unsigned int num);
+
+  protected:
+    bool isSameLayerTransitionFree(const std::vector<double>& V1,
+                                   const std::vector<double>& V2) override;
+
+    virtual bool isMultiLayerTransitionFree(
+        const std::vector<double>& V1, const std::vector<double>& V2) override;
+
+    /** \brief check is one point is within C-free */
+    bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                     const std::vector<double>& V);
+
     /** \brief find the nearest neighbors of a pose on the graph */
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,

@@ -21,8 +21,10 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
   protected:
     std::vector<SuperEllipse> tfe_multi(const double thetaA,
                                         const double thetaB);
-    bool isCollisionFree(const std::vector<double>& V1,
-                         const std::vector<double>& V2);
+
+    bool isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                    const std::vector<double>& V2) override;
+
     bool isPtInCFLine(const cf_cell2D& cell, const std::vector<double>& V);
 
   public:

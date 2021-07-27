@@ -272,7 +272,7 @@ void HighwayRoadMap3D::connectOneLayer3D(const cf_cell3D* cell) {
                     //                            cell.cellYZ[i].zL[j][k0] &&
                     //                        cell.cellYZ[i + 1].zM[j][k1] <
                     //                            cell.cellYZ[i].zU[j][k0])
-                    if (isOneLayerTransitionFree(
+                    if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[I0 + k0],
                             res_.graph_structure.vertex[I1 + k1])) {
                         res_.graph_structure.edge.push_back(
@@ -317,7 +317,7 @@ void HighwayRoadMap3D::connectOneLayer2D(const cf_cell2D* CFcell) {
                     //                        >= CFcell->zL[i][j1] &&
                     //                        CFcell->zM[i + 1][j2] <=
                     //                        CFcell->zU[i][j1])
-                    if (isOneLayerTransitionFree(
+                    if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[N_0 + j1],
                             res_.graph_structure.vertex[N_1 + j2])) {
                         res_.graph_structure.edge.push_back(
@@ -364,8 +364,9 @@ void HighwayRoadMap3D::connectMultiLayer() {
                               res_.graph_structure.vertex[m1][0]) <= 1e-8 &&
                     std::fabs(res_.graph_structure.vertex[m0][1] -
                               res_.graph_structure.vertex[m1][1]) <= 1e-8 &&
-                    isTransitionFree(res_.graph_structure.vertex[m0],
-                                     res_.graph_structure.vertex[m1])) {
+                    isMultiLayerTransitionFree(
+                        res_.graph_structure.vertex[m0],
+                        res_.graph_structure.vertex[m1])) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
@@ -416,8 +417,8 @@ std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     return bdMesh;
 }
 
-bool HighwayRoadMap3D::isOneLayerTransitionFree(const std::vector<double>& V1,
-                                                const std::vector<double>& V2) {
+bool HighwayRoadMap3D::isSameLayerTransitionFree(
+    const std::vector<double>& V1, const std::vector<double>& V2) {
     // Define the line connecting V1 and V2
     Eigen::Vector3d t1{V1[0], V1[1], V1[2]};
     Eigen::Vector3d t2{V2[0], V2[1], V2[2]};
@@ -450,8 +451,8 @@ bool HighwayRoadMap3D::isOneLayerTransitionFree(const std::vector<double>& V1,
     return true;
 }
 
-bool HighwayRoadMap3D::isTransitionFree(const std::vector<double>& V1,
-                                        const std::vector<double>& V2) {
+bool HighwayRoadMap3D::isMultiLayerTransitionFree(
+    const std::vector<double>& V1, const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(V1, V2, param_.NUM_POINT);

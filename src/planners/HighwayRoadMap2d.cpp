@@ -99,7 +99,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
                 // Only connect v1 and v2 that are close to each other
                 if (std::fabs(v1[1] - v2[1]) <
                         param_.BOUND_LIMIT[0] / param_.NUM_LINE_Y &&
-                    isPtinCFLine(v1, v2)) {
+                    isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
@@ -278,22 +278,12 @@ void HighwayRoadMap2D::connectOneLayer2D(const cf_cell2D* CFcell) {
 /*************************************************/
 /**************** Private Functions **************/
 /*************************************************/
+bool HighwayRoadMap2D::isSameLayerTransitionFree(
+    const std::vector<double>& V1, const std::vector<double>& V2) {}
+
 // Connect vertexes among different layers
-cf_cell2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
-    boundary bd;
-    // calculate Minkowski boundary points
-    for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd.bd_s.push_back(arena_.at(i).getMinkSum2D(Ec, -1));
-    }
-    for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd.bd_o.push_back(obs_.at(i).getMinkSum2D(Ec, +1));
-    }
-
-    return rasterScan(bd.bd_s, bd.bd_o);
-}
-
-bool HighwayRoadMap2D::isPtinCFLine(std::vector<double> V1,
-                                    std::vector<double> V2) {
+bool HighwayRoadMap2D::isMultiLayerTransitionFree(
+    const std::vector<double>& V1, const std::vector<double>& V2) {
     for (size_t i = 0; i < mid_cell.ty.size(); ++i) {
         // Find the sweep line that V1 lies on
         if (std::fabs(mid_cell.ty[i] - V1[1]) > 1.0) {
@@ -310,6 +300,19 @@ bool HighwayRoadMap2D::isPtinCFLine(std::vector<double> V1,
         }
     }
     return false;
+}
+
+cf_cell2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
+    boundary bd;
+    // calculate Minkowski boundary points
+    for (size_t i = 0; i < size_t(N_s); ++i) {
+        bd.bd_s.push_back(arena_.at(i).getMinkSum2D(Ec, -1));
+    }
+    for (size_t i = 0; i < size_t(N_o); ++i) {
+        bd.bd_o.push_back(obs_.at(i).getMinkSum2D(Ec, +1));
+    }
+
+    return rasterScan(bd.bd_s, bd.bd_o);
 }
 
 std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(

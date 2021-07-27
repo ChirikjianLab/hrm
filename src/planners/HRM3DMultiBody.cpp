@@ -208,7 +208,7 @@ void HRM3DMultiBody::connectMultiLayer() {
 
                 //                n_check++;
 
-                if (isTransitionFree(V1, V2)) {
+                if (isMultiLayerTransitionFree(V1, V2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
@@ -233,14 +233,14 @@ void HRM3DMultiBody::connectMultiLayer() {
 
 // bool HRM3DMultiBody::isCollisionFree(const std::vector<double>& V1,
 //                                     const std::vector<double>& V2) {
-//    if (isTransitionFree(V1, V2)) {
+//    if (isMultiLayerTransitionFree(V1, V2)) {
 //        return true;
 //    } else {
 //        return false;
 //    }
 //}
 
-// bool HRM3DMultiBody::isOneLayerTransitionFree(const std::vector<double>& V1,
+// bool HRM3DMultiBody::isSameLayerTransitionFree(const std::vector<double>& V1,
 //                                              const std::vector<double>& V2) {
 //    // Interpolated robot translation motion from V1 to V2
 //    std::vector<std::vector<double>> vInterp =
@@ -259,8 +259,8 @@ void HRM3DMultiBody::connectMultiLayer() {
 //    return true;
 //}
 
-bool HRM3DMultiBody::isTransitionFree(const std::vector<double>& V1,
-                                      const std::vector<double>& V2) {
+bool HRM3DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                                const std::vector<double>& V2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(V1, V2, param_.NUM_POINT);

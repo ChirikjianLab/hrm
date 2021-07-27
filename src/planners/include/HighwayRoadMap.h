@@ -64,6 +64,17 @@ class HighwayRoadMap {
     std::vector<std::vector<double>> getSolutionPath();
 
   protected:
+    /** \brief isSameLayerTransitionFree check whether connection between V1 and
+     * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
+     * mesh intersection checking */
+    virtual bool isSameLayerTransitionFree(const std::vector<double>& V1,
+                                           const std::vector<double>& V2) = 0;
+
+    /** \brief isMultiLayerTransitionFree check whether connection between V1
+     * and V2 is valid through interpolation */
+    virtual bool isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                            const std::vector<double>& V2) = 0;
+
     void enhanceDecomp(cf_cell2D* cell);
 
     /**

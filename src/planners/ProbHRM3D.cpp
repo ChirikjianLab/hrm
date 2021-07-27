@@ -145,7 +145,7 @@ void ProbHRM3D::connectMultiLayer() {
                 continue;
             }
 
-            if (isTransitionFree(V1, V2)) {
+            if (isMultiLayerTransitionFree(V1, V2)) {
                 // Add new connections
                 res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                 res_.graph_structure.weight.push_back(vectorEuclidean(V1, V2));

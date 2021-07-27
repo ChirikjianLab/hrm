@@ -29,8 +29,8 @@ class HRM3DMultiBody : public HighwayRoadMap3D {
     //    V1,
     //                         const std::vector<double>& V2);
 
-    bool isTransitionFree(const std::vector<double>& V1,
-                          const std::vector<double>& V2) override;
+    bool isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                    const std::vector<double>& V2) override;
 
     //    bool isRotationMotionFree(const std::vector<double>& V1,
     //                              const std::vector<double>& V2);

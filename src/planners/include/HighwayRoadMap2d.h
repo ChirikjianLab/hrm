@@ -25,7 +25,12 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
 
   protected:
     cf_cell2D midLayer(SuperEllipse Ec);
-    bool isPtinCFLine(std::vector<double> V1, std::vector<double> V2);
+
+    bool isSameLayerTransitionFree(const std::vector<double>& V1,
+                                   const std::vector<double>& V2) override;
+
+    bool isMultiLayerTransitionFree(const std::vector<double>& V1,
+                                    const std::vector<double>& V2) override;
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
