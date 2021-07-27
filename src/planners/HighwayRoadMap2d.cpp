@@ -43,7 +43,7 @@ void HighwayRoadMap2D::buildRoadmap() {
         robot_.setAngle(ang_r.at(i));
         boundary bd = boundaryGen();
         cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
-        connectOneLayer(CFcell);
+        connectOneLayer2D(&CFcell);
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
 
@@ -218,32 +218,37 @@ cf_cell2D HighwayRoadMap2D::rasterScan(std::vector<Eigen::MatrixXd> bd_s,
                                       std::numeric_limits<double>::quiet_NaN());
     }
 
-    return enhanceDecomp(cell);
+    // Enhanced process to generate more valid vertices within free line
+    // segement
+    enhanceDecomp(&cell);
+
+    return cell;
 }
 
-void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
+void HighwayRoadMap2D::connectOneLayer2D(const cf_cell2D* CFcell) {
     std::vector<unsigned int> N_v_line;
     unsigned int N_0 = 0, N_1 = 0;
 
     // Append new vertex to vertex list
-    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
+    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
         N_v_line.push_back(uint(res_.graph_structure.vertex.size()));
 
-        for (size_t j = 0; j < CFcell.xM[i].size(); ++j) {
+        for (size_t j = 0; j < CFcell->xM[i].size(); ++j) {
             // Construct a vector of vertex
             res_.graph_structure.vertex.push_back(
-                {CFcell.xM[i][j], CFcell.ty[i], robot_.getAngle()});
+                {CFcell->xM[i][j], CFcell->ty[i], robot_.getAngle()});
         }
     }
 
     // Add connections to edge list
-    for (size_t i = 0; i < CFcell.ty.size(); ++i) {
+    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
         N_0 = N_v_line[i];
         N_1 = N_v_line[i + 1];
-        for (size_t j1 = 0; j1 < CFcell.xM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < CFcell->xM[i].size(); ++j1) {
             // Connect vertex within one collision-free sweep line segment
-            if (j1 != CFcell.xM[i].size() - 1) {
-                if (std::fabs(CFcell.xU[i][j1] - CFcell.xL[i][j1 + 1]) < 1e-5) {
+            if (j1 != CFcell->xM[i].size() - 1) {
+                if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
+                    1e-5) {
                     res_.graph_structure.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
                     res_.graph_structure.weight.push_back(vectorEuclidean(
@@ -252,12 +257,12 @@ void HighwayRoadMap2D::connectOneLayer(cf_cell2D CFcell) {
                 }
             }
             // Connect vertex btw adjacent cells
-            if (i != CFcell.ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell.xM[i + 1].size(); ++j2) {
-                    if (((CFcell.xM[i][j1] >= CFcell.xL[i + 1][j2] &&
-                          CFcell.xM[i][j1] <= CFcell.xU[i + 1][j2]) &&
-                         (CFcell.xM[i + 1][j2] >= CFcell.xL[i][j1] &&
-                          CFcell.xM[i + 1][j2] <= CFcell.xU[i][j1]))) {
+            if (i != CFcell->ty.size() - 1) {
+                for (size_t j2 = 0; j2 < CFcell->xM[i + 1].size(); ++j2) {
+                    if (((CFcell->xM[i][j1] >= CFcell->xL[i + 1][j2] &&
+                          CFcell->xM[i][j1] <= CFcell->xU[i + 1][j2]) &&
+                         (CFcell->xM[i + 1][j2] >= CFcell->xL[i][j1] &&
+                          CFcell->xM[i + 1][j2] <= CFcell->xU[i][j1]))) {
                         res_.graph_structure.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         res_.graph_structure.weight.push_back(vectorEuclidean(

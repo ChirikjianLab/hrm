@@ -20,7 +20,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
 
     cf_cell2D rasterScan(std::vector<Eigen::MatrixXd> bd_s,
                          std::vector<Eigen::MatrixXd> bd_o);
-    void connectOneLayer(cf_cell2D cell);
+
+    void connectOneLayer2D(const cf_cell2D* cell) override;
 
   protected:
     cf_cell2D midLayer(SuperEllipse Ec);
@@ -34,7 +35,6 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
     /** \brief ang_r sampled orientations of the robot */
     std::vector<double> ang_r;
 
-  private:
     /** \brief mid Ellipses for middle C-layers */
     std::vector<SuperEllipse> mid;
 

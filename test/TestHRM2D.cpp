@@ -53,17 +53,17 @@ algorithm planTest(const robotType& robot,
     if (isStore) {
         // calculate original boundary points
         boundary bd_ori;
-        for (size_t i = 0; i < hrm.N_s; i++) {
+        for (size_t i = 0; i < hrm.arena_.size(); ++i) {
             bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
         }
-        for (size_t i = 0; i < hrm.N_o; i++) {
+        for (size_t i = 0; i < hrm.obs_.size(); ++i) {
             bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
         }
 
         // Output boundary and cell info
         boundary bd = hrm.boundaryGen();
         cf_cell2D cell = hrm.rasterScan(bd.bd_s, bd.bd_o);
-        hrm.connectOneLayer(cell);
+        hrm.connectOneLayer2D(&cell);
 
         // write to .csv file
         ofstream file_ori_bd;

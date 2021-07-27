@@ -39,7 +39,7 @@ void HighwayRoadMap3D::buildRoadmap() {
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
 
         // construct adjacency matrix for one layer
-        connectOneLayer(CFcell);
+        connectOneLayer3D(&CFcell);
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
@@ -212,8 +212,11 @@ cf_cell2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
         zM.clear();
     }
 
-    // Enhanced cell decomposition
-    return enhanceDecomp(cellYZ);
+    // Enhanced process to generate more valid vertices within free line
+    // segement
+    enhanceDecomp(&cellYZ);
+
+    return cellYZ;
 }
 // ******************************************************************** //
 
@@ -239,24 +242,24 @@ void HighwayRoadMap3D::generateVertices(const double tx,
 }
 
 // Connect vertices within one C-layer //
-void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
+void HighwayRoadMap3D::connectOneLayer3D(const cf_cell3D* cell) {
     size_t I0 = 0, I1 = 0;
 
     N_v.line.clear();
-    for (size_t i = 0; i < cell.tx.size(); ++i) {
+    for (size_t i = 0; i < cell->tx.size(); ++i) {
         // Generate collision-free vertices
-        generateVertices(cell.tx.at(i), &cell.cellYZ.at(i));
+        generateVertices(cell->tx.at(i), &cell->cellYZ.at(i));
 
         // Connect within one plane
-        connectOnePlane(&cell.cellYZ[i]);
+        connectOneLayer2D(&cell->cellYZ[i]);
     }
 
-    for (size_t i = 0; i < cell.tx.size() - 1; ++i) {
-        for (size_t j = 0; j < cell.cellYZ[i].ty.size(); ++j) {
+    for (size_t i = 0; i < cell->tx.size() - 1; ++i) {
+        for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
             // Connect vertex btw adjacent planes, only connect with same ty
-            for (size_t k0 = 0; k0 < cell.cellYZ[i].xM[j].size(); k0++) {
+            for (size_t k0 = 0; k0 < cell->cellYZ[i].xM[j].size(); k0++) {
                 I0 = N_v.line[i][j];
-                for (size_t k1 = 0; k1 < cell.cellYZ[i + 1].xM[j].size();
+                for (size_t k1 = 0; k1 < cell->cellYZ[i + 1].xM[j].size();
                      k1++) {
                     I1 = N_v.line[i + 1][j];
                     //                    if (cell.cellYZ[i].zM[j][k0] >
@@ -284,9 +287,7 @@ void HighwayRoadMap3D::connectOneLayer(cf_cell3D cell) {
     }
 }
 
-void HighwayRoadMap3D::connectOneLayer(cf_cell2D cell) {}
-
-void HighwayRoadMap3D::connectOnePlane(const cf_cell2D* CFcell) {
+void HighwayRoadMap3D::connectOneLayer2D(const cf_cell2D* CFcell) {
     size_t N_0 = 0, N_1 = 0;
 
     // Connect vertices within one plane

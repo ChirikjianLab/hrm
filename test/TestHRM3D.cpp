@@ -47,10 +47,10 @@ HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
     if (isStore) {
         // calculate original boundary points
         boundary bd_ori;
-        for (size_t i = 0; i < hrm.N_s; i++) {
+        for (size_t i = 0; i < hrm.arena_.size(); ++i) {
             bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
         }
-        for (size_t i = 0; i < hrm.N_o; i++) {
+        for (size_t i = 0; i < hrm.obs_.size(); ++i) {
             bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
         }
 

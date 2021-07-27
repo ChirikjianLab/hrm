@@ -159,48 +159,44 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
 }
 
 template <class RobotType, class ObjectType>
-cf_cell2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(cf_cell2D cell) {
-    // Make sure all connections between vertexes are within one convex cell
-    cf_cell2D cell_new = cell;
-
-    for (size_t i = 0; i < cell.ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < cell.xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < cell.xM[i + 1].size(); ++j2) {
-                if (cell_new.xM[i][j1] < cell_new.xL[i + 1][j2] &&
-                    cell_new.xU[i][j1] >= cell_new.xL[i + 1][j2]) {
-                    cell_new.xU[i].push_back(cell_new.xL[i + 1][j2]);
-                    cell_new.xL[i].push_back(cell_new.xL[i + 1][j2]);
-                    cell_new.xM[i].push_back(cell_new.xL[i + 1][j2]);
-                } else if (cell_new.xM[i][j1] > cell_new.xU[i + 1][j2] &&
-                           cell_new.xL[i][j1] <= cell_new.xU[i + 1][j2]) {
-                    cell_new.xU[i].push_back(cell_new.xU[i + 1][j2]);
-                    cell_new.xL[i].push_back(cell_new.xU[i + 1][j2]);
-                    cell_new.xM[i].push_back(cell_new.xU[i + 1][j2]);
+void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(cf_cell2D* cell) {
+    // Add new vertices within on sweep line
+    for (size_t i = 0; i < cell->ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < cell->xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < cell->xM[i + 1].size(); ++j2) {
+                if (cell->xM[i][j1] < cell->xL[i + 1][j2] &&
+                    cell->xU[i][j1] >= cell->xL[i + 1][j2]) {
+                    cell->xU[i].push_back(cell->xL[i + 1][j2]);
+                    cell->xL[i].push_back(cell->xL[i + 1][j2]);
+                    cell->xM[i].push_back(cell->xL[i + 1][j2]);
+                } else if (cell->xM[i][j1] > cell->xU[i + 1][j2] &&
+                           cell->xL[i][j1] <= cell->xU[i + 1][j2]) {
+                    cell->xU[i].push_back(cell->xU[i + 1][j2]);
+                    cell->xL[i].push_back(cell->xU[i + 1][j2]);
+                    cell->xM[i].push_back(cell->xU[i + 1][j2]);
                 }
 
-                if (cell_new.xM[i + 1][j2] < cell_new.xL[i][j1] &&
-                    cell_new.xU[i + 1][j2] >= cell_new.xL[i][j1]) {
-                    cell_new.xU[i + 1].push_back(cell_new.xL[i][j1]);
-                    cell_new.xL[i + 1].push_back(cell_new.xL[i][j1]);
-                    cell_new.xM[i + 1].push_back(cell_new.xL[i][j1]);
-                } else if (cell_new.xM[i + 1][j2] > cell_new.xU[i][j1] &&
-                           cell_new.xL[i + 1][j2] <= cell_new.xU[i][j1]) {
-                    cell_new.xU[i + 1].push_back(cell_new.xU[i][j1]);
-                    cell_new.xL[i + 1].push_back(cell_new.xU[i][j1]);
-                    cell_new.xM[i + 1].push_back(cell_new.xU[i][j1]);
+                if (cell->xM[i + 1][j2] < cell->xL[i][j1] &&
+                    cell->xU[i + 1][j2] >= cell->xL[i][j1]) {
+                    cell->xU[i + 1].push_back(cell->xL[i][j1]);
+                    cell->xL[i + 1].push_back(cell->xL[i][j1]);
+                    cell->xM[i + 1].push_back(cell->xL[i][j1]);
+                } else if (cell->xM[i + 1][j2] > cell->xU[i][j1] &&
+                           cell->xL[i + 1][j2] <= cell->xU[i][j1]) {
+                    cell->xU[i + 1].push_back(cell->xU[i][j1]);
+                    cell->xL[i + 1].push_back(cell->xU[i][j1]);
+                    cell->xM[i + 1].push_back(cell->xU[i][j1]);
                 }
             }
         }
 
-        sort(cell_new.xL[i].begin(), cell_new.xL[i].end(),
+        sort(cell->xL[i].begin(), cell->xL[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell_new.xU[i].begin(), cell_new.xU[i].end(),
+        sort(cell->xU[i].begin(), cell->xU[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell_new.xM[i].begin(), cell_new.xM[i].end(),
+        sort(cell->xM[i].begin(), cell->xM[i].end(),
              [](double a, double b) { return a < b; });
     }
-
-    return cell_new;
 }
 
 #endif  // HIGHWAYROADMAP_INL_H

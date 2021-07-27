@@ -29,7 +29,7 @@ void HRM3DMultiBody::buildRoadmap() {
 
         boundary bd = boundaryGen();
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
-        connectOneLayer(CFcell);
+        connectOneLayer3D(&CFcell);
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);

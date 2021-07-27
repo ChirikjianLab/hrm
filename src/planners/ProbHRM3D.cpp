@@ -72,7 +72,7 @@ void ProbHRM3D::plan(double timeLim) {
         cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
 
         // Connect within one C-layer
-        connectOneLayer(CFcell);
+        connectOneLayer3D(&CFcell);
 
         vtxId.push_back(N_v);
 

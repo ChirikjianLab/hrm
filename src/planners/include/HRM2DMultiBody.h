@@ -27,7 +27,6 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
 
   public:
     MultiBodyTree2D RobotM;
-    std::vector<SuperEllipse> mid;
     std::vector<cf_cell2D> midCell;
 };
 

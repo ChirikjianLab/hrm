@@ -26,7 +26,6 @@ using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 /** \brief freeSegment collision-free line segments */
 struct cf_cell2D {
-  public:
     std::vector<double> ty;
     std::vector<std::vector<double>> xL;
     std::vector<std::vector<double>> xU;
@@ -35,7 +34,6 @@ struct cf_cell2D {
 
 /** \brief boundary Minkowski boundary points for obstacles and arenas */
 struct boundary {
-  public:
     std::vector<Eigen::MatrixXd> bd_s;
     std::vector<Eigen::MatrixXd> bd_o;
 };
@@ -54,18 +52,19 @@ class HighwayRoadMap {
     PlanningResult getPlanningResult() const { return res_; }
 
     virtual void plan();
-
     virtual void buildRoadmap() = 0;
-    virtual boundary boundaryGen() = 0;
-    virtual void connectOneLayer(cf_cell2D cell) = 0;
-    virtual void connectMultiLayer() = 0;
-
     void search();
+
+    virtual boundary boundaryGen() = 0;
+
+    virtual void connectOneLayer2D(const cf_cell2D* cell) = 0;
+
+    virtual void connectMultiLayer() = 0;
 
     std::vector<std::vector<double>> getSolutionPath();
 
   protected:
-    cf_cell2D enhanceDecomp(cf_cell2D cell);
+    void enhanceDecomp(cf_cell2D* cell);
 
     /**
      * \brief find the nearest neighbors of a pose on the graph
@@ -89,6 +88,7 @@ class HighwayRoadMap {
 
     PlanningResult res_;
 
+  protected:
     /** \param N_o number of obstacles */
     size_t N_o;
 

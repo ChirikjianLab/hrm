@@ -26,7 +26,7 @@ void HRM2DKC::buildRoadmap() {
         cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
 
         // construct adjacency matrix for one layer
-        connectOneLayer(CFcell);
+        connectOneLayer2D(&CFcell);
 
         // Store the number of vertex before the current layer
         N_v_layer.push_back(res_.graph_structure.vertex.size());

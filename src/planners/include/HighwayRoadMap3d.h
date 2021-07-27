@@ -15,6 +15,13 @@ struct cf_cell3D {
     std::vector<cf_cell2D> cellYZ;
 };
 
+/** \brief vertexIdx vertex index at each C-layer, sweep line */
+struct vertexIdx {
+    size_t layer;
+    std::vector<size_t> plane;
+    std::vector<std::vector<size_t>> line;
+};
+
 class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
   public:
     HighwayRoadMap3D(const SuperQuadrics& robot,
@@ -55,12 +62,11 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
                      Eigen::MatrixXd z_o_U);
 
     /** \brief connect within one C-layer */
-    void connectOneLayer(cf_cell3D cell);
-    void connectOneLayer(cf_cell2D cell) override;
+    void connectOneLayer3D(const cf_cell3D* cell);
 
-    /** \brief subroutine to first connect vertices within on
-     * sweep-plane(vertical to x-axis) */
-    void connectOnePlane(const cf_cell2D* cellYZ);
+    /** \brief subroutine to first connect vertices within on sweep-plane
+     * (vertical to x-axis) */
+    void connectOneLayer2D(const cf_cell2D* cellYZ) override;
 
     /** \brief connect within adjacent C-layers, using the idea of "bridge
      * C-layer" */
@@ -110,14 +116,9 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     /** \param q_r sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_r;
 
-    struct vertexIdx {
-        size_t layer;
-        std::vector<size_t> plane;
-        std::vector<std::vector<size_t>> line;
-    } N_v;
-
     // Vertex index info
     std::vector<vertexIdx> vtxId;
+    vertexIdx N_v;
 
   protected:
     std::vector<MeshMatrix> CLayerBound;
