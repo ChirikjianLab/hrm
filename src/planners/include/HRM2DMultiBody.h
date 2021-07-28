@@ -15,7 +15,7 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
 
   public:
     void buildRoadmap() override;
-    boundary boundaryGen() override;
+    Boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
 
   protected:
@@ -25,11 +25,11 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
     bool isMultiLayerTransitionFree(const std::vector<double>& V1,
                                     const std::vector<double>& V2) override;
 
-    bool isPtInCFLine(const cf_cell2D& cell, const std::vector<double>& V);
+    bool isPtInCFLine(const FreeSegment2D& cell, const std::vector<double>& V);
 
   public:
     MultiBodyTree2D RobotM;
-    std::vector<cf_cell2D> midCell;
+    std::vector<FreeSegment2D> midCell;
 };
 
 #endif  // HRM2DMULTIBODY_H

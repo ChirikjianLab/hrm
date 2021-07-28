@@ -9,10 +9,10 @@
 
 #include <ompl/datastructures/NearestNeighbors.h>
 
-// cf_cell: collision-free points
-struct cf_cell3D {
+// FreeSegment3D collision-free line segments in 3D
+struct FreeSegment3D {
     std::vector<double> tx;
-    std::vector<cf_cell2D> cellYZ;
+    std::vector<FreeSegment2D> cellYZ;
 };
 
 /** \brief vertexIdx vertex index at each C-layer, sweep line */
@@ -32,48 +32,42 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual ~HighwayRoadMap3D();
 
   public:
-    /** \brief main function for building the roadmap */
     virtual void buildRoadmap() override;
+    virtual Boundary boundaryGen() override;
 
-    /** \brief compute Minkowski sum boundary */
-    virtual boundary boundaryGen() override;
-
-    /**
-     * \brief sweep-line process for cell decomposition, vertical lines
+    /** \brief sweep-line process for cell decomposition, vertical lines
      * parallel to z-axis
      * \param bd_s, bd_o Minkowski boundry of obstacles and arenas
      * \return collision-free cells info
      */
-    cf_cell3D sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
-                         std::vector<Eigen::MatrixXd> bd_o);
+    FreeSegment3D sweepLineZ(const Boundary* bd);
 
-    /**
-     * \brief subroutine for generating collision-free vertices on the yz-plane
+    /** \brief subroutine for generating collision-free vertices on the yz-plane
      * \param ty a vector of incremented y-coordinates
      * \param z_s_L, z_s_U, z_o_L, z_o_U upper(U) and lower(L) z-coordinates of
      * the intersection for arena(s) and obstacles(o), size = num of
      * y-coordinates X num of objects
      * \return collision-free cells info
      */
-    virtual void generateVertices(const double tx, const cf_cell2D* cellYZ);
+    virtual void generateVertices(const double tx, const FreeSegment2D* cellYZ);
 
-    cf_cell2D cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
-                     Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
-                     Eigen::MatrixXd z_o_U);
+    FreeSegment2D cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
+                         Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
+                         Eigen::MatrixXd z_o_U);
 
     /** \brief connect within one C-layer */
-    void connectOneLayer3D(const cf_cell3D* cell);
+    void connectOneLayer3D(const FreeSegment3D* cell);
 
     /** \brief subroutine to first connect vertices within on sweep-plane
      * (vertical to x-axis) */
-    void connectOneLayer2D(const cf_cell2D* cellYZ) override;
+    void connectOneLayer2D(const FreeSegment2D* cellYZ) override;
 
     /** \brief connect within adjacent C-layers, using the idea of "bridge
      * C-layer" */
     virtual void connectMultiLayer() override;
 
     /** \brief subroutine to first construct the middle C-layer */
-    //    cf_cell3D midLayer(SuperQuadrics);
+    //    FreeSegment3D midLayer(SuperQuadrics);
     std::vector<MeshMatrix> midLayer(SuperQuadrics);
 
     /** \brief uniform random sample SO(3) */
@@ -101,11 +95,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
         const double radius) override;
-
-    /**
-     * \brief query whether a point is within a collision-free line segment
-     */
-    // bool isPtinCFLine(std::vector<double>, std::vector<double>);
 
   public:
     /** \param q_r sampled orientations (Quaternion) of the robot */

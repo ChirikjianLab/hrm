@@ -3,7 +3,6 @@
 
 #include "planners/include/PlanningRequest.h"
 #include "planners/include/PlanningResult.h"
-#include "util/include/DistanceMetric.h"
 
 #include "Eigen/Dense"
 
@@ -24,64 +23,93 @@ using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
-/** \brief freeSegment collision-free line segments */
-struct cf_cell2D {
+/** \brief freeSegment2D collision-free line segments in 2D */
+struct FreeSegment2D {
     std::vector<double> ty;
     std::vector<std::vector<double>> xL;
     std::vector<std::vector<double>> xU;
     std::vector<std::vector<double>> xM;
 };
 
-/** \brief boundary Minkowski boundary points for obstacles and arenas */
-struct boundary {
-    std::vector<Eigen::MatrixXd> bd_s;
-    std::vector<Eigen::MatrixXd> bd_o;
+/** \brief Boundary Minkowski boundary points for obstacles and arenas */
+struct Boundary {
+    std::vector<Eigen::MatrixXd> arena;
+    std::vector<Eigen::MatrixXd> obstacle;
 };
 
-/** \class HighwayRoadMap superclass for HRM-based planners */
+/** \class HighwayRoadMap Superclass for HRM-based planners */
 template <class RobotType, class ObjectType>
 class HighwayRoadMap {
   public:
     HighwayRoadMap(const RobotType& robot, const std::vector<ObjectType>& arena,
-                   const std::vector<ObjectType>& obs,
+                   const std::vector<ObjectType>& obstacle,
                    const PlanningRequest& req);
 
     virtual ~HighwayRoadMap();
 
   public:
+    /** \brief getPlanningResult retrieve planning results
+     * \return PlanningResult struture
+     */
     PlanningResult getPlanningResult() const { return res_; }
 
+    /** \brief getSolutionPath Retrieve solved path
+     * \return 2D vector for representing solved path
+     */
+    std::vector<std::vector<double>> getSolutionPath();
+
+    /** \brief plan Main routine for HRM-based planners */
     virtual void plan();
+
+    /** \brief buildRoadmap Subroutine for building roadmap */
     virtual void buildRoadmap() = 0;
+
+    /** \brief search Subroutine for graph searching */
     void search();
 
-    virtual boundary boundaryGen() = 0;
+    /** \brief boundaryGen Generating Minkowski boundary points
+     * \return Boundary structure
+     */
+    virtual Boundary boundaryGen() = 0;
 
-    virtual void connectOneLayer2D(const cf_cell2D* cell) = 0;
+    /** \brief connectOneLayer2D Subroutine for connecting vertices within one
+     * C-layer
+     * \param FreeSegment2D pointer
+     */
+    virtual void connectOneLayer2D(const FreeSegment2D* cell) = 0;
 
+    /** \brief connectMultiLayer Subroutine for connecting vertices among
+     * adjacent C-layers */
     virtual void connectMultiLayer() = 0;
-
-    std::vector<std::vector<double>> getSolutionPath();
 
   protected:
     /** \brief isSameLayerTransitionFree check whether connection between V1 and
      * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
-     * mesh intersection checking */
+     * mesh intersection checking
+     * \param V1, V2 vector of queried vertices
+     * \return true is transition is valid, false otherwise
+     */
     virtual bool isSameLayerTransitionFree(const std::vector<double>& V1,
                                            const std::vector<double>& V2) = 0;
 
     /** \brief isMultiLayerTransitionFree check whether connection between V1
-     * and V2 is valid through interpolation */
+     * and V2 is valid through interpolation
+     * \param V1, V2 vector of queried vertices
+     * \return true is transition is valid, false otherwise
+     */
     virtual bool isMultiLayerTransitionFree(const std::vector<double>& V1,
                                             const std::vector<double>& V2) = 0;
 
-    void enhanceDecomp(cf_cell2D* cell);
+    /** \brief enhanceDecomp Subroutine to enhance vertex generation
+     * \param FreeSegment2D pointer (non-const)
+     */
+    void enhanceDecomp(FreeSegment2D* cell);
 
-    /**
-     * \brief find the nearest neighbors of a pose on the graph
+    /** \brief find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
      * \param k number of neighbors
      * \param radius radius of a neighboring ball around v
+     * \return vector of Vertex structure for the neighboring vertices
      */
     virtual std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,

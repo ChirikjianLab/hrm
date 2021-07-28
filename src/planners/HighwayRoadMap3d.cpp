@@ -32,11 +32,11 @@ void HighwayRoadMap3D::buildRoadmap() {
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         robot_.setQuaternion(q_r.at(i));
 
-        // boundary for obstacles and arenas
-        boundary bd = boundaryGen();
+        // boundary for Minkowski operations with obstacles and arenas
+        Boundary bd = boundaryGen();
 
         // collision-free cells, stored by tx, ty, zL, zU, zM
-        cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
+        FreeSegment3D CFcell = sweepLineZ(&bd);
 
         // construct adjacency matrix for one layer
         connectOneLayer3D(&CFcell);
@@ -49,15 +49,15 @@ void HighwayRoadMap3D::buildRoadmap() {
 
 // ******************************************************************** //
 // Generate Minkowski boundary
-boundary HighwayRoadMap3D::boundaryGen() {
-    boundary bd;
+Boundary HighwayRoadMap3D::boundaryGen() {
+    Boundary bd;
 
     // calculate Minkowski boundary points
     for (size_t i = 0; i < N_s; ++i) {
-        bd.bd_s.push_back(arena_.at(i).getMinkSum3D(robot_, -1));
+        bd.arena.push_back(arena_.at(i).getMinkSum3D(robot_, -1));
     }
     for (size_t i = 0; i < N_o; ++i) {
-        bd.bd_o.push_back(obs_.at(i).getMinkSum3D(robot_, +1));
+        bd.obstacle.push_back(obs_.at(i).getMinkSum3D(robot_, +1));
     }
 
     return bd;
@@ -66,27 +66,24 @@ boundary HighwayRoadMap3D::boundaryGen() {
 
 // ******************************************************************** //
 // Generate collision-free vertices by Sweep Plane + Sweep Line process //
+FreeSegment3D HighwayRoadMap3D::sweepLineZ(const Boundary* bd) {
+    FreeSegment3D CF_cell;
 
-cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
-                                       std::vector<Eigen::MatrixXd> bd_o) {
-    cf_cell3D CF_cell;
     std::vector<Eigen::Vector3d> pts_s;
     std::vector<Eigen::Vector3d> pts_o;
-    auto N_cs = bd_s.size();
-    auto N_co = bd_o.size();
 
     Eigen::MatrixXd z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(N_cs),
+                                                      long(bd->arena.size()),
                                                       -param_.BOUND_LIMIT[2]),
                     z_s_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(N_cs),
+                                                      long(bd->arena.size()),
                                                       param_.BOUND_LIMIT[2]),
-                    z_o_L = Eigen::MatrixXd::Constant(
-                        long(param_.NUM_LINE_Y), long(N_co),
-                        std::numeric_limits<double>::quiet_NaN()),
-                    z_o_U = Eigen::MatrixXd::Constant(
-                        long(param_.NUM_LINE_Y), long(N_co),
-                        std::numeric_limits<double>::quiet_NaN());
+                    z_o_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                                      long(bd->obstacle.size()),
+                                                      NAN),
+                    z_o_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                                      long(bd->obstacle.size()),
+                                                      NAN);
 
     // Find intersection points for each sweep line
     std::vector<double> tx(param_.NUM_LINE_X), ty(param_.NUM_LINE_Y);
@@ -101,16 +98,16 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
     }
 
     // Generate mesh for the boundaries
-    std::vector<MeshMatrix> P_s(N_cs);
-    std::vector<MeshMatrix> P_o(N_co);
+    std::vector<MeshMatrix> P_s(bd->arena.size());
+    std::vector<MeshMatrix> P_o(bd->obstacle.size());
 
-    for (size_t i = 0; i < N_cs; ++i) {
-        P_s.at(i) = getMeshFromParamSurface(bd_s.at(i),
+    for (size_t i = 0; i < bd->arena.size(); ++i) {
+        P_s.at(i) = getMeshFromParamSurface(bd->arena.at(i),
                                             int(arena_.at(0).getNumParam()));
     }
-    for (size_t i = 0; i < N_co; ++i) {
-        P_o.at(i) =
-            getMeshFromParamSurface(bd_o.at(i), int(obs_.at(0).getNumParam()));
+    for (size_t i = 0; i < bd->obstacle.size(); ++i) {
+        P_o.at(i) = getMeshFromParamSurface(bd->obstacle.at(i),
+                                            int(obs_.at(0).getNumParam()));
     }
 
     CLayerBound = P_o;
@@ -123,18 +120,22 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
             Eigen::VectorXd lineZ(6);
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
-            for (size_t m = 0; m < N_cs; ++m) {
+            for (size_t m = 0; m < bd->arena.size(); ++m) {
                 pts_s = intersectVerticalLineMesh3d(lineZ, P_s[m]);
+
                 if (pts_s.empty()) continue;
+
                 z_s_L(long(j), long(m)) =
                     std::fmin(-param_.BOUND_LIMIT[2],
                               std::fmin(pts_s[0](2), pts_s[1](2)));
                 z_s_U(long(j), long(m)) = std::fmax(
                     param_.BOUND_LIMIT[2], std::fmax(pts_s[0](2), pts_s[1](2)));
             }
-            for (size_t n = 0; n < N_co; ++n) {
+            for (size_t n = 0; n < bd->obstacle.size(); ++n) {
                 pts_o = intersectVerticalLineMesh3d(lineZ, P_o[n]);
+
                 if (pts_o.empty()) continue;
+
                 z_o_L(long(j), long(n)) = std::fmin(pts_o[0](2), pts_o[1](2));
                 z_o_U(long(j), long(n)) = std::fmax(pts_o[0](2), pts_o[1](2));
             }
@@ -144,27 +145,28 @@ cf_cell3D HighwayRoadMap3D::sweepLineZ(std::vector<Eigen::MatrixXd> bd_s,
         CF_cell.tx.push_back(tx[i]);
         CF_cell.cellYZ.push_back(cfLine(ty, z_s_L, z_s_U, z_o_L, z_o_U));
 
-        z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y), long(N_cs),
+        z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                          long(bd->arena.size()),
                                           -param_.BOUND_LIMIT[2]);
-        z_s_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y), long(N_cs),
+        z_s_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                          long(bd->arena.size()),
                                           param_.BOUND_LIMIT[2]);
-        z_o_L =
-            Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y), long(N_co),
-                                      std::numeric_limits<double>::quiet_NaN());
-        z_o_U =
-            Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y), long(N_co),
-                                      std::numeric_limits<double>::quiet_NaN());
+        z_o_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                          long(bd->obstacle.size()), NAN);
+        z_o_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                          long(bd->obstacle.size()), NAN);
     }
 
     return CF_cell;
 }
 
 // Sweep Line process at each sweep plane
-cf_cell2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
-                                   Eigen::MatrixXd z_s_L, Eigen::MatrixXd z_s_U,
-                                   Eigen::MatrixXd z_o_L,
-                                   Eigen::MatrixXd z_o_U) {
-    cf_cell2D cellYZ;
+FreeSegment2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
+                                       Eigen::MatrixXd z_s_L,
+                                       Eigen::MatrixXd z_s_U,
+                                       Eigen::MatrixXd z_o_L,
+                                       Eigen::MatrixXd z_o_U) {
+    FreeSegment2D cellYZ;
 
     Interval op;
     std::vector<Interval> cf_seg[param_.NUM_LINE_Y], obs_seg, arena_seg,
@@ -223,7 +225,7 @@ cf_cell2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
 // ******************************************************************** //
 // Generate vertices //
 void HighwayRoadMap3D::generateVertices(const double tx,
-                                        const cf_cell2D* cellYZ) {
+                                        const FreeSegment2D* cellYZ) {
     N_v.plane.clear();
     for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
@@ -242,7 +244,7 @@ void HighwayRoadMap3D::generateVertices(const double tx,
 }
 
 // Connect vertices within one C-layer //
-void HighwayRoadMap3D::connectOneLayer3D(const cf_cell3D* cell) {
+void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* cell) {
     size_t I0 = 0, I1 = 0;
 
     N_v.line.clear();
@@ -287,7 +289,7 @@ void HighwayRoadMap3D::connectOneLayer3D(const cf_cell3D* cell) {
     }
 }
 
-void HighwayRoadMap3D::connectOneLayer2D(const cf_cell2D* CFcell) {
+void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
     size_t N_0 = 0, N_1 = 0;
 
     // Connect vertices within one plane
@@ -382,23 +384,6 @@ void HighwayRoadMap3D::connectMultiLayer() {
         start = n_1;
     }
 }
-
-// Connect vertexes among different layers
-// cf_cell3D HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
-//    // Reference point to be the center of Ec
-//    Ec.setPosition({0.0, 0.0, 0.0});
-
-//    boundary3D bd;
-//    // calculate Minkowski boundary points
-//    for (size_t i = 0; i < N_s; ++i) {
-//        bd.bd_s.push_back(Arena.at(i).getMinkSum3D(Ec, -1));
-//    }
-//    for (size_t i = 0; i < N_o; ++i) {
-//        bd.bd_o.push_back(Obs.at(i).getMinkSum3D(Ec, +1));
-//    }
-
-//    return sweepLineZ(bd.bd_s, bd.bd_o);
-//}
 
 std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     // Reference point to be the center of Ec

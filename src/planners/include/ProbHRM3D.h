@@ -15,11 +15,9 @@ class ProbHRM3D : public HRM3DMultiBody {
 
   public:
     void plan(double timeLim);
-
     virtual void connectMultiLayer() override;
-
     virtual void generateVertices(const double tx,
-                                  const cf_cell2D* cellYZ) override;
+                                  const FreeSegment2D* cellYZ) override;
 
   protected:
     virtual void setTransform(const std::vector<double>& V) override;

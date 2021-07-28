@@ -15,26 +15,22 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
 
   public:
     virtual void buildRoadmap() override;
-    virtual boundary boundaryGen() override;
+    virtual Boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
+    void connectOneLayer2D(const FreeSegment2D* cell) override;
 
-    cf_cell2D rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                         std::vector<Eigen::MatrixXd> bd_o);
-
-    void connectOneLayer2D(const cf_cell2D* cell) override;
+    FreeSegment2D rasterScan(const Boundary* bd);
 
   protected:
-    cf_cell2D midLayer(SuperEllipse Ec);
-
     bool isSameLayerTransitionFree(const std::vector<double>& V1,
                                    const std::vector<double>& V2) override;
-
     bool isMultiLayerTransitionFree(const std::vector<double>& V1,
                                     const std::vector<double>& V2) override;
-
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
         const double radius) override;
+
+    FreeSegment2D midLayer(SuperEllipse Ec);
 
   protected:
     /** \brief ang_r sampled orientations of the robot */
@@ -43,8 +39,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
     /** \brief mid Ellipses for middle C-layers */
     std::vector<SuperEllipse> mid;
 
-    /** \brief mid_cell Middle C-layer as a cf_cell2D structure */
-    cf_cell2D mid_cell;
+    /** \brief mid_cell Middle C-layer as a FreeSegment2D structure */
+    FreeSegment2D mid_cell;
 };
 
 #endif  // HIGHWAYROADMAP2D_H

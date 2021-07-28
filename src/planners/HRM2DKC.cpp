@@ -20,10 +20,10 @@ void HRM2DKC::buildRoadmap() {
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         robot_.setAngle(ang_r.at(i));
         // boundary for obstacles and arenas
-        boundary bd = boundaryGen();
+        Boundary bd = boundaryGen();
 
         // collision-free cells, stored by ty, xL, xU, xM
-        cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
+        FreeSegment2D CFcell = rasterScan(&bd);
 
         // construct adjacency matrix for one layer
         connectOneLayer2D(&CFcell);
@@ -34,9 +34,9 @@ void HRM2DKC::buildRoadmap() {
     connectMultiLayer();
 }
 
-boundary HRM2DKC::boundaryGen() {
+Boundary HRM2DKC::boundaryGen() {
     SuperEllipse robot_infla = robot_;
-    boundary bd;
+    Boundary bd;
 
     // Enlarge the robot
     robot_infla.setSemiAxis({robot_infla.getSemiAxis().at(0) * (1 + infla),
@@ -44,10 +44,10 @@ boundary HRM2DKC::boundaryGen() {
 
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd.bd_s.emplace_back(arena_[i].getMinkSum2D(robot_infla, -1));
+        bd.arena.emplace_back(arena_[i].getMinkSum2D(robot_infla, -1));
     }
     for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd.bd_o.emplace_back(obs_[i].getMinkSum2D(robot_infla, +1));
+        bd.obstacle.emplace_back(obs_[i].getMinkSum2D(robot_infla, +1));
     }
 
     return bd;

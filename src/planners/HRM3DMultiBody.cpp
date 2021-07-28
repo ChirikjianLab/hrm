@@ -27,8 +27,8 @@ void HRM3DMultiBody::buildRoadmap() {
         RobotM.robotTF(tf);
         robot_.setQuaternion(q_r.at(i));
 
-        boundary bd = boundaryGen();
-        cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
+        Boundary bd = boundaryGen();
+        FreeSegment3D CFcell = sweepLineZ(&bd);
         connectOneLayer3D(&CFcell);
 
         // Store the index of vertex in the current layer
@@ -40,23 +40,23 @@ void HRM3DMultiBody::buildRoadmap() {
     connectMultiLayer();
 }
 
-// Minkowski Boundary
-boundary HRM3DMultiBody::boundaryGen() {
-    boundary bd;
+// Minkowski operations boundary
+Boundary HRM3DMultiBody::boundaryGen() {
+    Boundary bd;
 
     // Minkowski boundary points
     std::vector<Eigen::MatrixXd> bd_aux;
     for (size_t i = 0; i < N_s; ++i) {
         bd_aux = RobotM.minkSumSQ(arena_.at(i), -1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.bd_s.push_back(bd_aux.at(j));
+            bd.arena.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
     for (size_t i = 0; i < N_o; ++i) {
         bd_aux = RobotM.minkSumSQ(obs_.at(i), 1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.bd_o.push_back(bd_aux.at(j));
+            bd.obstacle.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
@@ -314,7 +314,7 @@ bool HRM3DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
 }
 
 //// Point in collision-free line segment
-// bool HRM3DMultiBody::isPtInCFLine(const cf_cell3D* cell,
+// bool HRM3DMultiBody::isPtInCFLine(const FreeSegment3D* cell,
 //                                  const std::vector<double>& V) {
 //    std::vector<bool> isInLine(4, false);
 
@@ -376,7 +376,7 @@ bool HRM3DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
 //    return true;
 //}
 
-// bool HRM3DMultiBody::isTranslationMotionFree(const cf_cell3D* cell,
+// bool HRM3DMultiBody::isTranslationMotionFree(const FreeSegment3D* cell,
 //                                             const std::vector<double>& V1,
 //                                             const std::vector<double>& V2) {
 //    for (size_t i = 0; i < cell->tx.size(); ++i) {

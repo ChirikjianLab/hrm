@@ -13,8 +13,7 @@ class HRM2DKC : public HighwayRoadMap2D {
 
   public:
     virtual void buildRoadmap() override;
-    virtual boundary boundaryGen() override;
-
+    virtual Boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
 
   private:

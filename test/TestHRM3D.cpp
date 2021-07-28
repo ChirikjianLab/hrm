@@ -46,41 +46,41 @@ HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
 
     if (isStore) {
         // calculate original boundary points
-        boundary bd_ori;
+        Boundary bd_ori;
         for (size_t i = 0; i < hrm.arena_.size(); ++i) {
-            bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
+            bd_ori.arena.push_back(hrm.arena_.at(i).getOriginShape());
         }
         for (size_t i = 0; i < hrm.obs_.size(); ++i) {
-            bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
+            bd_ori.obstacle.push_back(hrm.obs_.at(i).getOriginShape());
         }
 
         // write to .csv file
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_3D.csv");
-        for (size_t i = 0; i < bd_ori.bd_o.size(); i++) {
-            file_ori_bd << bd_ori.bd_o[i] << "\n";
+        for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
+            file_ori_bd << bd_ori.obstacle[i] << "\n";
         }
-        for (size_t i = 0; i < bd_ori.bd_s.size(); i++) {
-            file_ori_bd << bd_ori.bd_s[i] << "\n";
+        for (size_t i = 0; i < bd_ori.arena.size(); i++) {
+            file_ori_bd << bd_ori.arena[i] << "\n";
         }
         file_ori_bd.close();
 
         // TEST: Minkowski boundary
-        boundary bd_mink = hrm.boundaryGen();
+        Boundary bd_mink = hrm.boundaryGen();
 
         // write to .csv file
         ofstream file_bd;
         file_bd.open("mink_bound_3D.csv");
-        for (size_t i = 0; i < bd_mink.bd_o.size(); i++) {
-            file_bd << bd_mink.bd_o[i] << "\n";
+        for (size_t i = 0; i < bd_mink.obstacle.size(); i++) {
+            file_bd << bd_mink.obstacle[i] << "\n";
         }
-        for (size_t i = 0; i < bd_mink.bd_s.size(); i++) {
-            file_bd << bd_mink.bd_s[i] << "\n";
+        for (size_t i = 0; i < bd_mink.arena.size(); i++) {
+            file_bd << bd_mink.arena[i] << "\n";
         }
         file_bd.close();
 
         // TEST: Sweep line
-        cf_cell3D CF_cell = hrm.sweepLineZ(bd_mink.bd_s, bd_mink.bd_o);
+        FreeSegment3D CF_cell = hrm.sweepLineZ(&bd_mink);
 
         ofstream file_cell;
         file_cell.open("cell_3D.csv");

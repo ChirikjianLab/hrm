@@ -159,7 +159,7 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(cf_cell2D* cell) {
+void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(FreeSegment2D* cell) {
     // Add new vertices within on sweep line
     for (size_t i = 0; i < cell->ty.size() - 1; ++i) {
         for (size_t j1 = 0; j1 < cell->xM[i].size(); ++j1) {

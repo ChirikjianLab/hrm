@@ -66,10 +66,10 @@ void ProbHRM3D::plan(double timeLim) {
         param_.NUM_LAYER++;
 
         // Minkowski operations
-        boundary bd = boundaryGen();
+        Boundary bd = boundaryGen();
 
         // Sweep-line process
-        cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
+        FreeSegment3D CFcell = sweepLineZ(&bd);
 
         // Connect within one C-layer
         connectOneLayer3D(&CFcell);
@@ -161,7 +161,7 @@ void ProbHRM3D::connectMultiLayer() {
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const double tx, const cf_cell2D* cellYZ) {
+void ProbHRM3D::generateVertices(const double tx, const FreeSegment2D* cellYZ) {
     N_v.plane.clear();
     std::vector<double> vertex(v_.back().size());
 

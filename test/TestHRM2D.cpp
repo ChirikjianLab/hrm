@@ -52,37 +52,37 @@ algorithm planTest(const robotType& robot,
 
     if (isStore) {
         // calculate original boundary points
-        boundary bd_ori;
+        Boundary bd_ori;
         for (size_t i = 0; i < hrm.arena_.size(); ++i) {
-            bd_ori.bd_s.push_back(hrm.arena_.at(i).getOriginShape());
+            bd_ori.arena.push_back(hrm.arena_.at(i).getOriginShape());
         }
         for (size_t i = 0; i < hrm.obs_.size(); ++i) {
-            bd_ori.bd_o.push_back(hrm.obs_.at(i).getOriginShape());
+            bd_ori.obstacle.push_back(hrm.obs_.at(i).getOriginShape());
         }
 
         // Output boundary and cell info
-        boundary bd = hrm.boundaryGen();
-        cf_cell2D cell = hrm.rasterScan(bd.bd_s, bd.bd_o);
+        Boundary bd = hrm.boundaryGen();
+        FreeSegment2D cell = hrm.rasterScan(&bd);
         hrm.connectOneLayer2D(&cell);
 
         // write to .csv file
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
-        for (size_t i = 0; i < bd_ori.bd_o.size(); i++) {
-            file_ori_bd << bd_ori.bd_o[i] << "\n";
+        for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
+            file_ori_bd << bd_ori.obstacle[i] << "\n";
         }
-        for (size_t i = 0; i < bd_ori.bd_s.size(); i++) {
-            file_ori_bd << bd_ori.bd_s[i] << "\n";
+        for (size_t i = 0; i < bd_ori.arena.size(); i++) {
+            file_ori_bd << bd_ori.arena[i] << "\n";
         }
         file_ori_bd.close();
 
         ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
-        for (size_t i = 0; i < bd.bd_o.size(); i++) {
-            file_bd << bd.bd_o[i] << "\n";
+        for (size_t i = 0; i < bd.obstacle.size(); i++) {
+            file_bd << bd.obstacle[i] << "\n";
         }
-        for (size_t i = 0; i < bd.bd_s.size(); i++) {
-            file_bd << bd.bd_s[i] << "\n";
+        for (size_t i = 0; i < bd.arena.size(); i++) {
+            file_bd << bd.arena[i] << "\n";
         }
         file_bd.close();
 

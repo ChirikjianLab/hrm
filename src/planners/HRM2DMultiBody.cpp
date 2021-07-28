@@ -30,8 +30,8 @@ void HRM2DMultiBody::buildRoadmap() {
         RobotM.robotTF(tf);
         robot_.setAngle(ang_r.at(i));
 
-        boundary bd = boundaryGen();
-        cf_cell2D CFcell = rasterScan(bd.bd_s, bd.bd_o);
+        Boundary bd = boundaryGen();
+        FreeSegment2D CFcell = rasterScan(&bd);
         connectOneLayer2D(&CFcell);
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
@@ -40,23 +40,23 @@ void HRM2DMultiBody::buildRoadmap() {
     connectMultiLayer();
 }
 
-// Minkowski Boundary
-boundary HRM2DMultiBody::boundaryGen() {
-    boundary bd;
+// Minkowski operations boundary
+Boundary HRM2DMultiBody::boundaryGen() {
+    Boundary bd;
 
     // Minkowski boundary points
     std::vector<Eigen::MatrixXd> bd_aux;
     for (size_t i = 0; i < size_t(N_s); ++i) {
         bd_aux = RobotM.minkSum(arena_.at(i), -1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.bd_s.push_back(bd_aux.at(j));
+            bd.arena.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
     for (size_t i = 0; i < size_t(N_o); ++i) {
         bd_aux = RobotM.minkSum(obs_.at(i), 1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.bd_o.push_back(bd_aux.at(j));
+            bd.obstacle.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
@@ -168,7 +168,7 @@ bool HRM2DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
 }
 
 // Point in collision-free line segment
-bool HRM2DMultiBody::isPtInCFLine(const cf_cell2D& cell,
+bool HRM2DMultiBody::isPtInCFLine(const FreeSegment2D& cell,
                                   const std::vector<double>& V) {
     std::vector<bool> isInLine(2, false);
 
