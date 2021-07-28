@@ -62,7 +62,7 @@ algorithm planTest(const robotType& robot,
 
         // Output boundary and cell info
         Boundary bd = hrm.boundaryGen();
-        FreeSegment2D cell = hrm.rasterScan(&bd);
+        FreeSegment2D cell = hrm.sweepLine2D(&bd);
         hrm.connectOneLayer2D(&cell);
 
         // write to .csv file

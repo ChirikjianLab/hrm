@@ -17,6 +17,7 @@ HighwayRoadMap3D::~HighwayRoadMap3D() {}
 void HighwayRoadMap3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
+
     // Compute mid-layer TFE
     for (size_t i = 0; i < q_r.size(); ++i) {
         if (i == param_.NUM_LAYER - 1) {
@@ -36,7 +37,7 @@ void HighwayRoadMap3D::buildRoadmap() {
         Boundary bd = boundaryGen();
 
         // collision-free cells, stored by tx, ty, zL, zU, zM
-        FreeSegment3D CFcell = sweepLineZ(&bd);
+        FreeSegment3D CFcell = sweepLine3D(&bd);
 
         // construct adjacency matrix for one layer
         connectOneLayer3D(&CFcell);
@@ -47,8 +48,6 @@ void HighwayRoadMap3D::buildRoadmap() {
     connectMultiLayer();
 }
 
-// ******************************************************************** //
-// Generate Minkowski boundary
 Boundary HighwayRoadMap3D::boundaryGen() {
     Boundary bd;
 
@@ -62,11 +61,8 @@ Boundary HighwayRoadMap3D::boundaryGen() {
 
     return bd;
 }
-// ******************************************************************** //
 
-// ******************************************************************** //
-// Generate collision-free vertices by Sweep Plane + Sweep Line process //
-FreeSegment3D HighwayRoadMap3D::sweepLineZ(const Boundary* bd) {
+FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
     FreeSegment3D CF_cell;
 
     std::vector<Eigen::Vector3d> pts_s;
@@ -143,7 +139,8 @@ FreeSegment3D HighwayRoadMap3D::sweepLineZ(const Boundary* bd) {
 
         // Store cell info
         CF_cell.tx.push_back(tx[i]);
-        CF_cell.cellYZ.push_back(cfLine(ty, z_s_L, z_s_U, z_o_L, z_o_U));
+        CF_cell.cellYZ.push_back(
+            computeFreeSegment(ty, z_s_L, z_s_U, z_o_L, z_o_U));
 
         z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
                                           long(bd->arena.size()),
@@ -160,70 +157,6 @@ FreeSegment3D HighwayRoadMap3D::sweepLineZ(const Boundary* bd) {
     return CF_cell;
 }
 
-// Sweep Line process at each sweep plane
-FreeSegment2D HighwayRoadMap3D::cfLine(std::vector<double> ty,
-                                       Eigen::MatrixXd z_s_L,
-                                       Eigen::MatrixXd z_s_U,
-                                       Eigen::MatrixXd z_o_L,
-                                       Eigen::MatrixXd z_o_U) {
-    FreeSegment2D cellYZ;
-
-    Interval op;
-    std::vector<Interval> cf_seg[param_.NUM_LINE_Y], obs_seg, arena_seg,
-        obs_merge, arena_inter;
-    std::vector<double> zL, zU, zM;
-    long N_cs = z_s_L.cols(), N_co = z_o_L.cols();
-
-    // CF line segment for each ty
-    for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        // Construct intervals at each sweep line
-        for (auto j = 0; j < N_cs; ++j)
-            if (!std::isnan(z_s_L(long(i), j)) &&
-                !std::isnan(z_s_U(long(i), j))) {
-                arena_seg.push_back({z_s_L(long(i), j), z_s_U(long(i), j)});
-            }
-        for (auto j = 0; j < N_co; ++j)
-            if (!std::isnan(z_o_L(long(i), j)) &&
-                !std::isnan(z_o_U(long(i), j))) {
-                obs_seg.push_back({z_o_L(long(i), j), z_o_U(long(i), j)});
-            }
-
-        // y-coord
-        cellYZ.ty.push_back(ty[i]);
-
-        // cf-intervals at each line
-        obs_merge = op.unions(obs_seg);
-        arena_inter = op.intersects(arena_seg);
-        cf_seg[i] = op.complements(arena_inter, obs_merge);
-
-        // x-coords
-        for (size_t j = 0; j < cf_seg[i].size(); j++) {
-            zL.push_back(cf_seg[i][j].s());
-            zU.push_back(cf_seg[i][j].e());
-            zM.push_back((cf_seg[i][j].s() + cf_seg[i][j].e()) / 2.0);
-        }
-        cellYZ.xL.push_back(zL);
-        cellYZ.xU.push_back(zU);
-        cellYZ.xM.push_back(zM);
-
-        // Clear memory
-        arena_seg.clear();
-        obs_seg.clear();
-        zL.clear();
-        zU.clear();
-        zM.clear();
-    }
-
-    // Enhanced process to generate more valid vertices within free line
-    // segement
-    enhanceDecomp(&cellYZ);
-
-    return cellYZ;
-}
-// ******************************************************************** //
-
-// ******************************************************************** //
-// Generate vertices //
 void HighwayRoadMap3D::generateVertices(const double tx,
                                         const FreeSegment2D* cellYZ) {
     N_v.plane.clear();
@@ -264,16 +197,7 @@ void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* cell) {
                 for (size_t k1 = 0; k1 < cell->cellYZ[i + 1].xM[j].size();
                      k1++) {
                     I1 = N_v.line[i + 1][j];
-                    //                    if (cell.cellYZ[i].zM[j][k0] >
-                    //                            cell.cellYZ[i + 1].zL[j][k1]
-                    //                            &&
-                    //                        cell.cellYZ[i].zM[j][k0] <
-                    //                            cell.cellYZ[i + 1].zU[j][k1]
-                    //                            &&
-                    //                        cell.cellYZ[i + 1].zM[j][k1] >
-                    //                            cell.cellYZ[i].zL[j][k0] &&
-                    //                        cell.cellYZ[i + 1].zM[j][k1] <
-                    //                            cell.cellYZ[i].zU[j][k0])
+
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[I0 + k0],
                             res_.graph_structure.vertex[I1 + k1])) {
@@ -312,13 +236,6 @@ void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
             // Connect vertex btw adjacent cells
             if (i != CFcell->ty.size() - 1) {
                 for (size_t j2 = 0; j2 < CFcell->xM[i + 1].size(); ++j2) {
-                    //                    if (CFcell->zM[i][j1] >= CFcell->zL[i
-                    //                    + 1][j2] &&
-                    //                        CFcell->zM[i][j1] <= CFcell->zU[i
-                    //                        + 1][j2] && CFcell->zM[i + 1][j2]
-                    //                        >= CFcell->zL[i][j1] &&
-                    //                        CFcell->zM[i + 1][j2] <=
-                    //                        CFcell->zU[i][j1])
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[N_0 + j1],
                             res_.graph_structure.vertex[N_1 + j2])) {
@@ -333,10 +250,7 @@ void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
         }
     }
 }
-// ******************************************************************** //
 
-// ******************************************************************** //
-// Connect vertices within adjacent C-layers //
 void HighwayRoadMap3D::connectMultiLayer() {
     size_t n_1;
     size_t n_12;
@@ -402,6 +316,26 @@ std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
     return bdMesh;
 }
 
+std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
+    const unsigned int num) {
+    std::vector<std::vector<double>> path_interp;
+    std::vector<std::vector<double>> path_solved = getSolutionPath();
+
+    // Iteratively store interpolated poses along the solved path
+    for (size_t i = 0; i < path_solved.size() - 1; ++i) {
+        std::vector<std::vector<double>> step_interp =
+            interpolateCompoundSE3Rn(path_solved[i], path_solved[i + 1], num);
+
+        path_interp.insert(path_interp.end(), step_interp.begin(),
+                           step_interp.end());
+    }
+
+    return path_interp;
+}
+
+/************************************************************************/
+/*************************  Private Functions ***************************/
+/************************************************************************/
 bool HighwayRoadMap3D::isSameLayerTransitionFree(
     const std::vector<double>& V1, const std::vector<double>& V2) {
     // Define the line connecting V1 and V2
@@ -455,111 +389,11 @@ bool HighwayRoadMap3D::isMultiLayerTransitionFree(
     return true;
 }
 
-bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                                   const std::vector<double>& V) {
-    Eigen::VectorXd lineZ(6);
-    lineZ << V[0], V[1], V[2], 0, 0, 1;
-
-    std::vector<Eigen::Vector3d> intersectObs;
-
-    // Ray-casting to check point containment within all C-obstacles
-    for (size_t i = 0; i < bdMesh->size(); ++i) {
-        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
-
-        if (!intersectObs.empty()) {
-            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
-                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
-                //                std::cout << "Collide with " <<
-                //                std::to_string(i)
-                //                          << " Obstacle!!!" << std::endl;
-
-                return false;
-            }
-        }
-    }
-
-    //    std::cout << "In Free Space!" << std::endl;
-
-    return true;
-}
-
-// bool HighwayRoadMap3D::isPtinCFLine(std::vector<double> V1,
-//                                    std::vector<double> V2) {
-//    for (size_t i = 0; i < mid_cell.tx.size(); ++i) {
-//        if (fabs(mid_cell.tx[i] - V1[0]) > 1e-8) {
-//            continue;
-//        }
-
-//        for (size_t j = 0; j < mid_cell.cellYZ[i].ty.size(); ++j) {
-//            if (fabs(mid_cell.cellYZ[i].ty[j] - V1[1]) > 1e-8) {
-//                continue;
-//            }
-
-//            for (size_t k = 0; k < mid_cell.cellYZ[i].zM[j].size(); ++k) {
-//                if ((V1[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
-//                    (V1[2] <= mid_cell.cellYZ[i].zU[j][k]) &&
-//                    (V2[2] >= mid_cell.cellYZ[i].zL[j][k]) &&
-//                    (V2[2] <= mid_cell.cellYZ[i].zU[j][k])) {
-//                    return 1;
-//                }
-//            }
-//        }
-//    }
-//    return 0;
-//}
-
-// ******************************************************************** //
-std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
-    const unsigned int num) {
-    std::vector<std::vector<double>> path_interp;
-    std::vector<std::vector<double>> path_solved = getSolutionPath();
-
-    //    // Default motion primitive: first rotate, then translate
-    //    const unsigned num_rotate = num / 2;
-    //    const unsigned num_trans = num - num_rotate;
-
-    // Iteratively store interpolated poses along the solved path
-    for (size_t i = 0; i < path_solved.size() - 1; ++i) {
-        std::vector<std::vector<double>> step_interp =
-            interpolateCompoundSE3Rn(path_solved[i], path_solved[i + 1], num);
-
-        path_interp.insert(path_interp.end(), step_interp.begin(),
-                           step_interp.end());
-
-        //        // Middle step: {V1_trans, V2_rot}
-        //        std::vector<double> mid_step = path_solved[i];
-
-        //        for (size_t j = 3; j < path_solved[i].size(); ++j) {
-        //            mid_step[j] = path_solved[i + 1][j];
-        //        }
-
-        //        // Two motion sequences
-        //        std::vector<std::vector<double>> path_rotate =
-        //            interpolateCompoundSE3Rn(path_solved[i], mid_step,
-        //            num_rotate);
-        //        std::vector<std::vector<double>> path_trans =
-        //            interpolateCompoundSE3Rn(mid_step, path_solved[i + 1],
-        //            num_trans);
-
-        //        // Combine the motion sequences
-        //        path_interp.insert(path_interp.end(), path_rotate.begin(),
-        //                           path_rotate.end());
-        //        path_interp.insert(path_interp.end(), path_trans.begin(),
-        //                           path_trans.end());
-    }
-
-    return path_interp;
-}
-
-/************************************************************************/
-/*************************  Private Functions ***************************/
-/************************************************************************/
 void HighwayRoadMap3D::setTransform(const std::vector<double>& V) {
     robot_.setPosition({V[0], V[1], V[2]});
     robot_.setQuaternion(Eigen::Quaterniond(V[3], V[4], V[5], V[6]));
 }
 
-// Sampled rotations on SO(3), return a list of Quaternions
 void HighwayRoadMap3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
@@ -575,8 +409,6 @@ void HighwayRoadMap3D::sampleSO3() {
     }
 }
 
-// Find the cell that an arbitrary vertex locates, and find the closest
-// roadmap vertex
 std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     const std::vector<double>& vertex, const size_t k, const double radius) {
     double minEuclideanDist;
@@ -639,4 +471,32 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     }
 
     return idx;
+}
+
+bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                                   const std::vector<double>& V) {
+    Eigen::VectorXd lineZ(6);
+    lineZ << V[0], V[1], V[2], 0, 0, 1;
+
+    std::vector<Eigen::Vector3d> intersectObs;
+
+    // Ray-casting to check point containment within all C-obstacles
+    for (size_t i = 0; i < bdMesh->size(); ++i) {
+        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
+
+        if (!intersectObs.empty()) {
+            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
+                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
+                //                std::cout << "Collide with " <<
+                //                std::to_string(i)
+                //                          << " Obstacle!!!" << std::endl;
+
+                return false;
+            }
+        }
+    }
+
+    //    std::cout << "In Free Space!" << std::endl;
+
+    return true;
 }

@@ -19,7 +19,7 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
     virtual void connectMultiLayer() override;
     void connectOneLayer2D(const FreeSegment2D* cell) override;
 
-    FreeSegment2D rasterScan(const Boundary* bd);
+    FreeSegment2D sweepLine2D(const Boundary* bd);
 
   protected:
     bool isSameLayerTransitionFree(const std::vector<double>& V1,

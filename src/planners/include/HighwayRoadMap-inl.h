@@ -2,6 +2,7 @@
 #define HIGHWAYROADMAP_INL_H
 
 #include "HighwayRoadMap.h"
+#include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
 
 #include "ompl/util/Time.h"
@@ -156,6 +157,72 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     path.push_back(goal_);
 
     return path;
+}
+
+template <class RobotType, class ObjectType>
+FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
+    const std::vector<double>& ty, const Eigen::MatrixXd& x_s_L,
+    const Eigen::MatrixXd& x_s_U, const Eigen::MatrixXd& x_o_L,
+    const Eigen::MatrixXd& x_o_U) {
+    FreeSegment2D freeLineSegment;
+
+    Interval op;
+    std::vector<Interval> interval[param_.NUM_LINE_Y];
+    std::vector<Interval> obsSeg;
+    std::vector<Interval> arenaSeg;
+    std::vector<Interval> obsMerge;
+    std::vector<Interval> arenaIntersect;
+    std::vector<double> xL;
+    std::vector<double> xU;
+    std::vector<double> xM;
+    long N_cs = x_s_L.cols();
+    long N_co = x_o_L.cols();
+
+    // CF line segment for each ty
+    for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
+        // Construct intervals at each sweep line
+        for (auto j = 0; j < N_cs; ++j)
+            if (!std::isnan(x_s_L(long(i), j)) &&
+                !std::isnan(x_s_U(long(i), j))) {
+                arenaSeg.push_back({x_s_L(long(i), j), x_s_U(long(i), j)});
+            }
+        for (auto j = 0; j < N_co; ++j)
+            if (!std::isnan(x_o_L(long(i), j)) &&
+                !std::isnan(x_o_U(long(i), j))) {
+                obsSeg.push_back({x_o_L(long(i), j), x_o_U(long(i), j)});
+            }
+
+        // y-coord
+        freeLineSegment.ty.push_back(ty[i]);
+
+        // Set operations for Collision-free intervals at each line
+        obsMerge = op.unions(obsSeg);
+        arenaIntersect = op.intersects(arenaSeg);
+        interval[i] = op.complements(arenaIntersect, obsMerge);
+
+        // x-(z-)coords
+        for (size_t j = 0; j < interval[i].size(); j++) {
+            xL.push_back(interval[i][j].s());
+            xU.push_back(interval[i][j].e());
+            xM.push_back((interval[i][j].s() + interval[i][j].e()) / 2.0);
+        }
+        freeLineSegment.xL.push_back(xL);
+        freeLineSegment.xU.push_back(xU);
+        freeLineSegment.xM.push_back(xM);
+
+        // Clear memory
+        arenaSeg.clear();
+        obsSeg.clear();
+        xL.clear();
+        xU.clear();
+        xM.clear();
+    }
+
+    // Enhanced process to generate more valid vertices within free line
+    // segement
+    enhanceDecomp(&freeLineSegment);
+
+    return freeLineSegment;
 }
 
 template <class RobotType, class ObjectType>

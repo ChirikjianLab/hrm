@@ -31,7 +31,7 @@ void HRM2DMultiBody::buildRoadmap() {
         robot_.setAngle(ang_r.at(i));
 
         Boundary bd = boundaryGen();
-        FreeSegment2D CFcell = rasterScan(&bd);
+        FreeSegment2D CFcell = sweepLine2D(&bd);
         connectOneLayer2D(&CFcell);
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }

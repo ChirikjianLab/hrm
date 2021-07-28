@@ -28,7 +28,7 @@ void HRM3DMultiBody::buildRoadmap() {
         robot_.setQuaternion(q_r.at(i));
 
         Boundary bd = boundaryGen();
-        FreeSegment3D CFcell = sweepLineZ(&bd);
+        FreeSegment3D CFcell = sweepLine3D(&bd);
         connectOneLayer3D(&CFcell);
 
         // Store the index of vertex in the current layer

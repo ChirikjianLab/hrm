@@ -35,8 +35,9 @@ HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
     cout << "----------" << endl;
 
     cout << "Number of C-layers: " << req.planner_parameters.NUM_LAYER << endl;
-    cout << "Number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
-         << endl;
+    cout << "Number of sweep lines {X,Y}: {"
+         << req.planner_parameters.NUM_LINE_X << ','
+         << req.planner_parameters.NUM_LINE_Y << '}' << endl;
     cout << "----------" << endl;
 
     cout << "Start planning..." << endl;
@@ -80,7 +81,7 @@ HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
         file_bd.close();
 
         // TEST: Sweep line
-        FreeSegment3D CF_cell = hrm.sweepLineZ(&bd_mink);
+        FreeSegment3D CF_cell = hrm.sweepLine3D(&bd_mink);
 
         ofstream file_cell;
         file_cell.open("cell_3D.csv");

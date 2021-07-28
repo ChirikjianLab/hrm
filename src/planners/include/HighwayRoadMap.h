@@ -83,6 +83,20 @@ class HighwayRoadMap {
     virtual void connectMultiLayer() = 0;
 
   protected:
+    /** \brief computeFreeSegment compute collision-free segment on each sweep
+     * line
+     * \param ty vector of y-coordinates of the sweep line
+     * \param x_s_L matrix of x-(z-)coordinates of the lower bound for arenas
+     * \param x_s_L matrix of x-(z-)coordinates of the upper bound for arenas
+     * \param x_o_L matrix of x-(z-)coordinates of the lower bound for obstacles
+     * \param x_o_L matrix of x-(z-)coordinates of the upper bound for obstacles
+     */
+    FreeSegment2D computeFreeSegment(const std::vector<double>& ty,
+                                     const Eigen::MatrixXd& x_s_L,
+                                     const Eigen::MatrixXd& x_s_U,
+                                     const Eigen::MatrixXd& x_o_L,
+                                     const Eigen::MatrixXd& x_o_U);
+
     /** \brief isSameLayerTransitionFree check whether connection between V1 and
      * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
      * mesh intersection checking

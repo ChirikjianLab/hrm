@@ -42,7 +42,7 @@ void HighwayRoadMap2D::buildRoadmap() {
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         robot_.setAngle(ang_r.at(i));
         Boundary bd = boundaryGen();
-        FreeSegment2D CFcell = rasterScan(&bd);
+        FreeSegment2D CFcell = sweepLine2D(&bd);
         connectOneLayer2D(&CFcell);
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
@@ -113,9 +113,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
     }
 }
 
-FreeSegment2D HighwayRoadMap2D::rasterScan(const Boundary* bd) {
-    FreeSegment2D cell;
-
+FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
     std::vector<double> pts_s;
     std::vector<double> pts_o;
 
@@ -127,11 +125,6 @@ FreeSegment2D HighwayRoadMap2D::rasterScan(const Boundary* bd) {
         param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
     Eigen::MatrixXd x_o_U = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
-
-    Interval op;
-    std::vector<Interval> cf_seg[param_.NUM_LINE_Y], obs_seg, arena_seg,
-        obs_merge, arena_inter;
-    std::vector<double> xL, xU, xM;
 
     // Find intersecting points to C-obstacles for each raster scan line
     std::vector<double> ty;
@@ -166,59 +159,13 @@ FreeSegment2D HighwayRoadMap2D::rasterScan(const Boundary* bd) {
             x_o_L(i, j) = std::fmin(pts_o[0], pts_o[1]);
             x_o_U(i, j) = std::fmax(pts_o[0], pts_o[1]);
         }
-
-        // CF line segment for each ty
-        // Construct intervals at each sweep line
-        for (Eigen::Index j = 0; j < x_s_L.cols(); ++j)
-            if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_U(i, j))) {
-                arena_seg.push_back({x_s_L(i, j), x_s_U(i, j)});
-            }
-        for (Eigen::Index j = 0; j < x_o_L.cols(); ++j)
-            if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_U(i, j))) {
-                obs_seg.push_back({x_o_L(i, j), x_o_U(i, j)});
-            }
-
-        // y-coord
-        cell.ty.push_back(ty[size_t(i)]);
-
-        // cf-intervals at each line
-        obs_merge = op.unions(obs_seg);
-        arena_inter = op.intersects(arena_seg);
-        cf_seg[i] = op.complements(arena_inter, obs_merge);
-
-        // x-coords
-        for (size_t j = 0; j < cf_seg[i].size(); ++j) {
-            xL.push_back(cf_seg[i][j].s());
-            xU.push_back(cf_seg[i][j].e());
-            xM.push_back((cf_seg[i][j].s() + cf_seg[i][j].e()) / 2.0);
-        }
-        cell.xL.push_back(xL);
-        cell.xU.push_back(xU);
-        cell.xM.push_back(xM);
-
-        // Clear memory
-        arena_seg.clear();
-        obs_seg.clear();
-        xL.clear();
-        xU.clear();
-        xM.clear();
-
-        // Reinitialize for the next iteration
-        x_s_L = Eigen::MatrixXd::Constant(
-            param_.NUM_LINE_Y, long(bd->arena.size()), -param_.BOUND_LIMIT[0]);
-        x_s_U = Eigen::MatrixXd::Constant(
-            param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);
-        x_o_L = Eigen::MatrixXd::Constant(param_.NUM_LINE_Y,
-                                          long(bd->obstacle.size()), NAN);
-        x_o_U = Eigen::MatrixXd::Constant(param_.NUM_LINE_Y,
-                                          long(bd->obstacle.size()), NAN);
     }
 
-    // Enhanced process to generate more valid vertices within free line
-    // segement
-    enhanceDecomp(&cell);
+    // Compute collision-free intervals at each sweep line
+    FreeSegment2D freeLineSeg =
+        computeFreeSegment(ty, x_s_L, x_s_U, x_o_L, x_o_U);
 
-    return cell;
+    return freeLineSeg;
 }
 
 void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* CFcell) {
@@ -308,7 +255,7 @@ FreeSegment2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
         bd.obstacle.push_back(obs_.at(i).getMinkSum2D(Ec, +1));
     }
 
-    return rasterScan(&bd);
+    return sweepLine2D(&bd);
 }
 
 std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(

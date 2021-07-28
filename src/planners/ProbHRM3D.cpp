@@ -69,7 +69,7 @@ void ProbHRM3D::plan(double timeLim) {
         Boundary bd = boundaryGen();
 
         // Sweep-line process
-        FreeSegment3D CFcell = sweepLineZ(&bd);
+        FreeSegment3D CFcell = sweepLine3D(&bd);
 
         // Connect within one C-layer
         connectOneLayer3D(&CFcell);

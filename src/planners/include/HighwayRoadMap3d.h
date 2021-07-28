@@ -3,7 +3,6 @@
 
 #include "src/geometry/include/TightFitEllipsoid.h"
 #include "src/planners/include/HighwayRoadMap.h"
-#include "src/util/include/Interval.h"
 #include "util/include/InterpolateSE3.h"
 #include "util/include/LineIntersection.h"
 
@@ -35,14 +34,15 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual void buildRoadmap() override;
     virtual Boundary boundaryGen() override;
 
-    /** \brief sweep-line process for cell decomposition, vertical lines
-     * parallel to z-axis
-     * \param bd_s, bd_o Minkowski boundry of obstacles and arenas
+    /**
+     * \brief sweep-line process to explore free space in one C-layer
+     * \param Boundary Minkowski boundry of obstacles and arenas
      * \return collision-free cells info
      */
-    FreeSegment3D sweepLineZ(const Boundary* bd);
+    FreeSegment3D sweepLine3D(const Boundary* bd);
 
-    /** \brief subroutine for generating collision-free vertices on the yz-plane
+    /**
+     * \brief subroutine for generating collision-free vertices on the yz-plane
      * \param ty a vector of incremented y-coordinates
      * \param z_s_L, z_s_U, z_o_L, z_o_U upper(U) and lower(L) z-coordinates of
      * the intersection for arena(s) and obstacles(o), size = num of
@@ -50,10 +50,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
      * \return collision-free cells info
      */
     virtual void generateVertices(const double tx, const FreeSegment2D* cellYZ);
-
-    FreeSegment2D cfLine(std::vector<double> ty, Eigen::MatrixXd z_s_L,
-                         Eigen::MatrixXd z_s_U, Eigen::MatrixXd z_o_L,
-                         Eigen::MatrixXd z_o_U);
 
     /** \brief connect within one C-layer */
     void connectOneLayer3D(const FreeSegment3D* cell);
@@ -68,13 +64,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
     /** \brief subroutine to first construct the middle C-layer */
     //    FreeSegment3D midLayer(SuperQuadrics);
-    std::vector<MeshMatrix> midLayer(SuperQuadrics);
-
-    /** \brief uniform random sample SO(3) */
-    void sampleSO3();
-
-    /** \brief transformation for robot */
-    virtual void setTransform(const std::vector<double>& V);
+    std::vector<MeshMatrix> midLayer(SuperQuadrics Ec);
 
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
@@ -87,14 +77,19 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual bool isMultiLayerTransitionFree(
         const std::vector<double>& V1, const std::vector<double>& V2) override;
 
+    std::vector<Vertex> getNearestNeighborsOnGraph(
+        const std::vector<double>& vertex, const size_t k,
+        const double radius) override;
+
     /** \brief check is one point is within C-free */
     bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
                      const std::vector<double>& V);
 
-    /** \brief find the nearest neighbors of a pose on the graph */
-    std::vector<Vertex> getNearestNeighborsOnGraph(
-        const std::vector<double>& vertex, const size_t k,
-        const double radius) override;
+    /** \brief uniform random sample SO(3) */
+    void sampleSO3();
+
+    /** \brief transformation for robot */
+    virtual void setTransform(const std::vector<double>& V);
 
   public:
     /** \param q_r sampled orientations (Quaternion) of the robot */

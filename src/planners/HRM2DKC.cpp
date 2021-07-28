@@ -23,7 +23,7 @@ void HRM2DKC::buildRoadmap() {
         Boundary bd = boundaryGen();
 
         // collision-free cells, stored by ty, xL, xU, xM
-        FreeSegment2D CFcell = rasterScan(&bd);
+        FreeSegment2D CFcell = sweepLine2D(&bd);
 
         // construct adjacency matrix for one layer
         connectOneLayer2D(&CFcell);
