@@ -4,8 +4,6 @@
 #include "HighwayRoadMap3d.h"
 #include "src/util/include/MultiBodyTree3D.h"
 
-using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
-
 class HRM3DMultiBody : public HighwayRoadMap3D {
   public:
     HRM3DMultiBody(const MultiBodyTree3D& robot,
@@ -23,8 +21,8 @@ class HRM3DMultiBody : public HighwayRoadMap3D {
     virtual void connectMultiLayer() override;
 
   protected:
-    std::vector<SuperQuadrics> tfe_multi(Eigen::Quaterniond q1,
-                                         Eigen::Quaterniond q2);
+    void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
+                    std::vector<SuperQuadrics>* tfe);
 
     bool isMultiLayerTransitionFree(const std::vector<double>& V1,
                                     const std::vector<double>& V2) override;
@@ -32,9 +30,9 @@ class HRM3DMultiBody : public HighwayRoadMap3D {
     virtual void setTransform(const std::vector<double>& V) override;
 
   protected:
-    MultiBodyTree3D RobotM;
-    std::vector<FreeSegment3D> free_cell;
-    std::vector<std::vector<MeshMatrix>> midLayerBdMultiLink;
+    MultiBodyTree3D RobotM_;
+    std::vector<FreeSegment3D> freeSeg_;
+    std::vector<std::vector<MeshMatrix>> bridgeLayerBdMultiLink_;
 };
 
 #endif  // HRM3DMULTIBODY_H

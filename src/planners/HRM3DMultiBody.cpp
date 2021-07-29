@@ -8,7 +8,7 @@ HRM3DMultiBody::HRM3DMultiBody(const MultiBodyTree3D& robot,
                                const std::vector<SuperQuadrics>& obs,
                                const PlanningRequest& req)
     : HighwayRoadMap3D::HighwayRoadMap3D(robot.getBase(), arena, obs, req),
-      RobotM(robot) {}
+      RobotM_(robot) {}
 
 HRM3DMultiBody::~HRM3DMultiBody() {}
 
@@ -24,18 +24,18 @@ void HRM3DMultiBody::buildRoadmap() {
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Set rotation matrix to robot
         tf.topLeftCorner(3, 3) = q_r.at(i).toRotationMatrix();
-        RobotM.robotTF(tf);
+        RobotM_.robotTF(tf);
         robot_.setQuaternion(q_r.at(i));
 
         Boundary bd = boundaryGen();
-        FreeSegment3D CFcell = sweepLine3D(&bd);
-        connectOneLayer3D(&CFcell);
+        FreeSegment3D segOneLayer = sweepLine3D(&bd);
+        connectOneLayer3D(&segOneLayer);
 
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
 
         // Store the collision-free segment info
-        free_cell.push_back(CFcell);
+        freeSeg_.push_back(segOneLayer);
     }
     connectMultiLayer();
 }
@@ -47,14 +47,14 @@ Boundary HRM3DMultiBody::boundaryGen() {
     // Minkowski boundary points
     std::vector<Eigen::MatrixXd> bd_aux;
     for (size_t i = 0; i < N_s; ++i) {
-        bd_aux = RobotM.minkSumSQ(arena_.at(i), -1);
+        bd_aux = RobotM_.minkSumSQ(arena_.at(i), -1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.arena.push_back(bd_aux.at(j));
         }
         bd_aux.clear();
     }
     for (size_t i = 0; i < N_o; ++i) {
-        bd_aux = RobotM.minkSumSQ(obs_.at(i), 1);
+        bd_aux = RobotM_.minkSumSQ(obs_.at(i), 1);
         for (size_t j = 0; j < bd_aux.size(); ++j) {
             bd.obstacle.push_back(bd_aux.at(j));
         }
@@ -161,10 +161,10 @@ void HRM3DMultiBody::connectMultiLayer() {
         size_t n_1 = vtxId.at(minIdx).layer;
 
         // Construct the middle layer
-        mid = tfe_multi(q_r[i], q_r[j]);
+        computeTFE(q_r[i], q_r[j], &tfe_);
 
-        for (size_t k = 0; k < mid.size(); ++k) {
-            midLayerBdMultiLink.push_back(midLayer(mid[k]));
+        for (size_t k = 0; k < tfe_.size(); ++k) {
+            bridgeLayerBdMultiLink_.push_back(bridgeLayer(tfe_[k]));
         }
 
         //        ////////////////////////////////////////////////////////////
@@ -188,8 +188,8 @@ void HRM3DMultiBody::connectMultiLayer() {
         //        ////////////////////////////////////////////////////////////////////
         //        std::ofstream file_bd;
         //        file_bd.open("mid_layer_mink_bound_3D.csv");
-        //        file_bd << midLayerBdMultiLink.at(0).at(0).vertices << "\n";
-        //        file_bd.close();
+        //        file_bd << bridgeLayerBdMultiLink.at(0).at(0).vertices <<
+        //        "\n"; file_bd.close();
         //        ////////////////////////////////////////////////////////////////////
 
         // Nearest vertex btw layers
@@ -224,8 +224,8 @@ void HRM3DMultiBody::connectMultiLayer() {
         }
         start = n_1;
 
-        // Clear mid_cell;
-        midLayerBdMultiLink.clear();
+        // Clear current bridge C-layer boundaries;
+        bridgeLayerBdMultiLink_.clear();
     }
 
     //    std::cout << n_check << ',' << n_connect << std::endl;
@@ -250,7 +250,7 @@ void HRM3DMultiBody::connectMultiLayer() {
 //        // Transform the robot
 //        setTransform(vStep);
 
-//        // Determine whether each step is within C-Free of midLayer
+//        // Determine whether each step is within C-Free of bridgeLayer
 //        if (!isPtInCFree(&CLayerBound, RobotM.getBase().getPosition())) {
 //            return false;
 //        }
@@ -269,9 +269,9 @@ bool HRM3DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
         // Transform the robot
         setTransform(vStep);
 
-        // Base: determine whether each step is within CF-Line of midLayer
-        if (!isPtInCFree(&midLayerBdMultiLink.at(0),
-                         RobotM.getBase().getPosition())) {
+        // Base: determine whether each step is within CF-Line of bridgeLayer
+        if (!isPtInCFree(&bridgeLayerBdMultiLink_.at(0),
+                         RobotM_.getBase().getPosition())) {
             //            std::cout << "[Base] Current step: " << vStep[0] << ",
             //            " << vStep[1]
             //                      << ", " << vStep[2] << std::endl;
@@ -286,10 +286,10 @@ bool HRM3DMultiBody::isMultiLayerTransitionFree(const std::vector<double>& V1,
         }
 
         // For each link, check whether its center is within the simple convex
-        // region between 4 CF-Lines in midLayer
-        for (size_t j = 0; j < RobotM.getNumLinks(); ++j) {
-            if (!isPtInCFree(&midLayerBdMultiLink.at(j + 1),
-                             RobotM.getLinks()[j].getPosition())) {
+        // region between 4 CF-Lines in bridgeLayer
+        for (size_t j = 0; j < RobotM_.getNumLinks(); ++j) {
+            if (!isPtInCFree(&bridgeLayerBdMultiLink_.at(j + 1),
+                             RobotM_.getLinks()[j].getPosition())) {
                 //                std::cout << "[Link " << std::to_string(j)
                 //                          << "] Current step: " << vStep[0] <<
                 //                          ", " << vStep[1]
@@ -414,27 +414,26 @@ void HRM3DMultiBody::setTransform(const std::vector<double>& V) {
     g.topRightCorner(3, 1) = Eigen::Vector3d(V[0], V[1], V[2]);
     g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
-    RobotM.robotTF(g);
+    RobotM_.robotTF(g);
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
-std::vector<SuperQuadrics> HRM3DMultiBody::tfe_multi(Eigen::Quaterniond q1,
-                                                     Eigen::Quaterniond q2) {
-    std::vector<SuperQuadrics> tfe;
+void HRM3DMultiBody::computeTFE(const Eigen::Quaterniond& q1,
+                                const Eigen::Quaterniond& q2,
+                                std::vector<SuperQuadrics>* tfe) {
+    tfe->clear();
 
-    // Compute a tightly-fitted ellipsoid that bounds rotational motions from q1
-    // to q2
-    tfe.push_back(getTFE3D(RobotM.getBase().getSemiAxis(), q1, q2,
-                           param_.NUM_POINT, RobotM.getBase().getNumParam()));
+    // Compute a tightly-fitted ellipsoid that bounds rotational motions
+    // from q1 to q2
+    tfe->push_back(getTFE3D(RobotM_.getBase().getSemiAxis(), q1, q2,
+                            param_.NUM_POINT, RobotM_.getBase().getNumParam()));
 
-    for (size_t i = 0; i < RobotM.getNumLinks(); ++i) {
-        Eigen::Matrix3d R_link = RobotM.getTF().at(i).topLeftCorner(3, 3);
-        tfe.push_back(
-            getTFE3D(RobotM.getLinks().at(i).getSemiAxis(),
-                     Eigen::Quaterniond(q1.toRotationMatrix() * R_link),
-                     Eigen::Quaterniond(q2.toRotationMatrix() * R_link),
-                     param_.NUM_POINT, RobotM.getLinks().at(i).getNumParam()));
+    for (size_t i = 0; i < RobotM_.getNumLinks(); ++i) {
+        Eigen::Matrix3d RLink = RobotM_.getTF().at(i).topLeftCorner(3, 3);
+        tfe->push_back(
+            getTFE3D(RobotM_.getLinks().at(i).getSemiAxis(),
+                     Eigen::Quaterniond(q1.toRotationMatrix() * RLink),
+                     Eigen::Quaterniond(q2.toRotationMatrix() * RLink),
+                     param_.NUM_POINT, RobotM_.getLinks().at(i).getNumParam()));
     }
-
-    return tfe;
 }

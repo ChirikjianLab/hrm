@@ -8,32 +8,6 @@ HRM2DKC::HRM2DKC(const SuperEllipse& robot,
 
 HRM2DKC::~HRM2DKC() {}
 
-void HRM2DKC::buildRoadmap() {
-    // angle steps
-    double dr = 2 * pi / (param_.NUM_LAYER - 1);
-
-    // Setup rotation angles: angle range [-pi,pi]
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        ang_r.push_back(-pi + dr * i);
-    }
-
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        robot_.setAngle(ang_r.at(i));
-        // boundary for obstacles and arenas
-        Boundary bd = boundaryGen();
-
-        // collision-free cells, stored by ty, xL, xU, xM
-        FreeSegment2D CFcell = sweepLine2D(&bd);
-
-        // construct adjacency matrix for one layer
-        connectOneLayer2D(&CFcell);
-
-        // Store the number of vertex before the current layer
-        N_v_layer.push_back(res_.graph_structure.vertex.size());
-    }
-    connectMultiLayer();
-}
-
 Boundary HRM2DKC::boundaryGen() {
     SuperEllipse robot_infla = robot_;
     Boundary bd;

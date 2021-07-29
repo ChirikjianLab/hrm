@@ -60,7 +60,7 @@ void ProbHRM3D::plan(double timeLim) {
 
         // Set rotation matrix to robot
         setTransform(v_.back());
-        robot_.setQuaternion(RobotM.getBase().getQuaternion());
+        robot_.setQuaternion(RobotM_.getBase().getQuaternion());
 
         // Update number of C-layers
         param_.NUM_LAYER++;
@@ -69,14 +69,14 @@ void ProbHRM3D::plan(double timeLim) {
         Boundary bd = boundaryGen();
 
         // Sweep-line process
-        FreeSegment3D CFcell = sweepLine3D(&bd);
+        FreeSegment3D segOneLayer = sweepLine3D(&bd);
 
         // Connect within one C-layer
-        connectOneLayer3D(&CFcell);
+        connectOneLayer3D(&segOneLayer);
 
         vtxId.push_back(N_v);
 
-        free_cell.push_back(CFcell);
+        freeSeg_.push_back(segOneLayer);
 
         // Connect among adjacent C-layers
         if (param_.NUM_LAYER >= 2) {
@@ -124,9 +124,10 @@ void ProbHRM3D::connectMultiLayer() {
     size_t n_1 = vtxId.at(minIdx).layer;
 
     // Middle C-layer TFE and C-obstacle boundary
-    mid = tfeArticulated(v_.back(), v_.at(minIdx));
-    for (size_t j = 0; j < mid.size(); ++j) {
-        midLayerBdMultiLink.push_back(midLayer(mid.at(j)));
+    computeTFE(v_.back(), v_.at(minIdx), &tfe_);
+
+    for (size_t j = 0; j < tfe_.size(); ++j) {
+        bridgeLayerBdMultiLink_.push_back(bridgeLayer(tfe_.at(j)));
     }
 
     // Nearest vertex btw layers
@@ -156,8 +157,8 @@ void ProbHRM3D::connectMultiLayer() {
         }
     }
 
-    // Clear mid_cell and update the number of vertices
-    midLayerBdMultiLink.clear();
+    // Clear current bridge C-layer boundaries
+    bridgeLayerBdMultiLink_.clear();
 }
 
 // Generate collision-free vertices
@@ -208,29 +209,30 @@ void ProbHRM3D::setTransform(const std::vector<double>& V) {
         jointConfig(i) = V[7 + i];
     }
 
-    RobotM.robotTF(urdfFile_, &g, &jointConfig);
+    RobotM_.robotTF(urdfFile_, &g, &jointConfig);
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
-std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
-    std::vector<SuperQuadrics> tfe;
+void ProbHRM3D::computeTFE(const std::vector<double>& v1,
+                           const std::vector<double>& v2,
+                           std::vector<SuperQuadrics>* tfe) {
+    tfe->clear();
 
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     setTransform(v1);
-    std::vector<SuperQuadrics> robotAux = RobotM.getBodyShapes();
+    std::vector<SuperQuadrics> robotAux = RobotM_.getBodyShapes();
     std::vector<SuperQuadrics> mvce = robotAux;
 
     for (auto vStep : vInterp) {
         setTransform(vStep);
-        robotAux = RobotM.getBodyShapes();
+        robotAux = RobotM_.getBodyShapes();
 
         // Compute a tightly-fitted ellipsoid that bounds rotational motions
         // from intermediate orientations
-        for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
+        for (size_t i = 0; i < RobotM_.getNumLinks() + 1; ++i) {
             mvce.at(i) = getMVCE3D(
                 mvce.at(i).getSemiAxis(), robotAux.at(i).getSemiAxis(),
                 mvce.at(i).getQuaternion(), robotAux.at(i).getQuaternion(),
@@ -238,9 +240,7 @@ std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
         }
     }
 
-    for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
-        tfe.push_back(mvce.at(i));
+    for (size_t i = 0; i < RobotM_.getNumLinks() + 1; ++i) {
+        tfe->push_back(mvce.at(i));
     }
-
-    return tfe;
 }

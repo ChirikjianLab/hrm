@@ -76,7 +76,7 @@ class HighwayRoadMap {
      * C-layer
      * \param FreeSegment2D pointer
      */
-    virtual void connectOneLayer2D(const FreeSegment2D* cell) = 0;
+    virtual void connectOneLayer2D(const FreeSegment2D* freeSeg) = 0;
 
     /** \brief connectMultiLayer Subroutine for connecting vertices among
      * adjacent C-layers */
@@ -103,21 +103,21 @@ class HighwayRoadMap {
      * \param V1, V2 vector of queried vertices
      * \return true is transition is valid, false otherwise
      */
-    virtual bool isSameLayerTransitionFree(const std::vector<double>& V1,
-                                           const std::vector<double>& V2) = 0;
+    virtual bool isSameLayerTransitionFree(const std::vector<double>& v1,
+                                           const std::vector<double>& v2) = 0;
 
     /** \brief isMultiLayerTransitionFree check whether connection between V1
      * and V2 is valid through interpolation
      * \param V1, V2 vector of queried vertices
      * \return true is transition is valid, false otherwise
      */
-    virtual bool isMultiLayerTransitionFree(const std::vector<double>& V1,
-                                            const std::vector<double>& V2) = 0;
+    virtual bool isMultiLayerTransitionFree(const std::vector<double>& v1,
+                                            const std::vector<double>& v2) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
      * \param FreeSegment2D pointer (non-const)
      */
-    void enhanceDecomp(FreeSegment2D* cell);
+    void enhanceDecomp(FreeSegment2D* freeSeg);
 
     /** \brief find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
@@ -128,6 +128,11 @@ class HighwayRoadMap {
     virtual std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
         const double radius) = 0;
+
+    /** \brief setTransform set the transformation for robot
+     * \param v configuration of the robot
+     */
+    virtual void setTransform(const std::vector<double>& v) = 0;
 
   public:
     RobotType robot_;

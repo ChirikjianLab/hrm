@@ -22,8 +22,9 @@ class ProbHRM3D : public HRM3DMultiBody {
   protected:
     virtual void setTransform(const std::vector<double>& V) override;
 
-    std::vector<SuperQuadrics> tfeArticulated(const std::vector<double>& v1,
-                                              const std::vector<double>& v2);
+    void computeTFE(const std::vector<double>& v1,
+                    const std::vector<double>& v2,
+                    std::vector<SuperQuadrics>* tfe);
 
   private:
     ParseURDF* kdl_;

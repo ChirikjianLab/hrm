@@ -18,18 +18,6 @@ void HighwayRoadMap3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
 
-    // Compute mid-layer TFE
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        if (i == param_.NUM_LAYER - 1) {
-            mid.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i), q_r.at(0),
-                                   param_.NUM_POINT, robot_.getNumParam()));
-        } else {
-            mid.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i),
-                                   q_r.at(i + 1), param_.NUM_POINT,
-                                   robot_.getNumParam()));
-        }
-    }
-
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         robot_.setQuaternion(q_r.at(i));
 
@@ -45,6 +33,20 @@ void HighwayRoadMap3D::buildRoadmap() {
         // Store the index of vertex in the current layer
         vtxId.push_back(N_v);
     }
+
+    // Compute bridge C-layer TFE
+    for (size_t i = 0; i < q_r.size(); ++i) {
+        if (i == param_.NUM_LAYER - 1) {
+            tfe_.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i), q_r.at(0),
+                                    param_.NUM_POINT, robot_.getNumParam()));
+        } else {
+            tfe_.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i),
+                                    q_r.at(i + 1), param_.NUM_POINT,
+                                    robot_.getNumParam()));
+        }
+    }
+
+    // Connect among adjacent C-layers using bridge C-layer
     connectMultiLayer();
 }
 
@@ -261,7 +263,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
         // Find vertex only in adjecent layers
         n_1 = vtxId[i].layer;
 
-        // Construct the middle layer
+        // Construct the bridge C-layer
         if (i == param_.NUM_LAYER - 1) {
             n_12 = 0;
             n_2 = vtxId[0].layer;
@@ -269,9 +271,8 @@ void HighwayRoadMap3D::connectMultiLayer() {
             n_12 = n_1;
             n_2 = vtxId[i + 1].layer;
         }
-        // mid_cell = midLayer(mid[i]);
 
-        midLayerBound = midLayer(mid.at(i));
+        bridgeLayerBound = bridgeLayer(tfe_.at(i));
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
@@ -299,7 +300,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
     }
 }
 
-std::vector<MeshMatrix> HighwayRoadMap3D::midLayer(SuperQuadrics Ec) {
+std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
     // Reference point to be the center of Ec
     Ec.setPosition({0.0, 0.0, 0.0});
 
@@ -380,8 +381,8 @@ bool HighwayRoadMap3D::isMultiLayerTransitionFree(
         // Transform the robot
         setTransform(vStep);
 
-        // Determine whether each step is within C-Free of midLayer
-        if (!isPtInCFree(&midLayerBound, robot_.getPosition())) {
+        // Determine whether each step is within C-Free of bridgeLayer
+        if (!isPtInCFree(&bridgeLayerBound, robot_.getPosition())) {
             return false;
         }
     }
@@ -389,9 +390,32 @@ bool HighwayRoadMap3D::isMultiLayerTransitionFree(
     return true;
 }
 
-void HighwayRoadMap3D::setTransform(const std::vector<double>& V) {
-    robot_.setPosition({V[0], V[1], V[2]});
-    robot_.setQuaternion(Eigen::Quaterniond(V[3], V[4], V[5], V[6]));
+bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                                   const std::vector<double>& V) {
+    Eigen::VectorXd lineZ(6);
+    lineZ << V[0], V[1], V[2], 0, 0, 1;
+
+    std::vector<Eigen::Vector3d> intersectObs;
+
+    // Ray-casting to check point containment within all C-obstacles
+    for (size_t i = 0; i < bdMesh->size(); ++i) {
+        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
+
+        if (!intersectObs.empty()) {
+            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
+                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
+                //                std::cout << "Collide with " <<
+                //                std::to_string(i)
+                //                          << " Obstacle!!!" << std::endl;
+
+                return false;
+            }
+        }
+    }
+
+    //    std::cout << "In Free Space!" << std::endl;
+
+    return true;
 }
 
 void HighwayRoadMap3D::sampleSO3() {
@@ -473,30 +497,7 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                                   const std::vector<double>& V) {
-    Eigen::VectorXd lineZ(6);
-    lineZ << V[0], V[1], V[2], 0, 0, 1;
-
-    std::vector<Eigen::Vector3d> intersectObs;
-
-    // Ray-casting to check point containment within all C-obstacles
-    for (size_t i = 0; i < bdMesh->size(); ++i) {
-        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
-
-        if (!intersectObs.empty()) {
-            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
-                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
-                //                std::cout << "Collide with " <<
-                //                std::to_string(i)
-                //                          << " Obstacle!!!" << std::endl;
-
-                return false;
-            }
-        }
-    }
-
-    //    std::cout << "In Free Space!" << std::endl;
-
-    return true;
+void HighwayRoadMap3D::setTransform(const std::vector<double>& v) {
+    robot_.setPosition({v[0], v[1], v[2]});
+    robot_.setQuaternion(Eigen::Quaterniond(v[3], v[4], v[5], v[6]));
 }

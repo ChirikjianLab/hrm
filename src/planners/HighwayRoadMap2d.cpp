@@ -26,28 +26,24 @@ void HighwayRoadMap2D::buildRoadmap() {
         ang_r.push_back(-pi + dr * i);
     }
 
-    // Compute mid-layer TFE
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        if (i == param_.NUM_LAYER - 1) {
-            mid.push_back(getMVCE2D(robot_.getSemiAxis(), robot_.getSemiAxis(),
-                                    ang_r.at(i), ang_r.at(0), robot_.getNum()));
-        } else {
-            mid.push_back(getMVCE2D(robot_.getSemiAxis(), robot_.getSemiAxis(),
-                                    ang_r.at(i), ang_r.at(i + 1),
-                                    robot_.getNum()));
-        }
-    }
-
     // Construct roadmap
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        // set robot orientation
         robot_.setAngle(ang_r.at(i));
+
+        // Generate Minkowski operation boundaries
         Boundary bd = boundaryGen();
-        FreeSegment2D CFcell = sweepLine2D(&bd);
-        connectOneLayer2D(&CFcell);
+
+        // Sweep-line process to generate collision free line segments
+        FreeSegment2D segOneLayer = sweepLine2D(&bd);
+
+        // Connect vertices within one C-layer
+        connectOneLayer2D(&segOneLayer);
+
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
 
-    // Connect adjacent layers using middle C-layer
+    // Connect adjacent layers using bridge C-layer
     connectMultiLayer();
 }
 
@@ -63,54 +59,6 @@ Boundary HighwayRoadMap2D::boundaryGen() {
     }
 
     return bd;
-}
-
-void HighwayRoadMap2D::connectMultiLayer() {
-    size_t n_1;
-    size_t n_12;
-    size_t n_2;
-    size_t start = 0;
-
-    std::vector<double> v1;
-    std::vector<double> v2;
-    std::vector<double> midVtx;
-
-    for (size_t i = 0; i < param_.NUM_LAYER - 1; ++i) {
-        // Find vertex only in adjecent layers
-        n_1 = N_v_layer[i];
-        if (i != param_.NUM_LAYER - 1) {
-            n_2 = N_v_layer[i + 1];
-            n_12 = n_1;
-        } else {
-            n_2 = N_v_layer[0];
-            n_12 = 0;
-        }
-
-        // Compute middle C-layer
-        mid_cell = midLayer(mid[i]);
-
-        // Nearest vertex btw layers
-        for (size_t m0 = start; m0 < n_1; ++m0) {
-            v1 = res_.graph_structure.vertex[m0];
-
-            for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                v2 = res_.graph_structure.vertex[m1];
-
-                // Only connect v1 and v2 that are close to each other
-                if (std::fabs(v1[1] - v2[1]) <
-                        param_.BOUND_LIMIT[0] / param_.NUM_LINE_Y &&
-                    isMultiLayerTransitionFree(v1, v2)) {
-                    // Add new connections
-                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                    res_.graph_structure.weight.push_back(
-                        vectorEuclidean(v1, v2));
-                    break;
-                }
-            }
-            midVtx.clear();
-        }
-        start = n_1;
-    }
 }
 
 FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
@@ -168,29 +116,29 @@ FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
     return freeLineSeg;
 }
 
-void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* CFcell) {
+void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* freeSeg) {
     std::vector<unsigned int> N_v_line;
     unsigned int N_0 = 0, N_1 = 0;
 
     // Append new vertex to vertex list
-    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v_line.push_back(uint(res_.graph_structure.vertex.size()));
 
-        for (size_t j = 0; j < CFcell->xM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Construct a vector of vertex
             res_.graph_structure.vertex.push_back(
-                {CFcell->xM[i][j], CFcell->ty[i], robot_.getAngle()});
+                {freeSeg->xM[i][j], freeSeg->ty[i], robot_.getAngle()});
         }
     }
 
     // Add connections to edge list
-    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_0 = N_v_line[i];
         N_1 = N_v_line[i + 1];
-        for (size_t j1 = 0; j1 < CFcell->xM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
             // Connect vertex within one collision-free sweep line segment
-            if (j1 != CFcell->xM[i].size() - 1) {
-                if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
+            if (j1 != freeSeg->xM[i].size() - 1) {
+                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
                     1e-5) {
                     res_.graph_structure.edge.push_back(
                         std::make_pair(N_0 + j1, N_0 + j1 + 1));
@@ -200,12 +148,12 @@ void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* CFcell) {
                 }
             }
             // Connect vertex btw adjacent cells
-            if (i != CFcell->ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell->xM[i + 1].size(); ++j2) {
-                    if (((CFcell->xM[i][j1] >= CFcell->xL[i + 1][j2] &&
-                          CFcell->xM[i][j1] <= CFcell->xU[i + 1][j2]) &&
-                         (CFcell->xM[i + 1][j2] >= CFcell->xL[i][j1] &&
-                          CFcell->xM[i + 1][j2] <= CFcell->xU[i][j1]))) {
+            if (i != freeSeg->ty.size() - 1) {
+                for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                    if (((freeSeg->xM[i][j1] >= freeSeg->xL[i + 1][j2] &&
+                          freeSeg->xM[i][j1] <= freeSeg->xU[i + 1][j2]) &&
+                         (freeSeg->xM[i + 1][j2] >= freeSeg->xL[i][j1] &&
+                          freeSeg->xM[i + 1][j2] <= freeSeg->xU[i][j1]))) {
                         res_.graph_structure.edge.push_back(
                             std::make_pair(N_0 + j1, N_1 + j2));
                         res_.graph_structure.weight.push_back(vectorEuclidean(
@@ -218,34 +166,78 @@ void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* CFcell) {
     }
 }
 
-/*************************************************/
-/**************** Private Functions **************/
-/*************************************************/
-bool HighwayRoadMap2D::isSameLayerTransitionFree(
-    const std::vector<double>& V1, const std::vector<double>& V2) {}
+void HighwayRoadMap2D::connectMultiLayer() {
+    // No connection needed if robot only has one orientation
+    if (param_.NUM_LAYER == 1) {
+        return;
+    }
 
-// Connect vertexes among different layers
-bool HighwayRoadMap2D::isMultiLayerTransitionFree(
-    const std::vector<double>& V1, const std::vector<double>& V2) {
-    for (size_t i = 0; i < mid_cell.ty.size(); ++i) {
-        // Find the sweep line that V1 lies on
-        if (std::fabs(mid_cell.ty[i] - V1[1]) > 1.0) {
-            continue;
+    // Vertex indexes for list traversal
+    size_t n1;
+    size_t n12;
+    size_t n2;
+    size_t start = 0;
+    size_t j = 0;
+
+    std::vector<double> v1;
+    std::vector<double> v2;
+
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        n1 = N_v_layer[i];
+
+        // Construct the bridge C-layer
+        if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
+            j = 0;
+        } else {
+            j = i + 1;
         }
 
-        // For the resulting sweep line, check whether V1 and V2 are within the
-        // collision-free segment
-        for (size_t j = 0; j < mid_cell.xM[i].size(); ++j) {
-            if ((V1[0] > mid_cell.xL[i][j]) && (V1[0] < mid_cell.xU[i][j]) &&
-                (V2[0] > mid_cell.xL[i][j]) && (V2[0] < mid_cell.xU[i][j])) {
-                return true;
+        if (j != 0) {
+            n12 = N_v_layer[j - 1];
+        } else {
+            n12 = 0;
+        }
+        n2 = N_v_layer[j];
+
+        computeTFE(ang_r[i], ang_r[j], &tfe_);
+
+        for (size_t k = 0; k < tfe_.size(); ++k) {
+            freeSeg_.push_back(bridgeLayer(tfe_[k]));
+        }
+
+        // Connect close vertices btw layers
+        for (size_t m0 = start; m0 < n1; ++m0) {
+            v1 = res_.graph_structure.vertex[m0];
+            for (size_t m1 = n12; m1 < n2; ++m1) {
+                v2 = res_.graph_structure.vertex[m1];
+
+                // Locate the neighbor vertices in the same sweep line, check
+                // for validity
+                if (std::fabs(v1[1] - v2[1]) <
+                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y &&
+                    isMultiLayerTransitionFree(v1, v2)) {
+                    // Add new connections
+                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graph_structure.weight.push_back(
+                        vectorEuclidean(v1, v2));
+
+                    // Continue from where it pauses
+                    n12 = m1;
+                    break;
+                }
             }
         }
+        start = n1;
+
+        // Clear freeSeg_;
+        freeSeg_.clear();
     }
-    return false;
 }
 
-FreeSegment2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
+/***************************************************************/
+/**************** Protected and private Functions **************/
+/***************************************************************/
+FreeSegment2D HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
     Boundary bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
@@ -256,6 +248,32 @@ FreeSegment2D HighwayRoadMap2D::midLayer(SuperEllipse Ec) {
     }
 
     return sweepLine2D(&bd);
+}
+
+bool HighwayRoadMap2D::isSameLayerTransitionFree(
+    const std::vector<double>& v1, const std::vector<double>& v2) {}
+
+// Connect vertexes among different layers
+bool HighwayRoadMap2D::isMultiLayerTransitionFree(
+    const std::vector<double>& v1, const std::vector<double>& v2) {
+    for (size_t i = 0; i < freeSeg_.at(0).ty.size(); ++i) {
+        // Find the sweep line that V1 lies on
+        if (std::fabs(freeSeg_.at(0).ty[i] - v1[1]) > 1.0) {
+            continue;
+        }
+
+        // For the resulting sweep line, check whether V1 and V2 are within the
+        // collision-free segment
+        for (size_t j = 0; j < freeSeg_.at(0).xM[i].size(); ++j) {
+            if ((v1[0] > freeSeg_.at(0).xL[i][j]) &&
+                (v1[0] < freeSeg_.at(0).xU[i][j]) &&
+                (v2[0] > freeSeg_.at(0).xL[i][j]) &&
+                (v2[0] < freeSeg_.at(0).xU[i][j])) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
@@ -313,4 +331,19 @@ std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
     }
 
     return idx;
+}
+
+void HighwayRoadMap2D::setTransform(const std::vector<double>& v) {
+    robot_.setAngle(v[2]);
+    robot_.setPosition({v[0], v[1]});
+}
+
+void HighwayRoadMap2D::computeTFE(const double thetaA, const double thetaB,
+                                  std::vector<SuperEllipse>* tfe) {
+    tfe->clear();
+
+    // Compute a tightly-fitted ellipse that bounds rotational motions from
+    // thetaA to thetaB
+    tfe->push_back(getTFE2D(robot_.getSemiAxis(), thetaA, thetaB,
+                            uint(param_.NUM_POINT), robot_.getNum()));
 }

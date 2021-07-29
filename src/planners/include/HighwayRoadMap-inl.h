@@ -226,42 +226,43 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(FreeSegment2D* cell) {
+void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
+    FreeSegment2D* freeSeg) {
     // Add new vertices within on sweep line
-    for (size_t i = 0; i < cell->ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < cell->xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < cell->xM[i + 1].size(); ++j2) {
-                if (cell->xM[i][j1] < cell->xL[i + 1][j2] &&
-                    cell->xU[i][j1] >= cell->xL[i + 1][j2]) {
-                    cell->xU[i].push_back(cell->xL[i + 1][j2]);
-                    cell->xL[i].push_back(cell->xL[i + 1][j2]);
-                    cell->xM[i].push_back(cell->xL[i + 1][j2]);
-                } else if (cell->xM[i][j1] > cell->xU[i + 1][j2] &&
-                           cell->xL[i][j1] <= cell->xU[i + 1][j2]) {
-                    cell->xU[i].push_back(cell->xU[i + 1][j2]);
-                    cell->xL[i].push_back(cell->xU[i + 1][j2]);
-                    cell->xM[i].push_back(cell->xU[i + 1][j2]);
+    for (size_t i = 0; i < freeSeg->ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                if (freeSeg->xM[i][j1] < freeSeg->xL[i + 1][j2] &&
+                    freeSeg->xU[i][j1] >= freeSeg->xL[i + 1][j2]) {
+                    freeSeg->xU[i].push_back(freeSeg->xL[i + 1][j2]);
+                    freeSeg->xL[i].push_back(freeSeg->xL[i + 1][j2]);
+                    freeSeg->xM[i].push_back(freeSeg->xL[i + 1][j2]);
+                } else if (freeSeg->xM[i][j1] > freeSeg->xU[i + 1][j2] &&
+                           freeSeg->xL[i][j1] <= freeSeg->xU[i + 1][j2]) {
+                    freeSeg->xU[i].push_back(freeSeg->xU[i + 1][j2]);
+                    freeSeg->xL[i].push_back(freeSeg->xU[i + 1][j2]);
+                    freeSeg->xM[i].push_back(freeSeg->xU[i + 1][j2]);
                 }
 
-                if (cell->xM[i + 1][j2] < cell->xL[i][j1] &&
-                    cell->xU[i + 1][j2] >= cell->xL[i][j1]) {
-                    cell->xU[i + 1].push_back(cell->xL[i][j1]);
-                    cell->xL[i + 1].push_back(cell->xL[i][j1]);
-                    cell->xM[i + 1].push_back(cell->xL[i][j1]);
-                } else if (cell->xM[i + 1][j2] > cell->xU[i][j1] &&
-                           cell->xL[i + 1][j2] <= cell->xU[i][j1]) {
-                    cell->xU[i + 1].push_back(cell->xU[i][j1]);
-                    cell->xL[i + 1].push_back(cell->xU[i][j1]);
-                    cell->xM[i + 1].push_back(cell->xU[i][j1]);
+                if (freeSeg->xM[i + 1][j2] < freeSeg->xL[i][j1] &&
+                    freeSeg->xU[i + 1][j2] >= freeSeg->xL[i][j1]) {
+                    freeSeg->xU[i + 1].push_back(freeSeg->xL[i][j1]);
+                    freeSeg->xL[i + 1].push_back(freeSeg->xL[i][j1]);
+                    freeSeg->xM[i + 1].push_back(freeSeg->xL[i][j1]);
+                } else if (freeSeg->xM[i + 1][j2] > freeSeg->xU[i][j1] &&
+                           freeSeg->xL[i + 1][j2] <= freeSeg->xU[i][j1]) {
+                    freeSeg->xU[i + 1].push_back(freeSeg->xU[i][j1]);
+                    freeSeg->xL[i + 1].push_back(freeSeg->xU[i][j1]);
+                    freeSeg->xM[i + 1].push_back(freeSeg->xU[i][j1]);
                 }
             }
         }
 
-        sort(cell->xL[i].begin(), cell->xL[i].end(),
+        sort(freeSeg->xL[i].begin(), freeSeg->xL[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell->xU[i].begin(), cell->xU[i].end(),
+        sort(freeSeg->xU[i].begin(), freeSeg->xU[i].end(),
              [](double a, double b) { return a < b; });
-        sort(cell->xM[i].begin(), cell->xM[i].end(),
+        sort(freeSeg->xM[i].begin(), freeSeg->xM[i].end(),
              [](double a, double b) { return a < b; });
     }
 }

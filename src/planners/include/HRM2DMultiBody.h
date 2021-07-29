@@ -16,20 +16,21 @@ class HRM2DMultiBody : public HighwayRoadMap2D {
   public:
     void buildRoadmap() override;
     Boundary boundaryGen() override;
-    virtual void connectMultiLayer() override;
 
   protected:
-    std::vector<SuperEllipse> tfe_multi(const double thetaA,
-                                        const double thetaB);
+    void computeTFE(const double thetaA, const double thetaB,
+                    std::vector<SuperEllipse>* tfe) override;
 
-    bool isMultiLayerTransitionFree(const std::vector<double>& V1,
-                                    const std::vector<double>& V2) override;
+    bool isMultiLayerTransitionFree(const std::vector<double>& v1,
+                                    const std::vector<double>& v2) override;
 
-    bool isPtInCFLine(const FreeSegment2D& cell, const std::vector<double>& V);
+    bool isPtInCFLine(const FreeSegment2D& freeSeg,
+                      const std::vector<double>& v);
+
+    void setTransform(const std::vector<double>& v) override;
 
   public:
-    MultiBodyTree2D RobotM;
-    std::vector<FreeSegment2D> midCell;
+    MultiBodyTree2D RobotM_;
 };
 
 #endif  // HRM2DMULTIBODY_H

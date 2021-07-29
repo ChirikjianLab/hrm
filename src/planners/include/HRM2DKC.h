@@ -12,13 +12,12 @@ class HRM2DKC : public HighwayRoadMap2D {
     virtual ~HRM2DKC();
 
   public:
-    virtual void buildRoadmap() override;
     virtual Boundary boundaryGen() override;
     virtual void connectMultiLayer() override;
 
   private:
-    std::vector<double> addMidVtx(std::vector<double> vtx1,
-                                  std::vector<double> vtx2);
+    std::vector<double> addMidVtx(std::vector<double> v1,
+                                  std::vector<double> v2);
 
   private:
     /** \param polyVtx descriptions of polyhedron local c-space */

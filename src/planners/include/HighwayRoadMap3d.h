@@ -63,19 +63,19 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual void connectMultiLayer() override;
 
     /** \brief subroutine to first construct the middle C-layer */
-    //    FreeSegment3D midLayer(SuperQuadrics);
-    std::vector<MeshMatrix> midLayer(SuperQuadrics Ec);
+    //    FreeSegment3D bridgeLayer(SuperQuadrics);
+    std::vector<MeshMatrix> bridgeLayer(SuperQuadrics Ec);
 
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
 
   protected:
-    bool isSameLayerTransitionFree(const std::vector<double>& V1,
-                                   const std::vector<double>& V2) override;
+    bool isSameLayerTransitionFree(const std::vector<double>& v1,
+                                   const std::vector<double>& v2) override;
 
     virtual bool isMultiLayerTransitionFree(
-        const std::vector<double>& V1, const std::vector<double>& V2) override;
+        const std::vector<double>& v1, const std::vector<double>& v2) override;
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
@@ -88,8 +88,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     /** \brief uniform random sample SO(3) */
     void sampleSO3();
 
-    /** \brief transformation for robot */
-    virtual void setTransform(const std::vector<double>& V);
+    virtual void setTransform(const std::vector<double>& v) override;
 
   public:
     /** \param q_r sampled orientations (Quaternion) of the robot */
@@ -101,8 +100,8 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
   protected:
     std::vector<MeshMatrix> CLayerBound;
-    std::vector<SuperQuadrics> mid;
-    std::vector<MeshMatrix> midLayerBound;
+    std::vector<SuperQuadrics> tfe_;
+    std::vector<MeshMatrix> bridgeLayerBound;
     std::vector<double> midVtx;
 };
 
