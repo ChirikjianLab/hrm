@@ -37,7 +37,7 @@ void HRM2DMultiBody::buildRoadmap() {
         N_v_layer.push_back(res_.graph_structure.vertex.size());
     }
 
-    // Connect adjacent layers using middle C-layer
+    // Connect adjacent layers using bridge C-layer
     connectMultiLayer();
 }
 

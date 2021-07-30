@@ -14,13 +14,6 @@ struct FreeSegment3D {
     std::vector<FreeSegment2D> cellYZ;
 };
 
-/** \brief vertexIdx vertex index at each C-layer, sweep line */
-struct vertexIdx {
-    size_t layer;
-    std::vector<size_t> plane;
-    std::vector<std::vector<size_t>> line;
-};
-
 class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
   public:
     HighwayRoadMap3D(const SuperQuadrics& robot,
@@ -53,13 +46,8 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
     /** \brief connect within one C-layer */
     void connectOneLayer3D(const FreeSegment3D* cell);
-
-    /** \brief subroutine to first connect vertices within on sweep-plane
-     * (vertical to x-axis) */
     void connectOneLayer2D(const FreeSegment2D* cellYZ) override;
 
-    /** \brief connect within adjacent C-layers, using the idea of "bridge
-     * C-layer" */
     virtual void connectMultiLayer() override;
 
     /** \brief subroutine to first construct the middle C-layer */
@@ -94,15 +82,10 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     /** \param q_r sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_r;
 
-    // Vertex index info
-    std::vector<vertexIdx> vtxId;
-    vertexIdx N_v;
-
   protected:
     std::vector<MeshMatrix> CLayerBound;
     std::vector<SuperQuadrics> tfe_;
     std::vector<MeshMatrix> bridgeLayerBound;
-    std::vector<double> midVtx;
 };
 
 #endif  // HIGHWAYROADMAP3D_H

@@ -1,6 +1,6 @@
-#include "geometry/include/SuperEllipse.h"
-#include "geometry/include/SuperQuadrics.h"
 #include "include/HighwayRoadMap-inl.h"
+#include "util/include/MultiBodyTree2D.h"
+#include "util/include/MultiBodyTree3D.h"
 
-template class HighwayRoadMap<SuperEllipse, SuperEllipse>;
-template class HighwayRoadMap<SuperQuadrics, SuperQuadrics>;
+template class HighwayRoadMap<MultiBodyTree2D, SuperEllipse>;
+template class HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>;

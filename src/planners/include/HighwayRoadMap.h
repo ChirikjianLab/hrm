@@ -37,6 +37,13 @@ struct Boundary {
     std::vector<Eigen::MatrixXd> obstacle;
 };
 
+/** \brief vertexIdx vertex index at each C-layer, sweep line */
+struct vertexIdx {
+    size_t layer;
+    std::vector<size_t> plane;
+    std::vector<std::vector<size_t>> line;
+};
+
 /** \class HighwayRoadMap Superclass for HRM-based planners */
 template <class RobotType, class ObjectType>
 class HighwayRoadMap {
@@ -153,8 +160,9 @@ class HighwayRoadMap {
     /** \param N_s number of arenas */
     size_t N_s;
 
-    /** \param N_v_layer number of vertex in each layer */
-    std::vector<size_t> N_v_layer;
+    /** \param Vertex index info */
+    vertexIdx N_v;
+    std::vector<vertexIdx> vtxId_;
 };
 
 #include "HighwayRoadMap-inl.h"

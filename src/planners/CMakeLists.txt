@@ -6,8 +6,7 @@ target_link_libraries(HighwayRoadMap
 
 add_library(HRM_2D
             HRM2DKC.cpp
-            HighwayRoadMap2d.cpp
-            HRM2DMultiBody.cpp)
+            HighwayRoadMap2d.cpp)
 target_link_libraries(HRM_2D
                       HighwayRoadMap)
 

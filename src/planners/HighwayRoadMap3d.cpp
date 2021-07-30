@@ -31,7 +31,7 @@ void HighwayRoadMap3D::buildRoadmap() {
         connectOneLayer3D(&CFcell);
 
         // Store the index of vertex in the current layer
-        vtxId.push_back(N_v);
+        vtxId_.push_back(N_v);
     }
 
     // Compute bridge C-layer TFE
@@ -223,7 +223,7 @@ void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
         N_0 = N_v.plane[i];
         N_1 = N_v.plane[i + 1];
         for (size_t j1 = 0; j1 < CFcell->xM[i].size(); ++j1) {
-            // Connect vertex within one sweep line
+            // Connect vertex within the same sweep line
             if (j1 != CFcell->xM[i].size() - 1) {
                 if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
                     1e-5) {
@@ -261,15 +261,15 @@ void HighwayRoadMap3D::connectMultiLayer() {
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Find vertex only in adjecent layers
-        n_1 = vtxId[i].layer;
+        n_1 = vtxId_.at(i).layer;
 
         // Construct the bridge C-layer
         if (i == param_.NUM_LAYER - 1) {
             n_12 = 0;
-            n_2 = vtxId[0].layer;
+            n_2 = vtxId_.at(0).layer;
         } else {
             n_12 = n_1;
-            n_2 = vtxId[i + 1].layer;
+            n_2 = vtxId_.at(i + 1).layer;
         }
 
         bridgeLayerBound = bridgeLayer(tfe_.at(i));

@@ -32,7 +32,7 @@ void HRM3DMultiBody::buildRoadmap() {
         connectOneLayer3D(&segOneLayer);
 
         // Store the index of vertex in the current layer
-        vtxId.push_back(N_v);
+        vtxId_.push_back(N_v);
 
         // Store the collision-free segment info
         freeSeg_.push_back(segOneLayer);
@@ -84,7 +84,7 @@ void HRM3DMultiBody::connectMultiLayer() {
     //    int n_connect = 0;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        //        n_1 = vtxId[i].layer;
+        //        n_1 = vtxId_[i].layer;
         //        // Construct the middle layer
         //        if (i == N_layers - 1 && N_layers != 2) {
         //            j = 0;
@@ -128,11 +128,11 @@ void HRM3DMultiBody::connectMultiLayer() {
         //        }
 
         //        if (j != 0) {
-        //            n_12 = vtxId[j - 1].layer;
+        //            n_12 = vtxId_[j - 1].layer;
         //        } else {
         //            n_12 = 0;
         //        }
-        //        n_2 = vtxId[j].layer;
+        //        n_2 = vtxId_[j].layer;
 
         // Find the nearest C-layers
         double minDist = 100;
@@ -149,16 +149,16 @@ void HRM3DMultiBody::connectMultiLayer() {
         // Start and end vertics in the current layer
         size_t n_12 = 0;
         if (i != 0) {
-            n_12 = vtxId.at(i - 1).layer;
+            n_12 = vtxId_.at(i - 1).layer;
         }
-        size_t n_2 = vtxId.at(i).layer;
+        size_t n_2 = vtxId_.at(i).layer;
 
         // Start and end vertics in the nearest layer
         size_t start = 0;
         if (minIdx != 0) {
-            start = vtxId.at(minIdx - 1).layer;
+            start = vtxId_.at(minIdx - 1).layer;
         }
-        size_t n_1 = vtxId.at(minIdx).layer;
+        size_t n_1 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
         computeTFE(q_r[i], q_r[j], &tfe_);

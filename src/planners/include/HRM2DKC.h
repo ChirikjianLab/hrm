@@ -6,7 +6,8 @@
 
 class HRM2DKC : public HighwayRoadMap2D {
   public:
-    HRM2DKC(const SuperEllipse& robot, const std::vector<SuperEllipse>& arena,
+    HRM2DKC(const MultiBodyTree2D& robot,
+            const std::vector<SuperEllipse>& arena,
             const std::vector<SuperEllipse>& obs, const PlanningRequest& req);
 
     virtual ~HRM2DKC();

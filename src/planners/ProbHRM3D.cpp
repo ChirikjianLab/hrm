@@ -74,7 +74,7 @@ void ProbHRM3D::plan(double timeLim) {
         // Connect within one C-layer
         connectOneLayer3D(&segOneLayer);
 
-        vtxId.push_back(N_v);
+        vtxId_.push_back(N_v);
 
         freeSeg_.push_back(segOneLayer);
 
@@ -113,15 +113,15 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    size_t n_12 = vtxId.at(param_.NUM_LAYER - 2).layer;
-    size_t n_2 = vtxId.at(param_.NUM_LAYER - 1).layer;
+    size_t n_12 = vtxId_.at(param_.NUM_LAYER - 2).layer;
+    size_t n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
 
     // Start and end vertics in the nearest layer
     size_t start = 0;
     if (minIdx != 0) {
-        start = vtxId.at(minIdx - 1).layer;
+        start = vtxId_.at(minIdx - 1).layer;
     }
-    size_t n_1 = vtxId.at(minIdx).layer;
+    size_t n_1 = vtxId_.at(minIdx).layer;
 
     // Middle C-layer TFE and C-obstacle boundary
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);

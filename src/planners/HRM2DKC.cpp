@@ -1,6 +1,6 @@
 #include "include/HRM2DKC.h"
 
-HRM2DKC::HRM2DKC(const SuperEllipse& robot,
+HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                  const std::vector<SuperEllipse>& arena,
                  const std::vector<SuperEllipse>& obs,
                  const PlanningRequest& req)
@@ -9,7 +9,7 @@ HRM2DKC::HRM2DKC(const SuperEllipse& robot,
 HRM2DKC::~HRM2DKC() {}
 
 Boundary HRM2DKC::boundaryGen() {
-    SuperEllipse robot_infla = robot_;
+    SuperEllipse robot_infla = robot_.getBase();
     Boundary bd;
 
     // Enlarge the robot
@@ -40,12 +40,12 @@ void HRM2DKC::connectMultiLayer() {
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Find vertex only in adjecent layers
-        n_11 = N_v_layer[i];
+        n_11 = vtxId_.at(i).layer;
         if (i != param_.NUM_LAYER - 1) {
-            n_2 = N_v_layer[i + 1];
+            n_2 = vtxId_.at(i + 1).layer;
             n_12 = n_11;
         } else {
-            n_2 = N_v_layer[0];
+            n_2 = vtxId_.at(0).layer;
             n_12 = 0;
         }
 

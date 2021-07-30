@@ -3,10 +3,11 @@
 
 #include "HighwayRoadMap.h"
 #include "src/geometry/include/TightFitEllipsoid.h"
+#include "util/include/MultiBodyTree2D.h"
 
-class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
+class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   public:
-    HighwayRoadMap2D(const SuperEllipse& robot,
+    HighwayRoadMap2D(const MultiBodyTree2D& robot,
                      const std::vector<SuperEllipse>& arena,
                      const std::vector<SuperEllipse>& obs,
                      const PlanningRequest& req);
@@ -22,9 +23,20 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
 
     void connectOneLayer2D(const FreeSegment2D* freeSeg) override;
 
+    /** \brief sweepLine2D sweep-line process for generating collision-free line
+     * segment
+     * \param pointer to Boundary structure, boundary of Minkowski
+     * operations
+     * \return FreeSegment2D line segments
+     */
     FreeSegment2D sweepLine2D(const Boundary* bd);
 
   protected:
+    /** \brief bridgeLayer generating bridge C-layer to connect adjacent
+     * C-layers
+     * \param SuperEllipse TFE for robot bodies
+     * \return FreeSegment2D collision-free line segments
+     */
     FreeSegment2D bridgeLayer(SuperEllipse Ec);
 
     bool isSameLayerTransitionFree(const std::vector<double>& v1,
@@ -32,6 +44,10 @@ class HighwayRoadMap2D : public HighwayRoadMap<SuperEllipse, SuperEllipse> {
 
     bool isMultiLayerTransitionFree(const std::vector<double>& v1,
                                     const std::vector<double>& v2) override;
+
+    bool isPtInCFLine(const FreeSegment2D& freeSeg,
+                      const std::vector<double>& v);
+
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
         const double radius) override;

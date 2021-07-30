@@ -1,4 +1,5 @@
-#include "planners/include/HRM2DMultiBody.h"
+#include "planners/include/HRM2DKC.h"
+#include "planners/include/HighwayRoadMap2d.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -35,9 +36,6 @@ algorithm planTest(const robotType& robot,
                    const std::vector<SuperEllipse>& obs,
                    const PlanningRequest& req, const bool isStore) {
     // Main algorithm
-    cout << "Highway RoadMap for 2D rigid-body planning" << endl;
-    cout << "----------" << endl;
-
     cout << "Number of C-layers: " << req.planner_parameters.NUM_LAYER << endl;
     cout << "Number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
          << endl;
@@ -124,6 +122,11 @@ void showResult(const PlanningResult* res, const bool isStore) {
 }
 
 TEST(TestHRMPlanning2D, MultiBody) {
+    cout << "Highway RoadMap for 2D planning" << endl;
+    cout << "Robot type: Multi-link rigid body" << endl;
+    cout << "Layer connection method: Bridge C-layer" << endl;
+    cout << "----------" << endl;
+
     // Load Robot and Environment settings
     MultiBodyTree2D robot = loadRobotMultiBody2D(50);
     PlannerSetting2D* env2D = new PlannerSetting2D();
@@ -138,12 +141,44 @@ TEST(TestHRMPlanning2D, MultiBody) {
     req.start = env2D->getEndPoints().at(0);
     req.goal = env2D->getEndPoints().at(1);
 
-    auto hrmMultiBody = planTest<HRM2DMultiBody, MultiBodyTree2D>(
-        robot, env2D->getArena(), env2D->getObstacle(), req, true);
-    PlanningResult res = hrmMultiBody.getPlanningResult();
+    bool isStoreRes = true;
+    auto hrm = planTest<HighwayRoadMap2D, MultiBodyTree2D>(
+        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
+    PlanningResult res = hrm.getPlanningResult();
 
     // Planning Time and Path Cost
-    showResult(&res, true);
+    showResult(&res, isStoreRes);
+}
+
+TEST(TestHRMPlanning2D, KC) {
+    cout << "Highway RoadMap for 2D planning" << endl;
+    cout << "Robot type: Multi-link rigid body" << endl;
+    cout << "Layer connection method: Local C-space using Kinematics of "
+            "Containment (KC)"
+         << endl;
+    cout << "----------" << endl;
+
+    // Load Robot and Environment settings
+    MultiBodyTree2D robot = loadRobotMultiBody2D(50);
+    PlannerSetting2D* env2D = new PlannerSetting2D();
+    env2D->loadEnvironment();
+
+    // Parameters
+    PlannerParameter par = defineParam(&robot, env2D);
+
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env2D->getEndPoints().at(0);
+    req.goal = env2D->getEndPoints().at(1);
+
+    bool isStoreRes = false;
+    auto hrm = planTest<HRM2DKC, MultiBodyTree2D>(
+        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
+    PlanningResult res = hrm.getPlanningResult();
+
+    // Planning Time and Path Cost
+    showResult(&res, isStoreRes);
 }
 
 int main(int ac, char* av[]) {

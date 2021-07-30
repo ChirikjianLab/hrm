@@ -1,19 +1,13 @@
 #include "include/HighwayRoadMap2d.h"
 #include "util/include/Interval.h"
 #include "util/include/LineIntersection.h"
-#include "util/include/PointInPoly.h"
 
-#include <fstream>
-#include <iostream>
-#include <list>
-#include <random>
-
-HighwayRoadMap2D::HighwayRoadMap2D(const SuperEllipse& robot,
+HighwayRoadMap2D::HighwayRoadMap2D(const MultiBodyTree2D& robot,
                                    const std::vector<SuperEllipse>& arena,
                                    const std::vector<SuperEllipse>& obs,
                                    const PlanningRequest& req)
-    : HighwayRoadMap<SuperEllipse, SuperEllipse>::HighwayRoadMap(robot, arena,
-                                                                 obs, req) {}
+    : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
+          robot, arena, obs, req) {}
 
 HighwayRoadMap2D::~HighwayRoadMap2D() {}
 
@@ -26,10 +20,16 @@ void HighwayRoadMap2D::buildRoadmap() {
         ang_r.push_back(-pi + dr * i);
     }
 
+    // Get the current Transformation
+    Eigen::Matrix3d tf;
+    tf.setIdentity();
+
     // Construct roadmap
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // set robot orientation
-        robot_.setAngle(ang_r.at(i));
+        // Set rotation matrix to robot
+        tf.topLeftCorner(2, 2) =
+            Eigen::Rotation2Dd(ang_r.at(i)).toRotationMatrix();
+        robot_.robotTF(tf);
 
         // Generate Minkowski operation boundaries
         Boundary bd = boundaryGen();
@@ -40,7 +40,7 @@ void HighwayRoadMap2D::buildRoadmap() {
         // Connect vertices within one C-layer
         connectOneLayer2D(&segOneLayer);
 
-        N_v_layer.push_back(res_.graph_structure.vertex.size());
+        vtxId_.push_back(N_v);
     }
 
     // Connect adjacent layers using bridge C-layer
@@ -50,28 +50,34 @@ void HighwayRoadMap2D::buildRoadmap() {
 Boundary HighwayRoadMap2D::boundaryGen() {
     Boundary bd;
 
-    // calculate Minkowski boundary points
+    // Minkowski boundary points
+    std::vector<Eigen::MatrixXd> bdAux;
     for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd.arena.emplace_back(arena_.at(i).getMinkSum2D(robot_, -1));
+        bdAux = robot_.minkSum(arena_.at(i), -1);
+        for (size_t j = 0; j < bdAux.size(); ++j) {
+            bd.arena.push_back(bdAux.at(j));
+        }
+        bdAux.clear();
     }
     for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd.obstacle.emplace_back(obs_.at(i).getMinkSum2D(robot_, +1));
+        bdAux = robot_.minkSum(obs_.at(i), 1);
+        for (size_t j = 0; j < bdAux.size(); ++j) {
+            bd.obstacle.push_back(bdAux.at(j));
+        }
+        bdAux.clear();
     }
 
     return bd;
 }
 
 FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
-    std::vector<double> pts_s;
-    std::vector<double> pts_o;
-
-    Eigen::MatrixXd x_s_L = Eigen::MatrixXd::Constant(
+    Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);
-    Eigen::MatrixXd x_s_U = Eigen::MatrixXd::Constant(
+    Eigen::MatrixXd segArenaUpp = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[1]);
-    Eigen::MatrixXd x_o_L = Eigen::MatrixXd::Constant(
+    Eigen::MatrixXd segObstableLow = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
-    Eigen::MatrixXd x_o_U = Eigen::MatrixXd::Constant(
+    Eigen::MatrixXd segObstableUpp = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
 
     // Find intersecting points to C-obstacles for each raster scan line
@@ -84,69 +90,84 @@ FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
         ty.push_back(param_.BOUND_LIMIT[2] + i * dy);
     }
 
+    std::vector<double> intersectPointArena;
+    std::vector<double> intersectPointObstacle;
     for (Eigen::Index i = 0; i < param_.NUM_LINE_Y; ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
         for (Eigen::Index j = 0; j < long(bd->arena.size()); ++j) {
-            pts_s = intersectHorizontalLinePolygon2d(ty[size_t(i)],
-                                                     bd->arena[size_t(j)]);
-            if (pts_s.empty()) {
+            intersectPointArena = intersectHorizontalLinePolygon2d(
+                ty[size_t(i)], bd->arena[size_t(j)]);
+            if (intersectPointArena.empty()) {
                 continue;
             }
-            x_s_L(i, j) =
-                std::fmin(param_.BOUND_LIMIT[0], std::fmin(pts_s[0], pts_s[1]));
-            x_s_U(i, j) =
-                std::fmax(param_.BOUND_LIMIT[1], std::fmax(pts_s[0], pts_s[1]));
+
+            segArenaLow(i, j) = std::fmin(
+                param_.BOUND_LIMIT[0],
+                std::fmin(intersectPointArena[0], intersectPointArena[1]));
+            segArenaUpp(i, j) = std::fmax(
+                param_.BOUND_LIMIT[1],
+                std::fmax(intersectPointArena[0], intersectPointArena[1]));
         }
+
         // x-coordinate of the intersection btw sweep line and obstacles
         for (Eigen::Index j = 0; j < long(bd->obstacle.size()); ++j) {
-            pts_o = intersectHorizontalLinePolygon2d(ty[size_t(i)],
-                                                     bd->obstacle[size_t(j)]);
-            if (pts_o.empty()) {
+            intersectPointObstacle = intersectHorizontalLinePolygon2d(
+                ty[size_t(i)], bd->obstacle[size_t(j)]);
+            if (intersectPointObstacle.empty()) {
                 continue;
             }
-            x_o_L(i, j) = std::fmin(pts_o[0], pts_o[1]);
-            x_o_U(i, j) = std::fmax(pts_o[0], pts_o[1]);
+
+            segObstableLow(i, j) =
+                std::fmin(intersectPointObstacle[0], intersectPointObstacle[1]);
+            segObstableUpp(i, j) =
+                std::fmax(intersectPointObstacle[0], intersectPointObstacle[1]);
         }
     }
 
     // Compute collision-free intervals at each sweep line
-    FreeSegment2D freeLineSeg =
-        computeFreeSegment(ty, x_s_L, x_s_U, x_o_L, x_o_U);
+    FreeSegment2D freeSeg = computeFreeSegment(ty, segArenaLow, segArenaUpp,
+                                               segObstableLow, segObstableUpp);
 
-    return freeLineSeg;
+    return freeSeg;
 }
 
 void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* freeSeg) {
-    std::vector<unsigned int> N_v_line;
-    unsigned int N_0 = 0, N_1 = 0;
-
-    // Append new vertex to vertex list
+    // Generate collision-free vertices: append new vertex to vertex list
+    N_v.plane.clear();
+    N_v.line.clear();
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        N_v_line.push_back(uint(res_.graph_structure.vertex.size()));
-
         for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Construct a vector of vertex
             res_.graph_structure.vertex.push_back(
-                {freeSeg->xM[i][j], freeSeg->ty[i], robot_.getAngle()});
+                {freeSeg->xM[i][j], freeSeg->ty[i],
+                 robot_.getBase().getAngle()});
         }
+
+        N_v.plane.push_back(res_.graph_structure.vertex.size());
     }
+    N_v.line.push_back(N_v.plane);
+    N_v.layer = res_.graph_structure.vertex.size();
 
     // Add connections to edge list
+    size_t n1 = 0;
+    size_t n2 = 0;
+
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        N_0 = N_v_line[i];
-        N_1 = N_v_line[i + 1];
+        n2 = N_v.line.at(0).at(i);
+
         for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            // Connect vertex within one collision-free sweep line segment
+            // Connect vertex within the same collision-free sweep line segment
             if (j1 != freeSeg->xM[i].size() - 1) {
                 if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
                     1e-5) {
                     res_.graph_structure.edge.push_back(
-                        std::make_pair(N_0 + j1, N_0 + j1 + 1));
+                        std::make_pair(n1 + j1, n1 + j1 + 1));
                     res_.graph_structure.weight.push_back(vectorEuclidean(
-                        res_.graph_structure.vertex[N_0 + j1],
-                        res_.graph_structure.vertex[N_0 + j1 + 1]));
+                        res_.graph_structure.vertex[n1 + j1],
+                        res_.graph_structure.vertex[n1 + j1 + 1]));
                 }
             }
+
             // Connect vertex btw adjacent cells
             if (i != freeSeg->ty.size() - 1) {
                 for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
@@ -155,14 +176,16 @@ void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* freeSeg) {
                          (freeSeg->xM[i + 1][j2] >= freeSeg->xL[i][j1] &&
                           freeSeg->xM[i + 1][j2] <= freeSeg->xU[i][j1]))) {
                         res_.graph_structure.edge.push_back(
-                            std::make_pair(N_0 + j1, N_1 + j2));
+                            std::make_pair(n1 + j1, n2 + j2));
                         res_.graph_structure.weight.push_back(vectorEuclidean(
-                            res_.graph_structure.vertex[N_0 + j1],
-                            res_.graph_structure.vertex[N_1 + j2]));
+                            res_.graph_structure.vertex[n1 + j1],
+                            res_.graph_structure.vertex[n2 + j2]));
                     }
                 }
             }
         }
+
+        n2 = n1;
     }
 }
 
@@ -183,7 +206,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
     std::vector<double> v2;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        n1 = N_v_layer[i];
+        n1 = vtxId_.at(i).layer;
 
         // Construct the bridge C-layer
         if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
@@ -193,14 +216,16 @@ void HighwayRoadMap2D::connectMultiLayer() {
         }
 
         if (j != 0) {
-            n12 = N_v_layer[j - 1];
+            n12 = vtxId_.at(j - 1).layer;
         } else {
             n12 = 0;
         }
-        n2 = N_v_layer[j];
+        n2 = vtxId_.at(j).layer;
 
+        // Compute TFE
         computeTFE(ang_r[i], ang_r[j], &tfe_);
 
+        // Compute free segment at each bridge C-layer
         for (size_t k = 0; k < tfe_.size(); ++k) {
             freeSeg_.push_back(bridgeLayer(tfe_[k]));
         }
@@ -256,24 +281,69 @@ bool HighwayRoadMap2D::isSameLayerTransitionFree(
 // Connect vertexes among different layers
 bool HighwayRoadMap2D::isMultiLayerTransitionFree(
     const std::vector<double>& v1, const std::vector<double>& v2) {
-    for (size_t i = 0; i < freeSeg_.at(0).ty.size(); ++i) {
-        // Find the sweep line that V1 lies on
-        if (std::fabs(freeSeg_.at(0).ty[i] - v1[1]) > 1.0) {
-            continue;
+    double dt = 1.0 / (param_.NUM_POINT - 1);
+    for (size_t i = 0; i < param_.NUM_POINT; ++i) {
+        // Interpolated robot motion from V1 to V2
+        std::vector<double> vStep;
+        for (size_t j = 0; j < v1.size(); ++j) {
+            vStep.push_back((1.0 - i * dt) * v1[j] + i * dt * v2[j]);
         }
 
-        // For the resulting sweep line, check whether V1 and V2 are within the
-        // collision-free segment
-        for (size_t j = 0; j < freeSeg_.at(0).xM[i].size(); ++j) {
-            if ((v1[0] > freeSeg_.at(0).xL[i][j]) &&
-                (v1[0] < freeSeg_.at(0).xU[i][j]) &&
-                (v2[0] > freeSeg_.at(0).xL[i][j]) &&
-                (v2[0] < freeSeg_.at(0).xU[i][j])) {
-                return true;
+        // Transform the robot
+        setTransform(vStep);
+
+        // Base: determine whether each step is within CF-Line of bridgeLayer
+        if (!isPtInCFLine(freeSeg_[0], robot_.getBase().getPosition())) {
+            return false;
+        }
+
+        // For each link, check whether its center is within CF-segment of
+        // bridgeLayer
+        for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
+            if (!isPtInCFLine(freeSeg_[j + 1],
+                              robot_.getLinks()[j].getPosition())) {
+                return false;
             }
         }
     }
-    return false;
+
+    return true;
+}
+
+bool HighwayRoadMap2D::isPtInCFLine(const FreeSegment2D& freeSeg,
+                                    const std::vector<double>& V) {
+    std::vector<bool> isInLine(2, false);
+
+    for (size_t i = 1; i < freeSeg.ty.size(); ++i) {
+        // Locate to the sweep line of the vertex
+        if (freeSeg.ty[i] < V[1]) {
+            continue;
+        }
+
+        // z-coordinate within the current line
+        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
+            if ((V[0] >= freeSeg.xL[i][j]) && (V[0] <= freeSeg.xU[i][j])) {
+                isInLine[0] = true;
+                break;
+            }
+        }
+
+        // z-coordinate within the adjacent line
+        for (size_t j = 0; j < freeSeg.xM[i - 1].size(); ++j) {
+            if ((V[0] >= freeSeg.xL[i - 1][j]) &&
+                (V[0] <= freeSeg.xU[i - 1][j])) {
+                isInLine[1] = true;
+                break;
+            }
+        }
+    }
+
+    // z-coordinate within all neighboring sweep lines, then collision free
+    if (isInLine[0] && isInLine[1]) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
@@ -334,8 +404,11 @@ std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
 }
 
 void HighwayRoadMap2D::setTransform(const std::vector<double>& v) {
-    robot_.setAngle(v[2]);
-    robot_.setPosition({v[0], v[1]});
+    Eigen::Matrix3d g;
+    g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
+    g.topRightCorner(2, 1) = Eigen::Vector2d(v[0], v[1]);
+    g.bottomLeftCorner(1, 3) << 0, 0, 1;
+    robot_.robotTF(g);
 }
 
 void HighwayRoadMap2D::computeTFE(const double thetaA, const double thetaB,
@@ -344,6 +417,19 @@ void HighwayRoadMap2D::computeTFE(const double thetaA, const double thetaB,
 
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
-    tfe->push_back(getTFE2D(robot_.getSemiAxis(), thetaA, thetaB,
-                            uint(param_.NUM_POINT), robot_.getNum()));
+    tfe->push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
+                            uint(param_.NUM_POINT), robot_.getBase().getNum()));
+
+    for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
+        Eigen::Rotation2Dd rotLink(
+            Eigen::Matrix2d(robot_.getTF().at(i).topLeftCorner(2, 2)));
+        Eigen::Rotation2Dd rotA(Eigen::Rotation2Dd(thetaA).toRotationMatrix() *
+                                rotLink);
+        Eigen::Rotation2Dd rotB(Eigen::Rotation2Dd(thetaB).toRotationMatrix() *
+                                rotLink);
+
+        tfe->push_back(getTFE2D(
+            robot_.getLinks().at(i).getSemiAxis(), rotA.angle(), rotB.angle(),
+            uint(param_.NUM_POINT), robot_.getLinks().at(i).getNum()));
+    }
 }
