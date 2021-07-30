@@ -2,7 +2,7 @@
 #define HRM3DMULTIBODY_H
 
 #include "HighwayRoadMap3d.h"
-#include "src/util/include/MultiBodyTree3D.h"
+#include "util/include/MultiBodyTree3D.h"
 
 class HRM3DMultiBody : public HighwayRoadMap3D {
   public:

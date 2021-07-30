@@ -35,9 +35,9 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
      * C-layers
      * \param SuperEllipse TFE for robot bodies
-     * \return FreeSegment2D collision-free line segments
+     * \return Minkowski operation boundaries
      */
-    FreeSegment2D bridgeLayer(SuperEllipse Ec);
+    Boundary bridgeLayer(SuperEllipse Ec);
 
     bool isSameLayerTransitionFree(const std::vector<double>& v1,
                                    const std::vector<double>& v2) override;
@@ -45,8 +45,7 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     bool isMultiLayerTransitionFree(const std::vector<double>& v1,
                                     const std::vector<double>& v2) override;
 
-    bool isPtInCFLine(const FreeSegment2D& freeSeg,
-                      const std::vector<double>& v);
+    bool isPtInCFree(const Boundary* bd, const std::vector<double>& v);
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
@@ -64,8 +63,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief tfe_ TFE for bridge C-layers */
     std::vector<SuperEllipse> tfe_;
 
-    /** \brief freeSeg_ bridge C-layer as a FreeSegment2D structure */
-    std::vector<FreeSegment2D> freeSeg_;
+    /** \brief Minkowski operation boundaries in bridge C-layer */
+    std::vector<Boundary> bridgeLayerBound_;
 };
 
 #endif  // HIGHWAYROADMAP2D_H

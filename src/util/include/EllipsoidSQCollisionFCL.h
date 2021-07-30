@@ -1,7 +1,7 @@
 #ifndef ELLIPSOIDSQCOLLISIONFCL_H
 #define ELLIPSOIDSQCOLLISIONFCL_H
 
-#include "MeshGenerator.h"
+#include "geometry/include/MeshGenerator.h"
 #include "geometry/include/SuperEllipse.h"
 
 bool isCollision(const SuperQuadrics& obj1,

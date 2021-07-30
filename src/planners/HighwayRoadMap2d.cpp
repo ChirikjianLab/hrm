@@ -1,6 +1,5 @@
 #include "include/HighwayRoadMap2d.h"
-#include "util/include/Interval.h"
-#include "util/include/LineIntersection.h"
+#include "geometry/include/LineIntersection.h"
 
 HighwayRoadMap2D::HighwayRoadMap2D(const MultiBodyTree2D& robot,
                                    const std::vector<SuperEllipse>& arena,
@@ -227,7 +226,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
 
         // Compute free segment at each bridge C-layer
         for (size_t k = 0; k < tfe_.size(); ++k) {
-            freeSeg_.push_back(bridgeLayer(tfe_[k]));
+            bridgeLayerBound_.push_back(bridgeLayer(tfe_.at(k)));
         }
 
         // Connect close vertices btw layers
@@ -255,14 +254,14 @@ void HighwayRoadMap2D::connectMultiLayer() {
         start = n1;
 
         // Clear freeSeg_;
-        freeSeg_.clear();
+        bridgeLayerBound_.clear();
     }
 }
 
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-FreeSegment2D HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
+Boundary HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
     Boundary bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
@@ -272,18 +271,34 @@ FreeSegment2D HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
         bd.obstacle.push_back(obs_.at(i).getMinkSum2D(Ec, +1));
     }
 
-    return sweepLine2D(&bd);
+    return bd;
 }
 
 bool HighwayRoadMap2D::isSameLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {}
+    const std::vector<double>& v1, const std::vector<double>& v2) {
+    // Define the line connecting V1 and V2
+    Eigen::Vector2d t1{v1[0], v1[1]};
+    Eigen::Vector2d t2{v2[0], v2[1]};
+    Eigen::Vector2d v12 = t2 - t1;
+    v12.normalize();
 
-// Connect vertexes among different layers
+    Eigen::VectorXd line(4);
+    line.head(2) = t1;
+    line.tail(2) = v12;
+
+    // Intersection between line and polygons
+    double s0, s1;
+    std::vector<Eigen::Vector2d> intersectObs;
+
+    return true;
+}
+
+// Connect vertices among different layers
 bool HighwayRoadMap2D::isMultiLayerTransitionFree(
     const std::vector<double>& v1, const std::vector<double>& v2) {
     double dt = 1.0 / (param_.NUM_POINT - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
-        // Interpolated robot motion from V1 to V2
+        // Interpolate robot motion linearly from v1 to v2
         std::vector<double> vStep;
         for (size_t j = 0; j < v1.size(); ++j) {
             vStep.push_back((1.0 - i * dt) * v1[j] + i * dt * v2[j]);
@@ -292,16 +307,17 @@ bool HighwayRoadMap2D::isMultiLayerTransitionFree(
         // Transform the robot
         setTransform(vStep);
 
-        // Base: determine whether each step is within CF-Line of bridgeLayer
-        if (!isPtInCFLine(freeSeg_[0], robot_.getBase().getPosition())) {
+        // For base, check whether the TFE is in free space of bridge C-layer
+        if (!isPtInCFree(&bridgeLayerBound_.at(0),
+                         robot_.getBase().getPosition())) {
             return false;
         }
 
-        // For each link, check whether its center is within CF-segment of
-        // bridgeLayer
+        // For each link, check whether the TFE is in free space of bridge
+        // C-layer
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-            if (!isPtInCFLine(freeSeg_[j + 1],
-                              robot_.getLinks()[j].getPosition())) {
+            if (!isPtInCFree(&bridgeLayerBound_.at(j + 1),
+                             robot_.getLinks()[j].getPosition())) {
                 return false;
             }
         }
@@ -310,41 +326,92 @@ bool HighwayRoadMap2D::isMultiLayerTransitionFree(
     return true;
 }
 
-bool HighwayRoadMap2D::isPtInCFLine(const FreeSegment2D& freeSeg,
-                                    const std::vector<double>& V) {
-    std::vector<bool> isInLine(2, false);
+bool HighwayRoadMap2D::isPtInCFree(const Boundary* bd,
+                                   const std::vector<double>& v) {
+    std::vector<double> intersectObs;
 
-    for (size_t i = 1; i < freeSeg.ty.size(); ++i) {
-        // Locate to the sweep line of the vertex
-        if (freeSeg.ty[i] < V[1]) {
-            continue;
-        }
+    // Ray-casting to check point containment within all C-obstacles
+    for (size_t i = 0; i < bd->obstacle.size(); ++i) {
+        intersectObs =
+            intersectHorizontalLinePolygon2d(v[1], bd->obstacle.at(i));
 
-        // z-coordinate within the current line
-        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
-            if ((V[0] >= freeSeg.xL[i][j]) && (V[0] <= freeSeg.xU[i][j])) {
-                isInLine[0] = true;
-                break;
-            }
-        }
-
-        // z-coordinate within the adjacent line
-        for (size_t j = 0; j < freeSeg.xM[i - 1].size(); ++j) {
-            if ((V[0] >= freeSeg.xL[i - 1][j]) &&
-                (V[0] <= freeSeg.xU[i - 1][j])) {
-                isInLine[1] = true;
-                break;
+        if (!intersectObs.empty()) {
+            if (v[0] > std::fmin(intersectObs[0], intersectObs[1]) &&
+                v[0] < std::fmax(intersectObs[0], intersectObs[1])) {
+                return false;
             }
         }
     }
 
-    // z-coordinate within all neighboring sweep lines, then collision free
-    if (isInLine[0] && isInLine[1]) {
-        return true;
-    } else {
-        return false;
-    }
+    return true;
 }
+
+// bool HighwayRoadMap2D::isMultiLayerTransitionFree(
+//    const std::vector<double>& v1, const std::vector<double>& v2) {
+//    double dt = 1.0 / (param_.NUM_POINT - 1);
+//    for (size_t i = 0; i < param_.NUM_POINT; ++i) {
+//        // Interpolated robot motion from V1 to V2
+//        std::vector<double> vStep;
+//        for (size_t j = 0; j < v1.size(); ++j) {
+//            vStep.push_back((1.0 - i * dt) * v1[j] + i * dt * v2[j]);
+//        }
+
+//        // Transform the robot
+//        setTransform(vStep);
+
+//        // Base: determine whether each step is within CF-Line of bridgeLayer
+//        if (!isPtInCFLine(freeSeg_[0], robot_.getBase().getPosition())) {
+//            return false;
+//        }
+
+//        // For each link, check whether its center is within CF-segment of
+//        // bridgeLayer
+//        for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
+//            if (!isPtInCFLine(freeSeg_[j + 1],
+//                              robot_.getLinks()[j].getPosition())) {
+//                return false;
+//            }
+//        }
+//    }
+
+//    return true;
+//}
+
+// bool HighwayRoadMap2D::isPtInCFLine(const FreeSegment2D& freeSeg,
+//                                    const std::vector<double>& V) {
+//    std::vector<bool> isInLine(2, false);
+
+//    for (size_t i = 1; i < freeSeg.ty.size(); ++i) {
+//        // Locate to the sweep line of the vertex
+//        if (freeSeg.ty[i] < V[1]) {
+//            continue;
+//        }
+
+//        // z-coordinate within the current line
+//        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
+//            if ((V[0] >= freeSeg.xL[i][j]) && (V[0] <= freeSeg.xU[i][j])) {
+//                isInLine[0] = true;
+//                break;
+//            }
+//        }
+
+//        // z-coordinate within the adjacent line
+//        for (size_t j = 0; j < freeSeg.xM[i - 1].size(); ++j) {
+//            if ((V[0] >= freeSeg.xL[i - 1][j]) &&
+//                (V[0] <= freeSeg.xU[i - 1][j])) {
+//                isInLine[1] = true;
+//                break;
+//            }
+//        }
+//    }
+
+//    // z-coordinate within all neighboring sweep lines, then collision free
+//    if (isInLine[0] && isInLine[1]) {
+//        return true;
+//    } else {
+//        return false;
+//    }
+//}
 
 std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
     const std::vector<double>& vertex, const size_t k, const double radius) {

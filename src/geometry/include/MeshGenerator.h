@@ -1,8 +1,8 @@
-#ifndef MESH_GENERATOR_H
-#define MESH_GENENATOR_H
+#ifndef MESHGENERATOR_H
+#define MESHGENENATOR_H
 
-#include "Parse2dCsvFile.h"
 #include "src/geometry/include/SuperQuadrics.h"
+#include "util/include/Parse2dCsvFile.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Triangulation_3.h>
@@ -71,4 +71,4 @@ ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat);
 MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
                                    const int n);
 
-#endif  // MESH_GENERATOR_H
+#endif  // MESHGENERATOR_H

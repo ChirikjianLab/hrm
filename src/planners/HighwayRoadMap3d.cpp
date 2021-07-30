@@ -300,23 +300,6 @@ void HighwayRoadMap3D::connectMultiLayer() {
     }
 }
 
-std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
-    // Reference point to be the center of Ec
-    Ec.setPosition({0.0, 0.0, 0.0});
-
-    std::vector<Eigen::MatrixXd> bdCObstacle(N_o);
-    std::vector<MeshMatrix> bdMesh(N_o);
-
-    // calculate Minkowski boundary points and meshes for obstacles
-    for (size_t i = 0; i < N_o; ++i) {
-        bdCObstacle.at(i) = obs_.at(i).getMinkSum3D(Ec, +1);
-        bdMesh.at(i) = getMeshFromParamSurface(bdCObstacle.at(i),
-                                               int(obs_.at(i).getNumParam()));
-    }
-
-    return bdMesh;
-}
-
 std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     const unsigned int num) {
     std::vector<std::vector<double>> path_interp;
@@ -334,9 +317,26 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
     return path_interp;
 }
 
-/************************************************************************/
-/*************************  Private Functions ***************************/
-/************************************************************************/
+/***************************************************************/
+/**************** Protected and private Functions **************/
+/***************************************************************/
+std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
+    // Reference point to be the center of Ec
+    Ec.setPosition({0.0, 0.0, 0.0});
+
+    std::vector<Eigen::MatrixXd> bdCObstacle(N_o);
+    std::vector<MeshMatrix> bdMesh(N_o);
+
+    // calculate Minkowski boundary points and meshes for obstacles
+    for (size_t i = 0; i < N_o; ++i) {
+        bdCObstacle.at(i) = obs_.at(i).getMinkSum3D(Ec, +1);
+        bdMesh.at(i) = getMeshFromParamSurface(bdCObstacle.at(i),
+                                               int(obs_.at(i).getNumParam()));
+    }
+
+    return bdMesh;
+}
+
 bool HighwayRoadMap3D::isSameLayerTransitionFree(
     const std::vector<double>& V1, const std::vector<double>& V2) {
     // Define the line connecting V1 and V2

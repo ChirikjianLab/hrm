@@ -1,5 +1,5 @@
 #include "include/FreeSpace2D.h"
-#include "util/include/LineIntersection.h"
+#include "geometry/include/LineIntersection.h"
 
 FreeSpace2D::FreeSpace2D(MultiBodyTree2D* robot,
                          std::vector<SuperEllipse>* arena,

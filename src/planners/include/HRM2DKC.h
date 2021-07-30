@@ -2,7 +2,7 @@
 #define HRM2DKC_H
 
 #include "HighwayRoadMap2d.h"
-#include "util/include/PointInPoly.h"
+#include "geometry/include/PointInPoly.h"
 
 class HRM2DKC : public HighwayRoadMap2D {
   public:

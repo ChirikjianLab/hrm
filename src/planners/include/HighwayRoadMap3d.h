@@ -1,12 +1,10 @@
 #ifndef HIGHWAYROADMAP3D_H
 #define HIGHWAYROADMAP3D_H
 
-#include "src/geometry/include/TightFitEllipsoid.h"
-#include "src/planners/include/HighwayRoadMap.h"
+#include "geometry/include/LineIntersection.h"
+#include "geometry/include/TightFitEllipsoid.h"
+#include "planners/include/HighwayRoadMap.h"
 #include "util/include/InterpolateSE3.h"
-#include "util/include/LineIntersection.h"
-
-#include <ompl/datastructures/NearestNeighbors.h>
 
 // FreeSegment3D collision-free line segments in 3D
 struct FreeSegment3D {
@@ -27,20 +25,15 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
     virtual void buildRoadmap() override;
     virtual Boundary boundaryGen() override;
 
-    /**
-     * \brief sweep-line process to explore free space in one C-layer
+    /** \brief sweep-line process to explore free space in one C-layer
      * \param Boundary Minkowski boundry of obstacles and arenas
      * \return collision-free cells info
      */
     FreeSegment3D sweepLine3D(const Boundary* bd);
 
-    /**
-     * \brief subroutine for generating collision-free vertices on the yz-plane
+    /** \brief subroutine for generating collision-free vertices on the yz-plane
      * \param ty a vector of incremented y-coordinates
-     * \param z_s_L, z_s_U, z_o_L, z_o_U upper(U) and lower(L) z-coordinates of
-     * the intersection for arena(s) and obstacles(o), size = num of
-     * y-coordinates X num of objects
-     * \return collision-free cells info
+     * \param pointer to FreeSegment2D
      */
     virtual void generateVertices(const double tx, const FreeSegment2D* cellYZ);
 

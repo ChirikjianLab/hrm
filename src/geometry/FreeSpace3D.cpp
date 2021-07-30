@@ -1,5 +1,5 @@
 #include "include/FreeSpace3D.h"
-#include "util/include/LineIntersection.h"
+#include "geometry/include/LineIntersection.h"
 
 FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
                          std::vector<SuperQuadrics>* arena,
