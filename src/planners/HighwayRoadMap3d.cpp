@@ -5,12 +5,12 @@
 #include <list>
 #include <random>
 
-HighwayRoadMap3D::HighwayRoadMap3D(const SuperQuadrics& robot,
+HighwayRoadMap3D::HighwayRoadMap3D(const MultiBodyTree3D& robot,
                                    const std::vector<SuperQuadrics>& arena,
                                    const std::vector<SuperQuadrics>& obs,
                                    const PlanningRequest& req)
-    : HighwayRoadMap<SuperQuadrics, SuperQuadrics>::HighwayRoadMap(robot, arena,
-                                                                   obs, req) {}
+    : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
+          robot, arena, obs, req) {}
 
 HighwayRoadMap3D::~HighwayRoadMap3D() {}
 
@@ -18,50 +18,26 @@ void HighwayRoadMap3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
 
+    // Get the current Transformation
+    Eigen::Matrix4d tf;
+    tf.setIdentity();
+
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        robot_.setQuaternion(q_r.at(i));
+        // Set rotation matrix to robot
+        tf.topLeftCorner(3, 3) = q_r.at(i).toRotationMatrix();
+        robot_.robotTF(tf);
 
-        // boundary for Minkowski operations with obstacles and arenas
         Boundary bd = boundaryGen();
-
-        // collision-free cells, stored by tx, ty, zL, zU, zM
-        FreeSegment3D CFcell = sweepLine3D(&bd);
-
-        // construct adjacency matrix for one layer
-        connectOneLayer3D(&CFcell);
+        FreeSegment3D segOneLayer = sweepLine3D(&bd);
+        connectOneLayer3D(&segOneLayer);
 
         // Store the index of vertex in the current layer
         vtxId_.push_back(N_v);
-    }
 
-    // Compute bridge C-layer TFE
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        if (i == param_.NUM_LAYER - 1) {
-            tfe_.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i), q_r.at(0),
-                                    param_.NUM_POINT, robot_.getNumParam()));
-        } else {
-            tfe_.push_back(getTFE3D(robot_.getSemiAxis(), q_r.at(i),
-                                    q_r.at(i + 1), param_.NUM_POINT,
-                                    robot_.getNumParam()));
-        }
+        // Store the collision-free segment info
+        freeSeg_.push_back(segOneLayer);
     }
-
-    // Connect among adjacent C-layers using bridge C-layer
     connectMultiLayer();
-}
-
-Boundary HighwayRoadMap3D::boundaryGen() {
-    Boundary bd;
-
-    // calculate Minkowski boundary points
-    for (size_t i = 0; i < N_s; ++i) {
-        bd.arena.push_back(arena_.at(i).getMinkSum3D(robot_, -1));
-    }
-    for (size_t i = 0; i < N_o; ++i) {
-        bd.obstacle.push_back(obs_.at(i).getMinkSum3D(robot_, +1));
-    }
-
-    return bd;
 }
 
 FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
@@ -168,8 +144,10 @@ void HighwayRoadMap3D::generateVertices(const double tx,
             // Construct a std::vector of vertex
             res_.graph_structure.vertex.push_back(
                 {tx, cellYZ->ty[i], cellYZ->xM[i][j],
-                 robot_.getQuaternion().w(), robot_.getQuaternion().x(),
-                 robot_.getQuaternion().y(), robot_.getQuaternion().z()});
+                 robot_.getBase().getQuaternion().w(),
+                 robot_.getBase().getQuaternion().x(),
+                 robot_.getBase().getQuaternion().y(),
+                 robot_.getBase().getQuaternion().z()});
         }
     }
 
@@ -254,41 +232,155 @@ void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
 }
 
 void HighwayRoadMap3D::connectMultiLayer() {
-    size_t n_1;
-    size_t n_12;
-    size_t n_2;
-    size_t start = 0;
+    if (param_.NUM_LAYER == 1) {
+        return;
+    }
+
+    size_t j = 0;
+
+    //    size_t n_1;
+    //    size_t n_12;
+    //    size_t n_2;
+    //    size_t start = 0;
+
+    std::vector<double> V1;
+    std::vector<double> V2;
+
+    //    int n_check = 0;
+    //    int n_connect = 0;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Find vertex only in adjecent layers
-        n_1 = vtxId_.at(i).layer;
+        //        n_1 = vtxId_[i].layer;
+        //        // Construct the middle layer
+        //        if (i == N_layers - 1 && N_layers != 2) {
+        //            j = 0;
 
-        // Construct the bridge C-layer
-        if (i == param_.NUM_LAYER - 1) {
-            n_12 = 0;
-            n_2 = vtxId_.at(0).layer;
-        } else {
-            n_12 = n_1;
-            n_2 = vtxId_.at(i + 1).layer;
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //            //            std::ofstream file_pose;
+        //            //            file_pose.open("robot_pose_mid.csv");
+        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
+        //            << ',' <<
+        //            //            q_r[i].y()
+        //            //                      << ',' << q_r[i].z() << std::endl
+        //            //                      << q_r[0].w() << ',' << q_r[0].x()
+        //            << ',' <<
+        //            //                      q_r[0].y()
+        //            //                      << ',' << q_r[0].z() << std::endl;
+        //            //            file_pose.close();
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+
+        //        } else {
+        //            j = i + 1;
+
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //            //            std::ofstream file_pose;
+        //            //            file_pose.open("robot_pose_mid.csv");
+        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
+        //            << ',' <<
+        //            //            q_r[i].y()
+        //            //                      << ',' << q_r[i].z() << std::endl
+        //            //                      << q_r[i + 1].w() << ',' << q_r[i
+        //            + 1].x()
+        //            //                      << ','
+        //            //                      << q_r[i + 1].y() << ',' << q_r[i
+        //            + 1].z()
+        //            //                      << std::endl;
+        //            //            file_pose.close();
+        //            //
+        //            ////////////////////////////////////////////////////////////////////
+        //        }
+
+        //        if (j != 0) {
+        //            n_12 = vtxId_[j - 1].layer;
+        //        } else {
+        //            n_12 = 0;
+        //        }
+        //        n_2 = vtxId_[j].layer;
+
+        // Find the nearest C-layers
+        double minDist = 100;
+        int minIdx = 0;
+        for (size_t j = 0; j != i && j < param_.NUM_LAYER; ++j) {
+            double dist = q_r.at(i).angularDistance(q_r.at(j));
+            if (dist < minDist) {
+                minDist = dist;
+                minIdx = j;
+            }
         }
 
-        bridgeLayerBound = bridgeLayer(tfe_.at(i));
+        // Find vertex only in adjacent layers
+        // Start and end vertics in the current layer
+        size_t n_12 = 0;
+        if (i != 0) {
+            n_12 = vtxId_.at(i - 1).layer;
+        }
+        size_t n_2 = vtxId_.at(i).layer;
+
+        // Start and end vertics in the nearest layer
+        size_t start = 0;
+        if (minIdx != 0) {
+            start = vtxId_.at(minIdx - 1).layer;
+        }
+        size_t n_1 = vtxId_.at(minIdx).layer;
+
+        // Construct the middle layer
+        computeTFE(q_r[i], q_r[j], &tfe_);
+
+        for (size_t k = 0; k < tfe_.size(); ++k) {
+            bridgeLayerBound_.push_back(bridgeLayer(tfe_[k]));
+        }
+
+        //        ////////////////////////////////////////////////////////////
+        //        std::ofstream file_mid;
+        //        file_mid.open("mid_3d.csv");
+        //        for (size_t i = 0; i < mid.size(); i++) {
+        //            file_mid << mid[i].getSemiAxis()[0] << ','
+        //                     << mid[i].getSemiAxis()[1] << ','
+        //                     << mid[i].getSemiAxis()[2] << ','
+        //                     << mid[i].getPosition()[0] << ','
+        //                     << mid[i].getPosition()[1] << ','
+        //                     << mid[i].getPosition()[2] << ','
+        //                     << mid[i].getQuaternion().w() << ','
+        //                     << mid[i].getQuaternion().x() << ','
+        //                     << mid[i].getQuaternion().y() << ','
+        //                     << mid[i].getQuaternion().z() << std::endl;
+        //        }
+        //        file_mid.close();
+        //        /////////////////////////////////////////////////////////////
+
+        //        ////////////////////////////////////////////////////////////////////
+        //        std::ofstream file_bd;
+        //        file_bd.open("mid_layer_mink_bound_3D.csv");
+        //        file_bd << bridgeLayerBdMultiLink.at(0).at(0).vertices <<
+        //        "\n"; file_bd.close();
+        //        ////////////////////////////////////////////////////////////////////
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n_1; ++m0) {
+            V1 = res_.graph_structure.vertex.at(m0);
             for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                if (std::fabs(res_.graph_structure.vertex[m0][0] -
-                              res_.graph_structure.vertex[m1][0]) <= 1e-8 &&
-                    std::fabs(res_.graph_structure.vertex[m0][1] -
-                              res_.graph_structure.vertex[m1][1]) <= 1e-8 &&
-                    isMultiLayerTransitionFree(
-                        res_.graph_structure.vertex[m0],
-                        res_.graph_structure.vertex[m1])) {
+                V2 = res_.graph_structure.vertex[m1];
+
+                // Locate the nearest vertices
+                if (std::fabs(V1.at(0) - V2.at(0)) >
+                        param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
+                    std::fabs(V1.at(1) - V2.at(1)) >
+                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+                    continue;
+                }
+
+                //                n_check++;
+
+                if (isMultiLayerTransitionFree(V1, V2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
-                        vectorEuclidean(res_.graph_structure.vertex[m0],
-                                        res_.graph_structure.vertex[m1]));
+                        vectorEuclidean(V1, V2));
+
+                    //                    n_connect++;
 
                     // Continue from where it pauses
                     n_12 = m1;
@@ -297,7 +389,12 @@ void HighwayRoadMap3D::connectMultiLayer() {
             }
         }
         start = n_1;
+
+        // Clear current bridge C-layer boundaries;
+        bridgeLayerBound_.clear();
     }
+
+    //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
 std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
@@ -372,18 +469,53 @@ bool HighwayRoadMap3D::isSameLayerTransitionFree(
 }
 
 bool HighwayRoadMap3D::isMultiLayerTransitionFree(
-    const std::vector<double>& V1, const std::vector<double>& V2) {
+    const std::vector<double>& v1, const std::vector<double>& v2) {
     // Interpolated robot motion from V1 to V2
     std::vector<std::vector<double>> vInterp =
-        interpolateCompoundSE3Rn(V1, V2, param_.NUM_POINT);
+        interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     for (auto vStep : vInterp) {
         // Transform the robot
         setTransform(vStep);
 
-        // Determine whether each step is within C-Free of bridgeLayer
-        if (!isPtInCFree(&bridgeLayerBound, robot_.getPosition())) {
+        // Base: determine whether each step is within CF-Line of bridgeLayer
+        if (!isPtInCFree(&bridgeLayerBound_.at(0),
+                         robot_.getBase().getPosition())) {
+            //            std::cout << "[Base] Current step: " << vStep[0] << ",
+            //            " << vStep[1]
+            //                      << ", " << vStep[2] << std::endl;
+            //            std::cout << "Actual step: " <<
+            //            RobotM.getBase().getPosition()[0]
+            //                      << ", " << RobotM.getBase().getPosition()[1]
+            //                      << ", "
+            //                      << RobotM.getBase().getPosition()[2] <<
+            //                      std::endl;
+
             return false;
+        }
+
+        // For each link, check whether its center is within the simple convex
+        // region between 4 CF-Lines in bridgeLayer
+        for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
+            if (!isPtInCFree(&bridgeLayerBound_.at(j + 1),
+                             robot_.getLinks()[j].getPosition())) {
+                //                std::cout << "[Link " << std::to_string(j)
+                //                          << "] Current step: " << vStep[0] <<
+                //                          ", " << vStep[1]
+                //                          << ", " << vStep[2] << std::endl;
+                //                std::cout << "Actual step: "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[0]
+                //                          << ", "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[1]
+                //                          << ", "
+                //                          <<
+                //                          RobotM.getLinks()[j].getPosition()[2]
+                //                          << std::endl;
+
+                return false;
+            }
         }
     }
 
@@ -391,9 +523,9 @@ bool HighwayRoadMap3D::isMultiLayerTransitionFree(
 }
 
 bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                                   const std::vector<double>& V) {
+                                   const std::vector<double>& v) {
     Eigen::VectorXd lineZ(6);
-    lineZ << V[0], V[1], V[2], 0, 0, 1;
+    lineZ << v[0], v[1], v[2], 0, 0, 1;
 
     std::vector<Eigen::Vector3d> intersectObs;
 
@@ -402,8 +534,8 @@ bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
         intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
 
         if (!intersectObs.empty()) {
-            if (V[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
-                V[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
+            if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
+                v[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
                 //                std::cout << "Collide with " <<
                 //                std::to_string(i)
                 //                          << " Obstacle!!!" << std::endl;
@@ -421,15 +553,15 @@ bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
 void HighwayRoadMap3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
-    if (robot_.getQuatSamples().empty()) {
+    if (robot_.getBase().getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
         for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
             q_r.push_back(Eigen::Quaterniond::UnitRandom());
         }
     } else {
         // Pre-defined samples of Quaternions
-        param_.NUM_LAYER = robot_.getQuatSamples().size();
-        q_r = robot_.getQuatSamples();
+        param_.NUM_LAYER = robot_.getBase().getQuatSamples().size();
+        q_r = robot_.getBase().getQuatSamples();
     }
 }
 
@@ -498,6 +630,32 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
 }
 
 void HighwayRoadMap3D::setTransform(const std::vector<double>& v) {
-    robot_.setPosition({v[0], v[1], v[2]});
-    robot_.setQuaternion(Eigen::Quaterniond(v[3], v[4], v[5], v[6]));
+    Eigen::Matrix4d g;
+    g.topLeftCorner(3, 3) =
+        Eigen::Quaterniond(v[3], v[4], v[5], v[6]).toRotationMatrix();
+    g.topRightCorner(3, 1) = Eigen::Vector3d(v[0], v[1], v[2]);
+    g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
+
+    robot_.robotTF(g);
+}
+
+// Multi-body Tightly-Fitted Ellipsoid
+void HighwayRoadMap3D::computeTFE(const Eigen::Quaterniond& q1,
+                                  const Eigen::Quaterniond& q2,
+                                  std::vector<SuperQuadrics>* tfe) {
+    tfe->clear();
+
+    // Compute a tightly-fitted ellipsoid that bounds rotational motions
+    // from q1 to q2
+    tfe->push_back(getTFE3D(robot_.getBase().getSemiAxis(), q1, q2,
+                            param_.NUM_POINT, robot_.getBase().getNumParam()));
+
+    for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
+        Eigen::Matrix3d rotLink = robot_.getTF().at(i).topLeftCorner(3, 3);
+        tfe->push_back(
+            getTFE3D(robot_.getLinks().at(i).getSemiAxis(),
+                     Eigen::Quaterniond(q1.toRotationMatrix() * rotLink),
+                     Eigen::Quaterniond(q2.toRotationMatrix() * rotLink),
+                     param_.NUM_POINT, robot_.getLinks().at(i).getNumParam()));
+    }
 }

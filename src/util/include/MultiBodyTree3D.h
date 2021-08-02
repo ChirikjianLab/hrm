@@ -26,7 +26,7 @@ class MultiBodyTree3D {
     void robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
                  const Eigen::VectorXd* jointConfig);
 
-    std::vector<Eigen::MatrixXd> minkSumSQ(SuperQuadrics S1, int K);
+    std::vector<Eigen::MatrixXd> minkSum(const SuperQuadrics* s1, const int k);
 
   public:
     SuperQuadrics base_;

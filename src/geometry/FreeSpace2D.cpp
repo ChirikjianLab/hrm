@@ -11,13 +11,13 @@ void FreeSpace2D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
     std::vector<Eigen::MatrixXd> auxBoundary;
     for (size_t i = 0; i < arena_->size(); ++i) {
-        auxBoundary = robot_->minkSum(arena_->at(i), -1);
+        auxBoundary = robot_->minkSum(&arena_->at(i), -1);
         for (size_t j = 0; j < auxBoundary.size(); ++j) {
             configSpaceBoundary_.arenaBd.push_back(auxBoundary[j]);
         }
     }
     for (size_t i = 0; i < obstacle_->size(); ++i) {
-        auxBoundary = robot_->minkSum(obstacle_->at(i), +1);
+        auxBoundary = robot_->minkSum(&obstacle_->at(i), +1);
         for (size_t j = 0; j < auxBoundary.size(); ++j) {
             configSpaceBoundary_.obsBd.push_back(auxBoundary[j]);
         }

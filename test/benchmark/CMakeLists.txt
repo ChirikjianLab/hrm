@@ -22,8 +22,8 @@ target_link_libraries(BenchHRM2D
                       HRM_2D
                       TEST_UTIL)
 
-add_executable(BenchHighway3D BenchHighway3D.cpp)
-target_link_libraries(BenchHighway3D
+add_executable(BenchHRM3D BenchHighway3D.cpp)
+target_link_libraries(BenchHRM3D
                       HRM_3D
                       TEST_UTIL)
 

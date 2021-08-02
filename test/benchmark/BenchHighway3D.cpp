@@ -1,4 +1,4 @@
-#include "planners/include/HRM3DMultiBody.h"
+#include "planners/include/HighwayRoadMap3d.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -33,8 +33,7 @@ int main(int argc, char** argv) {
     if (argc == 6 && strcmp(argv[5], "0") != 0) {
         quat_file = string(argv[5]) + '_' + string(argv[2]) + ".csv";
     }
-    MultiBodyTree3D robot =
-        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+    auto robot = loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
     PlannerParameter par;
@@ -42,7 +41,7 @@ int main(int argc, char** argv) {
     par.NUM_LINE_X = size_t(N_x);
     par.NUM_LINE_Y = size_t(N_y);
 
-    double f = 1.5;
+    double f = 1.0;
     par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
                            f * robot.getBase().getSemiAxis().at(0),
                        env3D->getArena().at(0).getSemiAxis().at(1) -
@@ -68,8 +67,9 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HRM3DMultiBody
-        HRM3DMultiBody hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
+        // Path planning using HighwayRoadMap3D
+        HighwayRoadMap3D hrm(robot, env3D->getArena(), env3D->getObstacle(),
+                             req);
         hrm.plan();
 
         PlanningResult res = hrm.getPlanningResult();

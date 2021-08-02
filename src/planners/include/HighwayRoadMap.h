@@ -77,7 +77,7 @@ class HighwayRoadMap {
     /** \brief boundaryGen Generating Minkowski boundary points
      * \return Boundary structure
      */
-    virtual Boundary boundaryGen() = 0;
+    virtual Boundary boundaryGen();
 
     /** \brief connectOneLayer2D Subroutine for connecting vertices within one
      * C-layer

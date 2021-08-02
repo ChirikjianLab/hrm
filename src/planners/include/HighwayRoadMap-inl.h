@@ -138,6 +138,30 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
 }
 
 template <class RobotType, class ObjectType>
+Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
+    Boundary bd;
+
+    // Minkowski boundary points
+    std::vector<Eigen::MatrixXd> bdAux;
+    for (size_t i = 0; i < size_t(N_s); ++i) {
+        bdAux = robot_.minkSum(&arena_.at(i), -1);
+        for (size_t j = 0; j < bdAux.size(); ++j) {
+            bd.arena.push_back(bdAux.at(j));
+        }
+        bdAux.clear();
+    }
+    for (size_t i = 0; i < size_t(N_o); ++i) {
+        bdAux = robot_.minkSum(&obs_.at(i), 1);
+        for (size_t j = 0; j < bdAux.size(); ++j) {
+            bd.obstacle.push_back(bdAux.at(j));
+        }
+        bdAux.clear();
+    }
+
+    return bd;
+}
+
+template <class RobotType, class ObjectType>
 std::vector<std::vector<double>>
 HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     std::vector<std::vector<double>> path;

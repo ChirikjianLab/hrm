@@ -17,7 +17,8 @@ class MultiBodyTree2D {
 
     void addBody(SuperEllipse link);
     void robotTF(Eigen::Matrix3d tf);
-    std::vector<Eigen::MatrixXd> minkSum(SuperEllipse S1, int K);
+
+    std::vector<Eigen::MatrixXd> minkSum(const SuperEllipse* s1, const int k);
 
   public:
     SuperEllipse base_;

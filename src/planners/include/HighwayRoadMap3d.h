@@ -5,6 +5,7 @@
 #include "geometry/include/TightFitEllipsoid.h"
 #include "planners/include/HighwayRoadMap.h"
 #include "util/include/InterpolateSE3.h"
+#include "util/include/MultiBodyTree3D.h"
 
 // FreeSegment3D collision-free line segments in 3D
 struct FreeSegment3D {
@@ -12,9 +13,9 @@ struct FreeSegment3D {
     std::vector<FreeSegment2D> cellYZ;
 };
 
-class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
+class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   public:
-    HighwayRoadMap3D(const SuperQuadrics& robot,
+    HighwayRoadMap3D(const MultiBodyTree3D& robot,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req);
@@ -23,7 +24,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
   public:
     virtual void buildRoadmap() override;
-    virtual Boundary boundaryGen() override;
 
     /** \brief sweep-line process to explore free space in one C-layer
      * \param Boundary Minkowski boundry of obstacles and arenas
@@ -52,6 +52,9 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
         const unsigned int num);
 
   protected:
+    void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
+                    std::vector<SuperQuadrics>* tfe);
+
     bool isSameLayerTransitionFree(const std::vector<double>& v1,
                                    const std::vector<double>& v2) override;
 
@@ -64,7 +67,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
 
     /** \brief check is one point is within C-free */
     bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                     const std::vector<double>& V);
+                     const std::vector<double>& v);
 
     /** \brief uniform random sample SO(3) */
     void sampleSO3();
@@ -78,7 +81,9 @@ class HighwayRoadMap3D : public HighwayRoadMap<SuperQuadrics, SuperQuadrics> {
   protected:
     std::vector<MeshMatrix> CLayerBound;
     std::vector<SuperQuadrics> tfe_;
-    std::vector<MeshMatrix> bridgeLayerBound;
+
+    std::vector<FreeSegment3D> freeSeg_;
+    std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
 };
 
 #endif  // HIGHWAYROADMAP3D_H

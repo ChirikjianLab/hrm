@@ -13,8 +13,8 @@ class HRM2DKC : public HighwayRoadMap2D {
     virtual ~HRM2DKC();
 
   public:
-    virtual Boundary boundaryGen() override;
-    virtual void connectMultiLayer() override;
+    Boundary boundaryGen() override;
+    void connectMultiLayer() override;
 
   private:
     std::vector<double> addMidVtx(std::vector<double> v1,

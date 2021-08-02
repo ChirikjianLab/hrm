@@ -1,4 +1,4 @@
-#include "planners/include/HRM3DMultiBody.h"
+#include "planners/include/HighwayRoadMap3d.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -26,10 +26,10 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
     return par;
 }
 
-HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
-                        const vector<SuperQuadrics>& arena,
-                        const vector<SuperQuadrics>& obs,
-                        const PlanningRequest& req, const bool isStore) {
+HighwayRoadMap3D planTest(const MultiBodyTree3D& robot,
+                          const vector<SuperQuadrics>& arena,
+                          const vector<SuperQuadrics>& obs,
+                          const PlanningRequest& req, const bool isStore) {
     // Main Algorithm
     cout << "Highway RoadMap for 3D rigid-body planning" << endl;
     cout << "----------" << endl;
@@ -42,7 +42,7 @@ HRM3DMultiBody planTest(const MultiBodyTree3D& robot,
 
     cout << "Start planning..." << endl;
 
-    HRM3DMultiBody hrm(robot, arena, obs, req);
+    HighwayRoadMap3D hrm(robot, arena, obs, req);
     hrm.plan();
 
     if (isStore) {

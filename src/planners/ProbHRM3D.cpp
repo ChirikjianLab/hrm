@@ -6,7 +6,7 @@ ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
-    : HRM3DMultiBody::HRM3DMultiBody(robot, arena, obs, req),
+    : HighwayRoadMap3D::HighwayRoadMap3D(robot, arena, obs, req),
       urdfFile_(urdfFile) {
     kdl_ = new ParseURDF(urdfFile_);
 }
@@ -60,7 +60,6 @@ void ProbHRM3D::plan(double timeLim) {
 
         // Set rotation matrix to robot
         setTransform(v_.back());
-        robot_.setQuaternion(RobotM_.getBase().getQuaternion());
 
         // Update number of C-layers
         param_.NUM_LAYER++;
@@ -127,7 +126,7 @@ void ProbHRM3D::connectMultiLayer() {
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);
 
     for (size_t j = 0; j < tfe_.size(); ++j) {
-        bridgeLayerBdMultiLink_.push_back(bridgeLayer(tfe_.at(j)));
+        bridgeLayerBound_.push_back(bridgeLayer(tfe_.at(j)));
     }
 
     // Nearest vertex btw layers
@@ -158,7 +157,7 @@ void ProbHRM3D::connectMultiLayer() {
     }
 
     // Clear current bridge C-layer boundaries
-    bridgeLayerBdMultiLink_.clear();
+    bridgeLayerBound_.clear();
 }
 
 // Generate collision-free vertices
@@ -174,10 +173,10 @@ void ProbHRM3D::generateVertices(const double tx, const FreeSegment2D* cellYZ) {
             vertex.at(0) = tx;
             vertex.at(1) = cellYZ->ty[i];
             vertex.at(2) = cellYZ->xM[i][j];
-            vertex.at(3) = robot_.getQuaternion().w();
-            vertex.at(4) = robot_.getQuaternion().x();
-            vertex.at(5) = robot_.getQuaternion().y();
-            vertex.at(6) = robot_.getQuaternion().z();
+            vertex.at(3) = robot_.getBase().getQuaternion().w();
+            vertex.at(4) = robot_.getBase().getQuaternion().x();
+            vertex.at(5) = robot_.getBase().getQuaternion().y();
+            vertex.at(6) = robot_.getBase().getQuaternion().z();
 
             // Configuration of joints
             for (size_t m = 7; m < v_.back().size(); ++m) {
@@ -209,7 +208,7 @@ void ProbHRM3D::setTransform(const std::vector<double>& V) {
         jointConfig(i) = V[7 + i];
     }
 
-    RobotM_.robotTF(urdfFile_, &g, &jointConfig);
+    robot_.robotTF(urdfFile_, &g, &jointConfig);
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
@@ -223,16 +222,16 @@ void ProbHRM3D::computeTFE(const std::vector<double>& v1,
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     setTransform(v1);
-    std::vector<SuperQuadrics> robotAux = RobotM_.getBodyShapes();
+    std::vector<SuperQuadrics> robotAux = robot_.getBodyShapes();
     std::vector<SuperQuadrics> mvce = robotAux;
 
     for (auto vStep : vInterp) {
         setTransform(vStep);
-        robotAux = RobotM_.getBodyShapes();
+        robotAux = robot_.getBodyShapes();
 
         // Compute a tightly-fitted ellipsoid that bounds rotational motions
         // from intermediate orientations
-        for (size_t i = 0; i < RobotM_.getNumLinks() + 1; ++i) {
+        for (size_t i = 0; i < robot_.getNumLinks() + 1; ++i) {
             mvce.at(i) = getMVCE3D(
                 mvce.at(i).getSemiAxis(), robotAux.at(i).getSemiAxis(),
                 mvce.at(i).getQuaternion(), robotAux.at(i).getQuaternion(),
@@ -240,7 +239,7 @@ void ProbHRM3D::computeTFE(const std::vector<double>& v1,
         }
     }
 
-    for (size_t i = 0; i < RobotM_.getNumLinks() + 1; ++i) {
+    for (size_t i = 0; i < robot_.getNumLinks() + 1; ++i) {
         tfe->push_back(mvce.at(i));
     }
 }

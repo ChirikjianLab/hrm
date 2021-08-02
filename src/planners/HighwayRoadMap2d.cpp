@@ -46,29 +46,6 @@ void HighwayRoadMap2D::buildRoadmap() {
     connectMultiLayer();
 }
 
-Boundary HighwayRoadMap2D::boundaryGen() {
-    Boundary bd;
-
-    // Minkowski boundary points
-    std::vector<Eigen::MatrixXd> bdAux;
-    for (size_t i = 0; i < size_t(N_s); ++i) {
-        bdAux = robot_.minkSum(arena_.at(i), -1);
-        for (size_t j = 0; j < bdAux.size(); ++j) {
-            bd.arena.push_back(bdAux.at(j));
-        }
-        bdAux.clear();
-    }
-    for (size_t i = 0; i < size_t(N_o); ++i) {
-        bdAux = robot_.minkSum(obs_.at(i), 1);
-        for (size_t j = 0; j < bdAux.size(); ++j) {
-            bd.obstacle.push_back(bdAux.at(j));
-        }
-        bdAux.clear();
-    }
-
-    return bd;
-}
-
 FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
     Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);

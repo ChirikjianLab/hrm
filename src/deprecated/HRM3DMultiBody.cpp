@@ -40,30 +40,6 @@ void HRM3DMultiBody::buildRoadmap() {
     connectMultiLayer();
 }
 
-// Minkowski operations boundary
-Boundary HRM3DMultiBody::boundaryGen() {
-    Boundary bd;
-
-    // Minkowski boundary points
-    std::vector<Eigen::MatrixXd> bd_aux;
-    for (size_t i = 0; i < N_s; ++i) {
-        bd_aux = RobotM_.minkSumSQ(arena_.at(i), -1);
-        for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.arena.push_back(bd_aux.at(j));
-        }
-        bd_aux.clear();
-    }
-    for (size_t i = 0; i < N_o; ++i) {
-        bd_aux = RobotM_.minkSumSQ(obs_.at(i), 1);
-        for (size_t j = 0; j < bd_aux.size(); ++j) {
-            bd.obstacle.push_back(bd_aux.at(j));
-        }
-        bd_aux.clear();
-    }
-
-    return bd;
-}
-
 // Connect layers
 void HRM3DMultiBody::connectMultiLayer() {
     if (param_.NUM_LAYER == 1) {

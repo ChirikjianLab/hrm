@@ -17,8 +17,6 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   public:
     virtual void buildRoadmap() override;
 
-    virtual Boundary boundaryGen() override;
-
     virtual void connectMultiLayer() override;
 
     void connectOneLayer2D(const FreeSegment2D* freeSeg) override;
