@@ -19,7 +19,11 @@ bool intersectLineTriangle3d(const Eigen::VectorXd* line,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
                              Eigen::Vector3d* pt);
 
+bool isIntersectSegPolygon2D(
+    const std::pair<std::vector<double>, std::vector<double>>& seg,
+    const Eigen::Matrix2Xd& shape);
+
 std::vector<double> intersectHorizontalLinePolygon2d(
-    const double ty, const Eigen::MatrixXd& shape);
+    const double ty, const Eigen::Matrix2Xd& shape);
 
 #endif  // LINEINTERSECTION_H

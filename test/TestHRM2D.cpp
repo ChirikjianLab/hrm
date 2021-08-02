@@ -12,8 +12,8 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
                              const PlannerSetting2D* env2D) {
     PlannerParameter par;
 
-    par.NUM_LAYER = 30;
-    par.NUM_LINE_Y = 20;
+    par.NUM_LAYER = 20;
+    par.NUM_LINE_Y = 10;
     par.NUM_POINT = 5;
 
     double f = 1.5;

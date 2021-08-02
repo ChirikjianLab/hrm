@@ -58,6 +58,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief ang_r sampled orientations of the robot */
     std::vector<double> ang_r;
 
+    Boundary layerBound_;
+
     /** \brief tfe_ TFE for bridge C-layers */
     std::vector<SuperEllipse> tfe_;
 

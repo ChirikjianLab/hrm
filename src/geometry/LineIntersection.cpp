@@ -147,8 +147,50 @@ bool intersectLineTriangle3d(const Eigen::VectorXd* line,
     return true;
 }
 
+bool isIntersectSegPolygon2D(
+    const std::pair<std::vector<double>, std::vector<double>>& seg,
+    const Eigen::Matrix2Xd& shape) {
+    double px1 = seg.first.at(0);
+    double py1 = seg.first.at(1);
+    double px2 = seg.second.at(0);
+    double py2 = seg.second.at(1);
+
+    Eigen::Matrix2d A;
+    A(0, 0) = px2 - px1;
+    A(1, 0) = py2 - py1;
+
+    Eigen::Vector2d b;
+
+    for (auto i = 0; i < shape.cols(); ++i) {
+        double x1 = shape(0, i);
+        double y1 = shape(1, i);
+        double x2 = shape(0, 0);
+        double y2 = shape(1, 0);
+
+        if (i != shape.cols() - 1) {
+            x2 = shape(0, i + 1);
+            y2 = shape(1, i + 1);
+        }
+
+        // compute line segments intersection
+        A(0, 1) = x1 - x2;
+        A(1, 1) = y1 - y2;
+
+        b(0) = x1 - px1;
+        b(1) = y1 - py1;
+
+        Eigen::Vector2d sol = A.colPivHouseholderQr().solve(b);
+
+        if ((sol(0) > 0 && sol(0) < 1) && (sol(1) > 0 && sol(1) < 1)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 std::vector<double> intersectHorizontalLinePolygon2d(
-    const double ty, const Eigen::MatrixXd& shape) {
+    const double ty, const Eigen::Matrix2Xd& shape) {
     std::vector<double> points;
 
     // ignore the edge that is out of range
@@ -170,7 +212,7 @@ std::vector<double> intersectHorizontalLinePolygon2d(
             y2 = shape(1, i + 1);
         }
 
-        // compute line-line intersection
+        // compute line-line segment intersection
         if (ty >= std::fmin(y1, y2) && ty <= std::fmax(y1, y2)) {
             double t = (ty - y2) / (y1 - y2);
             if (t >= 0.0 && t <= 1.0) {

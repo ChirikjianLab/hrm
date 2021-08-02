@@ -12,8 +12,8 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
     PlannerParameter par;
 
     par.NUM_LAYER = robot->getBase().getQuatSamples().size();
-    par.NUM_LINE_X = 35;
-    par.NUM_LINE_Y = 20;
+    par.NUM_LINE_X = 15;
+    par.NUM_LINE_Y = 10;
 
     double f = 1.0;
     par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
