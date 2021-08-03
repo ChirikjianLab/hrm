@@ -79,11 +79,20 @@ class HighwayRoadMap {
      */
     virtual Boundary boundaryGen();
 
+    /** \brief generateVertices subroutine for generating collision-free
+     * vertices on the yz-plane
+     * \param tx x-coordinate of a sweep line (for 2D, it is set as constant
+     * 0.0)
+     * \param pointer to FreeSegment2D
+     */
+    virtual void generateVertices(const double tx,
+                                  const FreeSegment2D* freeSeg) = 0;
+
     /** \brief connectOneLayer2D Subroutine for connecting vertices within one
      * C-layer
      * \param FreeSegment2D pointer
      */
-    virtual void connectOneLayer2D(const FreeSegment2D* freeSeg) = 0;
+    void connectOneLayer2D(const FreeSegment2D* freeSeg);
 
     /** \brief connectMultiLayer Subroutine for connecting vertices among
      * adjacent C-layers */

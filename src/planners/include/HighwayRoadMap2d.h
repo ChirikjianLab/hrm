@@ -19,7 +19,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual void connectMultiLayer() override;
 
-    void connectOneLayer2D(const FreeSegment2D* freeSeg) override;
+    virtual void generateVertices(const double tx,
+                                  const FreeSegment2D* freeSeg) override;
 
     /** \brief sweepLine2D sweep-line process for generating collision-free line
      * segment

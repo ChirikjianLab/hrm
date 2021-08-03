@@ -38,6 +38,9 @@ void HighwayRoadMap2D::buildRoadmap() {
         // Sweep-line process to generate collision free line segments
         FreeSegment2D segOneLayer = sweepLine2D(&layerBound_);
 
+        // Generate collision-free vertices
+        generateVertices(0.0, &segOneLayer);
+
         // Connect vertices within one C-layer
         connectOneLayer2D(&segOneLayer);
 
@@ -109,69 +112,23 @@ FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
     return freeSeg;
 }
 
-void HighwayRoadMap2D::connectOneLayer2D(const FreeSegment2D* freeSeg) {
+void HighwayRoadMap2D::generateVertices(const double tx,
+                                        const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+        N_v.plane.push_back(res_.graph_structure.vertex.size());
+
         for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Construct a vector of vertex
             res_.graph_structure.vertex.push_back(
                 {freeSeg->xM[i][j], freeSeg->ty[i],
                  robot_.getBase().getAngle()});
         }
-
-        N_v.plane.push_back(res_.graph_structure.vertex.size());
     }
     N_v.line.push_back(N_v.plane);
     N_v.layer = res_.graph_structure.vertex.size();
-
-    // Add connections to edge list
-    size_t n1 = 0;
-    size_t n2 = 0;
-
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        n2 = N_v.line.at(0).at(i);
-
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            // Connect vertex within the same collision-free sweep line segment
-            if (j1 != freeSeg->xM[i].size() - 1) {
-                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
-                    1e-5) {
-                    res_.graph_structure.edge.push_back(
-                        std::make_pair(n1 + j1, n1 + j1 + 1));
-                    res_.graph_structure.weight.push_back(vectorEuclidean(
-                        res_.graph_structure.vertex[n1 + j1],
-                        res_.graph_structure.vertex[n1 + j1 + 1]));
-                }
-            }
-
-            // Connect vertex btw adjacent cells
-            if (i != freeSeg->ty.size() - 1) {
-                for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
-                    //                    if (((freeSeg->xM[i][j1] >=
-                    //                    freeSeg->xL[i + 1][j2] &&
-                    //                          freeSeg->xM[i][j1] <=
-                    //                          freeSeg->xU[i + 1][j2]) &&
-                    //                         (freeSeg->xM[i + 1][j2] >=
-                    //                         freeSeg->xL[i][j1] &&
-                    //                          freeSeg->xM[i + 1][j2] <=
-                    //                          freeSeg->xU[i][j1]))) {
-                    if (isSameLayerTransitionFree(
-                            res_.graph_structure.vertex[n1 + j1],
-                            res_.graph_structure.vertex[n2 + j2])) {
-                        res_.graph_structure.edge.push_back(
-                            std::make_pair(n1 + j1, n2 + j2));
-                        res_.graph_structure.weight.push_back(vectorEuclidean(
-                            res_.graph_structure.vertex[n1 + j1],
-                            res_.graph_structure.vertex[n2 + j2]));
-                    }
-                }
-            }
-        }
-
-        n2 = n1;
-    }
 }
 
 void HighwayRoadMap2D::connectMultiLayer() {

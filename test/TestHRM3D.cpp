@@ -81,17 +81,18 @@ HighwayRoadMap3D planTest(const MultiBodyTree3D& robot,
         file_bd.close();
 
         // TEST: Sweep line
-        FreeSegment3D CF_cell = hrm.sweepLine3D(&bd_mink);
+        FreeSegment3D freeSeg = hrm.sweepLine3D(&bd_mink);
 
         ofstream file_cell;
         file_cell.open("cell_3D.csv");
-        for (size_t i = 0; i < CF_cell.tx.size(); i++) {
-            for (size_t j = 0; j < CF_cell.cellYZ[i].ty.size(); j++) {
-                for (size_t k = 0; k < CF_cell.cellYZ[i].xM[j].size(); k++) {
-                    file_cell << CF_cell.tx[i] << ',' << CF_cell.cellYZ[i].ty[j]
-                              << ',' << CF_cell.cellYZ[i].xL[j][k] << ','
-                              << CF_cell.cellYZ[i].xM[j][k] << ','
-                              << CF_cell.cellYZ[i].xU[j][k] << "\n";
+        for (size_t i = 0; i < freeSeg.tx.size(); i++) {
+            for (size_t j = 0; j < freeSeg.freeSegYZ[i].ty.size(); j++) {
+                for (size_t k = 0; k < freeSeg.freeSegYZ[i].xM[j].size(); k++) {
+                    file_cell << freeSeg.tx[i] << ','
+                              << freeSeg.freeSegYZ[i].ty[j] << ','
+                              << freeSeg.freeSegYZ[i].xL[j][k] << ','
+                              << freeSeg.freeSegYZ[i].xM[j][k] << ','
+                              << freeSeg.freeSegYZ[i].xU[j][k] << "\n";
                 }
             }
         }

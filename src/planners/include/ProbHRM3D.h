@@ -15,12 +15,14 @@ class ProbHRM3D : public HighwayRoadMap3D {
 
   public:
     void plan(double timeLim);
-    virtual void connectMultiLayer() override;
-    virtual void generateVertices(const double tx,
-                                  const FreeSegment2D* cellYZ) override;
+
+    void connectMultiLayer() override;
+
+    void generateVertices(const double tx,
+                          const FreeSegment2D* freeSeg) override;
 
   protected:
-    virtual void setTransform(const std::vector<double>& V) override;
+    void setTransform(const std::vector<double>& v) override;
 
     void computeTFE(const std::vector<double>& v1,
                     const std::vector<double>& v2,

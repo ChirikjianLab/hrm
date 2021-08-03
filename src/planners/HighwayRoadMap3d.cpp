@@ -41,23 +41,20 @@ void HighwayRoadMap3D::buildRoadmap() {
 }
 
 FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
-    FreeSegment3D CF_cell;
+    FreeSegment3D freeSeg;
 
-    std::vector<Eigen::Vector3d> pts_s;
-    std::vector<Eigen::Vector3d> pts_o;
-
-    Eigen::MatrixXd z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(bd->arena.size()),
-                                                      -param_.BOUND_LIMIT[2]),
-                    z_s_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(bd->arena.size()),
-                                                      param_.BOUND_LIMIT[2]),
-                    z_o_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(bd->obstacle.size()),
-                                                      NAN),
-                    z_o_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                                      long(bd->obstacle.size()),
-                                                      NAN);
+    Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
+                        long(param_.NUM_LINE_Y), long(bd->arena.size()),
+                        -param_.BOUND_LIMIT[2]),
+                    segArenaUpp = Eigen::MatrixXd::Constant(
+                        long(param_.NUM_LINE_Y), long(bd->arena.size()),
+                        param_.BOUND_LIMIT[2]),
+                    segObstableLow = Eigen::MatrixXd::Constant(
+                        long(param_.NUM_LINE_Y), long(bd->obstacle.size()),
+                        NAN),
+                    segObstableUpp = Eigen::MatrixXd::Constant(
+                        long(param_.NUM_LINE_Y), long(bd->obstacle.size()),
+                        NAN);
 
     // Find intersection points for each sweep line
     std::vector<double> tx(param_.NUM_LINE_X), ty(param_.NUM_LINE_Y);
@@ -84,9 +81,11 @@ FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
                                             int(obs_.at(0).getNumParam()));
     }
 
-    CLayerBound = P_o;
+    layerBoundMesh_ = P_o;
 
     // Find intersections along each sweep line
+    std::vector<Eigen::Vector3d> intersectPointArena;
+    std::vector<Eigen::Vector3d> intersectPointObstacle;
     for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
         //        time::point tstart = time::now();
 
@@ -95,55 +94,63 @@ FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
 
             for (size_t m = 0; m < bd->arena.size(); ++m) {
-                pts_s = intersectVerticalLineMesh3d(lineZ, P_s[m]);
+                intersectPointArena =
+                    intersectVerticalLineMesh3d(lineZ, P_s[m]);
 
-                if (pts_s.empty()) continue;
+                if (intersectPointArena.empty()) continue;
 
-                z_s_L(long(j), long(m)) =
+                segArenaLow(long(j), long(m)) =
                     std::fmin(-param_.BOUND_LIMIT[2],
-                              std::fmin(pts_s[0](2), pts_s[1](2)));
-                z_s_U(long(j), long(m)) = std::fmax(
-                    param_.BOUND_LIMIT[2], std::fmax(pts_s[0](2), pts_s[1](2)));
+                              std::fmin(intersectPointArena[0](2),
+                                        intersectPointArena[1](2)));
+                segArenaUpp(long(j), long(m)) =
+                    std::fmax(param_.BOUND_LIMIT[2],
+                              std::fmax(intersectPointArena[0](2),
+                                        intersectPointArena[1](2)));
             }
             for (size_t n = 0; n < bd->obstacle.size(); ++n) {
-                pts_o = intersectVerticalLineMesh3d(lineZ, P_o[n]);
+                intersectPointObstacle =
+                    intersectVerticalLineMesh3d(lineZ, P_o[n]);
 
-                if (pts_o.empty()) continue;
+                if (intersectPointObstacle.empty()) continue;
 
-                z_o_L(long(j), long(n)) = std::fmin(pts_o[0](2), pts_o[1](2));
-                z_o_U(long(j), long(n)) = std::fmax(pts_o[0](2), pts_o[1](2));
+                segObstableLow(long(j), long(n)) = std::fmin(
+                    intersectPointObstacle[0](2), intersectPointObstacle[1](2));
+                segObstableUpp(long(j), long(n)) = std::fmax(
+                    intersectPointObstacle[0](2), intersectPointObstacle[1](2));
             }
         }
 
-        // Store cell info
-        CF_cell.tx.push_back(tx[i]);
-        CF_cell.cellYZ.push_back(
-            computeFreeSegment(ty, z_s_L, z_s_U, z_o_L, z_o_U));
+        // Store freeSeg info
+        freeSeg.tx.push_back(tx[i]);
+        freeSeg.freeSegYZ.push_back(computeFreeSegment(
+            ty, segArenaLow, segArenaUpp, segObstableLow, segObstableUpp));
 
-        z_s_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                          long(bd->arena.size()),
-                                          -param_.BOUND_LIMIT[2]);
-        z_s_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                          long(bd->arena.size()),
-                                          param_.BOUND_LIMIT[2]);
-        z_o_L = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                          long(bd->obstacle.size()), NAN);
-        z_o_U = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
-                                          long(bd->obstacle.size()), NAN);
+        segArenaLow = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                                long(bd->arena.size()),
+                                                -param_.BOUND_LIMIT[2]);
+        segArenaUpp = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
+                                                long(bd->arena.size()),
+                                                param_.BOUND_LIMIT[2]);
+        segObstableLow = Eigen::MatrixXd::Constant(
+            long(param_.NUM_LINE_Y), long(bd->obstacle.size()), NAN);
+        segObstableUpp = Eigen::MatrixXd::Constant(
+            long(param_.NUM_LINE_Y), long(bd->obstacle.size()), NAN);
     }
 
-    return CF_cell;
+    return freeSeg;
 }
 
 void HighwayRoadMap3D::generateVertices(const double tx,
-                                        const FreeSegment2D* cellYZ) {
+                                        const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
-    for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
-        for (size_t j = 0; j < cellYZ->xM[i].size(); ++j) {
+
+        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Construct a std::vector of vertex
             res_.graph_structure.vertex.push_back(
-                {tx, cellYZ->ty[i], cellYZ->xM[i][j],
+                {tx, freeSeg->ty[i], freeSeg->xM[i][j],
                  robot_.getBase().getQuaternion().w(),
                  robot_.getBase().getQuaternion().x(),
                  robot_.getBase().getQuaternion().y(),
@@ -156,74 +163,38 @@ void HighwayRoadMap3D::generateVertices(const double tx,
     N_v.layer = res_.graph_structure.vertex.size();
 }
 
-// Connect vertices within one C-layer //
-void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* cell) {
-    size_t I0 = 0, I1 = 0;
+// Connect vertices within one C-layer
+void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
+    size_t n1 = 0;
+    size_t n2 = 0;
 
     N_v.line.clear();
-    for (size_t i = 0; i < cell->tx.size(); ++i) {
+    for (size_t i = 0; i < freeSeg->tx.size(); ++i) {
         // Generate collision-free vertices
-        generateVertices(cell->tx.at(i), &cell->cellYZ.at(i));
+        generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegYZ.at(i));
 
         // Connect within one plane
-        connectOneLayer2D(&cell->cellYZ[i]);
+        connectOneLayer2D(&freeSeg->freeSegYZ.at(i));
     }
 
-    for (size_t i = 0; i < cell->tx.size() - 1; ++i) {
-        for (size_t j = 0; j < cell->cellYZ[i].ty.size(); ++j) {
+    for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
+        for (size_t j = 0; j < freeSeg->freeSegYZ.at(i).ty.size(); ++j) {
             // Connect vertex btw adjacent planes, only connect with same ty
-            for (size_t k0 = 0; k0 < cell->cellYZ[i].xM[j].size(); k0++) {
-                I0 = N_v.line[i][j];
-                for (size_t k1 = 0; k1 < cell->cellYZ[i + 1].xM[j].size();
-                     k1++) {
-                    I1 = N_v.line[i + 1][j];
+            for (size_t k1 = 0; k1 < freeSeg->freeSegYZ.at(i).xM[j].size();
+                 ++k1) {
+                n1 = N_v.line[i][j];
+                for (size_t k2 = 0;
+                     k2 < freeSeg->freeSegYZ.at(i + 1).xM[j].size(); ++k2) {
+                    n2 = N_v.line[i + 1][j];
 
                     if (isSameLayerTransitionFree(
-                            res_.graph_structure.vertex[I0 + k0],
-                            res_.graph_structure.vertex[I1 + k1])) {
+                            res_.graph_structure.vertex[n1 + k1],
+                            res_.graph_structure.vertex[n2 + k2])) {
                         res_.graph_structure.edge.push_back(
-                            std::make_pair(I0 + k0, I1 + k1));
+                            std::make_pair(n1 + k1, n2 + k2));
                         res_.graph_structure.weight.push_back(vectorEuclidean(
-                            res_.graph_structure.vertex[I0 + k0],
-                            res_.graph_structure.vertex[I1 + k1]));
-                    }
-                }
-            }
-        }
-    }
-}
-
-void HighwayRoadMap3D::connectOneLayer2D(const FreeSegment2D* CFcell) {
-    size_t N_0 = 0, N_1 = 0;
-
-    // Connect vertices within one plane
-    for (size_t i = 0; i < CFcell->ty.size(); ++i) {
-        N_0 = N_v.plane[i];
-        N_1 = N_v.plane[i + 1];
-        for (size_t j1 = 0; j1 < CFcell->xM[i].size(); ++j1) {
-            // Connect vertex within the same sweep line
-            if (j1 != CFcell->xM[i].size() - 1) {
-                if (std::fabs(CFcell->xU[i][j1] - CFcell->xL[i][j1 + 1]) <
-                    1e-5) {
-                    res_.graph_structure.edge.push_back(
-                        std::make_pair(N_0 + j1, N_0 + j1 + 1));
-                    res_.graph_structure.weight.push_back(vectorEuclidean(
-                        res_.graph_structure.vertex[N_0 + j1],
-                        res_.graph_structure.vertex[N_0 + j1 + 1]));
-                }
-            }
-
-            // Connect vertex btw adjacent cells
-            if (i != CFcell->ty.size() - 1) {
-                for (size_t j2 = 0; j2 < CFcell->xM[i + 1].size(); ++j2) {
-                    if (isSameLayerTransitionFree(
-                            res_.graph_structure.vertex[N_0 + j1],
-                            res_.graph_structure.vertex[N_1 + j2])) {
-                        res_.graph_structure.edge.push_back(
-                            std::make_pair(N_0 + j1, N_1 + j2));
-                        res_.graph_structure.weight.push_back(vectorEuclidean(
-                            res_.graph_structure.vertex[N_0 + j1],
-                            res_.graph_structure.vertex[N_1 + j2]));
+                            res_.graph_structure.vertex[n1 + k1],
+                            res_.graph_structure.vertex[n2 + k2]));
                     }
                 }
             }
@@ -238,19 +209,19 @@ void HighwayRoadMap3D::connectMultiLayer() {
 
     size_t j = 0;
 
-    //    size_t n_1;
-    //    size_t n_12;
+    //    size_t n2;
+    //    size_t n22;
     //    size_t n_2;
     //    size_t start = 0;
 
-    std::vector<double> V1;
-    std::vector<double> V2;
+    std::vector<double> v1;
+    std::vector<double> v2;
 
     //    int n_check = 0;
     //    int n_connect = 0;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        //        n_1 = vtxId_[i].layer;
+        //        n2 = vtxId_[i].layer;
         //        // Construct the middle layer
         //        if (i == N_layers - 1 && N_layers != 2) {
         //            j = 0;
@@ -294,9 +265,9 @@ void HighwayRoadMap3D::connectMultiLayer() {
         //        }
 
         //        if (j != 0) {
-        //            n_12 = vtxId_[j - 1].layer;
+        //            n22 = vtxId_[j - 1].layer;
         //        } else {
-        //            n_12 = 0;
+        //            n22 = 0;
         //        }
         //        n_2 = vtxId_[j].layer;
 
@@ -313,9 +284,9 @@ void HighwayRoadMap3D::connectMultiLayer() {
 
         // Find vertex only in adjacent layers
         // Start and end vertics in the current layer
-        size_t n_12 = 0;
+        size_t n22 = 0;
         if (i != 0) {
-            n_12 = vtxId_.at(i - 1).layer;
+            n22 = vtxId_.at(i - 1).layer;
         }
         size_t n_2 = vtxId_.at(i).layer;
 
@@ -324,7 +295,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
         if (minIdx != 0) {
             start = vtxId_.at(minIdx - 1).layer;
         }
-        size_t n_1 = vtxId_.at(minIdx).layer;
+        size_t n2 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
         computeTFE(q_r[i], q_r[j], &tfe_);
@@ -359,36 +330,36 @@ void HighwayRoadMap3D::connectMultiLayer() {
         //        ////////////////////////////////////////////////////////////////////
 
         // Nearest vertex btw layers
-        for (size_t m0 = start; m0 < n_1; ++m0) {
-            V1 = res_.graph_structure.vertex.at(m0);
-            for (size_t m1 = n_12; m1 < n_2; ++m1) {
-                V2 = res_.graph_structure.vertex[m1];
+        for (size_t m0 = start; m0 < n2; ++m0) {
+            v1 = res_.graph_structure.vertex.at(m0);
+            for (size_t m1 = n22; m1 < n_2; ++m1) {
+                v2 = res_.graph_structure.vertex[m1];
 
                 // Locate the nearest vertices
-                if (std::fabs(V1.at(0) - V2.at(0)) >
+                if (std::fabs(v1.at(0) - v2.at(0)) >
                         param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
-                    std::fabs(V1.at(1) - V2.at(1)) >
+                    std::fabs(v1.at(1) - v2.at(1)) >
                         param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
                     continue;
                 }
 
                 //                n_check++;
 
-                if (isMultiLayerTransitionFree(V1, V2)) {
+                if (isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
-                        vectorEuclidean(V1, V2));
+                        vectorEuclidean(v1, v2));
 
                     //                    n_connect++;
 
                     // Continue from where it pauses
-                    n_12 = m1;
+                    n22 = m1;
                     break;
                 }
             }
         }
-        start = n_1;
+        start = n2;
 
         // Clear current bridge C-layer boundaries;
         bridgeLayerBound_.clear();
@@ -435,10 +406,10 @@ std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
 }
 
 bool HighwayRoadMap3D::isSameLayerTransitionFree(
-    const std::vector<double>& V1, const std::vector<double>& V2) {
-    // Define the line connecting V1 and V2
-    Eigen::Vector3d t1{V1[0], V1[1], V1[2]};
-    Eigen::Vector3d t2{V2[0], V2[1], V2[2]};
+    const std::vector<double>& v1, const std::vector<double>& v2) {
+    // Define the line connecting v1 and v2
+    Eigen::Vector3d t1{v1[0], v1[1], v1[2]};
+    Eigen::Vector3d t2{v2[0], v2[1], v2[2]};
     Eigen::Vector3d v12 = t2 - t1;
     v12.normalize();
 
@@ -449,7 +420,7 @@ bool HighwayRoadMap3D::isSameLayerTransitionFree(
     // Intersection between line and mesh
     double s0, s1;
     std::vector<Eigen::Vector3d> intersectObs;
-    for (auto CObstacle : CLayerBound) {
+    for (auto CObstacle : layerBoundMesh_) {
         intersectObs = intersectVerticalLineMesh3d(line, CObstacle);
 
         // Check line segments overlapping
@@ -470,7 +441,7 @@ bool HighwayRoadMap3D::isSameLayerTransitionFree(
 
 bool HighwayRoadMap3D::isMultiLayerTransitionFree(
     const std::vector<double>& v1, const std::vector<double>& v2) {
-    // Interpolated robot motion from V1 to V2
+    // Interpolated robot motion from v1 to v2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 

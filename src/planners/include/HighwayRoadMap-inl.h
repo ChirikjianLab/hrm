@@ -162,6 +162,49 @@ Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
 }
 
 template <class RobotType, class ObjectType>
+void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
+    const FreeSegment2D* freeSeg) {
+    // Add connections to edge list
+    size_t n1 = 0;
+    size_t n2 = 0;
+
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+        n1 = N_v.plane.at(i);
+
+        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+            // Connect vertex within the same sweep line
+            if (j1 != freeSeg->xM[i].size() - 1) {
+                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
+                    1e-5) {
+                    res_.graph_structure.edge.push_back(
+                        std::make_pair(n1 + j1, n1 + j1 + 1));
+                    res_.graph_structure.weight.push_back(vectorEuclidean(
+                        res_.graph_structure.vertex[n1 + j1],
+                        res_.graph_structure.vertex[n1 + j1 + 1]));
+                }
+            }
+
+            // Connect vertex btw adjacent sweep lines
+            if (i != freeSeg->ty.size() - 1) {
+                n2 = N_v.plane.at(i + 1);
+
+                for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                    if (isSameLayerTransitionFree(
+                            res_.graph_structure.vertex[n1 + j1],
+                            res_.graph_structure.vertex[n2 + j2])) {
+                        res_.graph_structure.edge.push_back(
+                            std::make_pair(n1 + j1, n2 + j2));
+                        res_.graph_structure.weight.push_back(vectorEuclidean(
+                            res_.graph_structure.vertex[n1 + j1],
+                            res_.graph_structure.vertex[n2 + j2]));
+                    }
+                }
+            }
+        }
+    }
+}
+
+template <class RobotType, class ObjectType>
 std::vector<std::vector<double>>
 HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     std::vector<std::vector<double>> path;

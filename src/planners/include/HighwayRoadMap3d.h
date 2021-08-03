@@ -10,7 +10,7 @@
 // FreeSegment3D collision-free line segments in 3D
 struct FreeSegment3D {
     std::vector<double> tx;
-    std::vector<FreeSegment2D> cellYZ;
+    std::vector<FreeSegment2D> freeSegYZ;
 };
 
 class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
@@ -27,19 +27,15 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     /** \brief sweep-line process to explore free space in one C-layer
      * \param Boundary Minkowski boundry of obstacles and arenas
-     * \return collision-free cells info
+     * \return collision-free segments info
      */
     FreeSegment3D sweepLine3D(const Boundary* bd);
 
-    /** \brief subroutine for generating collision-free vertices on the yz-plane
-     * \param ty a vector of incremented y-coordinates
-     * \param pointer to FreeSegment2D
-     */
-    virtual void generateVertices(const double tx, const FreeSegment2D* cellYZ);
+    virtual void generateVertices(const double tx,
+                                  const FreeSegment2D* freeSeg) override;
 
     /** \brief connect within one C-layer */
-    void connectOneLayer3D(const FreeSegment3D* cell);
-    void connectOneLayer2D(const FreeSegment2D* cellYZ) override;
+    void connectOneLayer3D(const FreeSegment3D* freeSeg);
 
     virtual void connectMultiLayer() override;
 
@@ -79,7 +75,8 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     std::vector<Eigen::Quaterniond> q_r;
 
   protected:
-    std::vector<MeshMatrix> CLayerBound;
+    std::vector<MeshMatrix> layerBoundMesh_;
+
     std::vector<SuperQuadrics> tfe_;
 
     std::vector<FreeSegment3D> freeSeg_;
