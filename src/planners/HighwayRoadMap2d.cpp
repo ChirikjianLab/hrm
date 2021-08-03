@@ -36,13 +36,13 @@ void HighwayRoadMap2D::buildRoadmap() {
         layerBound_ = boundaryGen();
 
         // Sweep-line process to generate collision free line segments
-        FreeSegment2D segOneLayer = sweepLine2D(&layerBound_);
+        sweepLineProcess(&layerBound_);
 
         // Generate collision-free vertices
-        generateVertices(0.0, &segOneLayer);
+        generateVertices(0.0, &freeSegOneLayer_);
 
         // Connect vertices within one C-layer
-        connectOneLayer2D(&segOneLayer);
+        connectOneLayer2D(&freeSegOneLayer_);
 
         vtxId_.push_back(N_v);
     }
@@ -51,7 +51,7 @@ void HighwayRoadMap2D::buildRoadmap() {
     connectMultiLayer();
 }
 
-FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
+void HighwayRoadMap2D::sweepLineProcess(const Boundary* bd) {
     Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);
     Eigen::MatrixXd segArenaUpp = Eigen::MatrixXd::Constant(
@@ -106,10 +106,8 @@ FreeSegment2D HighwayRoadMap2D::sweepLine2D(const Boundary* bd) {
     }
 
     // Compute collision-free intervals at each sweep line
-    FreeSegment2D freeSeg = computeFreeSegment(ty, segArenaLow, segArenaUpp,
-                                               segObstableLow, segObstableUpp);
-
-    return freeSeg;
+    freeSegOneLayer_ = computeFreeSegment(ty, segArenaLow, segArenaUpp,
+                                          segObstableLow, segObstableUpp);
 }
 
 void HighwayRoadMap2D::generateVertices(const double tx,
@@ -196,7 +194,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
         }
         start = n1;
 
-        // Clear freeSeg_;
+        // Clear bridgeLayerBound_;
         bridgeLayerBound_.clear();
     }
 }

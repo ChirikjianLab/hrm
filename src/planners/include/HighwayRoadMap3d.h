@@ -23,13 +23,14 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual ~HighwayRoadMap3D();
 
   public:
+    FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
+        sweepLineProcess(bd);
+        return freeSegOneLayer_;
+    }
+
     virtual void buildRoadmap() override;
 
-    /** \brief sweep-line process to explore free space in one C-layer
-     * \param Boundary Minkowski boundry of obstacles and arenas
-     * \return collision-free segments info
-     */
-    FreeSegment3D sweepLine3D(const Boundary* bd);
+    void sweepLineProcess(const Boundary* bd) override;
 
     virtual void generateVertices(const double tx,
                                   const FreeSegment2D* freeSeg) override;
@@ -79,7 +80,7 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     std::vector<SuperQuadrics> tfe_;
 
-    std::vector<FreeSegment3D> freeSeg_;
+    FreeSegment3D freeSegOneLayer_;
     std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
 };
 

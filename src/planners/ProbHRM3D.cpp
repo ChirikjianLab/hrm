@@ -68,14 +68,12 @@ void ProbHRM3D::plan(double timeLim) {
         Boundary bd = boundaryGen();
 
         // Sweep-line process
-        FreeSegment3D segOneLayer = sweepLine3D(&bd);
+        sweepLineProcess(&bd);
 
         // Connect within one C-layer
-        connectOneLayer3D(&segOneLayer);
+        connectOneLayer3D(&freeSegOneLayer_);
 
         vtxId_.push_back(N_v);
-
-        freeSeg_.push_back(segOneLayer);
 
         // Connect among adjacent C-layers
         if (param_.NUM_LAYER >= 2) {

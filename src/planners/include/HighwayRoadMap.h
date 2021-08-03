@@ -79,6 +79,13 @@ class HighwayRoadMap {
      */
     virtual Boundary boundaryGen();
 
+    /** \brief sweepLineProcess sweep-line process for generating collision-free
+     * line segment
+     * \param pointer to Boundary structure, boundary of Minkowski
+     * operations
+     */
+    virtual void sweepLineProcess(const Boundary* bd) = 0;
+
     /** \brief generateVertices subroutine for generating collision-free
      * vertices on the yz-plane
      * \param tx x-coordinate of a sweep line (for 2D, it is set as constant

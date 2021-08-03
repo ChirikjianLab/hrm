@@ -15,6 +15,11 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     virtual ~HighwayRoadMap2D() override;
 
   public:
+    FreeSegment2D getFreeSegmentOneLayer(const Boundary* bd) {
+        sweepLineProcess(bd);
+        return freeSegOneLayer_;
+    }
+
     virtual void buildRoadmap() override;
 
     virtual void connectMultiLayer() override;
@@ -22,13 +27,7 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     virtual void generateVertices(const double tx,
                                   const FreeSegment2D* freeSeg) override;
 
-    /** \brief sweepLine2D sweep-line process for generating collision-free line
-     * segment
-     * \param pointer to Boundary structure, boundary of Minkowski
-     * operations
-     * \return FreeSegment2D line segments
-     */
-    FreeSegment2D sweepLine2D(const Boundary* bd);
+    void sweepLineProcess(const Boundary* bd) override;
 
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
@@ -60,6 +59,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     std::vector<double> ang_r;
 
     Boundary layerBound_;
+
+    FreeSegment2D freeSegOneLayer_;
 
     /** \brief tfe_ TFE for bridge C-layers */
     std::vector<SuperEllipse> tfe_;

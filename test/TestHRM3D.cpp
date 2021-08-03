@@ -81,7 +81,7 @@ HighwayRoadMap3D planTest(const MultiBodyTree3D& robot,
         file_bd.close();
 
         // TEST: Sweep line
-        FreeSegment3D freeSeg = hrm.sweepLine3D(&bd_mink);
+        FreeSegment3D freeSeg = hrm.getFreeSegmentOneLayer(&bd_mink);
 
         ofstream file_cell;
         file_cell.open("cell_3D.csv");

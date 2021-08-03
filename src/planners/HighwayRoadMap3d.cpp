@@ -28,21 +28,16 @@ void HighwayRoadMap3D::buildRoadmap() {
         robot_.robotTF(tf);
 
         Boundary bd = boundaryGen();
-        FreeSegment3D segOneLayer = sweepLine3D(&bd);
-        connectOneLayer3D(&segOneLayer);
+        sweepLineProcess(&bd);
+        connectOneLayer3D(&freeSegOneLayer_);
 
         // Store the index of vertex in the current layer
         vtxId_.push_back(N_v);
-
-        // Store the collision-free segment info
-        freeSeg_.push_back(segOneLayer);
     }
     connectMultiLayer();
 }
 
-FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
-    FreeSegment3D freeSeg;
-
+void HighwayRoadMap3D::sweepLineProcess(const Boundary* bd) {
     Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
                         long(param_.NUM_LINE_Y), long(bd->arena.size()),
                         -param_.BOUND_LIMIT[2]),
@@ -86,9 +81,11 @@ FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
     // Find intersections along each sweep line
     std::vector<Eigen::Vector3d> intersectPointArena;
     std::vector<Eigen::Vector3d> intersectPointObstacle;
-    for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
-        //        time::point tstart = time::now();
 
+    freeSegOneLayer_.tx.clear();
+    freeSegOneLayer_.freeSegYZ.clear();
+
+    for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
         for (size_t j = 0; j < param_.NUM_LINE_Y; ++j) {
             Eigen::VectorXd lineZ(6);
             lineZ << tx[i], ty[j], 0, 0, 0, 1;
@@ -122,10 +119,11 @@ FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
         }
 
         // Store freeSeg info
-        freeSeg.tx.push_back(tx[i]);
-        freeSeg.freeSegYZ.push_back(computeFreeSegment(
+        freeSegOneLayer_.tx.push_back(tx[i]);
+        freeSegOneLayer_.freeSegYZ.push_back(computeFreeSegment(
             ty, segArenaLow, segArenaUpp, segObstableLow, segObstableUpp));
 
+        // Reset lower and upper bounds for segments
         segArenaLow = Eigen::MatrixXd::Constant(long(param_.NUM_LINE_Y),
                                                 long(bd->arena.size()),
                                                 -param_.BOUND_LIMIT[2]);
@@ -137,8 +135,6 @@ FreeSegment3D HighwayRoadMap3D::sweepLine3D(const Boundary* bd) {
         segObstableUpp = Eigen::MatrixXd::Constant(
             long(param_.NUM_LINE_Y), long(bd->obstacle.size()), NAN);
     }
-
-    return freeSeg;
 }
 
 void HighwayRoadMap3D::generateVertices(const double tx,
