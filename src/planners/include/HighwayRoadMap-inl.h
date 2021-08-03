@@ -5,11 +5,13 @@
 #include "src/util/include/Interval.h"
 #include "util/include/DistanceMetric.h"
 
-#include "ompl/util/Time.h"
-
 #include <algorithm>
+#include <chrono>
 #include <list>
 #include <random>
+
+using Clock = std::chrono::high_resolution_clock;
+using Durationd = std::chrono::duration<double>;
 
 /** \brief visitor that terminates when we find the goal */
 struct AStarFoundGoal {};
@@ -49,15 +51,13 @@ HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::plan() {
     // Plan and timing
-    ompl::time::point start = ompl::time::now();
+    auto start = Clock::now();
     buildRoadmap();
-    res_.planning_time.buildTime =
-        ompl::time::seconds(ompl::time::now() - start);
+    res_.planning_time.buildTime = Durationd(Clock::now() - start).count();
 
-    start = ompl::time::now();
+    start = Clock::now();
     search();
-    res_.planning_time.searchTime =
-        ompl::time::seconds(ompl::time::now() - start);
+    res_.planning_time.searchTime = Durationd(Clock::now() - start).count();
 
     res_.planning_time.totalTime =
         res_.planning_time.buildTime + res_.planning_time.searchTime;

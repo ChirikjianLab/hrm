@@ -23,6 +23,14 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual ~HighwayRoadMap3D();
 
   public:
+    /** \brief get the resulting solved path and the interpolated one */
+    std::vector<std::vector<double>> getInterpolatedSolutionPath(
+        const unsigned int num);
+
+    /** \brief get free line segment at one specific C-layer
+     * \param Boundary pointer to Minkowski boundaries
+     * \return FreeSegment3D
+     */
     FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
         sweepLineProcess(bd);
         return freeSegOneLayer_;
@@ -43,10 +51,6 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief subroutine to first construct the middle C-layer */
     //    FreeSegment3D bridgeLayer(SuperQuadrics);
     std::vector<MeshMatrix> bridgeLayer(SuperQuadrics Ec);
-
-    /** \brief get the resulting solved path and the interpolated one */
-    std::vector<std::vector<double>> getInterpolatedSolutionPath(
-        const unsigned int num);
 
   protected:
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,

@@ -14,7 +14,7 @@ class ProbHRM3D : public HighwayRoadMap3D {
     virtual ~ProbHRM3D() override;
 
   public:
-    void plan(double timeLim);
+    void plan(const double timeLim);
 
     void connectMultiLayer() override;
 

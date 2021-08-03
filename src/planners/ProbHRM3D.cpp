@@ -13,8 +13,8 @@ ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
 
 ProbHRM3D::~ProbHRM3D() {}
 
-void ProbHRM3D::plan(double timeLim) {
-    ompl::time::point start = ompl::time::now();
+void ProbHRM3D::plan(const double timeLim) {
+    auto start = Clock::now();
 
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(NULL)));
@@ -83,8 +83,7 @@ void ProbHRM3D::plan(double timeLim) {
         // Graph search
         search();
 
-        res_.planning_time.totalTime =
-            ompl::time::seconds(ompl::time::now() - start);
+        res_.planning_time.totalTime = Durationd(Clock::now() - start).count();
     } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 
     // Retrieve coordinates of solved path

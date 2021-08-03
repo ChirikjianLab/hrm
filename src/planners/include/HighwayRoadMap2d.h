@@ -15,6 +15,10 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     virtual ~HighwayRoadMap2D() override;
 
   public:
+    /** \brief get free line segment at one specific C-layer
+     * \param Boundary pointer to Minkowski boundaries
+     * \return FreeSegment2D
+     */
     FreeSegment2D getFreeSegmentOneLayer(const Boundary* bd) {
         sweepLineProcess(bd);
         return freeSegOneLayer_;
