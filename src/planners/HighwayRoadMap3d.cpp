@@ -569,7 +569,7 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     // gaps) at each C-layer
     for (Eigen::Quaterniond quatCur : quatList) {
         Vertex idxLayer = 0;
-        minEuclideanDist = std::numeric_limits<double>::infinity();
+        minEuclideanDist = inf;
         for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
             euclideanDist =
                 vectorEuclidean(vertex, res_.graph_structure.vertex[i]);

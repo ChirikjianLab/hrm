@@ -64,13 +64,8 @@ void ProbHRM3D::plan(const double timeLim) {
         // Update number of C-layers
         param_.NUM_LAYER++;
 
-        // Minkowski operations
         Boundary bd = boundaryGen();
-
-        // Sweep-line process
         sweepLineProcess(&bd);
-
-        // Connect within one C-layer
         connectOneLayer3D(&freeSegOneLayer_);
 
         vtxId_.push_back(N_v);

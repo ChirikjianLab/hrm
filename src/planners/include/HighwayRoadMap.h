@@ -60,6 +60,11 @@ class HighwayRoadMap {
      */
     PlanningResult getPlanningResult() const { return res_; }
 
+    /** \brief getPlannerParameters retrieve parameters
+     * \return
+     */
+    PlannerParameter getPlannerParameters() const { return param_; }
+
     /** \brief getSolutionPath Retrieve solved path
      * \return 2D vector for representing solved path
      */
