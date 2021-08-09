@@ -113,12 +113,9 @@ void ProbHRM3D::connectMultiLayer() {
     }
     size_t n_1 = vtxId_.at(minIdx).layer;
 
-    // Middle C-layer TFE and C-obstacle boundary
+    // Construct bridge C-layer
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);
-
-    for (size_t j = 0; j < tfe_.size(); ++j) {
-        bridgeLayerBound_.push_back(bridgeLayer(tfe_.at(j)));
-    }
+    bridgeLayer();
 
     // Nearest vertex btw layers
     std::vector<double> V1;
@@ -146,9 +143,6 @@ void ProbHRM3D::connectMultiLayer() {
             }
         }
     }
-
-    // Clear current bridge C-layer boundaries
-    bridgeLayerBound_.clear();
 }
 
 // Generate collision-free vertices

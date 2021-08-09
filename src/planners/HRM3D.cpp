@@ -293,10 +293,7 @@ void HRM3D::connectMultiLayer() {
 
         // Construct the middle layer
         computeTFE(q_r[i], q_r[j], &tfe_);
-
-        for (size_t k = 0; k < tfe_.size(); ++k) {
-            bridgeLayerBound_.push_back(bridgeLayer(tfe_[k]));
-        }
+        bridgeLayer();
 
         //        ////////////////////////////////////////////////////////////
         //        std::ofstream file_mid;
@@ -354,9 +351,6 @@ void HRM3D::connectMultiLayer() {
             }
         }
         start = n2;
-
-        // Clear current bridge C-layer boundaries;
-        bridgeLayerBound_.clear();
     }
 
     //    std::cout << n_check << ',' << n_connect << std::endl;
@@ -382,21 +376,22 @@ std::vector<std::vector<double>> HRM3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-std::vector<MeshMatrix> HRM3D::bridgeLayer(SuperQuadrics Ec) {
-    // Reference point to be the center of Ec
-    Ec.setPosition({0.0, 0.0, 0.0});
+void HRM3D::bridgeLayer() {
+    bridgeLayerBound_.resize(tfe_.size());
+    for (size_t i = 0; i < tfe_.size(); ++i) {
+        // Reference point to be the center of Ec
+        tfe_.at(i).setPosition({0.0, 0.0, 0.0});
 
-    std::vector<Eigen::MatrixXd> bdCObstacle(N_o);
-    std::vector<MeshMatrix> bdMesh(N_o);
+        // calculate Minkowski boundary points and meshes for obstacles
+        std::vector<MeshMatrix> bdMesh;
+        for (size_t j = 0; j < size_t(N_o); ++j) {
+            auto bd = obs_.at(j).getMinkSum3D(tfe_.at(i), +1);
+            bdMesh.push_back(
+                getMeshFromParamSurface(bd, obs_.at(j).getNumParam()));
+        }
 
-    // calculate Minkowski boundary points and meshes for obstacles
-    for (size_t i = 0; i < N_o; ++i) {
-        bdCObstacle.at(i) = obs_.at(i).getMinkSum3D(Ec, +1);
-        bdMesh.at(i) = getMeshFromParamSurface(bdCObstacle.at(i),
-                                               int(obs_.at(i).getNumParam()));
+        bridgeLayerBound_.at(i) = bdMesh;
     }
-
-    return bdMesh;
 }
 
 bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
@@ -444,8 +439,7 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
         setTransform(vStep);
 
         // Base: determine whether each step is within CF-Line of bridgeLayer
-        if (!isPtInCFree(&bridgeLayerBound_.at(0),
-                         robot_.getBase().getPosition())) {
+        if (!isPtInCFree(0, robot_.getBase().getPosition())) {
             //            std::cout << "[Base] Current step: " << vStep[0] << ",
             //            " << vStep[1]
             //                      << ", " << vStep[2] << std::endl;
@@ -462,8 +456,7 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
         // For each link, check whether its center is within the simple convex
         // region between 4 CF-Lines in bridgeLayer
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-            if (!isPtInCFree(&bridgeLayerBound_.at(j + 1),
-                             robot_.getLinks()[j].getPosition())) {
+            if (!isPtInCFree(j + 1, robot_.getLinks()[j].getPosition())) {
                 //                std::cout << "[Link " << std::to_string(j)
                 //                          << "] Current step: " << vStep[0] <<
                 //                          ", " << vStep[1]
@@ -487,16 +480,13 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
     return true;
 }
 
-bool HRM3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                        const std::vector<double>& v) {
+bool HRM3D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
+    // Ray-casting to check point containment within all C-obstacles
     Eigen::VectorXd lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
-    std::vector<Eigen::Vector3d> intersectObs;
-
-    // Ray-casting to check point containment within all C-obstacles
-    for (size_t i = 0; i < bdMesh->size(); ++i) {
-        intersectObs = intersectVerticalLineMesh3D(lineZ, bdMesh->at(i));
+    for (auto bound : bridgeLayerBound_.at(bdIdx)) {
+        auto intersectObs = intersectVerticalLineMesh3D(lineZ, bound);
 
         if (!intersectObs.empty()) {
             if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&

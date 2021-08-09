@@ -24,8 +24,6 @@ add_executable(TestHRM3D TestHRM3D.cpp)
 target_link_libraries(TestHRM3D
                       HRM3D
                       TEST_UTIL
-                      ${FCL_LIBRARIES}
-                      ${CCD_LIBRARIES}
                       ${GTEST_LIBRARIES})
 add_test(TestHRM3D ${EXECUTABLE_OUTPUT_PATH}/TestHRM3D)
 

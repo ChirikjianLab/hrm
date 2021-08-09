@@ -32,13 +32,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     void sweepLineProcess(const Boundary* bd) override;
 
   protected:
-    /**
-     * \brief bridgeLayer generating bridge C-layer to connect adjacent
-     * C-layers
-     * \param SuperEllipse TFE for robot bodies
-     * \return Minkowski operation boundaries
-     */
-    Boundary bridgeLayer(SuperEllipse Ec);
+    void bridgeLayer() override;
 
     bool isSameLayerTransitionFree(const std::vector<double>& v1,
                                    const std::vector<double>& v2) override;
@@ -46,7 +40,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     bool isMultiLayerTransitionFree(const std::vector<double>& v1,
                                     const std::vector<double>& v2) override;
 
-    bool isPtInCFree(const Boundary* bd, const std::vector<double>& v);
+    bool isPtInCFree(const int bdIdx, const std::vector<double>& v) override;
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<double>& vertex, const size_t k,
@@ -54,8 +48,8 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual void setTransform(const std::vector<double>& v) override;
 
-    virtual void computeTFE(const double thetaA, const double thetaB,
-                            std::vector<SuperEllipse>* tfe);
+    void computeTFE(const double thetaA, const double thetaB,
+                    std::vector<SuperEllipse>* tfe);
 
   protected:
     /** \brief ang_r sampled orientations of the robot */
@@ -65,9 +59,6 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     FreeSegment2D freeSegOneLayer_;
 
-    /** \brief tfe_ TFE for bridge C-layers */
-    std::vector<SuperEllipse> tfe_;
-
-    /** \brief Minkowski operation boundaries in bridge C-layer */
+    /** \param Minkowski boundaries at bridge C-layer */
     std::vector<Boundary> bridgeLayerBound_;
 };

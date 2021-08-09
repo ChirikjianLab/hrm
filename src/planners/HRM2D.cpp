@@ -160,13 +160,9 @@ void HRM2D::connectMultiLayer() {
         }
         n2 = vtxId_.at(j).layer;
 
-        // Compute TFE
+        // Compute TFE and construct bridge C-layer
         computeTFE(ang_r[i], ang_r[j], &tfe_);
-
-        // Compute free segment at each bridge C-layer
-        for (size_t k = 0; k < tfe_.size(); ++k) {
-            bridgeLayerBound_.push_back(bridgeLayer(tfe_.at(k)));
-        }
+        bridgeLayer();
 
         // Connect close vertices btw layers
         for (size_t m0 = start; m0 < n1; ++m0) {
@@ -191,26 +187,26 @@ void HRM2D::connectMultiLayer() {
             }
         }
         start = n1;
-
-        // Clear bridgeLayerBound_;
-        bridgeLayerBound_.clear();
     }
 }
 
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-Boundary HRM2D::bridgeLayer(SuperEllipse Ec) {
-    Boundary bd;
-    // calculate Minkowski boundary points
-    for (size_t i = 0; i < size_t(N_s); ++i) {
-        bd.arena.push_back(arena_.at(i).getMinkSum2D(Ec, -1));
-    }
-    for (size_t i = 0; i < size_t(N_o); ++i) {
-        bd.obstacle.push_back(obs_.at(i).getMinkSum2D(Ec, +1));
-    }
+void HRM2D::bridgeLayer() {
+    bridgeLayerBound_.resize(tfe_.size());
+    for (size_t i = 0; i < tfe_.size(); ++i) {
+        // Reference point to be the center of TFE
+        tfe_.at(i).setPosition({0.0, 0.0});
 
-    return bd;
+        // calculate Minkowski boundary points
+        Boundary bd;
+        for (size_t j = 0; j < size_t(N_o); ++j) {
+            bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
+        }
+
+        bridgeLayerBound_.at(i) = bd;
+    }
 }
 
 bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,
@@ -242,16 +238,14 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<double>& v1,
 
         // For base, check whether the TFE is in free space of bridge
         // C-layer
-        if (!isPtInCFree(&bridgeLayerBound_.at(0),
-                         robot_.getBase().getPosition())) {
+        if (!isPtInCFree(0, robot_.getBase().getPosition())) {
             return false;
         }
 
         // For each link, check whether the TFE is in free space of bridge
         // C-layer
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-            if (!isPtInCFree(&bridgeLayerBound_.at(j + 1),
-                             robot_.getLinks()[j].getPosition())) {
+            if (!isPtInCFree(j + 1, robot_.getLinks()[j].getPosition())) {
                 return false;
             }
         }
@@ -260,13 +254,10 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<double>& v1,
     return true;
 }
 
-bool HRM2D::isPtInCFree(const Boundary* bd, const std::vector<double>& v) {
-    std::vector<double> intersectObs;
-
+bool HRM2D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
     // Ray-casting to check point containment within all C-obstacles
-    for (size_t i = 0; i < bd->obstacle.size(); ++i) {
-        intersectObs =
-            intersectHorizontalLinePolygon2D(v[1], bd->obstacle.at(i));
+    for (auto bound : bridgeLayerBound_.at(bdIdx).obstacle) {
+        auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
 
         if (!intersectObs.empty()) {
             if (v[0] > std::fmin(intersectObs[0], intersectObs[1]) &&

@@ -54,17 +54,20 @@ class HighwayRoadMap {
     virtual ~HighwayRoadMap();
 
   public:
-    /** \brief getPlanningResult retrieve planning results
+    /**
+     * \brief getPlanningResult retrieve planning results
      * \return PlanningResult struture
      */
     PlanningResult getPlanningResult() const { return res_; }
 
-    /** \brief getPlannerParameters retrieve parameters
-     * \return
+    /**
+     * \brief getPlannerParameters retrieve parameters
+     * \return PlannerParameter
      */
     PlannerParameter getPlannerParameters() const { return param_; }
 
-    /** \brief getSolutionPath Retrieve solved path
+    /**
+     * \brief getSolutionPath Retrieve solved path
      * \return 2D vector for representing solved path
      */
     std::vector<std::vector<double>> getSolutionPath();
@@ -78,19 +81,22 @@ class HighwayRoadMap {
     /** \brief search Subroutine for graph searching */
     void search();
 
-    /** \brief boundaryGen Generating Minkowski boundary points
+    /**
+     * \brief boundaryGen Generating Minkowski boundary points
      * \return Boundary structure
      */
     virtual Boundary boundaryGen();
 
-    /** \brief sweepLineProcess sweep-line process for generating collision-free
+    /**
+     * \brief sweepLineProcess sweep-line process for generating collision-free
      * line segment
      * \param pointer to Boundary structure, boundary of Minkowski
      * operations
      */
     virtual void sweepLineProcess(const Boundary* bd) = 0;
 
-    /** \brief generateVertices subroutine for generating collision-free
+    /**
+     * \brief generateVertices subroutine for generating collision-free
      * vertices on the yz-plane
      * \param tx x-coordinate of a sweep line (for 2D, it is set as constant
      * 0.0)
@@ -99,7 +105,8 @@ class HighwayRoadMap {
     virtual void generateVertices(const double tx,
                                   const FreeSegment2D* freeSeg) = 0;
 
-    /** \brief connectOneLayer2D Subroutine for connecting vertices within one
+    /**
+     * \brief connectOneLayer2D Subroutine for connecting vertices within one
      * C-layer
      * \param FreeSegment2D pointer
      */
@@ -110,6 +117,10 @@ class HighwayRoadMap {
     virtual void connectMultiLayer() = 0;
 
   protected:
+    /** \brief bridgeLayer generating bridge C-layer to connect adjacent
+     * C-layers */
+    virtual void bridgeLayer() = 0;
+
     /** \brief computeFreeSegment compute collision-free segment on each sweep
      * line
      * \param ty vector of y-coordinates of the sweep line
@@ -140,6 +151,9 @@ class HighwayRoadMap {
      */
     virtual bool isMultiLayerTransitionFree(const std::vector<double>& v1,
                                             const std::vector<double>& v2) = 0;
+
+    /** \brief check whether one point is within C-free */
+    virtual bool isPtInCFree(const int bdIdx, const std::vector<double>& v) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
      * \param FreeSegment2D pointer (non-const)
@@ -183,6 +197,9 @@ class HighwayRoadMap {
     /** \param Vertex index info */
     vertexIdx N_v;
     std::vector<vertexIdx> vtxId_;
+
+    /** \param Tightly-fitted ellipsoids at bridge C-layer */
+    std::vector<ObjectType> tfe_;
 };
 
 #include "HighwayRoadMap-inl.h"

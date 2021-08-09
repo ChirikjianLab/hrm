@@ -46,11 +46,9 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void connectMultiLayer() override;
 
-    /** \brief subroutine to first construct the middle C-layer */
-    //    FreeSegment3D bridgeLayer(SuperQuadrics);
-    std::vector<MeshMatrix> bridgeLayer(SuperQuadrics Ec);
-
   protected:
+    void bridgeLayer() override;
+
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
                     std::vector<SuperQuadrics>* tfe);
 
@@ -64,9 +62,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         const std::vector<double>& vertex, const size_t k,
         const double radius) override;
 
-    /** \brief check is one point is within C-free */
-    bool isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                     const std::vector<double>& v);
+    bool isPtInCFree(const int bdIdx, const std::vector<double>& v) override;
 
     /** \brief uniform random sample SO(3) */
     void sampleSO3();
@@ -80,8 +76,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   protected:
     std::vector<MeshMatrix> layerBoundMesh_;
 
-    std::vector<SuperQuadrics> tfe_;
-
     FreeSegment3D freeSegOneLayer_;
+
+    /** \param Minkowski boundaries mesh at bridge C-layer */
     std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
 };
