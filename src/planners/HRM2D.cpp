@@ -1,18 +1,17 @@
-#include "include/HighwayRoadMap2d.h"
+#include "include/HRM2D.h"
 #include "geometry/include/LineIntersection.h"
 
 #include <iostream>
 
-HighwayRoadMap2D::HighwayRoadMap2D(const MultiBodyTree2D& robot,
-                                   const std::vector<SuperEllipse>& arena,
-                                   const std::vector<SuperEllipse>& obs,
-                                   const PlanningRequest& req)
+HRM2D::HRM2D(const MultiBodyTree2D& robot,
+             const std::vector<SuperEllipse>& arena,
+             const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HighwayRoadMap2D::~HighwayRoadMap2D() {}
+HRM2D::~HRM2D() {}
 
-void HighwayRoadMap2D::buildRoadmap() {
+void HRM2D::buildRoadmap() {
     // angle steps
     double dr = 2 * pi / (param_.NUM_LAYER - 1);
 
@@ -51,7 +50,7 @@ void HighwayRoadMap2D::buildRoadmap() {
     connectMultiLayer();
 }
 
-void HighwayRoadMap2D::sweepLineProcess(const Boundary* bd) {
+void HRM2D::sweepLineProcess(const Boundary* bd) {
     Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
         param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);
     Eigen::MatrixXd segArenaUpp = Eigen::MatrixXd::Constant(
@@ -76,7 +75,7 @@ void HighwayRoadMap2D::sweepLineProcess(const Boundary* bd) {
     for (Eigen::Index i = 0; i < param_.NUM_LINE_Y; ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
         for (Eigen::Index j = 0; j < long(bd->arena.size()); ++j) {
-            intersectPointArena = intersectHorizontalLinePolygon2d(
+            intersectPointArena = intersectHorizontalLinePolygon2D(
                 ty[size_t(i)], bd->arena[size_t(j)]);
             if (intersectPointArena.empty()) {
                 continue;
@@ -92,7 +91,7 @@ void HighwayRoadMap2D::sweepLineProcess(const Boundary* bd) {
 
         // x-coordinate of the intersection btw sweep line and obstacles
         for (Eigen::Index j = 0; j < long(bd->obstacle.size()); ++j) {
-            intersectPointObstacle = intersectHorizontalLinePolygon2d(
+            intersectPointObstacle = intersectHorizontalLinePolygon2D(
                 ty[size_t(i)], bd->obstacle[size_t(j)]);
             if (intersectPointObstacle.empty()) {
                 continue;
@@ -110,8 +109,7 @@ void HighwayRoadMap2D::sweepLineProcess(const Boundary* bd) {
                                           segObstableLow, segObstableUpp);
 }
 
-void HighwayRoadMap2D::generateVertices(const double tx,
-                                        const FreeSegment2D* freeSeg) {
+void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
@@ -129,7 +127,7 @@ void HighwayRoadMap2D::generateVertices(const double tx,
     N_v.layer = res_.graph_structure.vertex.size();
 }
 
-void HighwayRoadMap2D::connectMultiLayer() {
+void HRM2D::connectMultiLayer() {
     // No connection needed if robot only has one orientation
     if (param_.NUM_LAYER == 1) {
         return;
@@ -202,7 +200,7 @@ void HighwayRoadMap2D::connectMultiLayer() {
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-Boundary HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
+Boundary HRM2D::bridgeLayer(SuperEllipse Ec) {
     Boundary bd;
     // calculate Minkowski boundary points
     for (size_t i = 0; i < size_t(N_s); ++i) {
@@ -215,8 +213,8 @@ Boundary HighwayRoadMap2D::bridgeLayer(SuperEllipse Ec) {
     return bd;
 }
 
-bool HighwayRoadMap2D::isSameLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
+bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,
+                                      const std::vector<double>& v2) {
     // Intersection between line segment and polygons
     for (size_t i = 0; i < layerBound_.obstacle.size(); ++i) {
         if (isIntersectSegPolygon2D(std::make_pair(v1, v2),
@@ -229,8 +227,8 @@ bool HighwayRoadMap2D::isSameLayerTransitionFree(
 }
 
 // Connect vertices among different layers
-bool HighwayRoadMap2D::isMultiLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
+bool HRM2D::isMultiLayerTransitionFree(const std::vector<double>& v1,
+                                       const std::vector<double>& v2) {
     double dt = 1.0 / (param_.NUM_POINT - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolate robot motion linearly from v1 to v2
@@ -262,14 +260,13 @@ bool HighwayRoadMap2D::isMultiLayerTransitionFree(
     return true;
 }
 
-bool HighwayRoadMap2D::isPtInCFree(const Boundary* bd,
-                                   const std::vector<double>& v) {
+bool HRM2D::isPtInCFree(const Boundary* bd, const std::vector<double>& v) {
     std::vector<double> intersectObs;
 
     // Ray-casting to check point containment within all C-obstacles
     for (size_t i = 0; i < bd->obstacle.size(); ++i) {
         intersectObs =
-            intersectHorizontalLinePolygon2d(v[1], bd->obstacle.at(i));
+            intersectHorizontalLinePolygon2D(v[1], bd->obstacle.at(i));
 
         if (!intersectObs.empty()) {
             if (v[0] > std::fmin(intersectObs[0], intersectObs[1]) &&
@@ -282,7 +279,7 @@ bool HighwayRoadMap2D::isPtInCFree(const Boundary* bd,
     return true;
 }
 
-// bool HighwayRoadMap2D::isMultiLayerTransitionFree(
+// bool HRM2D::isMultiLayerTransitionFree(
 //    const std::vector<double>& v1, const std::vector<double>& v2) {
 //    double dt = 1.0 / (param_.NUM_POINT - 1);
 //    for (size_t i = 0; i < param_.NUM_POINT; ++i) {
@@ -314,7 +311,7 @@ bool HighwayRoadMap2D::isPtInCFree(const Boundary* bd,
 //    return true;
 //}
 
-// bool HighwayRoadMap2D::isPtInCFLine(const FreeSegment2D& freeSeg,
+// bool HRM2D::isPtInCFLine(const FreeSegment2D& freeSeg,
 //                                    const std::vector<double>& V) {
 //    std::vector<bool> isInLine(2, false);
 
@@ -351,7 +348,7 @@ bool HighwayRoadMap2D::isPtInCFree(const Boundary* bd,
 //    }
 //}
 
-std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
+std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
     const std::vector<double>& vertex, const size_t k, const double radius) {
     // Find the closest roadmap vertex
     double minEuclideanDist;
@@ -408,7 +405,7 @@ std::vector<Vertex> HighwayRoadMap2D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HighwayRoadMap2D::setTransform(const std::vector<double>& v) {
+void HRM2D::setTransform(const std::vector<double>& v) {
     Eigen::Matrix3d g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
     g.topRightCorner(2, 1) = Eigen::Vector2d(v[0], v[1]);
@@ -416,8 +413,8 @@ void HighwayRoadMap2D::setTransform(const std::vector<double>& v) {
     robot_.robotTF(g);
 }
 
-void HighwayRoadMap2D::computeTFE(const double thetaA, const double thetaB,
-                                  std::vector<SuperEllipse>* tfe) {
+void HRM2D::computeTFE(const double thetaA, const double thetaB,
+                       std::vector<SuperEllipse>* tfe) {
     tfe->clear();
 
     // Compute a tightly-fitted ellipse that bounds rotational motions from

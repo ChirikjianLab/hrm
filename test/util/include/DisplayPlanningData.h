@@ -1,5 +1,4 @@
-#ifndef DISPLAYPLANNINGDATA_H
-#define DISPLAYPLANNINGDATA_H
+#pragma once
 
 #include "planners/include/PlanningResult.h"
 
@@ -12,5 +11,3 @@ void displayGraphInfo(const Graph* graph, const std::string dim);
 
 void displayPathInfo(const SolutionPathInfo* path);
 void displayPathInfo(const SolutionPathInfo* path, const std::string dim);
-
-#endif  // DISPLAYPLANNINGDATA_H

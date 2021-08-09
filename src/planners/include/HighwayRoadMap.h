@@ -1,5 +1,4 @@
-#ifndef HIGHWAYROADMAP_H
-#define HIGHWAYROADMAP_H
+#pragma once
 
 #include "planners/include/PlanningRequest.h"
 #include "planners/include/PlanningResult.h"
@@ -187,5 +186,3 @@ class HighwayRoadMap {
 };
 
 #include "HighwayRoadMap-inl.h"
-
-#endif  // HIGHWAYROADMAP_H

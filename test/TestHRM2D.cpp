@@ -1,5 +1,5 @@
+#include "planners/include/HRM2D.h"
 #include "planners/include/HRM2DKC.h"
-#include "planners/include/HighwayRoadMap2d.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -142,7 +142,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
     req.goal = env2D->getEndPoints().at(1);
 
     bool isStoreRes = true;
-    auto hrm = planTest<HighwayRoadMap2D, MultiBodyTree2D>(
+    auto hrm = planTest<HRM2D, MultiBodyTree2D>(
         robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
     PlanningResult res = hrm.getPlanningResult();
 

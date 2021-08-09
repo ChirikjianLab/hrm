@@ -1,7 +1,7 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3d(const Eigen::VectorXd& line,
+std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
                                                  const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
     Eigen::Vector3d t0, u, v, pt;
@@ -13,7 +13,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3d(const Eigen::VectorXd& line,
         v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
         // keep only interesting points
-        bool hasIntersect = intersectLineTriangle3d(&line, &t0, &u, &v, &pt);
+        bool hasIntersect = intersectLineTriangle3D(&line, &t0, &u, &v, &pt);
 
         if (hasIntersect) {
             points.push_back(pt);
@@ -27,7 +27,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3d(const Eigen::VectorXd& line,
     return points;
 }
 
-std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
+std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
     const Eigen::VectorXd& line, const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
 
@@ -42,7 +42,7 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
 
     Eigen::Vector3d t0, u, v, pt;
 
-    /*
+    /**
      * \brief Specifially for vertical sweep lines, first do a quick check
      * according to x and y coord: If the x or y coordinates of the vertical
      * sweep line is out of range of the triangle, directly ignore
@@ -80,7 +80,7 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
         v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
         // keep only interesting points
-        bool hasIntersect = intersectLineTriangle3d(&line, &t0, &u, &v, &pt);
+        bool hasIntersect = intersectLineTriangle3D(&line, &t0, &u, &v, &pt);
 
         if (hasIntersect) {
             points.push_back(pt);
@@ -94,7 +94,7 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3d(
     return points;
 }
 
-bool intersectLineTriangle3d(const Eigen::VectorXd* line,
+bool intersectLineTriangle3D(const Eigen::VectorXd* line,
                              const Eigen::Vector3d* t0,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
                              Eigen::Vector3d* pt) {
@@ -189,7 +189,7 @@ bool isIntersectSegPolygon2D(
     return false;
 }
 
-std::vector<double> intersectHorizontalLinePolygon2d(
+std::vector<double> intersectHorizontalLinePolygon2D(
     const double ty, const Eigen::Matrix2Xd& shape) {
     std::vector<double> points;
 

@@ -1,10 +1,11 @@
-#ifndef HRM2DKC_H
-#define HRM2DKC_H
+#pragma once
 
-#include "HighwayRoadMap2d.h"
+#include "HRM2D.h"
 #include "geometry/include/PointInPoly.h"
 
-class HRM2DKC : public HighwayRoadMap2D {
+/** \class HRM2DKC HRM 2D version using Kinematics of Containment for layer
+ * connections */
+class HRM2DKC : public HRM2D {
   public:
     HRM2DKC(const MultiBodyTree2D& robot,
             const std::vector<SuperEllipse>& arena,
@@ -27,5 +28,3 @@ class HRM2DKC : public HighwayRoadMap2D {
     /** \param infla inflation factor for the robot */
     double infla;
 };
-
-#endif  // HRM2DKC_H

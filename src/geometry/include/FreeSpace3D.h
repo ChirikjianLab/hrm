@@ -1,5 +1,4 @@
-#ifndef FREESPACE3D_H
-#define FREESPACE3D_H
+#pragma once
 
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/Interval.h"
@@ -8,21 +7,20 @@
 #include <limits>
 #include <vector>
 
-/*
- * \brief boundary3D
- * C-space boundary points for arenas and obstacles, vector number equals the
- * multiplication of robot bodies number and object number
+/**
+ * \brief boundary3D C-space boundary points for arenas and obstacles, vector
+ * number equals the multiplication of robot bodies number and object number
  */
 struct boundary3D {
     std::vector<Eigen::Matrix3Xd> arenaBd;
     std::vector<Eigen::Matrix3Xd> obsBd;
 };
 
-/*
+/**
  * \brief freeSegment3D Collision-free vertical sweep line segments
- * xCoord: x-coordinate
- * yCoord: y-coordinate
- * zCoords: z-coordinates of free segments on the sweep line
+ * \param xCoord x-coordinate
+ * \param yCoord y-coordinate
+ * \param zCoords z-coordinates of free segments on the sweep line
  */
 struct freeSegment3D {
     double xCoord;
@@ -30,14 +28,15 @@ struct freeSegment3D {
     std::vector<Interval> zCoords;
 };
 
-/*
+/**
  * \brief paramteres3D parameters for free space parameterization
- * numRotation: number of rotation samples, default = 60
- * numX: number of sweep lines in x-direction, default = 30
- * numY: number of sweep lines in y-direction, default = 30
- * numPointOnFreeSegment: number of sampled points on free segment, default = 20
- * xLim, yLim, zLim: limit bounds of x, y and z directions
- * qSample: pre-defined rotation samples, in Quaternion
+ * \param numRotation number of rotation samples, default = 60
+ * \param numX number of sweep lines in x-direction, default = 30
+ * \param numY number of sweep lines in y-direction, default = 30
+ * \param numPointOnFreeSegment number of sampled points on free segment,
+ * default = 20
+ * \param xLim, yLim, zLim limit bounds of x, y and z directions qSample:
+ * pre-defined rotation samples, in Quaternion
  */
 struct parameters3D {
     size_t numRotation = 60;
@@ -52,7 +51,7 @@ struct parameters3D {
     std::vector<Eigen::Quaterniond> qSample;
 };
 
-/*
+/**
  * \brief intersectSweepLine3D interections between each sweep line and C-space
  * object boundaries
  */
@@ -61,9 +60,7 @@ struct intersectSweepLine3D {
     std::vector<Interval> obsZCords;
 };
 
-/*
- * \class FreeSpaceSE3 class to compute free space in SE(3)
- */
+/** \class FreeSpaceSE3 class to compute free space in SE(3) */
 class FreeSpace3D {
   public:
     FreeSpace3D(MultiBodyTree3D* robot, std::vector<SuperQuadrics>* arena,
@@ -100,5 +97,3 @@ class FreeSpace3D {
     std::vector<SuperQuadrics>* obstacle_;
     parameters3D* param_;
 };
-
-#endif  // FREESPACE3D_H

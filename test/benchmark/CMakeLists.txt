@@ -19,15 +19,15 @@ target_link_libraries(BenchOMPL3DArticulated
 
 add_executable(BenchHRM2D BenchHRM2D.cpp)
 target_link_libraries(BenchHRM2D
-                      HRM_2D
+                      HRM2D
                       TEST_UTIL)
 
 add_executable(BenchHRM3D BenchHighway3D.cpp)
 target_link_libraries(BenchHRM3D
-                      HRM_3D
+                      HRM3D
                       TEST_UTIL)
 
 add_executable(BenchProbHRM3D BenchProbHRM3D.cpp)
 target_link_libraries(BenchProbHRM3D
-                      HRM_3D
+                      HRM3D
                       TEST_UTIL)

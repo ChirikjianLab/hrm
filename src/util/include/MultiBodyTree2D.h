@@ -1,5 +1,4 @@
-#ifndef MULTIBODYTREE2D_H
-#define MULTIBODYTREE2D_H
+#pragma once
 
 #include "geometry/include/SuperEllipse.h"
 
@@ -26,5 +25,3 @@ class MultiBodyTree2D {
     std::vector<SuperEllipse> link_;
     std::vector<Eigen::Matrix3d> tf_;
 };
-
-#endif  // MULTIBODYTREE2D_H

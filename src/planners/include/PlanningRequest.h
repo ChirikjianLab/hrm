@@ -1,5 +1,4 @@
-#ifndef PLANNERREQUEST_H
-#define PLANNERREQUEST_H
+#pragma once
 
 #include <limits>
 #include <vector>
@@ -10,12 +9,11 @@ static const double inf = std::numeric_limits<double>::infinity();
 /** \brief Parameters for planner
  * \param BOUND_LIMIT Boundary limit of the planning arena, format {xLowBound,
  *xHighBound, yLowbound, yHighBound}
- *
  * \param NUM_LAYER number of C-layers
  * \param NUM_LINE_X number of sweep lines in x-direction in each C-layer
  * \param NUM_LINE_Y number of sweep lines in y-direction in each C-layer
  * \param NUM_POINT number of interpolation for connections of two C-layers
- **/
+ */
 struct PlannerParameter {
     std::vector<double> BOUND_LIMIT;
 
@@ -37,5 +35,3 @@ struct PlanningRequest {
     std::vector<double> start;
     std::vector<double> goal;
 };
-
-#endif  // PLANNERREQUEST_H

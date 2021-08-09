@@ -4,7 +4,7 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                  const std::vector<SuperEllipse>& arena,
                  const std::vector<SuperEllipse>& obs,
                  const PlanningRequest& req)
-    : HighwayRoadMap2D(robot, arena, obs, req) {}
+    : HRM2D(robot, arena, obs, req) {}
 
 HRM2DKC::~HRM2DKC() {}
 

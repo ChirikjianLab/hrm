@@ -1,5 +1,4 @@
-#ifndef HIGHWAYROADMAP3D_H
-#define HIGHWAYROADMAP3D_H
+#pragma once
 
 #include "geometry/include/LineIntersection.h"
 #include "geometry/include/TightFitEllipsoid.h"
@@ -7,27 +6,26 @@
 #include "util/include/InterpolateSE3.h"
 #include "util/include/MultiBodyTree3D.h"
 
-// FreeSegment3D collision-free line segments in 3D
+/** \brief FreeSegment3D collision-free line segments in 3D */
 struct FreeSegment3D {
     std::vector<double> tx;
     std::vector<FreeSegment2D> freeSegYZ;
 };
 
-class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
+class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   public:
-    HighwayRoadMap3D(const MultiBodyTree3D& robot,
-                     const std::vector<SuperQuadrics>& arena,
-                     const std::vector<SuperQuadrics>& obs,
-                     const PlanningRequest& req);
+    HRM3D(const MultiBodyTree3D& robot, const std::vector<SuperQuadrics>& arena,
+          const std::vector<SuperQuadrics>& obs, const PlanningRequest& req);
 
-    virtual ~HighwayRoadMap3D();
+    virtual ~HRM3D();
 
   public:
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
 
-    /** \brief get free line segment at one specific C-layer
+    /**
+     * \brief get free line segment at one specific C-layer
      * \param Boundary pointer to Minkowski boundaries
      * \return FreeSegment3D
      */
@@ -87,5 +85,3 @@ class HighwayRoadMap3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     FreeSegment3D freeSegOneLayer_;
     std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
 };
-
-#endif  // HIGHWAYROADMAP3D_H

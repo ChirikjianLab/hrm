@@ -1,5 +1,4 @@
-#ifndef MINKOWSKISAMPLERSE2_H
-#define MINKOWSKISAMPLERSE2_H
+#pragma once
 
 #include "geometry/include/FreeSpace2D.h"
 
@@ -10,10 +9,8 @@
 
 namespace ob = ompl::base;
 
-/*
- * \brief Minkowski-based sampler, using sweep line to generate samplers on free
- * space
- */
+/** \brief Minkowski-based sampler, using sweep line to generate samplers on
+ * free space */
 class MinkowskiSweepLineSamplerSE2 : public ob::ValidStateSampler {
   public:
     MinkowskiSweepLineSamplerSE2(const ob::SpaceInformation* si);
@@ -67,5 +64,3 @@ class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
     std::vector<SuperEllipse>* obstacle_;
     parameters2D* param_;
 };
-
-#endif  // MINKOWSKISAMPLERSE2_H

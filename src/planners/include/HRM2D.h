@@ -1,21 +1,19 @@
-#ifndef HIGHWAYROADMAP2D_H
-#define HIGHWAYROADMAP2D_H
+#pragma once
 
 #include "HighwayRoadMap.h"
 #include "src/geometry/include/TightFitEllipsoid.h"
 #include "util/include/MultiBodyTree2D.h"
 
-class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
+class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   public:
-    HighwayRoadMap2D(const MultiBodyTree2D& robot,
-                     const std::vector<SuperEllipse>& arena,
-                     const std::vector<SuperEllipse>& obs,
-                     const PlanningRequest& req);
+    HRM2D(const MultiBodyTree2D& robot, const std::vector<SuperEllipse>& arena,
+          const std::vector<SuperEllipse>& obs, const PlanningRequest& req);
 
-    virtual ~HighwayRoadMap2D() override;
+    virtual ~HRM2D() override;
 
   public:
-    /** \brief get free line segment at one specific C-layer
+    /**
+     * \brief get free line segment at one specific C-layer
      * \param Boundary pointer to Minkowski boundaries
      * \return FreeSegment2D
      */
@@ -34,7 +32,8 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     void sweepLineProcess(const Boundary* bd) override;
 
   protected:
-    /** \brief bridgeLayer generating bridge C-layer to connect adjacent
+    /**
+     * \brief bridgeLayer generating bridge C-layer to connect adjacent
      * C-layers
      * \param SuperEllipse TFE for robot bodies
      * \return Minkowski operation boundaries
@@ -72,5 +71,3 @@ class HighwayRoadMap2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief Minkowski operation boundaries in bridge C-layer */
     std::vector<Boundary> bridgeLayerBound_;
 };
-
-#endif  // HIGHWAYROADMAP2D_H

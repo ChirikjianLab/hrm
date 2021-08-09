@@ -63,7 +63,7 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     // x-coordinate of the intersection btw sweep line and arenas
     for (size_t j = 0; j < numArenaMink; ++j) {
         std::vector<double> arenaIntersectPts =
-            intersectHorizontalLinePolygon2d(yCoord,
+            intersectHorizontalLinePolygon2D(yCoord,
                                              configSpaceBoundary_.arenaBd[j]);
         if (!arenaIntersectPts.empty()) {
             intersects.arenaXCoords.emplace_back(
@@ -76,7 +76,7 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     }
     // x-coordinate of the intersection btw sweep line and obstacles
     for (size_t j = 0; j < numObsMink; ++j) {
-        std::vector<double> obsIntersectPts = intersectHorizontalLinePolygon2d(
+        std::vector<double> obsIntersectPts = intersectHorizontalLinePolygon2D(
             yCoord, configSpaceBoundary_.obsBd[j]);
         if (!obsIntersectPts.empty()) {
             intersects.obsXCords.emplace_back(

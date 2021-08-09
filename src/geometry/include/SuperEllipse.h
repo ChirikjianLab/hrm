@@ -1,47 +1,40 @@
-#ifndef SUPERELLIPSE_H
-#define SUPERELLIPSE_H
+#pragma once
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <vector>
 
+/**
+ * \class SuperEllipse
+ * \param semiAxis semi-axes length
+ * \param epsilon epsilon
+ * \param pose SE(2) pose of the ellipse [x,y,\theta]
+ */
 class SuperEllipse {
   public:
-    /*
-     * \class SuperEllipse
-     *
-     * \param semiAxis : semi-axes length
-     * \param epsilon  : epsilon
-     * \param pose     : SE(2) pose of the ellipse [x,y,\theta]
-     */
-
     SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
                  const std::vector<double> &position, const double angle,
                  const unsigned int num);
 
   public:
-    // Getter functions
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     double getEpsilon() const { return epsilon_; }
     std::vector<double> getPosition() const { return position_; }
     double getAngle() const { return angle_; }
     unsigned int getNum() const { return num_; }
 
-    // Setter functions
     void setSemiAxis(const std::vector<double> &newSemiAxis);
     void setEpsilon(const double newEpsilon);
     void setPosition(const std::vector<double> &newPosition);
     void setAngle(const double newAngle);
 
-    /*
-     * Compute and return the boundary points of the origianl SuperEllipse
-     */
+    /** \brief Compute and return the boundary points of the origianl
+     * SuperEllipse */
     Eigen::MatrixXd getOriginShape() const;
 
-    /*
-     * Compute and return the boundary points of the Minkowski sum with another
-     * SuperEllipse
-     *
+    /**
+     * \brief Compute and return the boundary points of the Minkowski sum with
+     * another SuperEllipse
      * \param shapeB SuperEllipse class of another shape
      * \param K indicator for sum (+1)/diff (-1)
      */
@@ -56,5 +49,3 @@ class SuperEllipse {
     // Number of points on boundary
     unsigned int num_;
 };
-
-#endif  // SUPERELLIPSE_H

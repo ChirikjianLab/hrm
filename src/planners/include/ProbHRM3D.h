@@ -1,10 +1,10 @@
-#ifndef PROBHRM3D_H
-#define PROBHRM3D_H
+#pragma once
 
-#include "HighwayRoadMap3d.h"
+#include "HRM3D.h"
 #include "util/include/ParseURDF.h"
 
-class ProbHRM3D : public HighwayRoadMap3D {
+/** \class ProbHRM3D Prob-HRM for 3D robot planning */
+class ProbHRM3D : public HRM3D {
   public:
     ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
               const std::vector<SuperQuadrics>& arena,
@@ -36,5 +36,3 @@ class ProbHRM3D : public HighwayRoadMap3D {
     // store configuration for each robot shape (at each C-layer)
     std::vector<std::vector<double>> v_;
 };
-
-#endif  // PROBHRM3D_H

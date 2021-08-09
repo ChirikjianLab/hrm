@@ -1,4 +1,4 @@
-#include "planners/include/HighwayRoadMap3d.h"
+#include "planners/include/HRM3D.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -67,9 +67,8 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HighwayRoadMap3D
-        HighwayRoadMap3D hrm(robot, env3D->getArena(), env3D->getObstacle(),
-                             req);
+        // Path planning using HRM3D
+        HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
         hrm.plan();
 
         PlanningResult res = hrm.getPlanningResult();

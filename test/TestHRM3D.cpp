@@ -1,4 +1,4 @@
-#include "planners/include/HighwayRoadMap3d.h"
+#include "planners/include/HRM3D.h"
 #include "planners/include/ProbHRM3D.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
@@ -134,11 +134,11 @@ TEST(TestHRMPlanning3D, HRM) {
 
     cout << "Start planning..." << endl;
 
-    HighwayRoadMap3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
+    HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
     hrm.plan();
     PlanningResult res = hrm.getPlanningResult();
 
-    storeRoutines<HighwayRoadMap3D>(&hrm);
+    storeRoutines<HRM3D>(&hrm);
 
     // Planning results: Time and Path Cost
     cout << "----------" << endl;

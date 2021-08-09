@@ -1,5 +1,4 @@
-#ifndef INTERVAL
-#define INTERVAL
+#pragma once
 
 #include <bits/stdc++.h>
 #include <limits>
@@ -26,5 +25,3 @@ class Interval {
     double start_ = std::numeric_limits<double>::quiet_NaN();
     double end_ = std::numeric_limits<double>::quiet_NaN();
 };
-
-#endif  // INTERVAL

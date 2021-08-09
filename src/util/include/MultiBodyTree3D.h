@@ -1,10 +1,9 @@
-#ifndef MULTIBODYTREE3D_H
-#define MULTIBODYTREE3D_H
+#pragma once
 
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/ParseURDF.h"
 
-#include "eigen3/Eigen/Geometry"
+#include <eigen3/Eigen/Geometry>
 
 class MultiBodyTree3D {
   public:
@@ -34,5 +33,3 @@ class MultiBodyTree3D {
     std::vector<SuperQuadrics> link_;
     std::vector<Eigen::Matrix4d> tf_;
 };
-
-#endif  // MULTIBODYTREE3D_H

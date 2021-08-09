@@ -1,5 +1,4 @@
-#ifndef C3FGENERATOR3DARTICULATED_H
-#define C3FGENERATOR3DARTICULATED_H
+#pragma once
 
 #include "C3FGenerator3D.h"
 
@@ -27,5 +26,3 @@ class C3FGenerator3DArticulated : C3FGenerator3D {
     int numJoint_;
     const double maxJointAngle_ = pi / 2;
 };
-
-#endif  // C3FGENERATOR3DARTICULATED_H

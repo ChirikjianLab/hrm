@@ -1,7 +1,6 @@
-#ifndef MESHGENERATOR_H
-#define MESHGENENATOR_H
+#pragma once
 
-#include "src/geometry/include/SuperQuadrics.h"
+#include "SuperQuadrics.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -27,42 +26,35 @@ using Point = Triangulation::Point;
 using Finite_cells_iterator = Triangulation::Finite_cells_iterator;
 using Point_3 = K::Point_3;
 
-// Mesh as a structure of vertices and triangles
+/** \brief Mesh as a structure of vertices and triangles */
 struct Mesh {
     std::vector<fcl::Vector3d> vertices;
     std::vector<fcl::Triangle> triangles;
 };
 
-// Mesh with vertices and faces stored in MatrixXd format
+/** \brief Mesh with vertices and faces stored in MatrixXd format */
 struct MeshMatrix {
     Eigen::MatrixXd vertices;
     Eigen::MatrixXd faces;
 };
 
+/** \brief ParametricPoints vectors of point coordinates */
 struct ParametricPoints {
     std::vector<double> x;
     std::vector<double> y;
     std::vector<double> z;
 };
 
-/*
- * \brief get mesh info from SuperQuadrics class
- */
+/** \brief get mesh info from SuperQuadrics class */
 Mesh getMeshFromSQ(SuperQuadrics sq);
 
-/*
- * \brief get mesh info from 3D point cloud
- */
+/** \brief get mesh info from 3D point cloud */
 Mesh getMesh(const ParametricPoints& points);
 
-/*
- * \brief get 3D point cloud from SuperQuadric class
- */
+/** \brief get 3D point cloud from SuperQuadric class */
 ParametricPoints getBoundary3D(const SuperQuadrics& obj);
 
-/*
- * \brief Generate SuperQuadrics class from configuration .csv file
- */
+/** \brief Generate SuperQuadrics class from configuration .csv file */
 std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
                                         const int num);
 
@@ -70,5 +62,3 @@ ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat);
 
 MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
                                    const int n);
-
-#endif  // MESHGENERATOR_H

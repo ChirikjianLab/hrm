@@ -1,5 +1,4 @@
-#ifndef ELLIPSOIDSQCOLLISIONFCL_H
-#define ELLIPSOIDSQCOLLISIONFCL_H
+#pragma once
 
 #include "geometry/include/MeshGenerator.h"
 #include "geometry/include/SuperEllipse.h"
@@ -19,5 +18,3 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperEllipse& object);
-
-#endif  // ELLIPSOIDSQCOLLISIONFCL_H

@@ -1,5 +1,4 @@
-#ifndef HIGHWAYROADMAP_INL_H
-#define HIGHWAYROADMAP_INL_H
+#pragma once
 
 #include "HighwayRoadMap.h"
 #include "src/util/include/Interval.h"
@@ -333,5 +332,3 @@ void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
              [](double a, double b) { return a < b; });
     }
 }
-
-#endif  // HIGHWAYROADMAP_INL_H

@@ -1,20 +1,19 @@
-#include "include/HighwayRoadMap3d.h"
+#include "include/HRM3D.h"
 
 #include <fstream>
 #include <iostream>
 #include <list>
 #include <random>
 
-HighwayRoadMap3D::HighwayRoadMap3D(const MultiBodyTree3D& robot,
-                                   const std::vector<SuperQuadrics>& arena,
-                                   const std::vector<SuperQuadrics>& obs,
-                                   const PlanningRequest& req)
+HRM3D::HRM3D(const MultiBodyTree3D& robot,
+             const std::vector<SuperQuadrics>& arena,
+             const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HighwayRoadMap3D::~HighwayRoadMap3D() {}
+HRM3D::~HRM3D() {}
 
-void HighwayRoadMap3D::buildRoadmap() {
+void HRM3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
 
@@ -37,7 +36,7 @@ void HighwayRoadMap3D::buildRoadmap() {
     connectMultiLayer();
 }
 
-void HighwayRoadMap3D::sweepLineProcess(const Boundary* bd) {
+void HRM3D::sweepLineProcess(const Boundary* bd) {
     Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
                         long(param_.NUM_LINE_Y), long(bd->arena.size()),
                         -param_.BOUND_LIMIT[2]),
@@ -92,7 +91,7 @@ void HighwayRoadMap3D::sweepLineProcess(const Boundary* bd) {
 
             for (size_t m = 0; m < bd->arena.size(); ++m) {
                 intersectPointArena =
-                    intersectVerticalLineMesh3d(lineZ, P_s[m]);
+                    intersectVerticalLineMesh3D(lineZ, P_s[m]);
 
                 if (intersectPointArena.empty()) continue;
 
@@ -107,7 +106,7 @@ void HighwayRoadMap3D::sweepLineProcess(const Boundary* bd) {
             }
             for (size_t n = 0; n < bd->obstacle.size(); ++n) {
                 intersectPointObstacle =
-                    intersectVerticalLineMesh3d(lineZ, P_o[n]);
+                    intersectVerticalLineMesh3D(lineZ, P_o[n]);
 
                 if (intersectPointObstacle.empty()) continue;
 
@@ -137,8 +136,7 @@ void HighwayRoadMap3D::sweepLineProcess(const Boundary* bd) {
     }
 }
 
-void HighwayRoadMap3D::generateVertices(const double tx,
-                                        const FreeSegment2D* freeSeg) {
+void HRM3D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
@@ -160,7 +158,7 @@ void HighwayRoadMap3D::generateVertices(const double tx,
 }
 
 // Connect vertices within one C-layer
-void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
+void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     size_t n1 = 0;
     size_t n2 = 0;
 
@@ -198,7 +196,7 @@ void HighwayRoadMap3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     }
 }
 
-void HighwayRoadMap3D::connectMultiLayer() {
+void HRM3D::connectMultiLayer() {
     if (param_.NUM_LAYER == 1) {
         return;
     }
@@ -364,7 +362,7 @@ void HighwayRoadMap3D::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
+std::vector<std::vector<double>> HRM3D::getInterpolatedSolutionPath(
     const unsigned int num) {
     std::vector<std::vector<double>> path_interp;
     std::vector<std::vector<double>> path_solved = getSolutionPath();
@@ -384,7 +382,7 @@ std::vector<std::vector<double>> HighwayRoadMap3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
+std::vector<MeshMatrix> HRM3D::bridgeLayer(SuperQuadrics Ec) {
     // Reference point to be the center of Ec
     Ec.setPosition({0.0, 0.0, 0.0});
 
@@ -401,8 +399,8 @@ std::vector<MeshMatrix> HighwayRoadMap3D::bridgeLayer(SuperQuadrics Ec) {
     return bdMesh;
 }
 
-bool HighwayRoadMap3D::isSameLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
+bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
+                                      const std::vector<double>& v2) {
     // Define the line connecting v1 and v2
     Eigen::Vector3d t1{v1[0], v1[1], v1[2]};
     Eigen::Vector3d t2{v2[0], v2[1], v2[2]};
@@ -417,7 +415,7 @@ bool HighwayRoadMap3D::isSameLayerTransitionFree(
     double s0, s1;
     std::vector<Eigen::Vector3d> intersectObs;
     for (auto CObstacle : layerBoundMesh_) {
-        intersectObs = intersectVerticalLineMesh3d(line, CObstacle);
+        intersectObs = intersectVerticalLineMesh3D(line, CObstacle);
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
@@ -435,8 +433,8 @@ bool HighwayRoadMap3D::isSameLayerTransitionFree(
     return true;
 }
 
-bool HighwayRoadMap3D::isMultiLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
+bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
+                                       const std::vector<double>& v2) {
     // Interpolated robot motion from v1 to v2
     std::vector<std::vector<double>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
@@ -489,8 +487,8 @@ bool HighwayRoadMap3D::isMultiLayerTransitionFree(
     return true;
 }
 
-bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
-                                   const std::vector<double>& v) {
+bool HRM3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
+                        const std::vector<double>& v) {
     Eigen::VectorXd lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
@@ -498,7 +496,7 @@ bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
 
     // Ray-casting to check point containment within all C-obstacles
     for (size_t i = 0; i < bdMesh->size(); ++i) {
-        intersectObs = intersectVerticalLineMesh3d(lineZ, bdMesh->at(i));
+        intersectObs = intersectVerticalLineMesh3D(lineZ, bdMesh->at(i));
 
         if (!intersectObs.empty()) {
             if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
@@ -517,7 +515,7 @@ bool HighwayRoadMap3D::isPtInCFree(const std::vector<MeshMatrix>* bdMesh,
     return true;
 }
 
-void HighwayRoadMap3D::sampleSO3() {
+void HRM3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
     if (robot_.getBase().getQuatSamples().empty()) {
@@ -532,7 +530,7 @@ void HighwayRoadMap3D::sampleSO3() {
     }
 }
 
-std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
+std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
     const std::vector<double>& vertex, const size_t k, const double radius) {
     double minEuclideanDist;
     double minQuatDist;
@@ -596,7 +594,7 @@ std::vector<Vertex> HighwayRoadMap3D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HighwayRoadMap3D::setTransform(const std::vector<double>& v) {
+void HRM3D::setTransform(const std::vector<double>& v) {
     Eigen::Matrix4d g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(v[3], v[4], v[5], v[6]).toRotationMatrix();
@@ -607,9 +605,9 @@ void HighwayRoadMap3D::setTransform(const std::vector<double>& v) {
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
-void HighwayRoadMap3D::computeTFE(const Eigen::Quaterniond& q1,
-                                  const Eigen::Quaterniond& q2,
-                                  std::vector<SuperQuadrics>* tfe) {
+void HRM3D::computeTFE(const Eigen::Quaterniond& q1,
+                       const Eigen::Quaterniond& q2,
+                       std::vector<SuperQuadrics>* tfe) {
     tfe->clear();
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions

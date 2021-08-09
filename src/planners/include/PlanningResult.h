@@ -1,5 +1,4 @@
-#ifndef PLANNERRESULT_H
-#define PLANNERRESULT_H
+#pragma once
 
 #include <limits>
 #include <vector>
@@ -35,5 +34,3 @@ struct PlanningResult {
     Graph graph_structure;
     SolutionPathInfo solution_path;
 };
-
-#endif  // PLANNERRESULT_H

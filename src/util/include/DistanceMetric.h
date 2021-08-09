@@ -1,5 +1,4 @@
-#ifndef DISTANCEMETRIC_H
-#define DISTANCEMETRIC_H
+#pragma once
 
 #include <cmath>
 #include <numeric>
@@ -7,5 +6,3 @@
 
 double vectorEuclidean(const std::vector<double>& v1,
                        const std::vector<double>& v2);
-
-#endif  // DISTANCEMETRIC_H

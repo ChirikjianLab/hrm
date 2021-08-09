@@ -1,4 +1,4 @@
-#include "planners/include/HighwayRoadMap2d.h"
+#include "planners/include/HRM2D.h"
 #include "util/include/ParsePlanningSettings.h"
 
 #include <eigen3/Eigen/Dense>
@@ -68,8 +68,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        HighwayRoadMap2D hrm(robot, env2D->getArena(), env2D->getObstacle(),
-                             req);
+        HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
         hrm.plan();
 
         PlanningResult res = hrm.getPlanningResult();

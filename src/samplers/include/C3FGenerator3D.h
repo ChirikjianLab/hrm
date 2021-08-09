@@ -1,5 +1,4 @@
-#ifndef C3FGENERATOR3D_H
-#define C3FGENERATOR3D_H
+#pragma once
 
 #include "geometry/include/FreeSpace3D.h"
 #include "util/include/MultiBodyTree3D.h"
@@ -23,18 +22,17 @@ class C3FGenerator3D {
 
     double getBuildTime() { return buildTime_; }
 
-    /*
-     * \brief Build a set of precomputed valid states
-     * compute C-obstacle boundaries via closed-form Minkowski sums,
-     * valid states comes from multiple random samples on collision-free
-     * sweep line segments
+    /**
+     * \brief Build a set of precomputed valid states compute C-obstacle
+     * boundaries via closed-form Minkowski sums, valid states comes from
+     * multiple random samples on collision-free sweep line segments
      */
     virtual void fromSweepLine();
 
-    /*
-     * \brief Build a set of precomputed valid states
-     * compute C-obstacle boundaries via closed-form Minkowski sums,
-     * valid states comes from C-obstacle boundaries
+    /**
+     * \brief Build a set of precomputed valid states compute C-obstacle
+     * boundaries via closed-form Minkowski sums, valid states comes from
+     * C-obstacle boundaries
      */
     virtual void fromBoundary();
 
@@ -50,5 +48,3 @@ class C3FGenerator3D {
     std::vector<const ob::State *> validStateSet_;
     double buildTime_ = 0.0;
 };
-
-#endif  // C3FGENERATOR3D_H
