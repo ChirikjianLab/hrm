@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
              << endl;
         return 1;
     } else {
-        cout << "hrmway RoadMap for 2D rigid-body planning" << endl;
+        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
         cout << "----------" << endl;
     }
 

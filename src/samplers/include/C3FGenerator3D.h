@@ -1,7 +1,7 @@
 #pragma once
 
-#include "geometry/include/FreeSpace3D.h"
-#include "util/include/MultiBodyTree3D.h"
+#include "datastructure/include/FreeSpace3D.h"
+#include "datastructure/include/MultiBodyTree3D.h"
 
 #include "ompl/base/StateSpace.h"
 #include "ompl/base/spaces/SE3StateSpace.h"

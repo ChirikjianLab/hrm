@@ -1,9 +1,9 @@
 #pragma once
 
+#include "datastructure/include/MultiBodyTree2D.h"
+#include "datastructure/include/MultiBodyTree3D.h"
 #include "geometry/include/SuperEllipse.h"
 #include "geometry/include/SuperQuadrics.h"
-#include "util/include/MultiBodyTree2D.h"
-#include "util/include/MultiBodyTree3D.h"
 #include "util/include/Parse2dCsvFile.h"
 
 /** \brief loadVectorSuperEllipse Load vector of 2D superellipses */

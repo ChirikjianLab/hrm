@@ -1,10 +1,10 @@
 #pragma once
 
+#include "datastructure/include/MultiBodyTree3D.h"
 #include "geometry/include/LineIntersection.h"
 #include "geometry/include/TightFitEllipsoid.h"
 #include "planners/include/HighwayRoadMap.h"
 #include "util/include/InterpolateSE3.h"
-#include "util/include/MultiBodyTree3D.h"
 
 /** \brief FreeSegment3D collision-free line segments in 3D */
 struct FreeSegment3D {

@@ -4,9 +4,6 @@ add_library(UTIL
             ExponentialFunction.cpp
             DistanceMetric.cpp
             InterpolateSE3.cpp
-            Interval.cpp
-            MultiBodyTree2D.cpp
-            MultiBodyTree3D.cpp
             Parse2dCsvFile.cpp
             ParseURDF.cpp)
 if(kdl_parser_FOUND)

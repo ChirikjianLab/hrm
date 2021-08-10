@@ -1,8 +1,8 @@
 #pragma once
 
 #include "geometry/include/SuperQuadrics.h"
-#include "util/include/Interval.h"
-#include "util/include/MultiBodyTree3D.h"
+#include "datastructure/include/Interval.h"
+#include "datastructure/include/MultiBodyTree3D.h"
 
 #include <limits>
 #include <vector>

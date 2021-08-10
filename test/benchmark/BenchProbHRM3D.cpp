@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HRM3DMultiBody
+        // Path planning using ProbHRM3D
         ProbHRM3D probHRM(robot, urdfFile, env3D->getArena(),
                           env3D->getObstacle(), req);
         probHRM.plan(timeLim);

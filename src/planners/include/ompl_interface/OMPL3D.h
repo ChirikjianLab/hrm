@@ -1,11 +1,11 @@
 #ifndef OMPL3D_H
 #define OMPL3D_H
 
+#include "datastructure/include/MultiBodyTree3D.h"
 #include "samplers/include/C3FGenerator3D.h"
 #include "samplers/include/MinkowskiSamplerSE3.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 #include "util/include/EllipsoidSeparation.h"
-#include "util/include/MultiBodyTree3D.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include "ompl/base/SpaceInformation.h"

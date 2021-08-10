@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "src/geometry/include/TightFitEllipsoid.h"
-#include "util/include/MultiBodyTree2D.h"
+#include "datastructure/include/MultiBodyTree2D.h"
+#include "geometry/include/TightFitEllipsoid.h"
 
 class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   public:

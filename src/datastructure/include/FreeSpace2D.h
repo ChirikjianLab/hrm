@@ -1,8 +1,8 @@
 #pragma once
 
 #include "geometry/include/SuperEllipse.h"
-#include "util/include/Interval.h"
-#include "util/include/MultiBodyTree2D.h"
+#include "datastructure/include/Interval.h"
+#include "datastructure/include/MultiBodyTree2D.h"
 
 #include <limits>
 #include <vector>

@@ -1,6 +1,4 @@
 add_library(GEOM
-            FreeSpace2D.cpp
-            FreeSpace3D.cpp
             LineIntersection.cpp
             MeshGenerator.cpp
             PointInPoly.cpp

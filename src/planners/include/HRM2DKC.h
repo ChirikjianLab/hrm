@@ -11,7 +11,7 @@ class HRM2DKC : public HRM2D {
             const std::vector<SuperEllipse>& arena,
             const std::vector<SuperEllipse>& obs, const PlanningRequest& req);
 
-    virtual ~HRM2DKC();
+    ~HRM2DKC();
 
   public:
     Boundary boundaryGen() override;

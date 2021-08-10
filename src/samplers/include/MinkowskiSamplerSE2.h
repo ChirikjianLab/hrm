@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/include/FreeSpace2D.h"
+#include "datastructure/include/FreeSpace2D.h"
 
 #include "ompl/base/StateSampler.h"
 #include "ompl/base/ValidStateSampler.h"

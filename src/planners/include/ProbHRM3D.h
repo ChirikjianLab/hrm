@@ -11,7 +11,7 @@ class ProbHRM3D : public HRM3D {
               const std::vector<SuperQuadrics>& obs,
               const PlanningRequest& req);
 
-    virtual ~ProbHRM3D() override;
+    ~ProbHRM3D() override;
 
   public:
     void plan(const double timeLim);

@@ -15,8 +15,7 @@ int main(int argc, char** argv) {
     // Record planning time for N trials
     int N = atoi(argv[1]);
 
-    /*
-     * \brief Planner and sampler inputs
+    /** \brief Planner and sampler inputs
      *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, SBL:5,
      * KPIECE:6
      *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4

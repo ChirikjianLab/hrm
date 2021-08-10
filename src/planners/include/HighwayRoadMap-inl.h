@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "src/util/include/Interval.h"
+#include "datastructure/include/Interval.h"
 #include "util/include/DistanceMetric.h"
 
 #include <algorithm>
