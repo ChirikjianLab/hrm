@@ -57,7 +57,7 @@ void HRM2DKC::connectMultiLayer() {
                 v2 = res_.graph_structure.vertex[m2];
 
                 // Judge connectivity using Kinematics of Containment
-                midVtx = addMidVtx(v1, v2);
+                midVtx = addMiddleVertex(v1, v2);
                 if (!midVtx.empty()) {
                     res_.graph_structure.vertex.push_back(midVtx);
 
@@ -80,9 +80,9 @@ void HRM2DKC::connectMultiLayer() {
 /*************************************************/
 /**************** Private Functions **************/
 /*************************************************/
-std::vector<double> HRM2DKC::addMidVtx(std::vector<double> vtx1,
-                                       std::vector<double> vtx2) {
-    // Connect vertexes among different layers, and add a middle vertex to the
+std::vector<double> HRM2DKC::addMiddleVertex(std::vector<double> vtx1,
+                                             std::vector<double> vtx2) {
+    // Connect vertexes among different layers, and add a bridge vertex to the
     // roadmap
     std::vector<double> midVtx, pt, pt1, pt2;
     bool flag;

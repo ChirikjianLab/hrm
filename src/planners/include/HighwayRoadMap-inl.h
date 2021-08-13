@@ -227,9 +227,7 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
 
 template <class RobotType, class ObjectType>
 FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
-    const std::vector<double>& ty, const Eigen::MatrixXd& x_s_L,
-    const Eigen::MatrixXd& x_s_U, const Eigen::MatrixXd& x_o_L,
-    const Eigen::MatrixXd& x_o_U) {
+    const std::vector<double>& ty, const IntersectionInterval* intersect) {
     FreeSegment2D freeLineSegment;
     Interval op;
     std::vector<Interval> interval[ty.size()];
@@ -243,13 +241,17 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
         std::vector<Interval> obsSeg;
         std::vector<Interval> arenaSeg;
 
-        for (auto j = 0; j < x_s_L.cols(); ++j)
-            if (!std::isnan(x_s_L(i, j)) && !std::isnan(x_s_U(i, j))) {
-                arenaSeg.push_back({x_s_L(i, j), x_s_U(i, j)});
+        for (auto j = 0; j < intersect->arenaLow.cols(); ++j)
+            if (!std::isnan(intersect->arenaLow(i, j)) &&
+                !std::isnan(intersect->arenaUpp(i, j))) {
+                arenaSeg.push_back(
+                    {intersect->arenaLow(i, j), intersect->arenaUpp(i, j)});
             }
-        for (auto j = 0; j < x_o_L.cols(); ++j)
-            if (!std::isnan(x_o_L(i, j)) && !std::isnan(x_o_U(i, j))) {
-                obsSeg.push_back({x_o_L(i, j), x_o_U(i, j)});
+        for (auto j = 0; j < intersect->obstacleLow.cols(); ++j)
+            if (!std::isnan(intersect->obstacleLow(i, j)) &&
+                !std::isnan(intersect->obstacleUpp(i, j))) {
+                obsSeg.push_back({intersect->obstacleLow(i, j),
+                                  intersect->obstacleUpp(i, j)});
             }
 
         // Set operations for Collision-free intervals at each line
@@ -319,4 +321,12 @@ void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
         sort(freeSeg->xM[i].begin(), freeSeg->xM[i].end(),
              [](double a, double b) { return a < b; });
     }
+}
+
+template <class RobotType, class ObjectType>
+std::vector<double> HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(
+    std::vector<double> v1, std::vector<double> v2) {
+    std::vector<double> newVtx;
+
+    return newVtx;
 }

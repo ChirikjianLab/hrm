@@ -12,6 +12,12 @@ struct FreeSegment3D {
     std::vector<FreeSegment2D> freeSegYZ;
 };
 
+/** \brief BoundaryMesh mesh representation of Minkowski operations */
+struct BoundaryMesh {
+    std::vector<MeshMatrix> arena;
+    std::vector<MeshMatrix> obstacle;
+};
+
 class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   public:
     HRM3D(const MultiBodyTree3D& robot, const std::vector<SuperQuadrics>& arena,
@@ -30,13 +36,14 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \return FreeSegment3D
      */
     FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
-        sweepLineProcess(bd);
+        layerBound_ = *bd;
+        sweepLineProcess();
         return freeSegOneLayer_;
     }
 
     virtual void buildRoadmap() override;
 
-    void sweepLineProcess(const Boundary* bd) override;
+    void sweepLineProcess() override;
 
     virtual void generateVertices(const double tx,
                                   const FreeSegment2D* freeSeg) override;
@@ -51,6 +58,9 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
                     std::vector<SuperQuadrics>* tfe);
+
+    IntersectionInterval computeIntersections(
+        const std::vector<double>& ty) override;
 
     bool isSameLayerTransitionFree(const std::vector<double>& v1,
                                    const std::vector<double>& v2) override;
@@ -74,7 +84,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     std::vector<Eigen::Quaterniond> q_r;
 
   protected:
-    std::vector<MeshMatrix> layerBoundMesh_;
+    BoundaryMesh layerBoundMesh_;
 
     FreeSegment3D freeSegOneLayer_;
 

@@ -35,7 +35,7 @@ void HRM2D::buildRoadmap() {
         layerBound_ = boundaryGen();
 
         // Sweep-line process to generate collision free line segments
-        sweepLineProcess(&layerBound_);
+        sweepLineProcess();
 
         // Generate collision-free vertices
         generateVertices(0.0, &freeSegOneLayer_);
@@ -50,63 +50,70 @@ void HRM2D::buildRoadmap() {
     connectMultiLayer();
 }
 
-void HRM2D::sweepLineProcess(const Boundary* bd) {
-    Eigen::MatrixXd segArenaLow = Eigen::MatrixXd::Constant(
-        param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[0]);
-    Eigen::MatrixXd segArenaUpp = Eigen::MatrixXd::Constant(
-        param_.NUM_LINE_Y, long(bd->arena.size()), param_.BOUND_LIMIT[1]);
-    Eigen::MatrixXd segObstableLow = Eigen::MatrixXd::Constant(
-        param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
-    Eigen::MatrixXd segObstableUpp = Eigen::MatrixXd::Constant(
-        param_.NUM_LINE_Y, long(bd->obstacle.size()), NAN);
-
-    // Find intersecting points to C-obstacles for each raster scan line
-    std::vector<double> ty;
+void HRM2D::sweepLineProcess() {
+    // Compute vector of y-coordinates
+    std::vector<double> ty(param_.NUM_LINE_Y);
     double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
                 (param_.NUM_LINE_Y - 1);
-
-    for (Eigen::Index i = 0; i < param_.NUM_LINE_Y; ++i) {
-        // y-coordinate of each sweep line
-        ty.push_back(param_.BOUND_LIMIT[2] + i * dy);
+    for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
+        ty[i] = -param_.BOUND_LIMIT[1] + i * dy;
     }
 
+    // Find intersecting points to C-obstacles for each raster scan line
+    IntersectionInterval intersect = computeIntersections(ty);
+
+    // Compute collision-free intervals at each sweep line
+    freeSegOneLayer_ = computeFreeSegment(ty, &intersect);
+}
+
+IntersectionInterval HRM2D::computeIntersections(
+    const std::vector<double>& ty) {
+    IntersectionInterval intersect;
+    intersect.arenaLow = Eigen::MatrixXd::Constant(
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[0]);
+    intersect.arenaUpp = Eigen::MatrixXd::Constant(
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[1]);
+    intersect.obstacleLow =
+        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+    intersect.obstacleUpp =
+        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+
+    // Find intersecting points to C-obstacles for each raster scan line
     std::vector<double> intersectPointArena;
     std::vector<double> intersectPointObstacle;
-    for (Eigen::Index i = 0; i < param_.NUM_LINE_Y; ++i) {
+    for (size_t i = 0; i < ty.size(); ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
-        for (Eigen::Index j = 0; j < long(bd->arena.size()); ++j) {
+        for (size_t j = 0; j < layerBound_.arena.size(); ++j) {
             intersectPointArena = intersectHorizontalLinePolygon2D(
-                ty[size_t(i)], bd->arena[size_t(j)]);
+                ty.at(i), layerBound_.arena.at(j));
             if (intersectPointArena.empty()) {
                 continue;
             }
 
-            segArenaLow(i, j) = std::fmin(
+            intersect.arenaLow(i, j) = std::fmin(
                 param_.BOUND_LIMIT[0],
                 std::fmin(intersectPointArena[0], intersectPointArena[1]));
-            segArenaUpp(i, j) = std::fmax(
+            intersect.arenaUpp(i, j) = std::fmax(
                 param_.BOUND_LIMIT[1],
                 std::fmax(intersectPointArena[0], intersectPointArena[1]));
         }
 
         // x-coordinate of the intersection btw sweep line and obstacles
-        for (Eigen::Index j = 0; j < long(bd->obstacle.size()); ++j) {
+        for (size_t j = 0; j < layerBound_.obstacle.size(); ++j) {
             intersectPointObstacle = intersectHorizontalLinePolygon2D(
-                ty[size_t(i)], bd->obstacle[size_t(j)]);
+                ty.at(i), layerBound_.obstacle.at(j));
             if (intersectPointObstacle.empty()) {
                 continue;
             }
 
-            segObstableLow(i, j) =
+            intersect.obstacleLow(i, j) =
                 std::fmin(intersectPointObstacle[0], intersectPointObstacle[1]);
-            segObstableUpp(i, j) =
+            intersect.obstacleUpp(i, j) =
                 std::fmax(intersectPointObstacle[0], intersectPointObstacle[1]);
         }
     }
 
-    // Compute collision-free intervals at each sweep line
-    freeSegOneLayer_ = computeFreeSegment(ty, segArenaLow, segArenaUpp,
-                                          segObstableLow, segObstableUpp);
+    return intersect;
 }
 
 void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
@@ -207,6 +214,16 @@ void HRM2D::bridgeLayer() {
 
         bridgeLayerBound_.at(i) = bd;
     }
+}
+
+std::vector<double> HRM2D::bridgeVertex(std::vector<double> v1,
+                                        std::vector<double> v2) {
+    std::vector<double> newVtx;
+
+    // Compute y-coordinate of new sweep line
+    double ty = (v1[1] + v2[1]) / 2.0;
+
+    return newVtx;
 }
 
 bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,

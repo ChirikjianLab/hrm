@@ -30,6 +30,14 @@ struct FreeSegment2D {
     std::vector<std::vector<double>> xM;
 };
 
+/** \brief Intervals for intersection between sweep line and arenas/obstacles */
+struct IntersectionInterval {
+    Eigen::MatrixXd arenaLow;
+    Eigen::MatrixXd arenaUpp;
+    Eigen::MatrixXd obstacleLow;
+    Eigen::MatrixXd obstacleUpp;
+};
+
 /** \brief Boundary Minkowski boundary points for obstacles and arenas */
 struct Boundary {
     std::vector<Eigen::MatrixXd> arena;
@@ -90,10 +98,8 @@ class HighwayRoadMap {
     /**
      * \brief sweepLineProcess sweep-line process for generating collision-free
      * line segment
-     * \param pointer to Boundary structure, boundary of Minkowski
-     * operations
      */
-    virtual void sweepLineProcess(const Boundary* bd) = 0;
+    virtual void sweepLineProcess() = 0;
 
     /**
      * \brief generateVertices subroutine for generating collision-free
@@ -121,19 +127,33 @@ class HighwayRoadMap {
      * C-layers */
     virtual void bridgeLayer() = 0;
 
+    /**
+     * \brief bridgeVertex generating bridge vertices for failed connections
+     * within one C-layer
+     * \param v1, v2 Two vertices to be connected
+     * \return New bridge vertices
+     */
+    virtual std::vector<double> bridgeVertex(std::vector<double> v1,
+                                             std::vector<double> v2);
+
+    /** \brief computeIntersections compute intervals of intersections between
+     * sweep line and arenas/obstacles
+     * \param ty vector of y-coordinates of the sweep line
+     * \param Boundary boundary info of C-layer
+     * \return IntersectionInterval intersecting points as intervals
+     */
+    virtual IntersectionInterval computeIntersections(
+        const std::vector<double>& ty) = 0;
+
     /** \brief computeFreeSegment compute collision-free segment on each sweep
      * line
      * \param ty vector of y-coordinates of the sweep line
-     * \param x_s_L matrix of x-(z-)coordinates of the lower bound for arenas
-     * \param x_s_L matrix of x-(z-)coordinates of the upper bound for arenas
-     * \param x_o_L matrix of x-(z-)coordinates of the lower bound for obstacles
-     * \param x_o_L matrix of x-(z-)coordinates of the upper bound for obstacles
+     * \param IntersectionInterval pointer to intervals of sweep line
+     * intersections
+     * \return FreeSegment2D
      */
     FreeSegment2D computeFreeSegment(const std::vector<double>& ty,
-                                     const Eigen::MatrixXd& x_s_L,
-                                     const Eigen::MatrixXd& x_s_U,
-                                     const Eigen::MatrixXd& x_o_L,
-                                     const Eigen::MatrixXd& x_o_U);
+                                     const IntersectionInterval* intersect);
 
     /** \brief isSameLayerTransitionFree check whether connection between V1 and
      * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
@@ -193,6 +213,9 @@ class HighwayRoadMap {
 
     /** \param N_s number of arenas */
     size_t N_s;
+
+    /** \param Boundary point sets of Minkowski operations */
+    Boundary layerBound_;
 
     /** \param Vertex index info */
     vertexIdx N_v;

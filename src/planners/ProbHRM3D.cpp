@@ -63,8 +63,8 @@ void ProbHRM3D::plan(const double timeLim) {
         // Update number of C-layers
         param_.NUM_LAYER++;
 
-        Boundary bd = boundaryGen();
-        sweepLineProcess(&bd);
+        layerBound_ = boundaryGen();
+        sweepLineProcess();
         connectOneLayer3D(&freeSegOneLayer_);
 
         vtxId_.push_back(N_v);
