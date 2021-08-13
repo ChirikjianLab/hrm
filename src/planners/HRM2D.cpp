@@ -218,11 +218,28 @@ void HRM2D::bridgeLayer() {
 
 std::vector<double> HRM2D::bridgeVertex(std::vector<double> v1,
                                         std::vector<double> v2) {
-    std::vector<double> newVtx;
+    std::vector<double> newVtx = v1;
 
     // Compute y-coordinate of new sweep line
-    double ty = (v1[1] + v2[1]) / 2.0;
+    std::vector<double> ty;
+    ty.push_back((v1[1] + v2[1]) / 2.0);
 
+    // Compute free segment at the new sweep line
+    IntersectionInterval intersect = computeIntersections(ty);
+    FreeSegment2D segment = computeFreeSegment(ty, &intersect);
+
+    // Attempt to connect new vertex to v1 and v2
+    for (size_t i = 0; i < segment.xM.size(); ++i) {
+        newVtx[0] = segment.xM.at(0).at(i);
+        newVtx[1] = segment.ty.at(0);
+
+        if (isSameLayerTransitionFree(v1, newVtx) &&
+            isSameLayerTransitionFree(v2, newVtx)) {
+            return newVtx;
+        }
+    }
+
+    newVtx.clear();
     return newVtx;
 }
 

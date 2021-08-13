@@ -196,6 +196,29 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2]));
+                    } else {
+                        std::vector<double> bridgeVtx =
+                            bridgeVertex(res_.graph_structure.vertex[n1 + j1],
+                                         res_.graph_structure.vertex[n2 + j2]);
+
+                        if (!bridgeVtx.empty()) {
+                            size_t idxNew = res_.graph_structure.vertex.size();
+
+                            res_.graph_structure.vertex.push_back(bridgeVtx);
+
+                            res_.graph_structure.edge.push_back(
+                                std::make_pair(n1 + j1, idxNew));
+                            res_.graph_structure.weight.push_back(
+                                vectorEuclidean(
+                                    res_.graph_structure.vertex[n1 + j1],
+                                    bridgeVtx));
+                            res_.graph_structure.edge.push_back(
+                                std::make_pair(n2 + j2, idxNew));
+                            res_.graph_structure.weight.push_back(
+                                vectorEuclidean(
+                                    res_.graph_structure.vertex[n2 + j2],
+                                    bridgeVtx));
+                        }
                     }
                 }
             }
