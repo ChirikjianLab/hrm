@@ -130,11 +130,9 @@ class HighwayRoadMap {
     /**
      * \brief bridgeVertex generating bridge vertices for failed connections
      * within one C-layer
-     * \param v1, v2 Two vertices to be connected
-     * \return New bridge vertices
+     * \param idx1, idx2 Indices of two vertices to be connected
      */
-    virtual std::vector<double> bridgeVertex(std::vector<double> v1,
-                                             std::vector<double> v2);
+    virtual void bridgeVertex(const int idx1, const int idx2);
 
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles

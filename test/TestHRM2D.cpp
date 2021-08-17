@@ -12,10 +12,7 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
                              const PlannerSetting2D* env2D) {
     PlannerParameter par;
 
-    par.NUM_LAYER = 20;
-    par.NUM_LINE_Y = 10;
-    par.NUM_POINT = 5;
-
+    // Planning arena boundary
     double f = 1.5;
     vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
                                 f * robot->getBase().getSemiAxis().at(0),
@@ -26,6 +23,23 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
         env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
         env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
         env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+
+    // User-defined parameters
+    par.NUM_LAYER = 10;
+    par.NUM_POINT = 5;
+
+    // Determine the base number of sweep lines at each C-layer
+    double min_size_obs = inf;
+    for (auto obs : env2D->getObstacle()) {
+        for (size_t i = 0; i < obs.getSemiAxis().size(); ++i) {
+            double size_obs = obs.getSemiAxis().at(i);
+            if (size_obs < min_size_obs) {
+                min_size_obs = size_obs;
+            }
+        }
+    }
+
+    par.NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
 
     return par;
 }

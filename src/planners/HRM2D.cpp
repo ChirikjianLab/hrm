@@ -43,6 +43,8 @@ void HRM2D::buildRoadmap() {
         // Connect vertices within one C-layer
         connectOneLayer2D(&freeSegOneLayer_);
 
+        // Record vertex index at each C-layer
+        N_v.layer = res_.graph_structure.vertex.size();
         vtxId_.push_back(N_v);
     }
 
@@ -131,7 +133,6 @@ void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
         }
     }
     N_v.line.push_back(N_v.plane);
-    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 void HRM2D::connectMultiLayer() {
@@ -151,7 +152,7 @@ void HRM2D::connectMultiLayer() {
     std::vector<double> v2;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        n1 = vtxId_.at(i).layer;
+        n1 = vtxId_.at(i).line.back().back();
 
         // Construct the bridge C-layer
         if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
@@ -165,7 +166,7 @@ void HRM2D::connectMultiLayer() {
         } else {
             n12 = 0;
         }
-        n2 = vtxId_.at(j).layer;
+        n2 = vtxId_.at(j).line.back().back();
 
         // Compute TFE and construct bridge C-layer
         computeTFE(ang_r[i], ang_r[j], &tfe_);
@@ -216,31 +217,56 @@ void HRM2D::bridgeLayer() {
     }
 }
 
-std::vector<double> HRM2D::bridgeVertex(std::vector<double> v1,
-                                        std::vector<double> v2) {
-    std::vector<double> newVtx = v1;
+void HRM2D::bridgeVertex(const int idx1, const int idx2) {
+    std::vector<double> v1 = res_.graph_structure.vertex.at(idx1);
+    std::vector<double> v2 = res_.graph_structure.vertex.at(idx2);
+
+    // Generate new vertex until a certain resolution
+    if (std::fabs(v1[1] - v2[1]) <
+        param_.BOUND_LIMIT[1] / (param_.NUM_POINT * param_.NUM_LINE_Y)) {
+        return;
+    }
 
     // Compute y-coordinate of new sweep line
-    std::vector<double> ty;
-    ty.push_back((v1[1] + v2[1]) / 2.0);
+    std::vector<double> ty{(v1[1] + v2[1]) / 2.0};
 
     // Compute free segment at the new sweep line
     IntersectionInterval intersect = computeIntersections(ty);
     FreeSegment2D segment = computeFreeSegment(ty, &intersect);
 
     // Attempt to connect new vertex to v1 and v2
-    for (size_t i = 0; i < segment.xM.size(); ++i) {
-        newVtx[0] = segment.xM.at(0).at(i);
-        newVtx[1] = segment.ty.at(0);
+    bool isSuccess = true;
+    for (size_t i = 0; i < segment.xM.at(0).size(); ++i) {
+        // Generate new vertex and index in graph
+        std::vector<double> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
+                                 v1.at(2)};
 
-        if (isSameLayerTransitionFree(v1, newVtx) &&
-            isSameLayerTransitionFree(v2, newVtx)) {
-            return newVtx;
+        int idxNew = res_.graph_structure.vertex.size();
+        res_.graph_structure.vertex.push_back(vNew);
+
+        // Iteratively attempt to connect
+        if (isSameLayerTransitionFree(v1, vNew)) {
+            isSuccess = true;
+            res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
+            res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
+        } else {
+            isSuccess = false;
+            bridgeVertex(idx1, idxNew);
+        }
+
+        if (isSameLayerTransitionFree(v2, vNew)) {
+            isSuccess = true;
+            res_.graph_structure.edge.push_back(std::make_pair(idx2, idxNew));
+            res_.graph_structure.weight.push_back(vectorEuclidean(v2, vNew));
+        } else {
+            isSuccess = false;
+            bridgeVertex(idx2, idxNew);
+        }
+
+        if (isSuccess) {
+            return;
         }
     }
-
-    newVtx.clear();
-    return newVtx;
 }
 
 bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,
