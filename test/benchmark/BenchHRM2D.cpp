@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
-        hrm.plan();
+        hrm.plan(10.0);
 
         PlanningResult res = hrm.getPlanningResult();
 

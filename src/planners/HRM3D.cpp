@@ -17,14 +17,10 @@ void HRM3D::buildRoadmap() {
     // Samples from SO(3)
     sampleSO3();
 
-    // Get the current Transformation
-    Eigen::Matrix4d tf;
-    tf.setIdentity();
-
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Set rotation matrix to robot
-        tf.topLeftCorner(3, 3) = q_r.at(i).toRotationMatrix();
-        robot_.robotTF(tf);
+        setTransform({0.0, 0.0, 0.0, q_r.at(i).w(), q_r.at(i).x(),
+                      q_r.at(i).y(), q_r.at(i).z()});
 
         layerBound_ = boundaryGen();
         sweepLineProcess();
@@ -80,9 +76,9 @@ IntersectionInterval HRM3D::computeIntersections(
     // Initialize sweep lines
     IntersectionInterval intersect;
     intersect.arenaLow = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[2]);
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[4]);
     intersect.arenaUpp = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[2]);
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[5]);
     intersect.obstacleLow =
         Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
     intersect.obstacleUpp =
@@ -102,10 +98,10 @@ IntersectionInterval HRM3D::computeIntersections(
             if (intersectPointArena.empty()) continue;
 
             intersect.arenaLow(i, j) = std::fmin(
-                -param_.BOUND_LIMIT[2], std::fmin(intersectPointArena[0](2),
-                                                  intersectPointArena[1](2)));
+                param_.BOUND_LIMIT[4], std::fmin(intersectPointArena[0](2),
+                                                 intersectPointArena[1](2)));
             intersect.arenaUpp(i, j) = std::fmax(
-                param_.BOUND_LIMIT[2], std::fmax(intersectPointArena[0](2),
+                param_.BOUND_LIMIT[5], std::fmax(intersectPointArena[0](2),
                                                  intersectPointArena[1](2)));
         }
 
@@ -186,7 +182,7 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
 }
 
 void HRM3D::connectMultiLayer() {
-    if (param_.NUM_LAYER == 1) {
+    if (vtxId_.size() == 1) {
         return;
     }
 
@@ -203,7 +199,7 @@ void HRM3D::connectMultiLayer() {
     //    int n_check = 0;
     //    int n_connect = 0;
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+    for (size_t i = 0; i < vtxId_.size(); ++i) {
         //        n2 = vtxId_[i].layer;
         //        // Construct the middle layer
         //        if (i == N_layers - 1 && N_layers != 2) {
@@ -317,9 +313,11 @@ void HRM3D::connectMultiLayer() {
 
                 // Locate the nearest vertices
                 if (std::fabs(v1.at(0) - v2.at(0)) >
-                        param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
+                        (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                            param_.NUM_LINE_X ||
                     std::fabs(v1.at(1) - v2.at(1)) >
-                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+                        (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                            param_.NUM_LINE_Y) {
                     continue;
                 }
 
@@ -563,9 +561,11 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
         }
 
         if (std::abs(vertex[0] - res_.graph_structure.vertex[idxLayer][0]) <
-                10 * param_.BOUND_LIMIT[0] / param_.NUM_LINE_X &&
+                radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                    param_.NUM_LINE_X &&
             std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
-                10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+                radius * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }
     }

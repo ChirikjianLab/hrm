@@ -50,26 +50,32 @@ algorithm planTest(const robotType& robot,
                    const std::vector<SuperEllipse>& obs,
                    const PlanningRequest& req, const bool isStore) {
     // Main algorithm
-    cout << "Number of C-layers: " << req.planner_parameters.NUM_LAYER << endl;
-    cout << "Number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
+    cout << "Input number of C-layers: " << req.planner_parameters.NUM_LAYER
+         << endl;
+    cout << "Input number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
          << endl;
     cout << "----------" << endl;
 
     cout << "Start planning..." << endl;
 
     algorithm hrm(robot, arena, obs, req);
-    hrm.plan();
+    hrm.plan(2.0);
 
     cout << "Finished planning!" << endl;
+
+    cout << "Final number of C-layers: " << hrm.getPlannerParameters().NUM_LAYER
+         << endl;
+    cout << "Final number of sweep lines: "
+         << hrm.getPlannerParameters().NUM_LINE_Y << endl;
 
     if (isStore) {
         // calculate original boundary points
         Boundary bd_ori;
-        for (size_t i = 0; i < hrm.arena_.size(); ++i) {
-            bd_ori.arena.push_back(hrm.arena_.at(i).getOriginShape());
+        for (auto arena : hrm.arena_) {
+            bd_ori.arena.push_back(arena.getOriginShape());
         }
-        for (size_t i = 0; i < hrm.obs_.size(); ++i) {
-            bd_ori.obstacle.push_back(hrm.obs_.at(i).getOriginShape());
+        for (auto obs : hrm.obs_) {
+            bd_ori.obstacle.push_back(obs.getOriginShape());
         }
 
         // Output boundary and cell info
@@ -80,21 +86,21 @@ algorithm planTest(const robotType& robot,
         // write to .csv file
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
-        for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
-            file_ori_bd << bd_ori.obstacle[i] << "\n";
+        for (auto bd_ori_obs : bd_ori.obstacle) {
+            file_ori_bd << bd_ori_obs << "\n";
         }
-        for (size_t i = 0; i < bd_ori.arena.size(); i++) {
-            file_ori_bd << bd_ori.arena[i] << "\n";
+        for (auto bd_ori_arena : bd_ori.arena) {
+            file_ori_bd << bd_ori_arena << "\n";
         }
         file_ori_bd.close();
 
         ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
-        for (size_t i = 0; i < bd.obstacle.size(); i++) {
-            file_bd << bd.obstacle[i] << "\n";
+        for (auto bd_obs : bd.obstacle) {
+            file_bd << bd_obs << "\n";
         }
-        for (size_t i = 0; i < bd.arena.size(); i++) {
-            file_bd << bd.arena[i] << "\n";
+        for (auto bd_arena : bd.arena) {
+            file_bd << bd_arena << "\n";
         }
         file_bd.close();
 

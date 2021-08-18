@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
         // Path planning using HRM3D
         HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-        hrm.plan();
+        hrm.plan(60.0);
 
         PlanningResult res = hrm.getPlanningResult();
 

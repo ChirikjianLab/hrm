@@ -12,24 +12,17 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 HRM2D::~HRM2D() {}
 
 void HRM2D::buildRoadmap() {
-    // angle steps
-    double dr = 2 * pi / (param_.NUM_LAYER - 1);
-
     // Setup rotation angles: angle range [-pi,pi]
+    ang_r.clear();
+    const double dr = 2 * pi / (param_.NUM_LAYER - 1);
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         ang_r.push_back(-pi + dr * i);
     }
 
-    // Get the current Transformation
-    Eigen::Matrix3d tf;
-    tf.setIdentity();
-
     // Construct roadmap
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Set rotation matrix to robot
-        tf.topLeftCorner(2, 2) =
-            Eigen::Rotation2Dd(ang_r.at(i)).toRotationMatrix();
-        robot_.robotTF(tf);
+        setTransform({0.0, 0.0, ang_r.at(i)});
 
         // Generate Minkowski operation boundaries
         layerBound_ = boundaryGen();
@@ -137,7 +130,7 @@ void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
 
 void HRM2D::connectMultiLayer() {
     // No connection needed if robot only has one orientation
-    if (param_.NUM_LAYER == 1) {
+    if (vtxId_.size() == 1) {
         return;
     }
 
@@ -151,7 +144,7 @@ void HRM2D::connectMultiLayer() {
     std::vector<double> v1;
     std::vector<double> v2;
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+    for (size_t i = 0; i < vtxId_.size(); ++i) {
         n1 = vtxId_.at(i).line.back().back();
 
         // Construct the bridge C-layer

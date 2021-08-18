@@ -16,13 +16,21 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
     par.NUM_LINE_X = 15;
     par.NUM_LINE_Y = 10;
 
+    // Planning arena boundary
     double f = 1.0;
-    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                           f * robot->getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(1) -
-                           f * robot->getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(2) -
-                           f * robot->getBase().getSemiAxis().at(0)};
+    vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                                f * robot->getBase().getSemiAxis().at(0),
+                            env3D->getArena().at(0).getSemiAxis().at(1) -
+                                f * robot->getBase().getSemiAxis().at(0),
+                            env3D->getArena().at(0).getSemiAxis().at(2) -
+                                f * robot->getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {
+        env3D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env3D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env3D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
+        env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
+        env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
 
     return par;
 }
@@ -126,8 +134,9 @@ TEST(TestHRMPlanning3D, HRM) {
     // Main algorithm
     cout << "Highway RoadMap for 3D rigid-body planning" << endl;
     cout << "----------" << endl;
-    cout << "Number of C-layers: " << req.planner_parameters.NUM_LAYER << endl;
-    cout << "Number of sweep lines {X,Y}: {"
+    cout << "Input number of C-layers: " << req.planner_parameters.NUM_LAYER
+         << endl;
+    cout << "Input number of sweep lines {X,Y}: {"
          << req.planner_parameters.NUM_LINE_X << ','
          << req.planner_parameters.NUM_LINE_Y << '}' << endl;
     cout << "----------" << endl;
@@ -135,13 +144,17 @@ TEST(TestHRMPlanning3D, HRM) {
     cout << "Start planning..." << endl;
 
     HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-    hrm.plan();
+    hrm.plan(5.0);
     PlanningResult res = hrm.getPlanningResult();
 
     storeRoutines<HRM3D>(&hrm);
 
     // Planning results: Time and Path Cost
     cout << "----------" << endl;
+    cout << "Final number of sweep lines {X,Y}: {"
+         << hrm.getPlannerParameters().NUM_LINE_X << ','
+         << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+
     showResult(&res, true);
 }
 
@@ -170,7 +183,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     // Main Algorithm
     cout << "Prob-HRM for 3D articulated-body planning" << endl;
     cout << "----------" << endl;
-    cout << "Number of sweep lines {X,Y}: {"
+    cout << "Input number of sweep lines {X,Y}: {"
          << req.planner_parameters.NUM_LINE_X << ','
          << req.planner_parameters.NUM_LINE_Y << '}' << endl;
     cout << "----------" << endl;
@@ -188,6 +201,9 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     // Planning results: Time and Path Cost
     cout << "----------" << endl;
     cout << "Number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Final number of sweep lines {X,Y}: {"
+         << probHRM.getPlannerParameters().NUM_LINE_X << ','
+         << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
 
     showResult(&res, true);
 }

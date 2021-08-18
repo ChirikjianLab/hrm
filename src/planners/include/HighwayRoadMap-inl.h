@@ -48,21 +48,32 @@ template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::plan() {
-    // Plan and timing
-    auto start = Clock::now();
-    buildRoadmap();
-    res_.planning_time.buildTime = Durationd(Clock::now() - start).count();
+void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
+    while (res_.planning_time.totalTime < timeLim) {
+        // Plan and timing
+        auto start = Clock::now();
+        buildRoadmap();
+        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
 
-    start = Clock::now();
-    search();
-    res_.planning_time.searchTime = Durationd(Clock::now() - start).count();
+        start = Clock::now();
+        search();
+        res_.planning_time.searchTime +=
+            Durationd(Clock::now() - start).count();
 
-    res_.planning_time.totalTime =
-        res_.planning_time.buildTime + res_.planning_time.searchTime;
+        res_.planning_time.totalTime =
+            res_.planning_time.buildTime + res_.planning_time.searchTime;
 
-    // Get solution path
-    res_.solution_path.solvedPath = getSolutionPath();
+        if (res_.solved) {
+            // Get solution path
+            res_.solution_path.solvedPath = getSolutionPath();
+            return;
+        } else {
+            param_.NUM_LINE_X *= 2;
+            param_.NUM_LINE_Y *= 2;
+
+            vtxId_.clear();
+        }
+    }
 }
 
 template <class RobotType, class ObjectType>

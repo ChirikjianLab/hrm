@@ -81,7 +81,7 @@ class HighwayRoadMap {
     std::vector<std::vector<double>> getSolutionPath();
 
     /** \brief plan Main routine for HRM-based planners */
-    virtual void plan();
+    virtual void plan(const double timeLim);
 
     /** \brief buildRoadmap Subroutine for building roadmap */
     virtual void buildRoadmap() = 0;

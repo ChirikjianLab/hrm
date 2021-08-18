@@ -17,9 +17,9 @@ static const double inf = std::numeric_limits<double>::infinity();
 struct PlannerParameter {
     std::vector<double> BOUND_LIMIT;
 
-    size_t NUM_LAYER;
-    size_t NUM_LINE_X;
-    size_t NUM_LINE_Y;
+    size_t NUM_LAYER = 0;
+    size_t NUM_LINE_X = 0;
+    size_t NUM_LINE_Y = 0;
     size_t NUM_POINT = 5;
 
     size_t NUM_SEARCH_NEIGHBOR = 10;
