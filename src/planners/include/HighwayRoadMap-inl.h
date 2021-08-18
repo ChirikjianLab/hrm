@@ -197,10 +197,6 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2]));
-                    } else {
-                        // Attempt to incrementally insert new bridge vertices
-                        // in between
-                        bridgeVertex(n1 + j1, n2 + j2);
                     }
                 }
             }

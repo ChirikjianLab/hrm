@@ -51,11 +51,13 @@ void HRM3D::sweepLineProcess() {
 
     // x- and y-coordinates of sweep lines
     std::vector<double> ty(param_.NUM_LINE_Y);
-    double dx = 2 * param_.BOUND_LIMIT[0] / (param_.NUM_LINE_X - 1);
-    double dy = 2 * param_.BOUND_LIMIT[1] / (param_.NUM_LINE_Y - 1);
+    double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                (param_.NUM_LINE_X - 1);
+    double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                (param_.NUM_LINE_Y - 1);
 
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = -param_.BOUND_LIMIT[1] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
     }
 
     // Find intersections along each sweep line
@@ -63,7 +65,7 @@ void HRM3D::sweepLineProcess() {
     freeSegOneLayer_.freeSegYZ.clear();
     for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
         // x-coordinates of sweep lines
-        freeSegOneLayer_.tx.push_back(-param_.BOUND_LIMIT[0] + i * dx);
+        freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] + i * dx);
 
         IntersectionInterval intersect = computeIntersections(ty);
 

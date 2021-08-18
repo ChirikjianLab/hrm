@@ -58,7 +58,7 @@ void HRM2D::sweepLineProcess() {
     double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
                 (param_.NUM_LINE_Y - 1);
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = -param_.BOUND_LIMIT[1] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
@@ -223,7 +223,8 @@ void HRM2D::bridgeVertex(const int idx1, const int idx2) {
 
     // Generate new vertex until a certain resolution
     if (std::fabs(v1[1] - v2[1]) <
-        param_.BOUND_LIMIT[1] / (param_.NUM_POINT * param_.NUM_LINE_Y)) {
+        (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+            (param_.NUM_POINT * param_.NUM_LINE_Y)) {
         return;
     }
 
