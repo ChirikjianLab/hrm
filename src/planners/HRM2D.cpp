@@ -12,20 +12,21 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 HRM2D::~HRM2D() {}
 
 void HRM2D::buildRoadmap() {
-    // Setup rotation angles: angle range [-pi,pi]
-    ang_r.clear();
-    const double dr = 2 * pi / (param_.NUM_LAYER - 1);
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        ang_r.push_back(-pi + dr * i);
-    }
+    sampleOrientations();
 
     // Construct roadmap
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Set rotation matrix to robot
-        setTransform({0.0, 0.0, ang_r.at(i)});
+    for (size_t i = 0; i < headings_.size(); ++i) {
+        // Generate new C-layer
+        if (!layerExistence_.at(i)) {
+            // Set rotation matrix to robot
+            setTransform({0.0, 0.0, headings_.at(i)});
 
-        // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+            // Generate Minkowski operation boundaries
+            layerBound_ = boundaryGen();
+            layerBoundAll_.push_back(layerBound_);
+        } else {
+            layerBound_ = layerBoundAll_.at(i);
+        }
 
         // Sweep-line process to generate collision free line segments
         sweepLineProcess();
@@ -43,6 +44,33 @@ void HRM2D::buildRoadmap() {
 
     // Connect adjacent layers using bridge C-layer
     connectMultiLayer();
+}
+
+/** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
+ * exists, no addition and record the index */
+void HRM2D::sampleOrientations() {
+    // Indicator of heading existence: true -- exists
+    layerExistence_.resize(headings_.size(), true);
+
+    const double dr = 2 * pi / (param_.NUM_LAYER - 1);
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        double heading = -pi + dr * i;
+
+        // Searching for existing headings
+        bool isExist = false;
+        for (size_t j = 0; j < headings_.size(); ++j) {
+            if (std::fabs(heading - headings_.at(j)) < 1e-6) {
+                isExist = true;
+                break;
+            }
+        }
+
+        // Add new heading
+        if (!isExist) {
+            headings_.push_back(heading);
+            layerExistence_.push_back(false);
+        }
+    }
 }
 
 void HRM2D::sweepLineProcess() {
@@ -162,7 +190,7 @@ void HRM2D::connectMultiLayer() {
         n2 = vtxId_.at(j).line.back().back();
 
         // Compute TFE and construct bridge C-layer
-        computeTFE(ang_r[i], ang_r[j], &tfe_);
+        computeTFE(headings_[i], headings_[j], &tfe_);
         bridgeLayer();
 
         // Connect close vertices btw layers
@@ -415,9 +443,9 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
     // Search for k-nn C-layers
     std::vector<double> angList;
-    for (size_t i = 0; i < ang_r.size(); ++i) {
-        if (std::fabs(minAngle - ang_r[i]) < radius) {
-            angList.push_back(ang_r[i]);
+    for (size_t i = 0; i < headings_.size(); ++i) {
+        if (std::fabs(minAngle - headings_[i]) < radius) {
+            angList.push_back(headings_[i]);
         }
 
         if (angList.size() >= k) {
@@ -442,7 +470,8 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
         }
 
         if (std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
-            10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+            radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }
     }

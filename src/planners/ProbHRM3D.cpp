@@ -24,22 +24,18 @@ void ProbHRM3D::plan(const double timeLim) {
     do {
         // Randomly generate rotations and joint angles
         if (param_.NUM_LAYER == 0) {
-            q_r.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
-                                             start_.at(5), start_.at(6)));
+            q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
+                                            start_.at(5), start_.at(6)));
         } else if (param_.NUM_LAYER == 1) {
-            q_r.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
-                                             goal_.at(5), goal_.at(6)));
+            q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
+                                            goal_.at(5), goal_.at(6)));
         } else {
-            q_r.push_back(Eigen::Quaterniond::UnitRandom());
+            q_.push_back(Eigen::Quaterniond::UnitRandom());
         }
 
-        std::vector<double> config{0.0,
-                                   0.0,
-                                   0.0,
-                                   q_r.back().w(),
-                                   q_r.back().x(),
-                                   q_r.back().y(),
-                                   q_r.back().z()};
+        std::vector<double> config{0.0,           0.0,           0.0,
+                                   q_.back().w(), q_.back().x(), q_.back().y(),
+                                   q_.back().z()};
 
         if (param_.NUM_LAYER == 0) {
             for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {

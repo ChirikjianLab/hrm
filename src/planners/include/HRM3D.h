@@ -43,6 +43,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void buildRoadmap() override;
 
+    virtual void sampleOrientations() override;
+
     void sweepLineProcess() override;
 
     virtual void generateVertices(const double tx,
@@ -80,8 +82,12 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void setTransform(const std::vector<double>& v) override;
 
   public:
-    /** \param q_r sampled orientations (Quaternion) of the robot */
-    std::vector<Eigen::Quaterniond> q_r;
+    /** \param q_ storage of sampled orientations (Quaternion) of the robot
+     */
+    std::vector<Eigen::Quaterniond> q_;
+
+    /** \param quatNew_ sampled new orientations (Quaternion) of the robot */
+    std::vector<Eigen::Quaterniond> qNew_;
 
   protected:
     BoundaryMesh layerBoundMesh_;

@@ -89,6 +89,9 @@ class HighwayRoadMap {
     /** \brief search Subroutine for graph searching */
     void search();
 
+    /** \brief sampleOrientations generate orientation samples */
+    virtual void sampleOrientations() = 0;
+
     /**
      * \brief boundaryGen Generating Minkowski boundary points
      * \return Boundary structure
@@ -212,8 +215,12 @@ class HighwayRoadMap {
     /** \param N_s number of arenas */
     size_t N_s;
 
+    /** \param layerExistence indicating existence of C-layers */
+    std::vector<bool> layerExistence_;
+
     /** \param Boundary point sets of Minkowski operations */
     Boundary layerBound_;
+    std::vector<Boundary> layerBoundAll_;
 
     /** \param Vertex index info */
     vertexIdx N_v;

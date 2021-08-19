@@ -14,22 +14,62 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 HRM3D::~HRM3D() {}
 
 void HRM3D::buildRoadmap() {
-    // Samples from SO(3)
+    sampleOrientations();
+
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        // Add new C-layer
+        if (!layerExistence_.at(i)) {
+            // Set rotation matrix to robot
+            setTransform({0.0, 0.0, 0.0, q_.at(i).w(), q_.at(i).x(),
+                          q_.at(i).y(), q_.at(i).z()});
+
+            // Generate Minkowski operation boundaries
+            layerBound_ = boundaryGen();
+            layerBoundAll_.push_back(layerBound_);
+        } else {
+            layerBound_ = layerBoundAll_.at(i);
+        }
+
+        // Sweep-line process to generate collision free line segments
+        sweepLineProcess();
+
+        // Connect vertices within one C-layer
+        connectOneLayer3D(&freeSegOneLayer_);
+
+        // Record vertex index at each C-layer
+        N_v.layer = res_.graph_structure.vertex.size();
+        vtxId_.push_back(N_v);
+    }
+
+    // Connect adjacent layers using bridge C-layer
+    connectMultiLayer();
+}
+
+/** \brief Sample from SO(3). If the orientation exists, no addition and record
+ * the index */
+void HRM3D::sampleOrientations() {
+    // Indicator of heading existence: true -- exists
+    layerExistence_.resize(qNew_.size(), true);
+
+    // Generate samples from SO(3)
     sampleSO3();
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Set rotation matrix to robot
-        setTransform({0.0, 0.0, 0.0, q_r.at(i).w(), q_r.at(i).x(),
-                      q_r.at(i).y(), q_r.at(i).z()});
+        // Searching for existing headings
+        bool isExist = false;
+        for (size_t j = 0; j < q_.size(); ++j) {
+            if (qNew_.at(i).angularDistance(q_.at(j)) < 1e-6) {
+                isExist = true;
+                break;
+            }
+        }
 
-        layerBound_ = boundaryGen();
-        sweepLineProcess();
-        connectOneLayer3D(&freeSegOneLayer_);
-
-        // Store the index of vertex in the current layer
-        vtxId_.push_back(N_v);
+        // Add new heading
+        if (!isExist) {
+            q_.push_back(qNew_.at(i));
+            layerExistence_.push_back(false);
+        }
     }
-    connectMultiLayer();
 }
 
 void HRM3D::sweepLineProcess() {
@@ -254,7 +294,7 @@ void HRM3D::connectMultiLayer() {
         double minDist = 100;
         int minIdx = 0;
         for (size_t j = 0; j != i && j < param_.NUM_LAYER; ++j) {
-            double dist = q_r.at(i).angularDistance(q_r.at(j));
+            double dist = q_.at(i).angularDistance(q_.at(j));
             if (dist < minDist) {
                 minDist = dist;
                 minIdx = j;
@@ -277,7 +317,7 @@ void HRM3D::connectMultiLayer() {
         size_t n2 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
-        computeTFE(q_r[i], q_r[j], &tfe_);
+        computeTFE(q_[i], q_[j], &tfe_);
         bridgeLayer();
 
         //        ////////////////////////////////////////////////////////////
@@ -495,15 +535,16 @@ bool HRM3D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
 void HRM3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
+    qNew_.resize(param_.NUM_LAYER);
     if (robot_.getBase().getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
         for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-            q_r.push_back(Eigen::Quaterniond::UnitRandom());
+            qNew_.at(i) = Eigen::Quaterniond::UnitRandom();
         }
     } else {
         // Pre-defined samples of Quaternions
         param_.NUM_LAYER = robot_.getBase().getQuatSamples().size();
-        q_r = robot_.getBase().getQuatSamples();
+        qNew_ = robot_.getBase().getQuatSamples();
     }
 }
 
@@ -519,20 +560,20 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
     Eigen::Quaterniond minQuat;
 
     // Find the closest C-layer
-    minQuatDist = queryQuat.angularDistance(q_r[0]);
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        quatDist = queryQuat.angularDistance(q_r[i]);
+    minQuatDist = queryQuat.angularDistance(q_[0]);
+    for (size_t i = 0; i < q_.size(); ++i) {
+        quatDist = queryQuat.angularDistance(q_[i]);
         if (quatDist < minQuatDist) {
             minQuatDist = quatDist;
-            minQuat = q_r[i];
+            minQuat = q_[i];
         }
     }
 
     // Search for k-nn C-layers
     std::vector<Eigen::Quaterniond> quatList;
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        if (minQuat.angularDistance(q_r[i]) < radius) {
-            quatList.push_back(q_r[i]);
+    for (size_t i = 0; i < q_.size(); ++i) {
+        if (minQuat.angularDistance(q_[i]) < radius) {
+            quatList.push_back(q_[i]);
         }
 
         if (quatList.size() >= k) {
