@@ -60,7 +60,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
                     std::vector<SuperEllipse>* tfe);
 
   protected:
-    /** \brief ang_r sampled orientations of the robot */
+    /** \brief headings_ sampled orientations of the robot */
     std::vector<double> headings_;
 
     FreeSegment2D freeSegOneLayer_;

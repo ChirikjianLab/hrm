@@ -26,8 +26,13 @@ void HRM3D::buildRoadmap() {
             // Generate Minkowski operation boundaries
             layerBound_ = boundaryGen();
             layerBoundAll_.push_back(layerBound_);
+
+            // Generate mesh for the boundaries
+            generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
+            layerBoundMeshAll_.push_back(layerBoundMesh_);
         } else {
             layerBound_ = layerBoundAll_.at(i);
+            layerBoundMesh_ = layerBoundMeshAll_.at(i);
         }
 
         // Sweep-line process to generate collision free line segments
@@ -64,7 +69,7 @@ void HRM3D::sampleOrientations() {
             }
         }
 
-        // Add new heading
+        // Add new orientation
         if (!isExist) {
             q_.push_back(qNew_.at(i));
             layerExistence_.push_back(false);
@@ -73,18 +78,6 @@ void HRM3D::sampleOrientations() {
 }
 
 void HRM3D::sweepLineProcess() {
-    // Generate mesh for the boundaries
-    layerBoundMesh_.arena.resize(layerBound_.arena.size());
-    layerBoundMesh_.obstacle.resize(layerBound_.obstacle.size());
-    for (size_t i = 0; i < layerBound_.arena.size(); ++i) {
-        layerBoundMesh_.arena.at(i) = getMeshFromParamSurface(
-            layerBound_.arena.at(i), arena_.at(0).getNumParam());
-    }
-    for (size_t i = 0; i < layerBound_.obstacle.size(); ++i) {
-        layerBoundMesh_.obstacle.at(i) = getMeshFromParamSurface(
-            layerBound_.obstacle.at(i), obs_.at(0).getNumParam());
-    }
-
     // x- and y-coordinates of sweep lines
     std::vector<double> ty(param_.NUM_LINE_Y);
     double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
@@ -403,6 +396,22 @@ std::vector<std::vector<double>> HRM3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
+void HRM3D::generateBoundaryMesh(const Boundary* bound,
+                                 BoundaryMesh* boundMesh) {
+    // Generate mesh for the boundaries
+    boundMesh->arena.resize(bound->arena.size());
+    boundMesh->obstacle.resize(bound->obstacle.size());
+
+    for (size_t i = 0; i < bound->arena.size(); ++i) {
+        boundMesh->arena.at(i) = getMeshFromParamSurface(
+            bound->arena.at(i), arena_.at(0).getNumParam());
+    }
+    for (size_t i = 0; i < bound->obstacle.size(); ++i) {
+        boundMesh->obstacle.at(i) = getMeshFromParamSurface(
+            bound->obstacle.at(i), obs_.at(0).getNumParam());
+    }
+}
+
 void HRM3D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {

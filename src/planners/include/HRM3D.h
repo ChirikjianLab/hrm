@@ -56,6 +56,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void connectMultiLayer() override;
 
   protected:
+    void generateBoundaryMesh(const Boundary* bound, BoundaryMesh* boundMesh);
+
     void bridgeLayer() override;
 
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
@@ -91,6 +93,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
   protected:
     BoundaryMesh layerBoundMesh_;
+    std::vector<BoundaryMesh> layerBoundMeshAll_;
 
     FreeSegment3D freeSegOneLayer_;
 
