@@ -58,7 +58,7 @@ endif()
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost 1.71 REQUIRED)
+find_package(Boost 1.58 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
