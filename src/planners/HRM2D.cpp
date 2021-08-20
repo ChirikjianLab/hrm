@@ -44,6 +44,11 @@ void HRM2D::buildRoadmap() {
 
     // Connect adjacent layers using bridge C-layer
     connectMultiLayer();
+
+    // Connect with existing layers
+    if (!vtxIdAll_.empty()) {
+        connectExistLayer();
+    }
 }
 
 /** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
@@ -143,6 +148,8 @@ void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
+    N_v.startId = res_.graph_structure.vertex.size();
+
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
 
@@ -199,10 +206,10 @@ void HRM2D::connectMultiLayer() {
             for (size_t m1 = n12; m1 < n2; ++m1) {
                 v2 = res_.graph_structure.vertex[m1];
 
-                // Locate the neighbor vertices in the same sweep line,
-                // check for validity
+                // Locate the neighbor vertices, check for validity
                 if (std::fabs(v1[1] - v2[1]) <
-                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y &&
+                        2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                            param_.NUM_LINE_Y &&
                     isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
@@ -216,6 +223,63 @@ void HRM2D::connectMultiLayer() {
             }
         }
         start = n1;
+    }
+}
+
+void HRM2D::connectExistLayer() {
+    // Vertex indexes for list traversal
+    size_t startIdExist;
+    size_t endIdExist;
+    size_t startIdCur;
+    size_t endIdCur;
+
+    std::vector<double> v1;
+    std::vector<double> v2;
+
+    // Attempt to connect the most recent subgraph to previous existing graph
+    // Traverse C-layers through the current subgraph
+    for (auto vtxIdCurrentLayer : vtxId_) {
+        startIdCur = vtxIdCurrentLayer.startId;
+        endIdCur = vtxIdCurrentLayer.layer;
+
+        double angCur = res_.graph_structure.vertex.at(startIdCur).at(2);
+
+        // Connect within same C-layer
+        for (auto vtxIdExistLayer : vtxIdAll_.back()) {
+            startIdExist = vtxIdExistLayer.startId;
+            endIdExist = vtxIdExistLayer.layer;
+
+            double angExist =
+                res_.graph_structure.vertex.at(startIdExist).at(2);
+
+            if (std::fabs(angCur - angExist) < 1e-6) {
+                for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
+                    v1 = res_.graph_structure.vertex[m0];
+                    for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
+                        v2 = res_.graph_structure.vertex[m1];
+
+                        // Locate the neighbor vertices in the adjacent
+                        // sweep line, check for validity
+                        if (std::fabs(v1[1] - v2[1]) <
+                                2.0 *
+                                    (param_.BOUND_LIMIT[1] -
+                                     param_.BOUND_LIMIT[0]) /
+                                    param_.NUM_LINE_Y &&
+                            isSameLayerTransitionFree(v1, v2)) {
+                            // Add new connections
+                            res_.graph_structure.edge.push_back(
+                                std::make_pair(m0, m1));
+                            res_.graph_structure.weight.push_back(
+                                vectorEuclidean(v1, v2));
+
+                            // Continue from where it pauses
+                            startIdExist = m1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

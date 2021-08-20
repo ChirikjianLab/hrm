@@ -26,6 +26,22 @@ MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
 void loadPreDefinedQuaternions(const std::string quat_file,
                                SuperQuadrics& robot_base);
 
+/** \brief computeObstacleMinSize Compute minimum size of all obstacles */
+template <typename G>
+double computeObstacleMinSize(const std::vector<G> obstacles) {
+    double min_size_obs = obstacles.at(0).getSemiAxis().at(0);
+    for (auto obs : obstacles) {
+        for (size_t i = 0; i < obs.getSemiAxis().size(); ++i) {
+            double size_obs = obs.getSemiAxis().at(i);
+            if (size_obs < min_size_obs) {
+                min_size_obs = size_obs;
+            }
+        }
+    }
+
+    return min_size_obs;
+}
+
 /** \class PlannerSetting Setting planning environment, pure virtual functions
  */
 class PlannerSetting {

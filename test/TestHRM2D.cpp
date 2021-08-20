@@ -29,15 +29,8 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
     par.NUM_POINT = 5;
 
     // Determine the base number of sweep lines at each C-layer
-    double min_size_obs = inf;
-    for (auto obs : env2D->getObstacle()) {
-        for (size_t i = 0; i < obs.getSemiAxis().size(); ++i) {
-            double size_obs = obs.getSemiAxis().at(i);
-            if (size_obs < min_size_obs) {
-                min_size_obs = size_obs;
-            }
-        }
-    }
+    double min_size_obs =
+        computeObstacleMinSize<SuperEllipse>(env2D->getObstacle());
 
     par.NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
 

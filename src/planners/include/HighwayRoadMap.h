@@ -46,6 +46,7 @@ struct Boundary {
 
 /** \brief vertexIdx vertex index at each C-layer, sweep line */
 struct vertexIdx {
+    size_t startId;
     size_t layer;
     std::vector<size_t> plane;
     std::vector<std::vector<size_t>> line;
@@ -124,6 +125,10 @@ class HighwayRoadMap {
     /** \brief connectMultiLayer Subroutine for connecting vertices among
      * adjacent C-layers */
     virtual void connectMultiLayer() = 0;
+
+    /** \brief connectExistLayer Subroutine for connecting vertices with
+     * previously existing layers */
+    virtual void connectExistLayer() = 0;
 
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
@@ -225,6 +230,7 @@ class HighwayRoadMap {
     /** \param Vertex index info */
     vertexIdx N_v;
     std::vector<vertexIdx> vtxId_;
+    std::vector<std::vector<vertexIdx>> vtxIdAll_;
 
     /** \param Tightly-fitted ellipsoids at bridge C-layer */
     std::vector<ObjectType> tfe_;

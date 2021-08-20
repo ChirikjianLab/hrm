@@ -12,10 +12,6 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
                              const PlannerSetting3D* env3D) {
     PlannerParameter par;
 
-    par.NUM_LAYER = robot->getBase().getQuatSamples().size();
-    par.NUM_LINE_X = 15;
-    par.NUM_LINE_Y = 10;
-
     // Planning arena boundary
     double f = 1.0;
     vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
@@ -31,6 +27,14 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
         env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
         env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
         env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
+
+    par.NUM_LAYER = robot->getBase().getQuatSamples().size();
+
+    double min_size_obs =
+        computeObstacleMinSize<SuperQuadrics>(env3D->getObstacle());
+
+    par.NUM_LINE_X = static_cast<int>(bound.at(0) / min_size_obs);
+    par.NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
 
     return par;
 }

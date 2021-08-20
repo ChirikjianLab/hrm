@@ -63,6 +63,8 @@ void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
         res_.planning_time.totalTime =
             res_.planning_time.buildTime + res_.planning_time.searchTime;
 
+        vtxIdAll_.push_back(vtxId_);
+
         if (res_.solved) {
             // Get solution path
             res_.solution_path.solvedPath = getSolutionPath();
