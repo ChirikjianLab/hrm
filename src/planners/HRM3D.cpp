@@ -13,46 +13,30 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 
 HRM3D::~HRM3D() {}
 
-void HRM3D::buildRoadmap() {
-    sampleOrientations();
+void HRM3D::constructOneLayer(const int layerIdx) {
+    // Set rotation matrix to robot
+    setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
+                  q_.at(layerIdx).y(), q_.at(layerIdx).z()});
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Add new C-layer
-        if (!layerExistence_.at(i)) {
-            // Set rotation matrix to robot
-            setTransform({0.0, 0.0, 0.0, q_.at(i).w(), q_.at(i).x(),
-                          q_.at(i).y(), q_.at(i).z()});
+    // Add new C-layer
+    if (!layerExistence_.at(layerIdx)) {
+        // Generate Minkowski operation boundaries
+        layerBound_ = boundaryGen();
+        layerBoundAll_.push_back(layerBound_);
 
-            // Generate Minkowski operation boundaries
-            layerBound_ = boundaryGen();
-            layerBoundAll_.push_back(layerBound_);
-
-            // Generate mesh for the boundaries
-            generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
-            layerBoundMeshAll_.push_back(layerBoundMesh_);
-        } else {
-            layerBound_ = layerBoundAll_.at(i);
-            layerBoundMesh_ = layerBoundMeshAll_.at(i);
-        }
-
-        // Sweep-line process to generate collision free line segments
-        sweepLineProcess();
-
-        // Connect vertices within one C-layer
-        connectOneLayer3D(&freeSegOneLayer_);
-
-        // Record vertex index at each C-layer
-        N_v.layer = res_.graph_structure.vertex.size();
-        vtxId_.push_back(N_v);
+        // Generate mesh for the boundaries
+        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
+        layerBoundMeshAll_.push_back(layerBoundMesh_);
+    } else {
+        layerBound_ = layerBoundAll_.at(layerIdx);
+        layerBoundMesh_ = layerBoundMeshAll_.at(layerIdx);
     }
 
-    // Connect adjacent layers using bridge C-layer
-    connectMultiLayer();
+    // Sweep-line process to generate collision free line segments
+    sweepLineProcess();
 
-    // Connect with previously existing layers
-    if (!vtxIdAll_.empty()) {
-        connectExistLayer();
-    }
+    // Connect vertices within one C-layer
+    connectOneLayer3D(&freeSegOneLayer_);
 }
 
 /** \brief Sample from SO(3). If the orientation exists, no addition and record

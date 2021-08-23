@@ -16,6 +16,8 @@ class ProbHRM3D : public HRM3D {
   public:
     void plan(const double timeLim) override;
 
+    void sampleOrientations() override;
+
     void connectMultiLayer() override;
 
     void generateVertices(const double tx,

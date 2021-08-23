@@ -85,10 +85,13 @@ class HighwayRoadMap {
     virtual void plan(const double timeLim);
 
     /** \brief buildRoadmap Subroutine for building roadmap */
-    virtual void buildRoadmap() = 0;
+    void buildRoadmap();
 
     /** \brief search Subroutine for graph searching */
     void search();
+
+    /** \brief construct one C-layer */
+    virtual void constructOneLayer(const int layerIdx) = 0;
 
     /** \brief sampleOrientations generate orientation samples */
     virtual void sampleOrientations() = 0;

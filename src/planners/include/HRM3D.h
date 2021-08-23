@@ -41,7 +41,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         return freeSegOneLayer_;
     }
 
-    virtual void buildRoadmap() override;
+    void constructOneLayer(const int layerIdx) override;
 
     virtual void sampleOrientations() override;
 

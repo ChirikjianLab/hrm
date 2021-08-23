@@ -14,55 +14,22 @@ ProbHRM3D::~ProbHRM3D() {}
 
 void ProbHRM3D::plan(const double timeLim) {
     auto start = Clock::now();
-
-    // Iteratively add layers with random orientations
-    srand(unsigned(std::time(NULL)));
-    ompl::RNG rng;
-
     param_.NUM_LAYER = 0;
 
     do {
         // Randomly generate rotations and joint angles
-        if (param_.NUM_LAYER == 0) {
-            q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
-                                            start_.at(5), start_.at(6)));
-        } else if (param_.NUM_LAYER == 1) {
-            q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
-                                            goal_.at(5), goal_.at(6)));
-        } else {
-            q_.push_back(Eigen::Quaterniond::UnitRandom());
-        }
-
-        std::vector<double> config{0.0,           0.0,           0.0,
-                                   q_.back().w(), q_.back().x(), q_.back().y(),
-                                   q_.back().z()};
-
-        if (param_.NUM_LAYER == 0) {
-            for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
-                config.push_back(start_.at(7 + i));
-            }
-        } else if (param_.NUM_LAYER == 1) {
-            for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
-                config.push_back(goal_.at(7 + i));
-            }
-        } else {
-            for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
-                config.push_back(
-                    rng.uniformReal(-maxJointAngle_, maxJointAngle_));
-            }
-        }
-        v_.push_back(config);
-
-        // Set rotation matrix to robot
+        sampleOrientations();
         setTransform(v_.back());
 
-        // Update number of C-layers
-        param_.NUM_LAYER++;
+        // Construct one C-layer
+        constructOneLayer(param_.NUM_LAYER);
 
-        layerBound_ = boundaryGen();
-        sweepLineProcess();
-        connectOneLayer3D(&freeSegOneLayer_);
+        // Update number of C-layers and vertex index
+        if (!layerExistence_.at(param_.NUM_LAYER)) {
+            param_.NUM_LAYER++;
+        }
 
+        N_v.layer = res_.graph_structure.vertex.size();
         vtxId_.push_back(N_v);
 
         // Connect among adjacent C-layers
@@ -74,10 +41,72 @@ void ProbHRM3D::plan(const double timeLim) {
         search();
 
         res_.planning_time.totalTime = Durationd(Clock::now() - start).count();
+
+        // Double the number of sweep lines for every 10 iterations
+        if (param_.NUM_LAYER % 10 == 0) {
+            param_.NUM_LINE_X *= 2;
+            param_.NUM_LINE_Y *= 2;
+
+            vtxIdAll_.push_back(vtxId_);
+            vtxId_.clear();
+        }
     } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 
     // Retrieve coordinates of solved path
-    res_.solution_path.solvedPath = getSolutionPath();
+    if (res_.solved) {
+        res_.solution_path.solvedPath = getSolutionPath();
+    }
+}
+
+void ProbHRM3D::sampleOrientations() {
+    // Iteratively add layers with random orientations
+    srand(unsigned(std::time(NULL)));
+    ompl::RNG rng;
+
+    // Randomly sample rotation of base
+    if (param_.NUM_LAYER == 0) {
+        q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
+                                        start_.at(5), start_.at(6)));
+    } else if (param_.NUM_LAYER == 1) {
+        q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
+                                        goal_.at(6)));
+    } else {
+        q_.push_back(Eigen::Quaterniond::UnitRandom());
+    }
+
+    std::vector<double> config{0.0,           0.0,           0.0,
+                               q_.back().w(), q_.back().x(), q_.back().y(),
+                               q_.back().z()};
+
+    // Randomly sample joint angles
+    if (param_.NUM_LAYER == 0) {
+        for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+            config.push_back(start_.at(7 + i));
+        }
+    } else if (param_.NUM_LAYER == 1) {
+        for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+            config.push_back(goal_.at(7 + i));
+        }
+    } else {
+        for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+            config.push_back(rng.uniformReal(-maxJointAngle_, maxJointAngle_));
+        }
+    }
+
+    // Searching for existing orientations
+    bool isExist = false;
+    for (size_t j = 0; j < v_.size(); ++j) {
+        if (vectorEuclidean(config, v_.at(j)) < 1e-6) {
+            isExist = true;
+            break;
+        }
+    }
+
+    // Add new orientation
+    if (!isExist) {
+        v_.push_back(config);
+        layerExistence_.push_back(false);
+    }
 }
 
 // Connect adjacent C-layers

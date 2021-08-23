@@ -79,6 +79,29 @@ void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
 }
 
 template <class RobotType, class ObjectType>
+void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
+    sampleOrientations();
+
+    // Construct roadmap
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        // construct one C-layer
+        constructOneLayer(i);
+
+        // Record vertex index at each C-layer
+        N_v.layer = res_.graph_structure.vertex.size();
+        vtxId_.push_back(N_v);
+    }
+
+    // Connect adjacent layers using bridge C-layer
+    connectMultiLayer();
+
+    // Connect with existing layers
+    if (!vtxIdAll_.empty()) {
+        connectExistLayer();
+    }
+}
+
+template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::search() {
     std::vector<Vertex> idx_s;
     std::vector<Vertex> idx_g;

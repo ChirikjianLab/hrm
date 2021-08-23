@@ -23,7 +23,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
         return freeSegOneLayer_;
     }
 
-    virtual void buildRoadmap() override;
+    void constructOneLayer(const int layerIdx) override;
 
     virtual void sampleOrientations() override;
 

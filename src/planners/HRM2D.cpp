@@ -11,44 +11,27 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 
 HRM2D::~HRM2D() {}
 
-void HRM2D::buildRoadmap() {
-    sampleOrientations();
+void HRM2D::constructOneLayer(const int layerIdx) {
+    // Set rotation matrix to robot
+    setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
-    // Construct roadmap
-    for (size_t i = 0; i < headings_.size(); ++i) {
-        // Generate new C-layer
-        if (!layerExistence_.at(i)) {
-            // Set rotation matrix to robot
-            setTransform({0.0, 0.0, headings_.at(i)});
-
-            // Generate Minkowski operation boundaries
-            layerBound_ = boundaryGen();
-            layerBoundAll_.push_back(layerBound_);
-        } else {
-            layerBound_ = layerBoundAll_.at(i);
-        }
-
-        // Sweep-line process to generate collision free line segments
-        sweepLineProcess();
-
-        // Generate collision-free vertices
-        generateVertices(0.0, &freeSegOneLayer_);
-
-        // Connect vertices within one C-layer
-        connectOneLayer2D(&freeSegOneLayer_);
-
-        // Record vertex index at each C-layer
-        N_v.layer = res_.graph_structure.vertex.size();
-        vtxId_.push_back(N_v);
+    // Generate new C-layer
+    if (!layerExistence_.at(layerIdx)) {
+        // Generate Minkowski operation boundaries
+        layerBound_ = boundaryGen();
+        layerBoundAll_.push_back(layerBound_);
+    } else {
+        layerBound_ = layerBoundAll_.at(layerIdx);
     }
 
-    // Connect adjacent layers using bridge C-layer
-    connectMultiLayer();
+    // Sweep-line process to generate collision free line segments
+    sweepLineProcess();
 
-    // Connect with existing layers
-    if (!vtxIdAll_.empty()) {
-        connectExistLayer();
-    }
+    // Generate collision-free vertices
+    generateVertices(0.0, &freeSegOneLayer_);
+
+    // Connect vertices within one C-layer
+    connectOneLayer2D(&freeSegOneLayer_);
 }
 
 /** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
