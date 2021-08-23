@@ -49,6 +49,26 @@ void ProbHRM3D::plan(const double timeLim) {
 
             vtxIdAll_.push_back(vtxId_);
             vtxId_.clear();
+
+            // Update existing C-layers
+            for (size_t i = 0; i < v_.size(); ++i) {
+                setTransform(v_.at(i));
+                constructOneLayer(i);
+
+                N_v.layer = res_.graph_structure.vertex.size();
+                vtxId_.push_back(N_v);
+
+                connectExistLayer();
+
+                search();
+
+                res_.planning_time.totalTime =
+                    Durationd(Clock::now() - start).count();
+
+                if (res_.solved || res_.planning_time.totalTime > timeLim) {
+                    break;
+                }
+            }
         }
     } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 
@@ -64,19 +84,19 @@ void ProbHRM3D::sampleOrientations() {
     ompl::RNG rng;
 
     // Randomly sample rotation of base
+    Eigen::Quaterniond qNew;
     if (param_.NUM_LAYER == 0) {
-        q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
-                                        start_.at(5), start_.at(6)));
+        qNew = Eigen::Quaterniond(start_.at(3), start_.at(4), start_.at(5),
+                                  start_.at(6));
     } else if (param_.NUM_LAYER == 1) {
-        q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
-                                        goal_.at(6)));
+        qNew = Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
+                                  goal_.at(6));
     } else {
-        q_.push_back(Eigen::Quaterniond::UnitRandom());
+        qNew = Eigen::Quaterniond::UnitRandom();
     }
 
-    std::vector<double> config{0.0,           0.0,           0.0,
-                               q_.back().w(), q_.back().x(), q_.back().y(),
-                               q_.back().z()};
+    std::vector<double> config{0.0,      0.0,      0.0,     qNew.w(),
+                               qNew.x(), qNew.y(), qNew.z()};
 
     // Randomly sample joint angles
     if (param_.NUM_LAYER == 0) {
@@ -104,6 +124,7 @@ void ProbHRM3D::sampleOrientations() {
 
     // Add new orientation
     if (!isExist) {
+        q_.push_back(qNew);
         v_.push_back(config);
         layerExistence_.push_back(false);
     }
