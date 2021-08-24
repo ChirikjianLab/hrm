@@ -69,7 +69,7 @@ void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
             // Get solution path
             res_.solution_path.solvedPath = getSolutionPath();
             return;
-        } else {
+        } else if (vtxIdAll_.size() < param_.NUM_POINT) {
             param_.NUM_LINE_X *= 2;
             param_.NUM_LINE_Y *= 2;
 

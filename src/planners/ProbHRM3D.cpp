@@ -43,7 +43,7 @@ void ProbHRM3D::plan(const double timeLim) {
         res_.planning_time.totalTime = Durationd(Clock::now() - start).count();
 
         // Double the number of sweep lines for every 10 iterations
-        if (param_.NUM_LAYER % 10 == 0) {
+        if (param_.NUM_LAYER % 60 == 0 && vtxIdAll_.size() < param_.NUM_POINT) {
             param_.NUM_LINE_X *= 2;
             param_.NUM_LINE_Y *= 2;
 
