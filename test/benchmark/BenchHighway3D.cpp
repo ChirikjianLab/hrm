@@ -41,13 +41,21 @@ int main(int argc, char** argv) {
     par.NUM_LINE_X = size_t(N_x);
     par.NUM_LINE_Y = size_t(N_y);
 
+    // Planning arena boundary
     double f = 1.0;
-    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                           f * robot.getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(1) -
-                           f * robot.getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(2) -
-                           f * robot.getBase().getSemiAxis().at(0)};
+    vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                                f * robot.getBase().getSemiAxis().at(0),
+                            env3D->getArena().at(0).getSemiAxis().at(1) -
+                                f * robot.getBase().getSemiAxis().at(0),
+                            env3D->getArena().at(0).getSemiAxis().at(2) -
+                                f * robot.getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {
+        env3D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env3D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env3D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
+        env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
+        env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
 
     PlanningRequest req;
     req.is_robot_rigid = true;
