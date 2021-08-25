@@ -10,28 +10,40 @@ using namespace Eigen;
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc != 6) {
+    if (argc != 8) {
         cerr << "Usage: Please add 1) Num of trials 2) robot name 3) Num of "
                 "sweep planes 4) Num of sweep lines 5) Max planning time (in "
-                "seconds, default: 60.0s)"
+                "seconds, default: 60.0s) 6) Configuration file prefix 7) URDF "
+                "file prefix"
              << endl;
         return 1;
+    } else {
+        cout << "Probabilistic Highway RoadMap for 3D articulated-body planning"
+             << endl;
+        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
     const size_t N = size_t(atoi(argv[1]));
-    const string robotName = argv[2];
+    const string ROBOT_NAME = argv[2];
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
-    const double timeLim = double(atoi(argv[5]));
+    const double MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const string CONFIG_FILE_PREFIX = argv[6];
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
-    std::string urdfFile = "../../../resources/3D/urdf/" + robotName + ".urdf";
+    const string URDF_FILE_PREFIX = argv[7];
+
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+    std::string urdfFile =
+        URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Options
     PlannerParameter par;
@@ -55,6 +67,12 @@ int main(int argc, char** argv) {
         env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
         env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
 
+    cout << "Initial number of sweep lines: {" << par.NUM_LINE_X << ", "
+         << par.NUM_LINE_Y << '}' << endl;
+    cout << "----------" << endl;
+
+    cout << "Start benchmark..." << endl;
+
     PlanningRequest req;
     req.is_robot_rigid = false;
     req.planner_parameters = par;
@@ -75,7 +93,7 @@ int main(int argc, char** argv) {
         // Path planning using ProbHRM3D
         ProbHRM3D probHRM(robot, urdfFile, env3D->getArena(),
                           env3D->getObstacle(), req);
-        probHRM.plan(timeLim);
+        probHRM.plan(MAX_PLAN_TIME);
 
         PlanningResult res = probHRM.getPlanningResult();
 
@@ -84,10 +102,17 @@ int main(int argc, char** argv) {
         displayGraphInfo(&res.graph_structure);
         displayPathInfo(&res.solution_path);
 
+        cout << "Final number of C-layers: "
+             << probHRM.getPlannerParameters().NUM_LAYER << endl;
+        cout << "Final number of sweep lines: {"
+             << probHRM.getPlannerParameters().NUM_LINE_X << ", "
+             << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+        cout << "==========" << endl;
+
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << probHRM.param_.NUM_LAYER << ','
-                  << probHRM.param_.NUM_LINE_X << ','
-                  << probHRM.param_.NUM_LINE_Y << ','
+                  << probHRM.getPlannerParameters().NUM_LAYER << ','
+                  << probHRM.getPlannerParameters().NUM_LINE_X << ','
+                  << probHRM.getPlannerParameters().NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

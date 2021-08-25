@@ -116,15 +116,19 @@ void showResult(const PlanningResult* res, const bool isStore) {
 
 TEST(TestHRMPlanning3D, HRM) {
     // Setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const std::string CONFIG_FILE_PREFIX = "../../config/";
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Using fixed orientations from Icosahedral symmetry group
-    string quat_file = "../../resources/SO3_sequence/q_icosahedron_60.csv";
+    const std::string quat_file =
+        "../../resources/SO3_sequence/q_icosahedron_60.csv";
 
     // Setup robot
     MultiBodyTree3D robot =
-        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
 
     // Options
     PlannerParameter par = defineParam(&robot, env3D);
@@ -164,16 +168,20 @@ TEST(TestHRMPlanning3D, HRM) {
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const std::string CONFIG_FILE_PREFIX = "../../config/";
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Using fixed orientations from Icosahedral symmetry group
-    string quat_file = "../../resources/SO3_sequence/q_icosahedron_60.csv";
-    string urdf_file = "../../resources/3D/urdf/snake.urdf";
+    const string quat_file =
+        "../../resources/SO3_sequence/q_icosahedron_60.csv";
+    const string urdf_file = "../../resources/3D/urdf/snake.urdf";
 
     // Setup robot
     MultiBodyTree3D robot =
-        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
 
     // Options
     PlannerParameter par = defineParam(&robot, env3D);

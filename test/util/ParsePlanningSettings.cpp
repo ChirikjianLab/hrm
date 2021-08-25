@@ -38,10 +38,11 @@ std::vector<SuperQuadrics> loadVectorSuperQuadrics(
     return obj;
 }
 
-MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param) {
+MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
+                                     const int num_curve_param) {
     // Read robot config file
     std::vector<SuperEllipse> robot_parts = loadVectorSuperEllipse(
-        "../config/robot_config_2D.csv", num_curve_param);
+        path_prefix + "robot_config_2D.csv", num_curve_param);
 
     // Generate multibody tree for robot
     MultiBodyTree2D robot(robot_parts[0]);
@@ -52,11 +53,12 @@ MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param) {
     return robot;
 }
 
-MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
+MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
+                                     const std::string quat_file,
                                      const int num_surf_param) {
     // Read and setup robot info
     std::vector<SuperQuadrics> robot_parts = loadVectorSuperQuadrics(
-        "../config/robot_config_3D.csv", num_surf_param);
+        path_prefix + "robot_config_3D.csv", num_surf_param);
 
     loadPreDefinedQuaternions(quat_file, robot_parts[0]);
 
@@ -92,38 +94,33 @@ void loadPreDefinedQuaternions(const std::string quat_file,
     }
 }
 
-PlannerSetting::PlannerSetting() {}
-PlannerSetting::~PlannerSetting() {}
-
-PlannerSetting2D::PlannerSetting2D() {}
+PlannerSetting2D::PlannerSetting2D(const int num_curve_param)
+    : PlannerSetting<SuperEllipse>::PlannerSetting(num_curve_param) {}
 PlannerSetting2D::~PlannerSetting2D() {}
 
-void PlannerSetting2D::loadEnvironment() {
+void PlannerSetting2D::loadEnvironment(const std::string path_prefix) {
     // Read environment config file
-    arena_ = loadVectorSuperEllipse("../config/arena_config_2D.csv",
-                                    num_curve_param_);
+    arena_ =
+        loadVectorSuperEllipse(path_prefix + "arena_config_2D.csv", num_param_);
 
-    obstacle_ = loadVectorSuperEllipse("../config/obstacle_config_2D.csv",
-                                       num_curve_param_);
+    obstacle_ = loadVectorSuperEllipse(path_prefix + "obstacle_config_2D.csv",
+                                       num_param_);
 
     // Read end points config file
-    std::vector<std::vector<double>> endPts =
-        parse2DCsvFile("../config/end_points_2D.csv");
+    end_points_ = parse2DCsvFile(path_prefix + "end_points_2D.csv");
+}
 
-    end_points_.push_back(endPts[0]);
-    end_points_.push_back(endPts[1]);
-};
-
-PlannerSetting3D::PlannerSetting3D() {}
+PlannerSetting3D::PlannerSetting3D(const int num_surf_param)
+    : PlannerSetting<SuperQuadrics>::PlannerSetting(num_surf_param) {}
 PlannerSetting3D::~PlannerSetting3D() {}
 
-void PlannerSetting3D::loadEnvironment() {
+void PlannerSetting3D::loadEnvironment(const std::string path_prefix) {
     // Read and setup environment config
-    arena_ = loadVectorSuperQuadrics("../config/arena_config_3D.csv",
-                                     num_surf_param_);
-    obstacle_ = loadVectorSuperQuadrics("../config/obstacle_config_3D.csv",
-                                        num_surf_param_);
+    arena_ = loadVectorSuperQuadrics(path_prefix + "arena_config_3D.csv",
+                                     num_param_);
+    obstacle_ = loadVectorSuperQuadrics(path_prefix + "obstacle_config_3D.csv",
+                                        num_param_);
 
     // Read end points config file
-    end_points_ = parse2DCsvFile("../config/end_points_3D.csv");
+    end_points_ = parse2DCsvFile(path_prefix + "end_points_3D.csv");
 }

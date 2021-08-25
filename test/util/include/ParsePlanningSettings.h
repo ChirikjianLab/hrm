@@ -15,10 +15,12 @@ std::vector<SuperQuadrics> loadVectorSuperQuadrics(
     const std::string config_file, const int num_surf_param);
 
 /** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
-MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param);
+MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
+                                     const int num_curve_param);
 
 /** loadRobotMultiBody3D \brief Load multi-body tree in 3D */
-MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
+MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
+                                     const std::string quat_file,
                                      const int num_surf_param);
 
 /** \brief loadPreDefinedQuaternions Load pre-defined quaternion or generating
@@ -44,59 +46,45 @@ double computeObstacleMinSize(const std::vector<G> obstacles) {
 
 /** \class PlannerSetting Setting planning environment, pure virtual functions
  */
+template <class G>
 class PlannerSetting {
   public:
-    PlannerSetting();
-    ~PlannerSetting();
+    PlannerSetting(const int num_param) : num_param_(num_param) {}
+    ~PlannerSetting() {}
 
   public:
-    virtual void loadEnvironment() = 0;
+    std::vector<G> getArena() const { return arena_; }
+    std::vector<G> getObstacle() const { return obstacle_; }
+    std::vector<std::vector<double>> getEndPoints() const {
+        return end_points_;
+    }
+    int getNumParam() const { return num_param_; }
+
+    virtual void loadEnvironment(const std::string path_prefix) = 0;
+
+  protected:
+    std::vector<G> arena_;
+    std::vector<G> obstacle_;
+    std::vector<std::vector<double>> end_points_;
+    const int num_param_;
 };
 
 /** \class PlannerSetting2D Setting 2D planning environment */
-class PlannerSetting2D : public PlannerSetting {
+class PlannerSetting2D : public PlannerSetting<SuperEllipse> {
   public:
-    PlannerSetting2D();
+    PlannerSetting2D(const int num_curve_param);
     ~PlannerSetting2D();
 
   public:
-    std::vector<SuperEllipse> getArena() const { return arena_; }
-    std::vector<SuperEllipse> getObstacle() const { return obstacle_; }
-    std::vector<std::vector<double>> getEndPoints() const {
-        return end_points_;
-    }
-    int getNumCurveParam() const { return num_curve_param_; }
-
-    void loadEnvironment();
-
-  private:
-    std::vector<SuperEllipse> arena_;
-    std::vector<SuperEllipse> obstacle_;
-    std::vector<std::vector<double>> end_points_;
-
-    const int num_curve_param_ = 50;
+    void loadEnvironment(const std::string path_prefix) override;
 };
 
 /** \class PlannerSetting3D Setting 3D planning environment */
-class PlannerSetting3D : public PlannerSetting {
+class PlannerSetting3D : public PlannerSetting<SuperQuadrics> {
   public:
-    PlannerSetting3D();
+    PlannerSetting3D(const int num_surf_param);
     ~PlannerSetting3D();
 
   public:
-    std::vector<SuperQuadrics> getArena() const { return arena_; }
-    std::vector<SuperQuadrics> getObstacle() const { return obstacle_; }
-    std::vector<std::vector<double>> getEndPoints() const {
-        return end_points_;
-    }
-    int getNumSurfParam() const { return num_surf_param_; }
-
-    void loadEnvironment();
-
-  private:
-    std::vector<SuperQuadrics> arena_;
-    std::vector<SuperQuadrics> obstacle_;
-    std::vector<std::vector<double>> end_points_;
-
-    const int num_surf_param_ = 10;
+    void loadEnvironment(const std::string path_prefix) override;
 };

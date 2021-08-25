@@ -10,12 +10,16 @@ using namespace Eigen;
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc < 5) {
+    if (argc < 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep planes 4) Num of sweep lines 5) Pre-defined quaternions "
-                "file prefix (if no, enter 0 or leave blank)"
+                "sweep planes 4) Num of sweep lines 5) Max planning time 6) "
+                "Configuration file prefix 7) Pre-defined quaternions file "
+                "prefix (if no, enter 0 or leave blank)"
              << endl;
         return 1;
+    } else {
+        cout << "Highway RoadMap for 3D rigid-body planning" << endl;
+        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -23,26 +27,31 @@ int main(int argc, char** argv) {
     const int N_l = atoi(argv[2]);
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
+    const double MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const string CONFIG_FILE_PREFIX = argv[6];
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
     string quat_file = "0";
-    if (argc == 6 && strcmp(argv[5], "0") != 0) {
-        quat_file = string(argv[5]) + '_' + string(argv[2]) + ".csv";
+    if (argc == 8 && strcmp(argv[7], "0") != 0) {
+        quat_file = string(argv[7]) + '_' + string(argv[2]) + ".csv";
     }
-    auto robot = loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+    auto robot =
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
 
-    // Options
+    // Planning parameters
     PlannerParameter par;
     par.NUM_LAYER = size_t(N_l);
     par.NUM_LINE_X = size_t(N_x);
     par.NUM_LINE_Y = size_t(N_y);
 
     // Planning arena boundary
-    double f = 1.0;
+    double f = 1.5;
     vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
                                 f * robot.getBase().getSemiAxis().at(0),
                             env3D->getArena().at(0).getSemiAxis().at(1) -
@@ -56,6 +65,13 @@ int main(int argc, char** argv) {
         env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
         env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
         env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
+
+    cout << "Initial number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Initial number of sweep lines: {" << par.NUM_LINE_X << ", "
+         << par.NUM_LINE_Y << '}' << endl;
+    cout << "----------" << endl;
+
+    cout << "Start benchmark..." << endl;
 
     PlanningRequest req;
     req.is_robot_rigid = true;
@@ -77,7 +93,7 @@ int main(int argc, char** argv) {
 
         // Path planning using HRM3D
         HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-        hrm.plan(60.0);
+        hrm.plan(MAX_PLAN_TIME);
 
         PlanningResult res = hrm.getPlanningResult();
 
@@ -86,11 +102,21 @@ int main(int argc, char** argv) {
         displayGraphInfo(&res.graph_structure);
         displayPathInfo(&res.solution_path);
 
+        cout << "Final number of C-layers: "
+             << hrm.getPlannerParameters().NUM_LAYER << endl;
+        cout << "Final number of sweep lines: {"
+             << hrm.getPlannerParameters().NUM_LINE_X << ", "
+             << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+        cout << "==========" << endl;
+
         file_time << res.solved << ',' << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','
-                  << res.planning_time.totalTime << ',' << N_l << ',' << N_x
-                  << ',' << N_y << ',' << res.graph_structure.vertex.size()
-                  << ',' << res.graph_structure.edge.size() << ','
+                  << res.planning_time.totalTime << ','
+                  << hrm.getPlannerParameters().NUM_LAYER << ','
+                  << hrm.getPlannerParameters().NUM_LINE_X << ','
+                  << hrm.getPlannerParameters().NUM_LINE_Y << ','
+                  << res.graph_structure.vertex.size() << ','
+                  << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";
     }
     file_time.close();

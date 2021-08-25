@@ -4,12 +4,16 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-    if (argc < 6) {
+    if (argc != 8) {
         cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
                 "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Max "
-                "planning time (in seconds, default: 60.0s)"
+                "planning time (in seconds, default: 60.0s) 7) Configuration "
+                "file prefix"
              << endl;
         return 1;
+    } else {
+        cout << "OMPL for 3D rigid-body planning" << endl;
+        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -23,11 +27,14 @@ int main(int argc, char** argv) {
     const int id_plan_end = atoi(argv[3]);
     const int id_sample_start = atoi(argv[4]);
     const int id_sample_end = atoi(argv[5]);
-    const double max_planning_time = atoi(argv[6]);
+    const double MAX_PLAN_TIME = atoi(argv[6]);
 
     // Read and setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const string CONFIG_FILE_PREFIX = argv[7];
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     const vector<SuperQuadrics>& arena = env3D->getArena();
     const vector<SuperQuadrics>& obs = env3D->getObstacle();
@@ -39,7 +46,8 @@ int main(int argc, char** argv) {
     }
 
     // Setup robot config
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
 
     // Boundary
     double f = 1.5;
@@ -53,6 +61,8 @@ int main(int argc, char** argv) {
 
     // Save results
     std::string filename_prefix = "ompl";
+
+    cout << "Start benchmark..." << endl;
 
     std::ofstream outfile;
     outfile.open("time_ompl_3D.csv");
@@ -77,7 +87,7 @@ int main(int argc, char** argv) {
                 tester.setup(m, 0, n);
 
                 tester.plan(env3D->getEndPoints().at(0),
-                            env3D->getEndPoints().at(1), max_planning_time);
+                            env3D->getEndPoints().at(1), MAX_PLAN_TIME);
 
                 outfile << m << ',' << n << ',' << tester.isSolved() << ','
                         << tester.getPlanningTime() << ','
