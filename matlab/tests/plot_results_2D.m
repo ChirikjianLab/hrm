@@ -73,41 +73,39 @@ end
 
 g_start = [rot2(start(3)), start(1:2); 0,0,1];
 rob.robotTF(g_start,1);
-% plotEllipse(robot(1:2), start, 'k');
-for i = 1:size(path,2)
-    g_step = [rot2(vtx(path(i)+1,3)), vtx(path(i)+1,1:2)'; 0,0,1];
+for i = 1:size(path,1)
+    g_step = [rot2(path(i,3)), path(i,1:2)'; 0,0,1];
     rob.robotTF(g_step,1);
-    %     plotEllipse(robot(1:2), vtx(path(i)+1,:)', 'b')
 end
 g_goal = [rot2(goal(3)), goal(1:2); 0,0,1];
 rob.robotTF(g_goal,1);
 
 % shortest path
-plot3([start(1) vtx(path(1)+1,1)],...
-    [start(2) vtx(path(1)+1,2)],...
-    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
-plot3([goal(1) vtx(path(end)+1,1)],...
-    [goal(2) vtx(path(end)+1,2)],...
-    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
+plot3([start(1) path(1,1)],...
+    [start(2) path(1,2)],...
+    sc*[start(3) path(1,3)], 'r', 'LineWidth', 2)
+plot3([goal(1) path(end,1)],...
+    [goal(2) path(end,2)],...
+    sc*[goal(3) path(end,3)], 'g', 'LineWidth', 2)
 
-for i = 1:size(path,2)-1
-    plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'm', 'LineWidth', 2)
+for i = 1:size(path,1)-1
+    plot3([path(i,1) path(i+1,1)],...
+        [path(i,2) path(i+1,2)],...
+        sc*[path(i,3) path(i+1,3)], 'm', 'LineWidth', 2)
     
-    plot([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)], 'm', 'LineWidth', 2)
+    plot([path(i,1) path(i+1,1)],...
+        [path(i,2) path(i+1,2)], 'm', 'LineWidth', 2)
 end
 
 %% Path interpolation
 pathInterp = [];
-for i = 1:size(path,2)-1
-    pathCur = vtx(path(i)+1,:);
-    pathNext = vtx(path(i+1)+1,:);
+for i = 1:size(path,1)-1
+    pathCur = path(i,:);
+    pathNext = path(i+1,:);
     numStep = ceil(norm(pathNext-pathCur) * 2);
 
     for j = 1:3
-        pathStepInterp(j,:) = linspace(pathCur(j),pathNext(j),numStep);
+        pathStepInterp(j,:) = linspace(pathCur(j), pathNext(j), numStep);
     end
     pathInterp = [pathInterp, pathStepInterp];
 
@@ -144,46 +142,3 @@ for i = 1:size(pathInterp,2)-1
 end
 plot([goal(1) pathInterp(1,end)],...
     [goal(2) pathInterp(2,end)], 'm', 'LineWidth', 2)
-
-%% Store path
-pathHRM = start';
-
-for i = 1:numel(path)
-    pathHRM = [pathHRM; vtx(path(i)+1,:)];
-end
-pathHRM = [pathHRM; goal'];
-
-% csvwrite('pathCpp.csv', pathHRM);
-
-%% Path for PRM
-% path_prm = load([loadPath, 'prm_path.csv']);
-% state_prm = load([loadPath, 'prm_state.csv']);
-% edge_prm = load([loadPath, 'prm_edge.csv']);
-%
-% path_prm(:,3) = path_prm(:,3)+pi;
-% state_prm(:,3) = state_prm(:,3)+pi;
-%
-% plot3([start(1) path_prm(1,1)],...
-%     [start(2) path_prm(1,2)],...
-%     sc*[start(3) path_prm(1,3)], 'r', 'LineWidth', 2)
-% plot3([goal(1) path_prm(end,1)],...
-%     [goal(2) path_prm(end,2)],...
-%     sc*[goal(3) path_prm(end,3)], 'g', 'LineWidth', 2)
-%
-% for i = 1:size(path_prm,1)-1
-%     plot3([path_prm(i,1) path_prm(i+1,1)],...
-%         [path_prm(i,2) path_prm(i+1,2)],...
-%         sc*[path_prm(i,3) path_prm(i+1,3)], 'b-', 'LineWidth', 2)
-% end
-%
-% for i = 1:size(state_prm,1)-1
-%     plot3(state_prm(i,1),state_prm(i,2),sc*state_prm(i,3),...
-%         'b+', 'LineWidth', 2)
-% end
-%
-% for i = 1:size(edge_prm,1)-1
-%     plot3([state_prm(edge_prm(i,1)+1,1) state_prm(edge_prm(i,2)+1,1)],...
-%         [state_prm(edge_prm(i,1)+1,2) state_prm(edge_prm(i,2)+1,2)],...
-%         sc*[state_prm(edge_prm(i,1)+1,3) state_prm(edge_prm(i,2)+1,3)],...
-%         'b--', 'LineWidth', 2)
-% end

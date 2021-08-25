@@ -85,7 +85,6 @@ is_validation = true;
 
 if is_validation
     disp('Validating path...')
-    Graph.V = vtx';
     
     high3D = PathValidation3D(robot, arena, obs, path_highway);
     high3D.validation();
