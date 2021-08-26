@@ -365,43 +365,43 @@ void HRM3D::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-void HRM3D::connectExistLayer() {
+void HRM3D::connectExistLayer(const int layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
-    for (size_t i = 0; i < vtxId_.size(); ++i) {
-        size_t startIdCur = vtxId_.at(i).startId;
-        size_t endIdCur = vtxId_.at(i).layer;
+    size_t startIdCur = vtxId_.at(layerId).startId;
+    size_t endIdCur = vtxId_.at(layerId).layer;
 
-        // Connect within same C-layer, same index with previous round of search
-        size_t startIdExist = vtxIdAll_.back().at(i).startId;
-        size_t endIdExist = vtxIdAll_.back().at(i).layer;
+    // Connect within same C-layer, same index with previous round of search
+    size_t startIdExist = vtxIdAll_.back().at(layerId).startId;
+    size_t endIdExist = vtxIdAll_.back().at(layerId).layer;
 
-        // Locate the neighbor vertices in the adjacent
-        // sweep line, check for validity
-        for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
-            auto v1 = res_.graph_structure.vertex[m0];
-            for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
-                auto v2 = res_.graph_structure.vertex[m1];
+    // Locate the neighbor vertices in the adjacent
+    // sweep line, check for validity
+    for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
+        auto v1 = res_.graph_structure.vertex[m0];
+        for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
+            auto v2 = res_.graph_structure.vertex[m1];
 
-                if (std::fabs(v1.at(0) - v2.at(0)) >
-                        2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                            param_.NUM_LINE_X ||
-                    std::fabs(v1.at(1) - v2.at(1)) >
-                        2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                            param_.NUM_LINE_Y) {
-                    continue;
-                }
+            if (std::fabs(v1.at(0) - v2.at(0)) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                    param_.NUM_LINE_X) {
+                continue;
+            }
 
-                if (isSameLayerTransitionFree(v1, v2)) {
-                    // Add new connections
-                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                    res_.graph_structure.weight.push_back(
-                        vectorEuclidean(v1, v2));
+            if (std::fabs(v1.at(1) - v2.at(1)) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
+                continue;
+            }
 
-                    // Continue from where it pauses
-                    startIdExist = m1;
-                    break;
-                }
+            if (isSameLayerTransitionFree(v1, v2)) {
+                // Add new connections
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+
+                // Continue from where it pauses
+                startIdExist = m1;
+                break;
             }
         }
     }

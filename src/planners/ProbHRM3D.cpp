@@ -37,38 +37,20 @@ void ProbHRM3D::plan(const double timeLim) {
             connectMultiLayer();
         }
 
-        // Graph search
-        search();
+        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
 
-        res_.planning_time.totalTime = Durationd(Clock::now() - start).count();
+        // Graph search
+        start = Clock::now();
+        search();
+        res_.planning_time.searchTime +=
+            Durationd(Clock::now() - start).count();
+
+        res_.planning_time.totalTime =
+            res_.planning_time.buildTime + res_.planning_time.searchTime;
 
         // Double the number of sweep lines for every 10 iterations
         if (param_.NUM_LAYER % 60 == 0 && vtxIdAll_.size() < param_.NUM_POINT) {
-            param_.NUM_LINE_X *= 2;
-            param_.NUM_LINE_Y *= 2;
-
-            vtxIdAll_.push_back(vtxId_);
-            vtxId_.clear();
-
-            // Update existing C-layers
-            for (size_t i = 0; i < v_.size(); ++i) {
-                setTransform(v_.at(i));
-                constructOneLayer(i);
-
-                N_v.layer = res_.graph_structure.vertex.size();
-                vtxId_.push_back(N_v);
-
-                connectExistLayer();
-
-                search();
-
-                res_.planning_time.totalTime =
-                    Durationd(Clock::now() - start).count();
-
-                if (res_.solved || res_.planning_time.totalTime > timeLim) {
-                    break;
-                }
-            }
+            refineExistRoadmap(timeLim);
         }
     } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 

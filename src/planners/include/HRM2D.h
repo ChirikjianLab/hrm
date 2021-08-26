@@ -34,7 +34,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual void connectMultiLayer() override;
 
-    void connectExistLayer() override;
+    void connectExistLayer(const int layerId) override;
 
   protected:
     void bridgeLayer() override;

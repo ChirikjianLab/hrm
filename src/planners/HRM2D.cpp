@@ -153,95 +153,97 @@ void HRM2D::connectMultiLayer() {
     }
 
     // Vertex indexes for list traversal
-    size_t n1;
-    size_t n12;
-    size_t n2;
-    size_t start = 0;
+    size_t startIdCur;
+    size_t endIdCur;
+    size_t startIdAdj;
+    size_t endIdAdj;
+
     size_t j = 0;
 
     std::vector<double> v1;
     std::vector<double> v2;
 
     for (size_t i = 0; i < vtxId_.size(); ++i) {
-        n1 = vtxId_.at(i).line.back().back();
+        startIdCur = vtxId_.at(i).startId;
+        endIdCur = vtxId_.at(i).layer;
 
-        // Construct the bridge C-layer
+        // Find the nearest C-layer
         if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
             j = 0;
         } else {
             j = i + 1;
         }
 
-        if (j != 0) {
-            n12 = vtxId_.at(j - 1).layer;
-        } else {
-            n12 = 0;
-        }
-        n2 = vtxId_.at(j).line.back().back();
+        startIdAdj = vtxId_.at(j).startId;
+        endIdAdj = vtxId_.at(j).layer;
 
         // Compute TFE and construct bridge C-layer
         computeTFE(headings_[i], headings_[j], &tfe_);
         bridgeLayer();
 
         // Connect close vertices btw layers
-        for (size_t m0 = start; m0 < n1; ++m0) {
+        for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
             v1 = res_.graph_structure.vertex[m0];
-            for (size_t m1 = n12; m1 < n2; ++m1) {
+            for (size_t m1 = startIdAdj; m1 < endIdAdj; ++m1) {
                 v2 = res_.graph_structure.vertex[m1];
 
                 // Locate the neighbor vertices, check for validity
-                if (std::fabs(v1[1] - v2[1]) <
-                        2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                            param_.NUM_LINE_Y &&
-                    isMultiLayerTransitionFree(v1, v2)) {
+                if (std::fabs(v1[1] - v2[1]) >
+                    2.0 *
+                        std::fabs(param_.BOUND_LIMIT[3] -
+                                  param_.BOUND_LIMIT[2]) /
+                        param_.NUM_LINE_Y) {
+                    continue;
+                }
+
+                if (isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
                         vectorEuclidean(v1, v2));
 
                     // Continue from where it pauses
-                    n12 = m1;
+                    startIdAdj = m1;
                     break;
                 }
             }
         }
-        start = n1;
     }
 }
 
-void HRM2D::connectExistLayer() {
+void HRM2D::connectExistLayer(const int layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
-    for (size_t i = 0; i < vtxId_.size(); ++i) {
-        size_t startIdCur = vtxId_.at(i).startId;
-        size_t endIdCur = vtxId_.at(i).layer;
+    size_t startIdCur = vtxId_.at(layerId).startId;
+    size_t endIdCur = vtxId_.at(layerId).layer;
 
-        // Connect within same C-layer, same index with previous round of search
-        size_t startIdExist = vtxIdAll_.back().at(i).startId;
-        size_t endIdExist = vtxIdAll_.back().at(i).layer;
+    // Connect within same C-layer, same index with previous round of search
+    size_t startIdExist = vtxIdAll_.back().at(layerId).startId;
+    size_t endIdExist = vtxIdAll_.back().at(layerId).layer;
 
-        // Locate the neighbor vertices in the adjacent
-        // sweep line, check for validity
-        for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
-            auto v1 = res_.graph_structure.vertex[m0];
-            for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
-                auto v2 = res_.graph_structure.vertex[m1];
+    // Locate the neighbor vertices in the adjacent
+    // sweep line, check for validity
+    for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
+        auto v1 = res_.graph_structure.vertex[m0];
+        for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
+            auto v2 = res_.graph_structure.vertex[m1];
 
-                // Locate the neighbor vertices in the adjacent
-                // sweep line, check for validity
-                if (std::fabs(v1[1] - v2[1]) <
-                        2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                            param_.NUM_LINE_Y &&
-                    isSameLayerTransitionFree(v1, v2)) {
-                    // Add new connections
-                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                    res_.graph_structure.weight.push_back(
-                        vectorEuclidean(v1, v2));
+            // Locate the neighbor vertices in the adjacent
+            // sweep line, check for validity
+            if (std::fabs(v1[1] - v2[1]) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
+                continue;
+            }
 
-                    // Continue from where it pauses
-                    startIdExist = m1;
-                    break;
-                }
+            if (isSameLayerTransitionFree(v1, v2)) {
+                // Add new connections
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+
+                // Continue from where it pauses
+                startIdExist = m1;
+                break;
             }
         }
     }

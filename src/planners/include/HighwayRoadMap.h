@@ -90,6 +90,9 @@ class HighwayRoadMap {
     /** \brief search Subroutine for graph searching */
     void search();
 
+    /** \brief refineExistRoadmap Subroutine for refining existing roadmap */
+    void refineExistRoadmap(const double timeLim);
+
     /** \brief construct one C-layer */
     virtual void constructOneLayer(const int layerIdx) = 0;
 
@@ -131,7 +134,7 @@ class HighwayRoadMap {
 
     /** \brief connectExistLayer Subroutine for connecting vertices with
      * previously existing layers */
-    virtual void connectExistLayer() = 0;
+    virtual void connectExistLayer(const int layerId) = 0;
 
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent

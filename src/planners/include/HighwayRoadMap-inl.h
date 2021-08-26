@@ -49,32 +49,26 @@ HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
-    while (res_.planning_time.totalTime < timeLim) {
-        // Plan and timing
-        auto start = Clock::now();
-        buildRoadmap();
-        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+    // Plan and timing
+    auto start = Clock::now();
+    buildRoadmap();
+    res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
 
-        start = Clock::now();
-        search();
-        res_.planning_time.searchTime +=
-            Durationd(Clock::now() - start).count();
+    start = Clock::now();
+    search();
+    res_.planning_time.searchTime += Durationd(Clock::now() - start).count();
 
-        res_.planning_time.totalTime =
-            res_.planning_time.buildTime + res_.planning_time.searchTime;
+    res_.planning_time.totalTime =
+        res_.planning_time.buildTime + res_.planning_time.searchTime;
 
-        vtxIdAll_.push_back(vtxId_);
+    // Refine existing roadmap
+    while (!res_.solved && res_.planning_time.totalTime < timeLim) {
+        refineExistRoadmap(timeLim);
+    }
 
-        if (res_.solved) {
-            // Get solution path
-            res_.solution_path.solvedPath = getSolutionPath();
-            return;
-        } else if (vtxIdAll_.size() < param_.NUM_POINT) {
-            param_.NUM_LINE_X *= 2;
-            param_.NUM_LINE_Y *= 2;
-
-            vtxId_.clear();
-        }
+    // Get solution path
+    if (res_.solved) {
+        res_.solution_path.solvedPath = getSolutionPath();
     }
 }
 
@@ -94,11 +88,6 @@ void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
 
     // Connect adjacent layers using bridge C-layer
     connectMultiLayer();
-
-    // Connect with existing layers
-    if (!vtxIdAll_.empty()) {
-        connectExistLayer();
-    }
 }
 
 template <class RobotType, class ObjectType>
@@ -168,6 +157,46 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
                     return;
                 }
             }
+        }
+    }
+}
+
+template <class RobotType, class ObjectType>
+void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
+    const double timeLim) {
+    vtxIdAll_.push_back(vtxId_);
+    vtxId_.clear();
+
+    param_.NUM_LINE_X *= 2;
+    param_.NUM_LINE_Y *= 2;
+
+    // Construct roadmap
+    sampleOrientations();
+
+    for (size_t i = 0; i < vtxIdAll_.back().size(); ++i) {
+        auto start = Clock::now();
+
+        // construct refined C-layer
+        constructOneLayer(i);
+        N_v.layer = res_.graph_structure.vertex.size();
+        vtxId_.push_back(N_v);
+
+        // Connect with existing layers
+        connectExistLayer(i);
+
+        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+
+        // Search
+        start = Clock::now();
+        search();
+        res_.planning_time.searchTime +=
+            Durationd(Clock::now() - start).count();
+
+        res_.planning_time.totalTime =
+            res_.planning_time.buildTime + res_.planning_time.searchTime;
+
+        if (res_.solved || res_.planning_time.totalTime > timeLim) {
+            return;
         }
     }
 }
