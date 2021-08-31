@@ -3,15 +3,13 @@ initAddpath();
 
 [X_ori, X, cf_seg, vtx, edge, path, robot, endPts] = loadResults('2D');
 
-%% For visualizations, add pi to all poses
-vtx = vtx + [0,0,pi];
-endPts = endPts + [0,0,pi];
+sc = 5;
 
+%% Display all vertices and edges
 figure; hold on; axis equal; axis off;
-%% environment
-disp('Environment Initialization...')
+disp('Displaying all vertices and edges...')
 
-sc = 0.2;
+% environment
 % start and goal
 start = endPts(1,:)';
 goal = endPts(2,:)';
@@ -27,13 +25,13 @@ end
 for i = 1:2:size(X_ori,1)-3
     patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
 end
-% 
+%
 % % Mink
 % for i = 1:2:size(X,1)-1
 %     plot(X(i,:),X(i+1,:),'k.');
 % end
 
-%% raster scan
+% % raster scan
 % N_dy = size(X_obs)/2;
 % % obs
 % for i = 1:size(X_obs,2)
@@ -78,25 +76,54 @@ end
 
 g_start = [rot2(start(3)), start(1:2); 0,0,1];
 rob.robotTF(g_start,1);
-% plotEllipse(robot(1:2), start, 'k');
-for i = 1:size(path,2)
-    g_step = [rot2(vtx(path(i)+1,3)), vtx(path(i)+1,1:2)'; 0,0,1];
+for i = 1:size(path,1)
+    g_step = [rot2(path(i,3)), path(i,1:2)'; 0,0,1];
     rob.robotTF(g_step,1);
-    %     plotEllipse(robot(1:2), vtx(path(i)+1,:)', 'b')
 end
 g_goal = [rot2(goal(3)), goal(1:2); 0,0,1];
 rob.robotTF(g_goal,1);
 
 % shortest path
-plot3([start(1) vtx(path(1)+1,1)],...
-    [start(2) vtx(path(1)+1,2)],...
-    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 3)
-plot3([goal(1) vtx(path(end)+1,1)],...
-    [goal(2) vtx(path(end)+1,2)],...
-    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 3)
+plot3([start(1) path(1,1)], [start(2) path(1,2)],...
+    sc*[start(3) path(1,3)], 'r', 'LineWidth', 3)
+plot3([goal(1) path(end,1)], [goal(2) path(end,2)],...
+    sc*[goal(3) path(end,3)], 'g', 'LineWidth', 3)
 
-for i = 1:size(path,2)-1
-    plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
-        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'm', 'LineWidth', 3)
+for i = 1:size(path,1)-1
+    plot3([path(i,1) path(i+1,1)], [path(i,2) path(i+1,2)],...
+        sc*[path(i,3) path(i+1,3)], 'm', 'LineWidth', 3)
+end
+
+%% Display subgraphs for each sweep line updates
+disp('Displaying subgraphs for each sweep line updates...');
+% vertex and edges at each subgraph
+layer_end_angle = find( abs(vtx(:,3)-pi) < 1e-5 );
+num_layer_vtx = [];
+for i = 1:length(layer_end_angle)-1
+    if layer_end_angle(i+1) - layer_end_angle(i) > 1
+        num_layer_vtx = [num_layer_vtx, layer_end_angle(i)];
+    end
+end
+num_layer_vtx = [num_layer_vtx, layer_end_angle(end), size(vtx,1)];
+
+idx_start = 1;
+for i = 1:length(num_layer_vtx)
+    figure; hold on; axis equal; axis off;
+    
+    % environment
+    X_ori = [X_ori, X_ori(:,1)];
+    for j = size(X_ori,1)-1
+        plot(X_ori(j,:),X_ori(j+1,:),'k');
+    end
+    
+    for j = 1:2:size(X_ori,1)-3
+        patch(X_ori(j,:),X_ori(j+1,:),'k','FaceAlpha',0.5);
+    end
+    
+    % vertices at each subgraph
+    idx_end = num_layer_vtx(i);
+    plot3(vtx(idx_start:idx_end,1), vtx(idx_start:idx_end,2),...
+        sc*vtx(idx_start:idx_end,3), 'k.', 'LineWidth', 0.5);
+    
+    idx_start = idx_end + 1;
 end
