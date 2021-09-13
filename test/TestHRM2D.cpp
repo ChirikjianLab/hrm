@@ -7,6 +7,7 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 PlannerParameter defineParam(const MultiBodyTree2D* robot,
                              const PlannerSetting2D* env2D) {

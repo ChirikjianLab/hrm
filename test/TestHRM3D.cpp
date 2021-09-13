@@ -7,6 +7,7 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 PlannerParameter defineParam(const MultiBodyTree3D* robot,
                              const PlannerSetting3D* env3D) {

@@ -8,6 +8,7 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
     if (argc != 8) {

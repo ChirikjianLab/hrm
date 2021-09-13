@@ -6,13 +6,13 @@
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/Parse2dCsvFile.h"
 
-/** \brief loadVectorSuperEllipse Load vector of 2D superellipses */
-std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
-                                                 const int num_curve_param);
+/** \brief loadVectorGeometry Load vector of 2D superellipses*/
+void loadVectorGeometry(const std::string config_file, const int num_param,
+                        std::vector<SuperEllipse>& object);
 
-/** \brief loadVectorSuperQuadrics Load vector of 3D superquadrics */
-std::vector<SuperQuadrics> loadVectorSuperQuadrics(
-    const std::string config_file, const int num_surf_param);
+/** \brief loadVectorGeometry Load vector of 3D superquadrics*/
+void loadVectorGeometry(const std::string config_file, const int num_param,
+                        std::vector<SuperQuadrics>& object);
 
 /** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
 MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
@@ -49,7 +49,15 @@ double computeObstacleMinSize(const std::vector<G> obstacles) {
 template <class G>
 class PlannerSetting {
   public:
-    PlannerSetting(const int num_param) : num_param_(num_param) {}
+    PlannerSetting(const int num_param) : num_param_(num_param) {
+        if (typeid(G) == typeid(SuperEllipse)) {
+            dim_ = "2D";
+        } else if (typeid(G) == typeid(SuperQuadrics)) {
+            dim_ = "3D";
+        } else {
+            std::cerr << "Invalid dimension" << std::endl;
+        }
+    }
     ~PlannerSetting() {}
 
   public:
@@ -60,31 +68,25 @@ class PlannerSetting {
     }
     int getNumParam() const { return num_param_; }
 
-    virtual void loadEnvironment(const std::string path_prefix) = 0;
+    void loadEnvironment(const std::string path_prefix) {
+        // Read environment config file
+        const std::string arena_config_file =
+            path_prefix + "arena_config_" + dim_ + ".csv";
+        const std::string obstacle_config_file =
+            path_prefix + "obstacle_config_" + dim_ + ".csv";
+
+        loadVectorGeometry(arena_config_file, num_param_, arena_);
+        loadVectorGeometry(obstacle_config_file, num_param_, obstacle_);
+
+        // Read end points config file
+        end_points_ =
+            parse2DCsvFile(path_prefix + "end_points_" + dim_ + ".csv");
+    };
 
   protected:
+    std::string dim_;
     std::vector<G> arena_;
     std::vector<G> obstacle_;
     std::vector<std::vector<double>> end_points_;
     const int num_param_;
-};
-
-/** \class PlannerSetting2D Setting 2D planning environment */
-class PlannerSetting2D : public PlannerSetting<SuperEllipse> {
-  public:
-    PlannerSetting2D(const int num_curve_param);
-    ~PlannerSetting2D();
-
-  public:
-    void loadEnvironment(const std::string path_prefix) override;
-};
-
-/** \class PlannerSetting3D Setting 3D planning environment */
-class PlannerSetting3D : public PlannerSetting<SuperQuadrics> {
-  public:
-    PlannerSetting3D(const int num_surf_param);
-    ~PlannerSetting3D();
-
-  public:
-    void loadEnvironment(const std::string path_prefix) override;
 };

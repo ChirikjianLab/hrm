@@ -12,6 +12,7 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 int main(int argc, char** argv) {
     if (argc != 5) {

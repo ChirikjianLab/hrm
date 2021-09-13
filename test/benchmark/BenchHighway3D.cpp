@@ -8,13 +8,15 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
     if (argc < 7) {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep planes 4) Num of sweep lines 5) Max planning time 6) "
-                "Configuration file prefix 7) Pre-defined quaternions file "
-                "prefix (if no, enter 0 or leave blank)"
+                "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
+                "5) Max planning time 6) Configuration file prefix 7) "
+                "Pre-defined quaternions file prefix (if no, enter 0 or leave "
+                "blank)"
              << endl;
         return 1;
     } else {
@@ -51,7 +53,7 @@ int main(int argc, char** argv) {
     par.NUM_LINE_Y = size_t(N_y);
 
     // Planning arena boundary
-    double f = 1.5;
+    double f = 1.2;
     vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
                                 f * robot.getBase().getSemiAxis().at(0),
                             env3D->getArena().at(0).getSemiAxis().at(1) -

@@ -2,6 +2,7 @@
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
     if (argc != 10) {
