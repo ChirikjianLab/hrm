@@ -28,7 +28,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   public:
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
-        const unsigned int num);
+        const unsigned int num) override;
 
     /**
      * \brief get free line segment at one specific C-layer
@@ -40,6 +40,22 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         sweepLineProcess();
         return freeSegOneLayer_;
     }
+
+    /**
+     * \brief getLayerBoundaryMesh Get Minkowski sums boundary mesh
+     * \param idx Index of C-layer
+     * \return Boundary mesh
+     */
+    BoundaryMesh getLayerBoundaryMesh(const int idx) {
+        return layerBoundMeshAll_.at(idx);
+    }
+
+    /**
+     * \brief getLayerBoundary Get Minkowski sums boundary
+     * \param idx Index of C-layer
+     * \return Boundary
+     */
+    Boundary getLayerBoundary(const int idx) { return layerBoundAll_.at(idx); }
 
     void constructOneLayer(const int layerIdx) override;
 

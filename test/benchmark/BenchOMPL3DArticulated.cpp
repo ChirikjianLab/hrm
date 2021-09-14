@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Boundary
-    double f = 1.5;
+    double f = 1.2;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.getBase().getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +

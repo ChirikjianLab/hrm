@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
 
     // Boundary
-    double f = 1.5;
+    double f = 1.2;
     vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
                              f * robot.getBase().getSemiAxis().at(0),
                          -arena.at(0).getSemiAxis().at(1) +

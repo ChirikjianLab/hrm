@@ -42,7 +42,8 @@ HighwayRoadMap<RobotType, ObjectType>::HighwayRoadMap(
       goal_(req.goal),
       param_(req.planner_parameters),
       N_o(obs.size()),
-      N_s(arena.size()) {}
+      N_s(arena.size()),
+      isRobotRigid_(req.is_robot_rigid) {}
 
 template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
@@ -69,6 +70,8 @@ void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
     // Get solution path
     if (res_.solved) {
         res_.solution_path.solvedPath = getSolutionPath();
+        res_.solution_path.interpolatedPath =
+            getInterpolatedSolutionPath(param_.NUM_POINT);
     }
 }
 
@@ -289,6 +292,14 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     path.push_back(goal_);
 
     return path;
+}
+
+template <class RobotType, class ObjectType>
+std::vector<std::vector<double>>
+HighwayRoadMap<RobotType, ObjectType>::getInterpolatedSolutionPath(
+    const unsigned int num) {
+    std::vector<std::vector<double>> interpPath = res_.solution_path.solvedPath;
+    return interpPath;
 }
 
 template <class RobotType, class ObjectType>

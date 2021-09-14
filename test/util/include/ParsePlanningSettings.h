@@ -4,6 +4,7 @@
 #include "datastructure/include/MultiBodyTree3D.h"
 #include "geometry/include/SuperEllipse.h"
 #include "geometry/include/SuperQuadrics.h"
+#include "planners/include/PlanningRequest.h"
 #include "util/include/Parse2dCsvFile.h"
 
 /** \brief loadVectorGeometry Load vector of 2D superellipses*/
@@ -44,8 +45,7 @@ double computeObstacleMinSize(const std::vector<G> obstacles) {
     return min_size_obs;
 }
 
-/** \class PlannerSetting Setting planning environment, pure virtual functions
- */
+/** \class PlannerSetting Setting planning environment */
 template <class G>
 class PlannerSetting {
   public:
@@ -90,3 +90,8 @@ class PlannerSetting {
     std::vector<std::vector<double>> end_points_;
     const int num_param_;
 };
+
+/** \brief Define planning parameters */
+void defineParameters(const MultiBodyTree3D* robot,
+                      const PlannerSetting<SuperQuadrics>* env3D,
+                      PlannerParameter* param);

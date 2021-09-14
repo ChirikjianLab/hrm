@@ -75,11 +75,14 @@ class HighwayRoadMap {
      */
     PlannerParameter getPlannerParameters() const { return param_; }
 
-    /**
-     * \brief getSolutionPath Retrieve solved path
-     * \return 2D vector for representing solved path
-     */
+    /** \brief getSolutionPath Retrieve solved path
+     * \return 2D vector for representing solved path */
     std::vector<std::vector<double>> getSolutionPath();
+
+    /** \brief getInterpolatedSolutionPath Interpolate solved path
+     * \return 2D vector for representing interpolated path */
+    virtual std::vector<std::vector<double>> getInterpolatedSolutionPath(
+        const unsigned int num);
 
     /** \brief plan Main routine for HRM-based planners */
     virtual void plan(const double timeLim);
@@ -220,6 +223,9 @@ class HighwayRoadMap {
     PlanningResult res_;
 
   protected:
+    /** \param indicator of rigid-body robot */
+    bool isRobotRigid_ = true;
+
     /** \param N_o number of obstacles */
     size_t N_o;
 

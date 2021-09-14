@@ -57,6 +57,8 @@ void ProbHRM3D::plan(const double timeLim) {
     // Retrieve coordinates of solved path
     if (res_.solved) {
         res_.solution_path.solvedPath = getSolutionPath();
+        res_.solution_path.interpolatedPath =
+            getInterpolatedSolutionPath(param_.NUM_POINT);
     }
 }
 
@@ -119,7 +121,7 @@ void ProbHRM3D::connectMultiLayer() {
     }
 
     // Find the nearest C-layers
-    double minDist = 100;
+    double minDist = inf;
     int minIdx = 0;
     for (size_t i = 0; i < param_.NUM_LAYER - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
@@ -131,14 +133,11 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    size_t n_12 = vtxId_.at(param_.NUM_LAYER - 2).layer;
+    size_t n_12 = vtxId_.at(param_.NUM_LAYER - 1).startId;
     size_t n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
 
     // Start and end vertics in the nearest layer
-    size_t start = 0;
-    if (minIdx != 0) {
-        start = vtxId_.at(minIdx - 1).layer;
-    }
+    size_t start = vtxId_.at(minIdx).startId;
     size_t n_1 = vtxId_.at(minIdx).layer;
 
     // Construct bridge C-layer
@@ -146,25 +145,25 @@ void ProbHRM3D::connectMultiLayer() {
     bridgeLayer();
 
     // Nearest vertex btw layers
-    std::vector<double> V1;
-    std::vector<double> V2;
     for (size_t m0 = start; m0 < n_1; ++m0) {
-        V1 = res_.graph_structure.vertex.at(m0);
+        auto v1 = res_.graph_structure.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
-            V2 = res_.graph_structure.vertex.at(m1);
+            auto v2 = res_.graph_structure.vertex.at(m1);
 
-            // Locate the nearest vertices
-            if (std::fabs(V1.at(0) - V2.at(0)) >
-                    param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
-                std::fabs(V1.at(1) - V2.at(1)) >
-                    param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+            // Locate the nearest vertices in the adjacent sweep lines
+            if (std::fabs(v1.at(0) - v2.at(0)) >
+                    2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                        param_.NUM_LINE_X ||
+                std::fabs(v1.at(1) - v2.at(1)) >
+                    2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                        param_.NUM_LINE_Y) {
                 continue;
             }
 
-            if (isMultiLayerTransitionFree(V1, V2)) {
+            if (isMultiLayerTransitionFree(v1, v2)) {
                 // Add new connections
                 res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                res_.graph_structure.weight.push_back(vectorEuclidean(V1, V2));
+                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
 
                 n_12 = m1;
                 break;
@@ -204,7 +203,6 @@ void ProbHRM3D::generateVertices(const double tx,
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Transform the robot

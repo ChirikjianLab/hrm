@@ -14,9 +14,11 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 HRM3D::~HRM3D() {}
 
 void HRM3D::constructOneLayer(const int layerIdx) {
-    // Set rotation matrix to robot
-    setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
-                  q_.at(layerIdx).y(), q_.at(layerIdx).z()});
+    // Set rotation matrix to robot (rigid)
+    if (isRobotRigid_) {
+        setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
+                      q_.at(layerIdx).y(), q_.at(layerIdx).z()});
+    }
 
     // Add new C-layer
     if (!layerExistence_.at(layerIdx)) {
@@ -145,6 +147,7 @@ IntersectionInterval HRM3D::computeIntersections(
 
 void HRM3D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
+
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
 
@@ -161,7 +164,6 @@ void HRM3D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Connect vertices within one C-layer
@@ -170,6 +172,7 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     size_t n2 = 0;
 
     N_v.line.clear();
+    N_v.startId = res_.graph_structure.vertex.size();
     for (size_t i = 0; i < freeSeg->tx.size(); ++i) {
         // Generate collision-free vertices
         generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegYZ.at(i));
@@ -177,6 +180,7 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
         // Connect within one plane
         connectOneLayer2D(&freeSeg->freeSegYZ.at(i));
     }
+    N_v.layer = res_.graph_structure.vertex.size();
 
     for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
         for (size_t j = 0; j < freeSeg->freeSegYZ.at(i).ty.size(); ++j) {
@@ -207,16 +211,6 @@ void HRM3D::connectMultiLayer() {
     if (vtxId_.size() == 1) {
         return;
     }
-
-    size_t j = 0;
-
-    //    size_t n2;
-    //    size_t n22;
-    //    size_t n_2;
-    //    size_t start = 0;
-
-    std::vector<double> v1;
-    std::vector<double> v2;
 
     //    int n_check = 0;
     //    int n_connect = 0;
@@ -273,7 +267,7 @@ void HRM3D::connectMultiLayer() {
         //        n_2 = vtxId_[j].layer;
 
         // Find the nearest C-layers
-        double minDist = 100;
+        double minDist = inf;
         int minIdx = 0;
         for (size_t j = 0; j != i && j < param_.NUM_LAYER; ++j) {
             double dist = q_.at(i).angularDistance(q_.at(j));
@@ -285,21 +279,15 @@ void HRM3D::connectMultiLayer() {
 
         // Find vertex only in adjacent layers
         // Start and end vertics in the current layer
-        size_t n22 = 0;
-        if (i != 0) {
-            n22 = vtxId_.at(i - 1).layer;
-        }
+        size_t n22 = vtxId_.at(i).startId;
         size_t n_2 = vtxId_.at(i).layer;
 
         // Start and end vertics in the nearest layer
-        size_t start = 0;
-        if (minIdx != 0) {
-            start = vtxId_.at(minIdx - 1).layer;
-        }
+        size_t start = vtxId_.at(minIdx).startId;
         size_t n2 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
-        computeTFE(q_[i], q_[j], &tfe_);
+        computeTFE(q_.at(i), q_.at(minIdx), &tfe_);
         bridgeLayer();
 
         //        ////////////////////////////////////////////////////////////
@@ -329,9 +317,9 @@ void HRM3D::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n2; ++m0) {
-            v1 = res_.graph_structure.vertex.at(m0);
+            auto v1 = res_.graph_structure.vertex.at(m0);
             for (size_t m1 = n22; m1 < n_2; ++m1) {
-                v2 = res_.graph_structure.vertex[m1];
+                auto v2 = res_.graph_structure.vertex[m1];
 
                 // Locate the nearest vertices
                 if (std::fabs(v1.at(0) - v2.at(0)) >
@@ -410,12 +398,22 @@ void HRM3D::connectExistLayer(const int layerId) {
 std::vector<std::vector<double>> HRM3D::getInterpolatedSolutionPath(
     const unsigned int num) {
     std::vector<std::vector<double>> path_interp;
-    std::vector<std::vector<double>> path_solved = getSolutionPath();
+
+    // Compute distance per step
+    const double distance_step =
+        res_.solution_path.cost /
+        (num * (res_.solution_path.solvedPath.size() - 1.0));
 
     // Iteratively store interpolated poses along the solved path
-    for (size_t i = 0; i < path_solved.size() - 1; ++i) {
-        std::vector<std::vector<double>> step_interp =
-            interpolateCompoundSE3Rn(path_solved[i], path_solved[i + 1], num);
+    for (size_t i = 0; i < res_.solution_path.solvedPath.size() - 1; ++i) {
+        int num_step =
+            vectorEuclidean(res_.solution_path.solvedPath.at(i),
+                            res_.solution_path.solvedPath.at(i + 1)) /
+            distance_step;
+
+        std::vector<std::vector<double>> step_interp = interpolateCompoundSE3Rn(
+            res_.solution_path.solvedPath.at(i),
+            res_.solution_path.solvedPath.at(i + 1), num_step);
 
         path_interp.insert(path_interp.end(), step_interp.begin(),
                            step_interp.end());
@@ -474,19 +472,15 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
     line.tail(3) = v12;
 
     // Intersection between line and mesh
-    double s0, s1;
-    std::vector<Eigen::Vector3d> intersectObs;
-    for (auto CObstacle : layerBoundMesh_.obstacle) {
-        intersectObs = intersectVerticalLineMesh3D(line, CObstacle);
+    for (auto obs : layerBoundMesh_.obstacle) {
+        auto intersectObs = intersectLineMesh3D(line, obs);
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
-            s0 = (intersectObs[0] - t1).norm() / (t2 - t1).norm();
-            s1 = (intersectObs[1] - t1).norm() / (t2 - t1).norm();
+            auto s0 = (intersectObs[0] - t1).norm() / (t2 - t1).norm();
+            auto s1 = (intersectObs[1] - t1).norm() / (t2 - t1).norm();
 
-            if ((s0 > 0 && s0 < 1) || (s1 > 0 && s1 < 1)) {
-                return false;
-            } else if (s0 < 0 && s1 > 1) {
+            if (!((s0 < 0 && s1 < 0) || (s0 > 1 && s1 > 1))) {
                 return false;
             }
         }

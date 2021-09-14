@@ -92,3 +92,33 @@ void loadPreDefinedQuaternions(const std::string quat_file,
         robot_base.setQuatSamples(q_sample);
     }
 }
+
+void defineParameters(const MultiBodyTree3D* robot,
+                      const PlannerSetting<SuperQuadrics>* env3D,
+                      PlannerParameter* param) {
+    // Planning arena boundary
+    double f = 1.2;
+    std::vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                                     f * robot->getBase().getSemiAxis().at(0),
+                                 env3D->getArena().at(0).getSemiAxis().at(1) -
+                                     f * robot->getBase().getSemiAxis().at(0),
+                                 env3D->getArena().at(0).getSemiAxis().at(2) -
+                                     f * robot->getBase().getSemiAxis().at(0)};
+    param->BOUND_LIMIT = {
+        env3D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env3D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env3D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
+        env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
+        env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
+
+    param->NUM_LAYER = robot->getBase().getQuatSamples().size();
+
+    if (param->NUM_LINE_X == 0 && param->NUM_LINE_Y == 0) {
+        double min_size_obs =
+            computeObstacleMinSize<SuperQuadrics>(env3D->getObstacle());
+
+        param->NUM_LINE_X = static_cast<int>(bound.at(0) / min_size_obs);
+        param->NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
+    }
+}

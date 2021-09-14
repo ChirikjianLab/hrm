@@ -47,37 +47,23 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
 
     // Planning parameters
-    PlannerParameter par;
-    par.NUM_LAYER = size_t(N_l);
-    par.NUM_LINE_X = size_t(N_x);
-    par.NUM_LINE_Y = size_t(N_y);
+    PlannerParameter param;
+    param.NUM_LAYER = size_t(N_l);
+    param.NUM_LINE_X = size_t(N_x);
+    param.NUM_LINE_Y = size_t(N_y);
 
-    // Planning arena boundary
-    double f = 1.2;
-    vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                                f * robot.getBase().getSemiAxis().at(0),
-                            env3D->getArena().at(0).getSemiAxis().at(1) -
-                                f * robot.getBase().getSemiAxis().at(0),
-                            env3D->getArena().at(0).getSemiAxis().at(2) -
-                                f * robot.getBase().getSemiAxis().at(0)};
-    par.BOUND_LIMIT = {
-        env3D->getArena().at(0).getPosition().at(0) - bound.at(0),
-        env3D->getArena().at(0).getPosition().at(0) + bound.at(0),
-        env3D->getArena().at(0).getPosition().at(1) - bound.at(1),
-        env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
-        env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
-        env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
+    defineParameters(&robot, env3D, &param);
 
-    cout << "Initial number of C-layers: " << par.NUM_LAYER << endl;
-    cout << "Initial number of sweep lines: {" << par.NUM_LINE_X << ", "
-         << par.NUM_LINE_Y << '}' << endl;
+    cout << "Initial number of C-layers: " << param.NUM_LAYER << endl;
+    cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
+         << param.NUM_LINE_Y << '}' << endl;
     cout << "----------" << endl;
 
     cout << "Start benchmark..." << endl;
 
     PlanningRequest req;
     req.is_robot_rigid = true;
-    req.planner_parameters = par;
+    req.planner_parameters = param;
     req.start = env3D->getEndPoints().at(0);
     req.goal = env3D->getEndPoints().at(1);
 

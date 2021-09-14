@@ -119,8 +119,8 @@ std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
 
     // Minkowski sums for Links
     for (size_t i = 0; i < numLinks_; i++) {
-        mink.emplace_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
-                          Eigen::Vector3d(link_.at(i).getPosition().data()));
+        mink.push_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
+                       Eigen::Vector3d(link_.at(i).getPosition().data()));
     }
 
     return mink;
