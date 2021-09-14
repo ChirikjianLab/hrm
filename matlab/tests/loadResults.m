@@ -7,7 +7,7 @@ try
     X_ori = load([resultPath, 'origin_bound_', dim, '.csv']);
     X_mink = load([resultPath, 'mink_bound_', dim, '.csv']);
     
-    cf_seg = load([resultPath, 'cell_', dim, '.csv']);
+    cf_seg = load([resultPath, 'segment_', dim, '.csv']);
 catch ME
     X_ori = [];
     X_mink = [];
