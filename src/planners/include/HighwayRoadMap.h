@@ -226,18 +226,21 @@ class HighwayRoadMap {
     /** \param indicator of rigid-body robot */
     bool isRobotRigid_ = true;
 
+    /** \param indicator of C-layer refinement */
+    bool isRefine_ = false;
+
     /** \param N_o number of obstacles */
     size_t N_o;
 
     /** \param N_s number of arenas */
     size_t N_s;
 
-    /** \param layerExistence indicating existence of C-layers */
-    std::vector<bool> layerExistence_;
-
     /** \param Boundary point sets of Minkowski operations */
     Boundary layerBound_;
     std::vector<Boundary> layerBoundAll_;
+
+    /** \param store configuration for each robot shape (at each C-layer) */
+    std::vector<std::vector<double>> v_;
 
     /** \param Vertex index info */
     vertexIdx N_v;

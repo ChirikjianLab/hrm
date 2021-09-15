@@ -167,16 +167,15 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
     const double timeLim) {
+    isRefine_ = true;
+
     vtxIdAll_.push_back(vtxId_);
     vtxId_.clear();
 
     param_.NUM_LINE_X *= 2;
     param_.NUM_LINE_Y *= 2;
 
-    // Construct roadmap
-    sampleOrientations();
-
-    for (size_t i = 0; i < vtxIdAll_.back().size(); ++i) {
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         auto start = Clock::now();
 
         // construct refined C-layer
@@ -202,6 +201,8 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
             return;
         }
     }
+
+    isRefine_ = false;
 }
 
 template <class RobotType, class ObjectType>
@@ -239,17 +240,19 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
         n1 = N_v.plane.at(i);
 
         for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            // Connect vertex within the same sweep line
-            if (j1 != freeSeg->xM[i].size() - 1) {
-                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
-                    1e-5) {
-                    res_.graph_structure.edge.push_back(
-                        std::make_pair(n1 + j1, n1 + j1 + 1));
-                    res_.graph_structure.weight.push_back(vectorEuclidean(
-                        res_.graph_structure.vertex[n1 + j1],
-                        res_.graph_structure.vertex[n1 + j1 + 1]));
-                }
-            }
+            //            // Connect vertex within the same sweep line
+            //            if (j1 != freeSeg->xM[i].size() - 1) {
+            //                if (std::fabs(freeSeg->xU[i][j1] -
+            //                freeSeg->xL[i][j1 + 1]) <
+            //                    1e-5) {
+            //                    res_.graph_structure.edge.push_back(
+            //                        std::make_pair(n1 + j1, n1 + j1 + 1));
+            //                    res_.graph_structure.weight.push_back(vectorEuclidean(
+            //                        res_.graph_structure.vertex[n1 + j1],
+            //                        res_.graph_structure.vertex[n1 + j1 +
+            //                        1]));
+            //                }
+            //            }
 
             // Connect vertex btw adjacent sweep lines
             if (i != freeSeg->ty.size() - 1) {
@@ -353,7 +356,7 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
 
     // Enhanced process to generate more valid vertices within free line
     // segement
-    enhanceDecomp(&freeLineSegment);
+    //    enhanceDecomp(&freeLineSegment);
 
     return freeLineSegment;
 }

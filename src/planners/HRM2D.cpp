@@ -16,7 +16,7 @@ void HRM2D::constructOneLayer(const int layerIdx) {
     setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
     // Generate new C-layer
-    if (!layerExistence_.at(layerIdx)) {
+    if (!isRefine_) {
         // Generate Minkowski operation boundaries
         layerBound_ = boundaryGen();
         layerBoundAll_.push_back(layerBound_);
@@ -37,27 +37,9 @@ void HRM2D::constructOneLayer(const int layerIdx) {
 /** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
  * exists, no addition and record the index */
 void HRM2D::sampleOrientations() {
-    // Indicator of heading existence: true -- exists
-    layerExistence_.resize(headings_.size(), true);
-
     const double dr = 2 * pi / (param_.NUM_LAYER - 1);
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        double heading = -pi + dr * i;
-
-        // Searching for existing headings
-        bool isExist = false;
-        for (size_t j = 0; j < headings_.size(); ++j) {
-            if (std::fabs(heading - headings_.at(j)) < 1e-6) {
-                isExist = true;
-                break;
-            }
-        }
-
-        // Add new heading
-        if (!isExist) {
-            headings_.push_back(heading);
-            layerExistence_.push_back(false);
-        }
+        headings_.push_back(-pi + dr * i);
     }
 }
 

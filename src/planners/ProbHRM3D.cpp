@@ -19,13 +19,12 @@ void ProbHRM3D::plan(const double timeLim) {
     do {
         // Randomly generate rotations and joint angles
         sampleOrientations();
-        setTransform(v_.back());
 
         // Construct one C-layer
         constructOneLayer(param_.NUM_LAYER);
 
         // Update number of C-layers and vertex index
-        if (!layerExistence_.at(param_.NUM_LAYER)) {
+        if (!isRefine_) {
             param_.NUM_LAYER++;
         }
 
@@ -68,19 +67,19 @@ void ProbHRM3D::sampleOrientations() {
     ompl::RNG rng;
 
     // Randomly sample rotation of base
-    Eigen::Quaterniond qNew;
     if (param_.NUM_LAYER == 0) {
-        qNew = Eigen::Quaterniond(start_.at(3), start_.at(4), start_.at(5),
-                                  start_.at(6));
+        q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
+                                        start_.at(5), start_.at(6)));
     } else if (param_.NUM_LAYER == 1) {
-        qNew = Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
-                                  goal_.at(6));
+        q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
+                                        goal_.at(6)));
     } else {
-        qNew = Eigen::Quaterniond::UnitRandom();
+        q_.push_back(Eigen::Quaterniond::UnitRandom());
     }
 
-    std::vector<double> config{0.0,      0.0,      0.0,     qNew.w(),
-                               qNew.x(), qNew.y(), qNew.z()};
+    std::vector<double> config{0.0,           0.0,           0.0,
+                               q_.back().w(), q_.back().x(), q_.back().y(),
+                               q_.back().z()};
 
     // Randomly sample joint angles
     if (param_.NUM_LAYER == 0) {
@@ -97,21 +96,8 @@ void ProbHRM3D::sampleOrientations() {
         }
     }
 
-    // Searching for existing orientations
-    bool isExist = false;
-    for (size_t j = 0; j < v_.size(); ++j) {
-        if (vectorEuclidean(config, v_.at(j)) < 1e-6) {
-            isExist = true;
-            break;
-        }
-    }
-
-    // Add new orientation
-    if (!isExist) {
-        q_.push_back(qNew);
-        v_.push_back(config);
-        layerExistence_.push_back(false);
-    }
+    // Store configuration for a robot shape
+    v_.push_back(config);
 }
 
 // Connect adjacent C-layers

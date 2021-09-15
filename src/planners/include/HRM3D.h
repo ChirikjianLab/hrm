@@ -106,9 +106,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      */
     std::vector<Eigen::Quaterniond> q_;
 
-    /** \param quatNew_ sampled new orientations (Quaternion) of the robot */
-    std::vector<Eigen::Quaterniond> qNew_;
-
   protected:
     BoundaryMesh layerBoundMesh_;
     std::vector<BoundaryMesh> layerBoundMeshAll_;

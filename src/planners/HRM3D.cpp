@@ -18,10 +18,12 @@ void HRM3D::constructOneLayer(const int layerIdx) {
     if (isRobotRigid_) {
         setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
                       q_.at(layerIdx).y(), q_.at(layerIdx).z()});
+    } else {
+        setTransform(v_.at(layerIdx));
     }
 
     // Add new C-layer
-    if (!layerExistence_.at(layerIdx)) {
+    if (!isRefine_) {
         // Generate Minkowski operation boundaries
         layerBound_ = boundaryGen();
         layerBoundAll_.push_back(layerBound_);
@@ -44,28 +46,8 @@ void HRM3D::constructOneLayer(const int layerIdx) {
 /** \brief Sample from SO(3). If the orientation exists, no addition and record
  * the index */
 void HRM3D::sampleOrientations() {
-    // Indicator of heading existence: true -- exists
-    layerExistence_.resize(qNew_.size(), true);
-
     // Generate samples from SO(3)
     sampleSO3();
-
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Searching for existing headings
-        bool isExist = false;
-        for (size_t j = 0; j < q_.size(); ++j) {
-            if (qNew_.at(i).angularDistance(q_.at(j)) < 1e-6) {
-                isExist = true;
-                break;
-            }
-        }
-
-        // Add new orientation
-        if (!isExist) {
-            q_.push_back(qNew_.at(i));
-            layerExistence_.push_back(false);
-        }
-    }
 }
 
 void HRM3D::sweepLineProcess() {
@@ -569,16 +551,16 @@ bool HRM3D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
 void HRM3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
-    qNew_.resize(param_.NUM_LAYER);
+    q_.resize(param_.NUM_LAYER);
     if (robot_.getBase().getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
         for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-            qNew_.at(i) = Eigen::Quaterniond::UnitRandom();
+            q_.at(i) = Eigen::Quaterniond::UnitRandom();
         }
     } else {
         // Pre-defined samples of Quaternions
         param_.NUM_LAYER = robot_.getBase().getQuatSamples().size();
-        qNew_ = robot_.getBase().getQuatSamples();
+        q_ = robot_.getBase().getQuatSamples();
     }
 }
 

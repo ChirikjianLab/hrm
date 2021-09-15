@@ -15,7 +15,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     // Using fixed orientations from Icosahedral symmetry group
     const string quat_file = "0";
-    const string urdf_file = "../../resources/3D/urdf/snake.urdf";
+    const string urdf_file = "../../resources/3D/urdf/tri-snake.urdf";
 
     // Setup robot
     MultiBodyTree3D robot =
