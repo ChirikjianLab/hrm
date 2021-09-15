@@ -455,7 +455,7 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
 
     // Intersection between line and mesh
     for (auto obs : layerBoundMesh_.obstacle) {
-        auto intersectObs = intersectLineMesh3D(line, obs);
+        auto intersectObs = intersectVerticalLineMesh3D(line, obs);
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
