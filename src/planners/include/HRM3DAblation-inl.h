@@ -1,4 +1,6 @@
-#include "include/HRM3DAblation.h"
+#pragma once
+
+#include "HRM3DAblation.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
@@ -8,7 +10,17 @@ HRM3DAblation<Planner>::HRM3DAblation(const MultiBodyTree3D& robot,
                                       const std::vector<SuperQuadrics>& arena,
                                       const std::vector<SuperQuadrics>& obs,
                                       const PlanningRequest& req)
-    : Planner::Planner(robot, arena, obs, req) {
+    : Planner::HRM3D(robot, arena, obs, req) {
+    setCollisionObject();
+}
+
+template <class Planner>
+HRM3DAblation<Planner>::HRM3DAblation(const MultiBodyTree3D& robot,
+                                      const std::string urdfFile,
+                                      const std::vector<SuperQuadrics>& arena,
+                                      const std::vector<SuperQuadrics>& obs,
+                                      const PlanningRequest& req)
+    : Planner::ProbHRM3D(robot, urdfFile, arena, obs, req) {
     setCollisionObject();
 }
 
@@ -56,7 +68,7 @@ template <class Planner>
 void HRM3DAblation<Planner>::computeTFE(const Eigen::Quaterniond& v1,
                                         const Eigen::Quaterniond& v2,
                                         std::vector<SuperQuadrics>* tfe) {
-    Planner::tfe->clear();
+    tfe->clear();
 }
 
 template <class Planner>

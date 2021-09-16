@@ -37,6 +37,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      */
     FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
         layerBound_ = *bd;
+        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
         sweepLineProcess();
         return freeSegOneLayer_;
     }

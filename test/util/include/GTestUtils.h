@@ -29,7 +29,7 @@ void storeRoutines(Planner* hrm) {
     file_ori_bd.close();
 
     // TEST: Minkowski boundary
-    Boundary bd_mink = hrm->getLayerBoundary(1);
+    Boundary bd_mink = hrm->getLayerBoundary(0);
 
     // write to .csv file
     std::ofstream file_bd;

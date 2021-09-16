@@ -43,7 +43,7 @@ void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
         rotMat = gLink.topLeftCorner(3, 3);
-        quat.matrix() = rotMat;
+        quat = Eigen::Quaterniond(rotMat);
         link_.at(i).setQuaternion(quat);
     }
 }
@@ -104,7 +104,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
         rotMat = gLink.topLeftCorner(3, 3);
-        quat.matrix() = rotMat;
+        quat = Eigen::Quaterniond(rotMat);
         link_.at(i).setQuaternion(quat);
     }
 }

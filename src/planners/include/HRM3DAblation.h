@@ -1,10 +1,17 @@
 #pragma once
 
 #include "HRM3D.h"
+#include "ProbHRM3D.h"
 
-class HRM3DAblation : public HRM3D {
+template <class Planner>
+class HRM3DAblation : public Planner {
   public:
     HRM3DAblation(const MultiBodyTree3D& robot,
+                  const std::vector<SuperQuadrics>& arena,
+                  const std::vector<SuperQuadrics>& obs,
+                  const PlanningRequest& req);
+
+    HRM3DAblation(const MultiBodyTree3D& robot, const std::string urdfFile,
                   const std::vector<SuperQuadrics>& arena,
                   const std::vector<SuperQuadrics>& obs,
                   const PlanningRequest& req);
@@ -26,3 +33,5 @@ class HRM3DAblation : public HRM3D {
     std::vector<fcl::CollisionObject<double>> objRobot_;
     std::vector<fcl::CollisionObject<double>> objObs_;
 };
+
+#include "HRM3DAblation-inl.h"
