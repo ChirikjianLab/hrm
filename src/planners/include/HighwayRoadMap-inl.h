@@ -268,6 +268,8 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2]));
+                    } else {
+                        bridgeVertex(n1 + j1, n2 + j2);
                     }
                 }
             }
@@ -405,4 +407,34 @@ void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const int idx1,
-                                                         const int idx2) {}
+                                                         const int idx2) {
+    auto v1 = res_.graph_structure.vertex.at(idx1);
+    auto v2 = res_.graph_structure.vertex.at(idx2);
+
+    // Generate new bridge vertex
+    auto vNew1 = v1;
+    vNew1.at(2) = v2.at(2);
+    auto vNew2 = v2;
+    vNew2.at(2) = v1.at(2);
+
+    auto vNew = v1;
+
+    // Check validity of potential connections
+    if (isSameLayerTransitionFree(v1, vNew1) &&
+        isSameLayerTransitionFree(vNew1, v2)) {
+        vNew = vNew1;
+    } else if (isSameLayerTransitionFree(v1, vNew2) &&
+               isSameLayerTransitionFree(vNew2, v2)) {
+        vNew = vNew2;
+    } else {
+        return;
+    }
+
+    // Add new bridge vertex to graph is new connection is valid
+    int idxNew = res_.graph_structure.vertex.size();
+    res_.graph_structure.vertex.push_back(vNew);
+    res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
+    res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
+    res_.graph_structure.edge.push_back(std::make_pair(idxNew, idx2));
+    res_.graph_structure.weight.push_back(vectorEuclidean(vNew, v2));
+}
