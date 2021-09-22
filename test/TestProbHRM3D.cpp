@@ -12,10 +12,15 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
-
-    // Using fixed orientations from Icosahedral symmetry group
     const string quat_file = "0";
-    const string urdf_file = "../../resources/3D/urdf/tri-snake.urdf";
+
+    // Setup URDF file for the robot
+    string urdf_file;
+    if (env3D->getEndPoints().at(0).size() == 10) {
+        urdf_file = "../../resources/3D/urdf/snake.urdf";
+    } else if (env3D->getEndPoints().at(0).size() == 16) {
+        urdf_file = "../../resources/3D/urdf/tri-snake.urdf";
+    }
 
     // Setup robot
     MultiBodyTree3D robot =
@@ -43,7 +48,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     ProbHRM3D probHRM(robot, urdf_file, env3D->getArena(), env3D->getObstacle(),
                       req);
-    probHRM.plan(5.0);
+    probHRM.plan(300.0);
     PlanningResult res = probHRM.getPlanningResult();
     param = probHRM.getPlannerParameters();
 
