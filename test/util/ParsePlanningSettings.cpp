@@ -114,11 +114,11 @@ void defineParameters(const MultiBodyTree3D* robot,
 
     param->NUM_LAYER = robot->getBase().getQuatSamples().size();
 
-    if (param->NUM_LINE_X == 0 && param->NUM_LINE_Y == 0) {
+    if (param->NUM_LINE_X == 0 || param->NUM_LINE_Y == 0) {
         double min_size_obs =
             computeObstacleMinSize<SuperQuadrics>(env3D->getObstacle());
 
-        param->NUM_LINE_X = static_cast<int>(bound.at(0) / min_size_obs);
-        param->NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
+        param->NUM_LINE_X = floor(bound.at(0) / min_size_obs);
+        param->NUM_LINE_Y = floor(bound.at(1) / min_size_obs);
     }
 }
