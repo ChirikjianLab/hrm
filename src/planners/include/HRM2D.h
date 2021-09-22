@@ -39,7 +39,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   protected:
     void bridgeLayer() override;
 
-    void bridgeVertex(const int idx1, const int idx2) override;
+    void bridgeVertex(const int idx1, const int idx2);
 
     IntersectionInterval computeIntersections(
         const std::vector<double>& ty) override;

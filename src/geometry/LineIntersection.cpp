@@ -4,6 +4,24 @@
 std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
                                                  const MeshMatrix& shape) {
     std::vector<Eigen::Vector3d> points;
+
+    /** \brief filter out-of-range case: line direction parallel to
+     * axes-defined planes */
+    Eigen::Vector3d direction({line(3), line(4), line(5)});
+    std::vector<Eigen::Vector3d> basis;
+    basis.emplace_back(1, 0, 0);
+    basis.emplace_back(0, 1, 0);
+    basis.emplace_back(0, 0, 1);
+
+    for (size_t i = 0; i < basis.size(); ++i) {
+        if (std::fabs(direction.dot(basis.at(i))) < 1e-5 &&
+            (line(i) > shape.vertices.row(i).maxCoeff() ||
+             line(i) < shape.vertices.row(i).minCoeff())) {
+            return points;
+        }
+    }
+
+    /** \brief Line mesh intersection */
     Eigen::Vector3d t0, u, v, pt;
 
     for (auto i = 0; i < shape.faces.rows(); ++i) {

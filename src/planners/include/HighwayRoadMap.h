@@ -149,7 +149,7 @@ class HighwayRoadMap {
      * within one C-layer
      * \param idx1, idx2 Indices of two vertices to be connected
      */
-    virtual void bridgeVertex(const int idx1, const int idx2);
+    void bridgeVertex(const int idx1, const int idx2);
 
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles

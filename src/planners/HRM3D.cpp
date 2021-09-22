@@ -166,14 +166,14 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
 
     for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
         for (size_t j = 0; j < freeSeg->freeSegYZ.at(i).ty.size(); ++j) {
+            n1 = N_v.line[i][j];
+            n2 = N_v.line[i + 1][j];
+
             // Connect vertex btw adjacent planes, only connect with same ty
             for (size_t k1 = 0; k1 < freeSeg->freeSegYZ.at(i).xM[j].size();
                  ++k1) {
-                n1 = N_v.line[i][j];
                 for (size_t k2 = 0;
                      k2 < freeSeg->freeSegYZ.at(i + 1).xM[j].size(); ++k2) {
-                    n2 = N_v.line[i + 1][j];
-
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[n1 + k1],
                             res_.graph_structure.vertex[n2 + k2])) {
@@ -182,6 +182,8 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + k1],
                             res_.graph_structure.vertex[n2 + k2]));
+                    } else {
+                        bridgeVertex(n1 + k1, n2 + k2);
                     }
                 }
             }
@@ -459,10 +461,12 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
-            auto s0 = (intersectObs[0] - t1).norm() / (t2 - t1).norm();
-            auto s1 = (intersectObs[1] - t1).norm() / (t2 - t1).norm();
+            // Dot product between vectors (t1->intersect) and (t2->intersect)
+            auto s0 = (intersectObs[0] - t1).dot(intersectObs[0] - t2);
+            auto s1 = (intersectObs[1] - t1).dot(intersectObs[1] - t2);
 
-            if (!((s0 < 0 && s1 < 0) || (s0 > 1 && s1 > 1))) {
+            // Intersect within segment (t1, t2) iff dot product less than 0
+            if ((s0 < 0) || (s1 < 0)) {
                 return false;
             }
         }
