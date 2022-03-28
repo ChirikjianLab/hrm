@@ -99,7 +99,7 @@ algorithm planTest(const robotType& robot,
         file_bd.close();
 
         ofstream file_cell;
-        file_cell.open("cell_2D.csv");
+        file_cell.open("segment_2D.csv");
         for (size_t i = 0; i < cell.ty.size(); i++) {
             for (size_t j = 0; j < cell.xL[i].size(); j++) {
                 file_cell << cell.ty[i] << ' ' << cell.xL[i][j] << ' '

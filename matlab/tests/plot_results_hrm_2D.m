@@ -3,8 +3,8 @@ initAddpath;
 
 [X_ori, X, cf_seg, vtx, edge, path, robot, endPts] = loadResults('2D');
 
-figure; hold on; axis equal; axis on;
-%% environment
+%% Show solution path
+figure; hold on; axis equal; axis off;
 disp('Environment Initialization...')
 
 sc = 20;
@@ -23,46 +23,6 @@ end
 for i = 1:2:size(X_ori,1)-3
     patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
 end
-% 
-% % Mink
-% for i = 1:2:size(X,1)-1
-%     plot(X(i,:),X(i+1,:),'k.');
-% end
-
-%% raster scan
-% N_dy = size(X_obs)/2;
-% % obs
-% for i = 1:size(X_obs,2)
-%     plot(X_obs(1:N_dy,i),Y,'r.')
-%     plot(X_obs(N_dy+1:N_dy*2,i),Y,'b.')
-% end
-%
-% % exploded obs
-% for i = 1:size(X_obs_ex,2)
-%     plot(X_obs_ex(1:N_dy,i),Y,'r*')
-%     plot(X_obs_ex(N_dy+1:N_dy*2,i),Y,'b*')
-% end
-%
-% % arena
-% for i = 1:size(X_arena,2)
-%     plot(X_arena(1:N_dy,i),Y,'.')
-%     plot(X_arena(N_dy+1:N_dy*2,i),Y,'.')
-% end
-%
-% % cells
-% for i = 1:size(cf_seg,1)
-%     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
-%         plot(cf_seg(i,3), cf_seg(i,1),'k*')
-% end
-%
-% % vertex and connections
-% plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3),'k.');
-% edge = edge+1;
-% for i = 1:size(edge,1)
-%     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
-%         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
-%         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
-% end
 
 % Robot motions
 rob = MultiBodyTree2D(SuperEllipse([robot(1,1:6), 50], 'g', 0),...
@@ -95,6 +55,8 @@ for i = 1:size(path,1)-1
 end
 
 %% Path interpolation
+disp('Interpolated path...')
+
 pathInterp = [];
 for i = 1:size(path,1)-1
     pathCur = path(i,:);
@@ -109,7 +71,7 @@ for i = 1:size(path,1)-1
     pathStepInterp = [];
 end
 
-% figure; hold on; axis equal; axis off;
+figure; hold on; axis equal; axis off;
 % original
 X_ori = [X_ori, X_ori(:,1)];
 for i = size(X_ori,1)-1
