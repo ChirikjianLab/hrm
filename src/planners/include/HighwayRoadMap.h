@@ -191,9 +191,10 @@ class HighwayRoadMap {
     virtual bool isPtInCFree(const int bdIdx, const std::vector<double>& v) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
-     * \param FreeSegment2D pointer (non-const)
+     * \param FreeSegment2D pointer
+     * \return FreeSegment2D Enhanced free segment with more valid vertices
      */
-    void enhanceDecomp(FreeSegment2D* freeSeg);
+    FreeSegment2D enhanceDecomp(const FreeSegment2D* currFreeSeg);
 
     /** \brief find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex

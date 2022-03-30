@@ -240,19 +240,17 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
         n1 = N_v.plane.at(i);
 
         for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            //            // Connect vertex within the same sweep line
-            //            if (j1 != freeSeg->xM[i].size() - 1) {
-            //                if (std::fabs(freeSeg->xU[i][j1] -
-            //                freeSeg->xL[i][j1 + 1]) <
-            //                    1e-5) {
-            //                    res_.graph_structure.edge.push_back(
-            //                        std::make_pair(n1 + j1, n1 + j1 + 1));
-            //                    res_.graph_structure.weight.push_back(vectorEuclidean(
-            //                        res_.graph_structure.vertex[n1 + j1],
-            //                        res_.graph_structure.vertex[n1 + j1 +
-            //                        1]));
-            //                }
-            //            }
+            // Connect vertex within the same sweep line
+            if (j1 != freeSeg->xM[i].size() - 1) {
+                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
+                    1e-5) {
+                    res_.graph_structure.edge.push_back(
+                        std::make_pair(n1 + j1, n1 + j1 + 1));
+                    res_.graph_structure.weight.push_back(vectorEuclidean(
+                        res_.graph_structure.vertex[n1 + j1],
+                        res_.graph_structure.vertex[n1 + j1 + 1]));
+                }
+            }
 
             // Connect vertex btw adjacent sweep lines
             if (i != freeSeg->ty.size() - 1) {
@@ -358,51 +356,53 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
 
     // Enhanced process to generate more valid vertices within free line
     // segement
-    //    enhanceDecomp(&freeLineSegment);
-
-    return freeLineSegment;
+    return enhanceDecomp(&freeLineSegment);
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
-    FreeSegment2D* freeSeg) {
+FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
+    const FreeSegment2D* current) {
+    FreeSegment2D enhanced = *current;
+
     // Add new vertices within on sweep line
-    for (size_t i = 0; i < freeSeg->ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
-                if (freeSeg->xM[i][j1] < freeSeg->xL[i + 1][j2] &&
-                    freeSeg->xU[i][j1] >= freeSeg->xL[i + 1][j2]) {
-                    freeSeg->xU[i].push_back(freeSeg->xL[i + 1][j2]);
-                    freeSeg->xL[i].push_back(freeSeg->xL[i + 1][j2]);
-                    freeSeg->xM[i].push_back(freeSeg->xL[i + 1][j2]);
-                } else if (freeSeg->xM[i][j1] > freeSeg->xU[i + 1][j2] &&
-                           freeSeg->xL[i][j1] <= freeSeg->xU[i + 1][j2]) {
-                    freeSeg->xU[i].push_back(freeSeg->xU[i + 1][j2]);
-                    freeSeg->xL[i].push_back(freeSeg->xU[i + 1][j2]);
-                    freeSeg->xM[i].push_back(freeSeg->xU[i + 1][j2]);
+    for (size_t i = 0; i < current->ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < current->xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < current->xM[i + 1].size(); ++j2) {
+                if (enhanced.xM[i][j1] < enhanced.xL[i + 1][j2] &&
+                    enhanced.xU[i][j1] >= enhanced.xL[i + 1][j2]) {
+                    enhanced.xU[i].push_back(enhanced.xL[i + 1][j2]);
+                    enhanced.xL[i].push_back(enhanced.xL[i + 1][j2]);
+                    enhanced.xM[i].push_back(enhanced.xL[i + 1][j2]);
+                } else if (enhanced.xM[i][j1] > enhanced.xU[i + 1][j2] &&
+                           enhanced.xL[i][j1] <= enhanced.xU[i + 1][j2]) {
+                    enhanced.xU[i].push_back(enhanced.xU[i + 1][j2]);
+                    enhanced.xL[i].push_back(enhanced.xU[i + 1][j2]);
+                    enhanced.xM[i].push_back(enhanced.xU[i + 1][j2]);
                 }
 
-                if (freeSeg->xM[i + 1][j2] < freeSeg->xL[i][j1] &&
-                    freeSeg->xU[i + 1][j2] >= freeSeg->xL[i][j1]) {
-                    freeSeg->xU[i + 1].push_back(freeSeg->xL[i][j1]);
-                    freeSeg->xL[i + 1].push_back(freeSeg->xL[i][j1]);
-                    freeSeg->xM[i + 1].push_back(freeSeg->xL[i][j1]);
-                } else if (freeSeg->xM[i + 1][j2] > freeSeg->xU[i][j1] &&
-                           freeSeg->xL[i + 1][j2] <= freeSeg->xU[i][j1]) {
-                    freeSeg->xU[i + 1].push_back(freeSeg->xU[i][j1]);
-                    freeSeg->xL[i + 1].push_back(freeSeg->xU[i][j1]);
-                    freeSeg->xM[i + 1].push_back(freeSeg->xU[i][j1]);
+                if (enhanced.xM[i + 1][j2] < enhanced.xL[i][j1] &&
+                    enhanced.xU[i + 1][j2] >= enhanced.xL[i][j1]) {
+                    enhanced.xU[i + 1].push_back(enhanced.xL[i][j1]);
+                    enhanced.xL[i + 1].push_back(enhanced.xL[i][j1]);
+                    enhanced.xM[i + 1].push_back(enhanced.xL[i][j1]);
+                } else if (enhanced.xM[i + 1][j2] > enhanced.xU[i][j1] &&
+                           enhanced.xL[i + 1][j2] <= enhanced.xU[i][j1]) {
+                    enhanced.xU[i + 1].push_back(enhanced.xU[i][j1]);
+                    enhanced.xL[i + 1].push_back(enhanced.xU[i][j1]);
+                    enhanced.xM[i + 1].push_back(enhanced.xU[i][j1]);
                 }
             }
         }
 
-        sort(freeSeg->xL[i].begin(), freeSeg->xL[i].end(),
+        sort(enhanced.xL[i].begin(), enhanced.xL[i].end(),
              [](double a, double b) { return a < b; });
-        sort(freeSeg->xU[i].begin(), freeSeg->xU[i].end(),
+        sort(enhanced.xU[i].begin(), enhanced.xU[i].end(),
              [](double a, double b) { return a < b; });
-        sort(freeSeg->xM[i].begin(), freeSeg->xM[i].end(),
+        sort(enhanced.xM[i].begin(), enhanced.xM[i].end(),
              [](double a, double b) { return a < b; });
     }
+
+    return enhanced;
 }
 
 template <class RobotType, class ObjectType>
