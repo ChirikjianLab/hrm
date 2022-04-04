@@ -9,7 +9,6 @@ class MultiBodyTree3D {
   public:
     MultiBodyTree3D(SuperQuadrics base);
 
-  public:
     SuperQuadrics getBase() const { return base_; }
     std::vector<SuperQuadrics> getLinks() const { return link_; }
     std::vector<SuperQuadrics> getBodyShapes();

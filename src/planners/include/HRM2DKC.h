@@ -13,7 +13,6 @@ class HRM2DKC : public HRM2D {
 
     ~HRM2DKC();
 
-  public:
     Boundary boundaryGen() override;
     void connectMultiLayer() override;
 

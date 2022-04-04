@@ -61,7 +61,6 @@ class HighwayRoadMap {
 
     virtual ~HighwayRoadMap();
 
-  public:
     /**
      * \brief getPlanningResult retrieve planning results
      * \return PlanningResult struture

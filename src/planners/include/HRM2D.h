@@ -11,7 +11,6 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual ~HRM2D() override;
 
-  public:
     /**
      * \brief get free line segment at one specific C-layer
      * \param Boundary pointer to Minkowski boundaries

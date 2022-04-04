@@ -25,7 +25,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual ~HRM3D();
 
-  public:
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);

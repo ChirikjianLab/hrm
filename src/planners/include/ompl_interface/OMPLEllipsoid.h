@@ -13,7 +13,6 @@ class OMPLEllipsoid : public OMPL3D {
                   const int sampler);
     ~OMPLEllipsoid() override;
 
-  public:
     bool isStateValid(const ob::State* state) const override;
 
   private:

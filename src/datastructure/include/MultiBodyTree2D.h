@@ -8,7 +8,6 @@ class MultiBodyTree2D {
   public:
     MultiBodyTree2D(SuperEllipse base);
 
-  public:
     SuperEllipse getBase() const { return base_; }
     std::vector<SuperEllipse> getLinks() const { return link_; }
     double getNumLinks() const { return numLinks_; }

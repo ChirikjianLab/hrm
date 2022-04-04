@@ -35,7 +35,6 @@ class OMPL2D {
 
     ~OMPL2D();
 
-  public:
     std::vector<std::vector<double>> getSolutionPath() const { return path_; }
     bool isSolved() const { return isSolved_; }
     double getPlanningTime() const { return totalTime_; }

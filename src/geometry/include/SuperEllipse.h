@@ -16,7 +16,6 @@ class SuperEllipse {
                  const std::vector<double> &position, const double angle,
                  const unsigned int num);
 
-  public:
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     double getEpsilon() const { return epsilon_; }
     std::vector<double> getPosition() const { return position_; }

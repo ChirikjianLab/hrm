@@ -51,70 +51,44 @@ class OMPL3D {
            const std::vector<Mesh>& obsMesh);
     virtual ~OMPL3D();
 
-  public:
-    /*
-     * \brief Getter function for solved and interpolated path
-     */
+    /** \brief Getter function for solved and interpolated path */
     std::vector<std::vector<double>> getSolutionPath() const { return path_; }
 
-    /*
-     * \brief Indicator of solution
-     */
+    /** \brief Indicator of solution */
     bool isSolved() const { return isSolved_; }
 
-    /*
-     * \brief Getter function of total planning time
-     */
+    /** \brief Getter function of total planning time */
     double getPlanningTime() const { return totalTime_; }
 
-    /*
-     * \brief Get the time of generating C3F seeds set
-     */
+    /** \brief Get the time of generating C3F seeds set */
     double getC3FGenerateTime() const { return preComputeTime_; }
 
-    /*
-     * \brief Get the number of total collision checks, including both
-     * sampling and connecting processes
-     */
+    /** \brief Get the number of total collision checks, including both
+     * sampling and connecting processes */
     unsigned int getNumCollisionChecks() const { return numCollisionChecks_; }
 
-    /*
-     * \brief Get the number of valid states
-     */
+    /** \brief Get the number of valid states */
     unsigned int getNumValidStates() const { return numValidStates_; }
 
-    /*
-     * \brief Get the percentage of valid states
-     */
+    /** \brief Get the percentage of valid states */
     double getValidStatePercent() const { return validSpace_; }
 
-    /*
-     * \brief Get the number of valid vertices in graph
-     */
+    /** \brief Get the number of valid vertices in graph */
     unsigned int getNumVertex() const { return numGraphVertex_; }
 
-    /*
-     * \brief Get the number of valid edges connecting two milestones
-     */
+    /** \brief Get the number of valid edges connecting two milestones */
     unsigned int getNumEdges() const { return numGraphEdges_; }
 
-    /*
-     * \brief Get the length of the solved path
-     */
+    /** \brief Get the length of the solved path */
     size_t getPathLength() const { return lengthPath_; }
 
-    /*
-     * \brief Get all the milestones
-     */
+    /** \brief Get all the milestones */
     std::vector<std::vector<double>> getVertices() const { return vertex_; }
 
-    /*
-     * \brief Get all the valid connection pairs
-     */
+    /** \brief Get all the valid connection pairs */
     std::vector<std::pair<int, int>> getEdges() const { return edge_; }
 
-    /*
-     * \brief Set up the planning problem
+    /** \brief Set up the planning problem
      *
      * \param plannerId set the planner
      *
@@ -135,8 +109,7 @@ class OMPL3D {
     void setup(const int plannerId, const int stateSamplerId,
                const int validSamplerId);
 
-    /*
-     * \brief Start to plan
+    /** \brief Start to plan
      * \param endPts start and goal poses
      * \param maxTimeInSec maximum planning time in seconds
      */

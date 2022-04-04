@@ -13,7 +13,6 @@ class ProbHRM3D : public HRM3D {
 
     ~ProbHRM3D() override;
 
-  public:
     void plan(const double timeLim);
 
     void connectMultiLayer() override;

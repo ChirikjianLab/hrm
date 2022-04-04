@@ -9,7 +9,6 @@ class Interval {
     Interval();
     Interval(const double start, const double end);
 
-  public:
     double s() const { return start_; }
     double e() const { return end_; }
 
