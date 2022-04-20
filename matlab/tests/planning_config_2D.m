@@ -36,7 +36,7 @@ csvwrite(fullfile(outPath,'end_points_2D.csv'), end_points);
 %% Robot Initialization
 disp('Robot Configurations...');
 % Set robot configuration
-Robot = RobotInit2D(1, 0);
+Robot = RobotInit2D(2, 0);
 
 % Store robot info as .csv files
 robot = [Robot.Base.ra, Robot.Base.rb, Robot.Base.eps, Robot.Base.tx,...

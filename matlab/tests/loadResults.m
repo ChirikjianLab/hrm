@@ -22,7 +22,7 @@ edge = load([resultPath, 'edge_', dim, '.csv']);
 try
     path = load([resultPath, 'interpolated_path_', dim, '.csv']);
 catch
-    path = load([resultPath, 'paths_', dim, '.csv']);
+    path = load([resultPath, 'path_id_', dim, '.csv']);
 end
 
 % Configurations

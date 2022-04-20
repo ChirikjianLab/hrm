@@ -1,88 +1,134 @@
-#include "planners/include/HRM2DMultiBody.h"
+#include "planners/include/HRM2D.h"
+#include "planners/include/HRM2DKC.h"
+#include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
-
-#include <math.h>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include "gtest/gtest.h"
 
 using namespace Eigen;
 using namespace std;
 
-#define pi 3.1415926
+PlannerParameter defineParam(const MultiBodyTree2D* robot,
+                             const PlannerSetting2D* env2D) {
+    PlannerParameter par;
 
-HRM2DMultiBody plan(const MultiBodyTree2D& robot,
-                    const std::vector<std::vector<double>>& EndPts,
-                    const std::vector<SuperEllipse>& arena,
-                    const std::vector<SuperEllipse>& obs, const param& par) {
-    HRM2DMultiBody high(robot, EndPts, arena, obs, par);
-    high.plan();
+    par.NUM_LAYER = 20;
+    par.NUM_LINE_Y = 10;
+    par.NUM_POINT = 5;
 
-    // calculate original boundary points
-    boundary bd_ori;
-    for (size_t i = 0; i < par.N_s; i++) {
-        bd_ori.bd_s.push_back(high.Arena.at(i).getOriginShape());
-    }
-    for (size_t i = 0; i < par.N_o; i++) {
-        bd_ori.bd_o.push_back(high.Obs.at(i).getOriginShape());
-    }
+    double f = 1.5;
+    vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                    f * robot->getBase().getSemiAxis().at(0),
+                                env2D->getArena().at(0).getSemiAxis().at(1) -
+                                    f * robot->getBase().getSemiAxis().at(0)};
+    par.BOUND_LIMIT = {
+        env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
-    // Output boundary and cell info
-    boundary bd = high.boundaryGen();
-    cf_cell cell = high.rasterScan(bd.bd_s, bd.bd_o);
-    high.connectOneLayer(cell);
-
-    // write to .csv file
-    ofstream file_ori_bd;
-    file_ori_bd.open("origin_bound_2D.csv");
-    for (size_t i = 0; i < bd_ori.bd_o.size(); i++) {
-        file_ori_bd << bd_ori.bd_o[i] << "\n";
-    }
-    for (size_t i = 0; i < bd_ori.bd_s.size(); i++) {
-        file_ori_bd << bd_ori.bd_s[i] << "\n";
-    }
-    file_ori_bd.close();
-
-    ofstream file_bd;
-    file_bd.open("mink_bound_2D.csv");
-    for (size_t i = 0; i < bd.bd_o.size(); i++) {
-        file_bd << bd.bd_o[i] << "\n";
-    }
-    for (size_t i = 0; i < bd.bd_s.size(); i++) {
-        file_bd << bd.bd_s[i] << "\n";
-    }
-    file_bd.close();
-
-    ofstream file_cell;
-    file_cell.open("cell_2D.csv");
-    for (size_t i = 0; i < cell.ty.size(); i++) {
-        for (size_t j = 0; j < cell.xL[i].size(); j++) {
-            file_cell << cell.ty[i] << ' ' << cell.xL[i][j] << ' '
-                      << cell.xM[i][j] << ' ' << cell.xU[i][j] << "\n";
-        }
-    }
-    file_cell.close();
-
-    return high;
+    return par;
 }
 
-int main(int argc, char** argv) {
-    if (argc != 4) {
-        cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep lines"
-             << endl;
-        return 1;
+template <class algorithm, class robotType>
+algorithm planTest(const robotType& robot,
+                   const std::vector<SuperEllipse>& arena,
+                   const std::vector<SuperEllipse>& obs,
+                   const PlanningRequest& req, const bool isStore) {
+    // Main algorithm
+    cout << "Number of C-layers: " << req.planner_parameters.NUM_LAYER << endl;
+    cout << "Number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
+         << endl;
+    cout << "----------" << endl;
+
+    cout << "Start planning..." << endl;
+
+    algorithm hrm(robot, arena, obs, req);
+    hrm.plan();
+
+    cout << "Finished planning!" << endl;
+
+    if (isStore) {
+        cout << "Saving results to file..." << endl;
+
+        // TEST: calculate original boundary points
+        Boundary bd_ori;
+        for (auto arena : hrm.getArena()) {
+            bd_ori.arena.push_back(arena.getOriginShape());
+        }
+        for (auto obstacle : hrm.getObstacle()) {
+            bd_ori.obstacle.push_back(obstacle.getOriginShape());
+        }
+
+        ofstream file_ori_bd;
+        file_ori_bd.open("origin_bound_2D.csv");
+        for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
+            file_ori_bd << bd_ori.obstacle[i] << "\n";
+        }
+        for (size_t i = 0; i < bd_ori.arena.size(); i++) {
+            file_ori_bd << bd_ori.arena[i] << "\n";
+        }
+        file_ori_bd.close();
+
+        // TEST: Minkowski sums boundary
+        Boundary bd = hrm.boundaryGen();
+
+        ofstream file_bd;
+        file_bd.open("mink_bound_2D.csv");
+        for (size_t i = 0; i < bd.obstacle.size(); i++) {
+            file_bd << bd.obstacle[i] << "\n";
+        }
+        for (size_t i = 0; i < bd.arena.size(); i++) {
+            file_bd << bd.arena[i] << "\n";
+        }
+        file_bd.close();
+
+        // TEST: Sweep line process
+        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
+
+        ofstream file_cell;
+        file_cell.open("segment_2D.csv");
+        for (size_t i = 0; i < freeSeg.ty.size(); i++) {
+            for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
+                file_cell << freeSeg.ty[i] << ' ' << freeSeg.xL[i][j] << ' '
+                          << freeSeg.xM[i][j] << ' ' << freeSeg.xU[i][j]
+                          << "\n";
+            }
+        }
+        file_cell.close();
     }
 
-    // Record planning time for N trials
-    int N = atoi(argv[1]);
-    int N_l = atoi(argv[2]);
-    int N_y = atoi(argv[3]);
-    vector<vector<double>> time_stat;
+    return hrm;
+}
+
+void showResult(const PlanningResult* res, const bool isStore) {
+    cout << "----------" << endl;
+
+    displayPlanningTimeInfo(&res->planning_time);
+
+    if (isStore) {
+        displayGraphInfo(&res->graph_structure, "2D");
+        displayPathInfo(&res->solution_path, "2D");
+    } else {
+        displayGraphInfo(&res->graph_structure);
+        displayPathInfo(&res->solution_path);
+    }
+
+    // GTest planning result
+    EXPECT_TRUE(res->solved);
+
+    ASSERT_GE(res->graph_structure.vertex.size(), 0);
+    ASSERT_GE(res->graph_structure.edge.size(), 0);
+
+    ASSERT_GE(res->solution_path.PathId.size(), 0);
+    ASSERT_GE(res->solution_path.cost, 0.0);
+}
+
+TEST(TestHRMPlanning2D, MultiBody) {
+    cout << "Highway RoadMap for 2D planning" << endl;
+    cout << "Robot type: Multi-link rigid body" << endl;
+    cout << "Layer connection method: Bridge C-layer" << endl;
+    cout << "----------" << endl;
 
     // Load Robot and Environment settings
     MultiBodyTree2D robot = loadRobotMultiBody2D(50);
@@ -90,90 +136,55 @@ int main(int argc, char** argv) {
     env2D->loadEnvironment();
 
     // Parameters
-    param par;
-    par.N_layers = static_cast<size_t>(N_l);
-    par.N_dy = static_cast<size_t>(N_y);
-    par.sampleNum = 5;
+    PlannerParameter par = defineParam(&robot, env2D);
 
-    par.N_o = env2D->getObstacle().size();
-    par.N_s = env2D->getArena().size();
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env2D->getEndPoints().at(0);
+    req.goal = env2D->getEndPoints().at(1);
 
-    double f = 1.5;
-    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                f * robot.getBase().getSemiAxis().at(0),
-                            env2D->getArena().at(0).getSemiAxis().at(1) -
-                                f * robot.getBase().getSemiAxis().at(0)};
-    par.Lim = {env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-               env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-               env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-               env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
+    bool isStoreRes = true;
+    auto hrm = planTest<HRM2D, MultiBodyTree2D>(
+        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
+    PlanningResult res = hrm.getPlanningResult();
 
-    // Multiple planning trials
-    for (int i = 0; i < N; i++) {
-        HRM2DMultiBody high =
-            plan(robot, env2D->getEndPoints(), env2D->getArena(),
-                 env2D->getObstacle(), par);
+    // Planning Time and Path Cost
+    showResult(&res, isStoreRes);
+}
 
-        time_stat.push_back({high.planTime.buildTime, high.planTime.searchTime,
-                             high.planTime.buildTime + high.planTime.searchTime,
-                             static_cast<double>(high.vtxEdge.vertex.size()),
-                             static_cast<double>(high.vtxEdge.edge.size()),
-                             static_cast<double>(high.Paths.size())});
+TEST(TestHRMPlanning2D, KC) {
+    cout << "Highway RoadMap for 2D planning" << endl;
+    cout << "Robot type: Multi-link rigid body" << endl;
+    cout << "Layer connection method: Local C-space using Kinematics of "
+            "Containment (KC)"
+         << endl;
+    cout << "----------" << endl;
 
-        // Planning Time and Path Cost
-        cout << "Roadmap build time: " << high.planTime.buildTime << "s"
-             << endl;
-        cout << "Path search time: " << high.planTime.searchTime << "s" << endl;
-        cout << "Total Planning Time: "
-             << high.planTime.buildTime + high.planTime.searchTime << 's'
-             << endl;
+    // Load Robot and Environment settings
+    MultiBodyTree2D robot = loadRobotMultiBody2D(50);
+    PlannerSetting2D* env2D = new PlannerSetting2D();
+    env2D->loadEnvironment();
 
-        cout << "Number of valid configurations: " << high.vtxEdge.vertex.size()
-             << endl;
-        cout << "Number of configurations in Path: " << high.Paths.size()
-             << endl;
-        cout << "Cost: " << high.Cost << endl;
+    // Parameters
+    PlannerParameter par = defineParam(&robot, env2D);
 
-        // Write the output to .csv files
-        ofstream file_vtx;
-        file_vtx.open("vertex_2D.csv");
-        vector<vector<double>> vtx = high.vtxEdge.vertex;
-        for (size_t i = 0; i < vtx.size(); i++) {
-            file_vtx << vtx[i][0] << ' ' << vtx[i][1] << ' ' << vtx[i][2]
-                     << "\n";
-        }
-        file_vtx.close();
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env2D->getEndPoints().at(0);
+    req.goal = env2D->getEndPoints().at(1);
 
-        ofstream file_edge;
-        file_edge.open("edge_2D.csv");
-        vector<pair<int, int>> edge = high.vtxEdge.edge;
-        for (size_t i = 0; i < edge.size(); i++) {
-            file_edge << edge[i].first << ' ' << edge[i].second << "\n";
-        }
-        file_edge.close();
+    bool isStoreRes = false;
+    auto hrm = planTest<HRM2DKC, MultiBodyTree2D>(
+        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
+    PlanningResult res = hrm.getPlanningResult();
 
-        ofstream file_paths;
-        file_paths.open("paths_2D.csv");
-        vector<int> paths = high.Paths;
-        for (size_t i = 0; i < paths.size(); i++) {
-            file_paths << paths[i] << ' ';
-        }
-        file_paths.close();
-    }
+    // Planning Time and Path Cost
+    showResult(&res, isStoreRes);
+}
 
-    // Store results
-    ofstream file_time;
-    file_time.open("time_high_2D.csv");
-    file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
-              << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
-              << "\n";
-    for (size_t i = 0; i < static_cast<size_t>(N); i++) {
-        file_time << time_stat[i][0] << ',' << time_stat[i][1] << ','
-                  << time_stat[i][2] << ',' << time_stat[i][3] << ','
-                  << time_stat[i][4] << ',' << time_stat[i][5] << "\n";
-    }
-    file_time.close();
-
-    return 0;
+int main(int ac, char* av[]) {
+    testing::InitGoogleTest(&ac, av);
+    return RUN_ALL_TESTS();
 }

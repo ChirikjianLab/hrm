@@ -1,30 +1,31 @@
-#ifndef PROBHRM3D_H
-#define PROBHRM3D_H
+#pragma once
 
-#include "Hrm3dMultiBody.h"
+#include "HRM3D.h"
 #include "util/include/ParseURDF.h"
 
-class ProbHRM3D : public Hrm3DMultiBody {
+/** \class ProbHRM3D Prob-HRM for 3D robot planning */
+class ProbHRM3D : public HRM3D {
   public:
     ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
-              const std::vector<std::vector<double>>& endPts,
               const std::vector<SuperQuadrics>& arena,
-              const std::vector<SuperQuadrics>& obs, const option3D& opt);
-    virtual ~ProbHRM3D() override;
+              const std::vector<SuperQuadrics>& obs,
+              const PlanningRequest& req);
 
-  public:
-    void plan(double timeLim);
+    ~ProbHRM3D() override;
 
-    virtual void connectMultiLayer() override;
+    void plan(const double timeLim);
 
-    virtual void generateVertices(const double tx,
-                                  const cf_cellYZ* cellYZ) override;
+    void connectMultiLayer() override;
+
+    void generateVertices(const Coordinate tx,
+                          const FreeSegment2D* freeSeg) override;
 
   protected:
-    virtual void setTransform(const std::vector<double>& V) override;
+    void setTransform(const std::vector<Coordinate>& v) override;
 
-    std::vector<SuperQuadrics> tfeArticulated(const std::vector<double>& v1,
-                                              const std::vector<double>& v2);
+    void computeTFE(const std::vector<Coordinate>& v1,
+                    const std::vector<Coordinate>& v2,
+                    std::vector<SuperQuadrics>* tfe);
 
   private:
     ParseURDF* kdl_;
@@ -32,7 +33,5 @@ class ProbHRM3D : public Hrm3DMultiBody {
     const double maxJointAngle_ = pi / 2;
 
     // store configuration for each robot shape (at each C-layer)
-    std::vector<std::vector<double>> v_;
+    std::vector<std::vector<Coordinate>> v_;
 };
-
-#endif  // PROBHRM3D_H

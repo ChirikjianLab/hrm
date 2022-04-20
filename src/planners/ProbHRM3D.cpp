@@ -3,31 +3,32 @@
 #include "ompl/util/RandomNumbers.h"
 
 ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
-                     const std::vector<std::vector<double>>& endPts,
                      const std::vector<SuperQuadrics>& arena,
-                     const std::vector<SuperQuadrics>& obs, const option3D& opt)
-    : Hrm3DMultiBody::Hrm3DMultiBody(robot, endPts, arena, obs, opt),
-      urdfFile_(urdfFile) {
+                     const std::vector<SuperQuadrics>& obs,
+                     const PlanningRequest& req)
+    : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(urdfFile) {
     kdl_ = new ParseURDF(urdfFile_);
 }
 
 ProbHRM3D::~ProbHRM3D() {}
 
-void ProbHRM3D::plan(double timeLim) {
-    ompl::time::point start = ompl::time::now();
+void ProbHRM3D::plan(const double timeLim) {
+    auto start = Clock::now();
 
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(NULL)));
     ompl::RNG rng;
 
-    N_layers = 0;
+    param_.NUM_LAYER = 0;
 
     do {
         // Randomly generate rotations and joint angles
-        if (N_layers == 0 || N_layers == 1) {
-            q_r.push_back(Eigen::Quaterniond(
-                Endpt.at(N_layers).at(3), Endpt.at(N_layers).at(4),
-                Endpt.at(N_layers).at(5), Endpt.at(N_layers).at(6)));
+        if (param_.NUM_LAYER == 0) {
+            q_r.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
+                                             start_.at(5), start_.at(6)));
+        } else if (param_.NUM_LAYER == 1) {
+            q_r.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
+                                             goal_.at(5), goal_.at(6)));
         } else {
             q_r.push_back(Eigen::Quaterniond::UnitRandom());
         }
@@ -40,9 +41,13 @@ void ProbHRM3D::plan(double timeLim) {
                                    q_r.back().y(),
                                    q_r.back().z()};
 
-        if (N_layers == 0 || N_layers == 1) {
+        if (param_.NUM_LAYER == 0) {
             for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
-                config.push_back(Endpt.at(N_layers).at(7 + i));
+                config.push_back(start_.at(7 + i));
+            }
+        } else if (param_.NUM_LAYER == 1) {
+            for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
+                config.push_back(goal_.at(7 + i));
             }
         } else {
             for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
@@ -54,49 +59,41 @@ void ProbHRM3D::plan(double timeLim) {
 
         // Set rotation matrix to robot
         setTransform(v_.back());
-        Robot.setQuaternion(RobotM.getBase().getQuaternion());
 
         // Update number of C-layers
-        N_layers++;
+        param_.NUM_LAYER++;
 
-        // Minkowski operations
-        boundary3D bd = boundaryGen();
+        layerBound_ = boundaryGen();
+        sweepLineProcess();
+        connectOneLayer3D(&freeSegOneLayer_);
 
-        // Sweep-line process
-        cf_cell3D CFcell = sweepLineZ(bd.bd_s, bd.bd_o);
-
-        // Connect within one C-layer
-        connectOneLayer(CFcell);
-
-        vtxId.push_back(N_v);
-
-        free_cell.push_back(CFcell);
+        vtxId_.push_back(N_v);
 
         // Connect among adjacent C-layers
-        if (N_layers >= 2) {
+        if (param_.NUM_LAYER >= 2) {
             connectMultiLayer();
         }
 
         // Graph search
         search();
 
-        planTime.totalTime = ompl::time::seconds(ompl::time::now() - start);
-    } while (!flag && planTime.totalTime < timeLim);
+        res_.planning_time.totalTime = Durationd(Clock::now() - start).count();
+    } while (!res_.solved && res_.planning_time.totalTime < timeLim);
 
     // Retrieve coordinates of solved path
-    solutionPathInfo.solvedPath = getSolutionPath();
+    res_.solution_path.solvedPath = getSolutionPath();
 }
 
 // Connect adjacent C-layers
 void ProbHRM3D::connectMultiLayer() {
-    if (N_layers == 1) {
+    if (param_.NUM_LAYER == 1) {
         return;
     }
 
     // Find the nearest C-layers
     double minDist = 100;
-    int minIdx = 0;
-    for (size_t i = 0; i < N_layers - 1; ++i) {
+    Index minIdx = 0;
+    for (size_t i = 0; i < param_.NUM_LAYER - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
         if (dist < minDist) {
             minDist = dist;
@@ -106,68 +103,66 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    size_t n_12 = vtxId.at(N_layers - 2).layer;
-    size_t n_2 = vtxId.at(N_layers - 1).layer;
+    Index n_12 = vtxId_.at(param_.NUM_LAYER - 2).layer;
+    Index n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
 
     // Start and end vertics in the nearest layer
-    size_t start = 0;
+    Index start = 0;
     if (minIdx != 0) {
-        start = vtxId.at(minIdx - 1).layer;
+        start = vtxId_.at(minIdx - 1).layer;
     }
-    size_t n_1 = vtxId.at(minIdx).layer;
+    Index n_1 = vtxId_.at(minIdx).layer;
 
-    // Middle C-layer TFE and C-obstacle boundary
-    mid = tfeArticulated(v_.back(), v_.at(minIdx));
-    for (size_t j = 0; j < mid.size(); ++j) {
-        midLayerBdMultiLink.push_back(midLayer(mid.at(j)));
-    }
+    // Construct bridge C-layer
+    computeTFE(v_.back(), v_.at(minIdx), &tfe_);
+    bridgeLayer();
 
     // Nearest vertex btw layers
-    std::vector<double> V1;
-    std::vector<double> V2;
+    std::vector<Coordinate> V1;
+    std::vector<Coordinate> V2;
     for (size_t m0 = start; m0 < n_1; ++m0) {
-        V1 = vtxEdge.vertex.at(m0);
+        V1 = res_.graph_structure.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
-            V2 = vtxEdge.vertex.at(m1);
+            V2 = res_.graph_structure.vertex.at(m1);
 
             // Locate the nearest vertices
-            if (std::fabs(V1.at(0) - V2.at(0)) > Lim[0] / N_dx ||
-                std::fabs(V1.at(1) - V2.at(1)) > Lim[1] / N_dy) {
+            if (std::fabs(V1.at(0) - V2.at(0)) >
+                    param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
+                std::fabs(V1.at(1) - V2.at(1)) >
+                    param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
                 continue;
             }
 
-            if (isTransitionFree(V1, V2)) {
+            if (isMultiLayerTransitionFree(V1, V2)) {
                 // Add new connections
-                vtxEdge.edge.push_back(std::make_pair(m0, m1));
-                vtxEdge.weight.push_back(vectorEuclidean(V1, V2));
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(V1, V2));
 
                 n_12 = m1;
                 break;
             }
         }
     }
-
-    // Clear mid_cell and update the number of vertices
-    midLayerBdMultiLink.clear();
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const double tx, const cf_cellYZ* cellYZ) {
+void ProbHRM3D::generateVertices(const Coordinate tx,
+                                 const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
-    std::vector<double> vertex(v_.back().size());
+    std::vector<Coordinate> vertex(v_.back().size());
 
-    for (size_t i = 0; i < cellYZ->ty.size(); ++i) {
-        N_v.plane.push_back(vtxEdge.vertex.size());
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+        N_v.plane.push_back(res_.graph_structure.vertex.size());
 
-        for (size_t j = 0; j < cellYZ->zM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Configuration of the base
             vertex.at(0) = tx;
-            vertex.at(1) = cellYZ->ty[i];
-            vertex.at(2) = cellYZ->zM[i][j];
-            vertex.at(3) = Robot.getQuaternion().w();
-            vertex.at(4) = Robot.getQuaternion().x();
-            vertex.at(5) = Robot.getQuaternion().y();
-            vertex.at(6) = Robot.getQuaternion().z();
+            vertex.at(1) = freeSeg->ty[i];
+            vertex.at(2) = freeSeg->xM[i][j];
+            vertex.at(3) = robot_.getBase().getQuaternion().w();
+            vertex.at(4) = robot_.getBase().getQuaternion().x();
+            vertex.at(5) = robot_.getBase().getQuaternion().y();
+            vertex.at(6) = robot_.getBase().getQuaternion().z();
 
             // Configuration of joints
             for (size_t m = 7; m < v_.back().size(); ++m) {
@@ -175,22 +170,22 @@ void ProbHRM3D::generateVertices(const double tx, const cf_cellYZ* cellYZ) {
             }
 
             // Construct a std::vector of vertex
-            vtxEdge.vertex.push_back(vertex);
+            res_.graph_structure.vertex.push_back(vertex);
         }
     }
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = vtxEdge.vertex.size();
+    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Transform the robot
-void ProbHRM3D::setTransform(const std::vector<double>& V) {
+void ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
     // Transformation of base
-    Eigen::Matrix4d g;
+    SE3Transform g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(V[3], V[4], V[5], V[6]).toRotationMatrix();
-    g.topRightCorner(3, 1) = Eigen::Vector3d(V[0], V[1], V[2]);
+    g.topRightCorner(3, 1) = Point3D(V[0], V[1], V[2]);
     g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
     // Transformation of links
@@ -199,29 +194,30 @@ void ProbHRM3D::setTransform(const std::vector<double>& V) {
         jointConfig(i) = V[7 + i];
     }
 
-    RobotM.robotTF(urdfFile_, &g, &jointConfig);
+    robot_.robotTF(urdfFile_, &g, &jointConfig);
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
-std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
-    std::vector<SuperQuadrics> tfe;
+void ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
+                           const std::vector<Coordinate>& v2,
+                           std::vector<SuperQuadrics>* tfe) {
+    tfe->clear();
 
     // Interpolated robot motion from V1 to V2
-    std::vector<std::vector<double>> vInterp =
-        interpolateCompoundSE3Rn(v1, v2, N_step);
+    std::vector<std::vector<Coordinate>> vInterp =
+        interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     setTransform(v1);
-    std::vector<SuperQuadrics> robotAux = RobotM.getBodyShapes();
+    std::vector<SuperQuadrics> robotAux = robot_.getBodyShapes();
     std::vector<SuperQuadrics> mvce = robotAux;
 
     for (auto vStep : vInterp) {
         setTransform(vStep);
-        robotAux = RobotM.getBodyShapes();
+        robotAux = robot_.getBodyShapes();
 
         // Compute a tightly-fitted ellipsoid that bounds rotational motions
         // from intermediate orientations
-        for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
+        for (size_t i = 0; i < robot_.getNumLinks() + 1; ++i) {
             mvce.at(i) = getMVCE3D(
                 mvce.at(i).getSemiAxis(), robotAux.at(i).getSemiAxis(),
                 mvce.at(i).getQuaternion(), robotAux.at(i).getQuaternion(),
@@ -229,9 +225,7 @@ std::vector<SuperQuadrics> ProbHRM3D::tfeArticulated(
         }
     }
 
-    for (size_t i = 0; i < RobotM.getNumLinks() + 1; ++i) {
-        tfe.push_back(mvce.at(i));
+    for (size_t i = 0; i < robot_.getNumLinks() + 1; ++i) {
+        tfe->push_back(mvce.at(i));
     }
-
-    return tfe;
 }

@@ -1,11 +1,9 @@
-#ifndef PARSE2DCSVFILE_H
-#define PARSE2DCSVFILE_H
+#pragma once
 
-#include <ompl/util/Time.h>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
-std::vector<std::vector<double>> parse2DCsvFile(std::string inputFileName);
-
-#endif  // PARSE2DCSVFILE_H
+std::vector<std::vector<double>> parse2DCsvFile(
+    const std::string inputFileName);

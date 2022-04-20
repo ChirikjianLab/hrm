@@ -1,7 +1,6 @@
-#ifndef ELLIPSOIDSQCOLLISIONFCL_H
-#define ELLIPSOIDSQCOLLISIONFCL_H
+#pragma once
 
-#include "MeshGenerator.h"
+#include "geometry/include/MeshGenerator.h"
 #include "geometry/include/SuperEllipse.h"
 
 bool isCollision(const SuperQuadrics& obj1,
@@ -19,5 +18,3 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperEllipse& object);
-
-#endif  // ELLIPSOIDSQCOLLISIONFCL_H

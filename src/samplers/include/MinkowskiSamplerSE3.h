@@ -1,8 +1,7 @@
-#ifndef MINKOWSKISAMPLERSE3_H
-#define MINKOWSKISAMPLERSE3_H
+#pragma once
 
-#include "geometry/include/FreeSpace3D.h"
-#include "util/include/MultiBodyTree3D.h"
+#include "datastructure/include/FreeSpace3D.h"
+#include "datastructure/include/MultiBodyTree3D.h"
 
 #include "ompl/base/StateSampler.h"
 #include "ompl/base/ValidStateSampler.h"
@@ -11,10 +10,8 @@
 
 namespace ob = ompl::base;
 
-/*
- * \brief Minkowski-based sampler, using sweep line to generate samplers on free
- * space
- */
+/** \brief Minkowski-based sampler, using sweep line to generate samplers on
+ * free space */
 class MinkowskiSweepLineSamplerSE3 : public ob::ValidStateSampler {
   public:
     MinkowskiSweepLineSamplerSE3(const ob::SpaceInformation* si);
@@ -68,5 +65,3 @@ class MinkowskiBoundarySamplerSE3 : public ob::ValidStateSampler {
     std::vector<SuperQuadrics>* obstacle_;
     parameters3D* param_;
 };
-
-#endif  // MINKOWSKISAMPLERSE3_H

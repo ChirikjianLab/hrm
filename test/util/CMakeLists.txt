@@ -1,9 +1,6 @@
-add_library(TESTUTIL
+add_library(TEST_UTIL
+            DisplayPlanningData.cpp
             ParsePlanningSettings.cpp)
-target_link_libraries(TESTUTIL
+target_link_libraries(TEST_UTIL
                       GEOM
                       UTIL)
-
-add_library(HIGHWAY_UTIL
-            highway_planner.cpp
-            UtilProbHRM.cpp)

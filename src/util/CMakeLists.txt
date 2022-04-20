@@ -4,14 +4,8 @@ add_library(UTIL
             ExponentialFunction.cpp
             DistanceMetric.cpp
             InterpolateSE3.cpp
-            Interval.cpp
-            LineIntersection.cpp
-            MeshGenerator.cpp
-            MultiBodyTree2D.cpp
-            MultiBodyTree3D.cpp
             Parse2dCsvFile.cpp
-            ParseURDF.cpp
-            PointInPoly.cpp)
+            ParseURDF.cpp)
 if(kdl_parser_FOUND)
     target_link_libraries(UTIL
                           ${kdl_parser_LIBRARIES})

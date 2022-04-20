@@ -1,16 +1,12 @@
 add_executable(BenchOMPL3D BenchOMPL3D.cpp)
 target_link_libraries(BenchOMPL3D
                       OMPL_PLANNER
-                      GEOM
-                      UTIL
-                      TESTUTIL)
+                      TEST_UTIL)
 
 add_executable(BenchOMPL3DArticulated BenchOMPL3DArticulated.cpp)
 target_link_libraries(BenchOMPL3DArticulated
                       OMPL_PLANNER
-                      GEOM
-                      UTIL
-                      TESTUTIL)
+                      TEST_UTIL)
 
 #add_executable(BenchOMPL3DEllipsoid BenchOMPL3DEllipsoid.cpp)
 #target_link_libraries(BenchOMPL3DEllipsoid
@@ -21,20 +17,17 @@ target_link_libraries(BenchOMPL3DArticulated
 #                      TESTUTIL
 #                      ${OMPL})
 
-add_executable(BenchHighway3D BenchHighway3D.cpp)
-target_link_libraries(BenchHighway3D
-                      UTIL
-                      HRM_3D
-                      HIGHWAY_UTIL
-                      GEOM
-                      TESTUTIL
-                      ${OMPL})
+add_executable(BenchHRM2D BenchHRM2D.cpp)
+target_link_libraries(BenchHRM2D
+                      HRM2D
+                      TEST_UTIL)
+
+add_executable(BenchHRM3D BenchHighway3D.cpp)
+target_link_libraries(BenchHRM3D
+                      HRM3D
+                      TEST_UTIL)
 
 add_executable(BenchProbHRM3D BenchProbHRM3D.cpp)
 target_link_libraries(BenchProbHRM3D
-                      UTIL
-                      HRM_3D
-                      HIGHWAY_UTIL
-                      GEOM
-                      TESTUTIL
-                      ${OMPL})
+                      HRM3D
+                      TEST_UTIL)

@@ -1,4 +1,4 @@
-#include "planners/include/ompl/OMPL3D.h"
+#include "planners/include/ompl_interface/OMPL3D.h"
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
@@ -15,8 +15,7 @@ int main(int argc, char** argv) {
     // Record planning time for N trials
     int N = atoi(argv[1]);
 
-    /*
-     * \brief Planner and sampler inputs
+    /** \brief Planner and sampler inputs
      *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
      *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
      */
@@ -44,13 +43,13 @@ int main(int argc, char** argv) {
 
     // Boundary
     double f = 1.5;
-    vector<double> b1 = {-arena.at(0).getSemiAxis().at(0) +
-                             f * robot.getBase().getSemiAxis().at(0),
-                         -arena.at(0).getSemiAxis().at(1) +
-                             f * robot.getBase().getSemiAxis().at(0),
-                         -arena.at(0).getSemiAxis().at(2) +
-                             f * robot.getBase().getSemiAxis().at(0)},
-                   b2 = {-b1[0], -b1[1], -b1[2]};
+    vector<Coordinate> b1 = {-arena.at(0).getSemiAxis().at(0) +
+                                 f * robot.getBase().getSemiAxis().at(0),
+                             -arena.at(0).getSemiAxis().at(1) +
+                                 f * robot.getBase().getSemiAxis().at(0),
+                             -arena.at(0).getSemiAxis().at(2) +
+                                 f * robot.getBase().getSemiAxis().at(0)},
+                       b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Save results
     std::string filename_prefix = "ompl";
