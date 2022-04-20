@@ -142,17 +142,17 @@ Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
 
     // Minkowski boundary points
     std::vector<BoundaryPoints> bdAux;
-    for (Index i = 0; i < N_s; ++i) {
-        bdAux = robot_.minkSum(&arena_.at(i), -1);
-        for (size_t j = 0; j < bdAux.size(); ++j) {
-            bd.arena.push_back(bdAux.at(j));
+    for (auto arena : arena_) {
+        bdAux = robot_.minkSum(&arena, -1);
+        for (auto bdEach : bdAux) {
+            bd.arena.push_back(bdEach);
         }
         bdAux.clear();
     }
-    for (Index i = 0; i < N_o; ++i) {
-        bdAux = robot_.minkSum(&obs_.at(i), 1);
-        for (size_t j = 0; j < bdAux.size(); ++j) {
-            bd.obstacle.push_back(bdAux.at(j));
+    for (auto obs : obs_) {
+        bdAux = robot_.minkSum(&obs, 1);
+        for (auto bdEach : bdAux) {
+            bd.obstacle.push_back(bdEach);
         }
         bdAux.clear();
     }
@@ -167,10 +167,10 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
     Index n1 = 0;
     Index n2 = 0;
 
-    for (Index i = 0; i < freeSeg->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         n1 = N_v.plane.at(i);
 
-        for (Index j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
             // Connect vertex within the same sweep line
             if (j1 != freeSeg->xM[i].size() - 1) {
                 if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <

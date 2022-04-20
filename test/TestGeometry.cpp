@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 
+static const double pi = 3.1415926;
 static const double epsilon = 1e-5;
 
 // Tests for SuperEllipse

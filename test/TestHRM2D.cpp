@@ -49,7 +49,9 @@ algorithm planTest(const robotType& robot,
     cout << "Finished planning!" << endl;
 
     if (isStore) {
-        // calculate original boundary points
+        cout << "Saving results to file..." << endl;
+
+        // TEST: calculate original boundary points
         Boundary bd_ori;
         for (auto arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
@@ -58,12 +60,6 @@ algorithm planTest(const robotType& robot,
             bd_ori.obstacle.push_back(obstacle.getOriginShape());
         }
 
-        // Output boundary and cell info
-        Boundary bd = hrm.boundaryGen();
-        FreeSegment2D cell = hrm.getFreeSegmentOneLayer(&bd);
-        hrm.connectOneLayer2D(&cell);
-
-        // write to .csv file
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
         for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
@@ -73,6 +69,9 @@ algorithm planTest(const robotType& robot,
             file_ori_bd << bd_ori.arena[i] << "\n";
         }
         file_ori_bd.close();
+
+        // TEST: Minkowski sums boundary
+        Boundary bd = hrm.boundaryGen();
 
         ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
@@ -84,12 +83,16 @@ algorithm planTest(const robotType& robot,
         }
         file_bd.close();
 
+        // TEST: Sweep line process
+        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
+
         ofstream file_cell;
-        file_cell.open("cell_2D.csv");
-        for (size_t i = 0; i < cell.ty.size(); i++) {
-            for (size_t j = 0; j < cell.xL[i].size(); j++) {
-                file_cell << cell.ty[i] << ' ' << cell.xL[i][j] << ' '
-                          << cell.xM[i][j] << ' ' << cell.xU[i][j] << "\n";
+        file_cell.open("segment_2D.csv");
+        for (size_t i = 0; i < freeSeg.ty.size(); i++) {
+            for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
+                file_cell << freeSeg.ty[i] << ' ' << freeSeg.xL[i][j] << ' '
+                          << freeSeg.xM[i][j] << ' ' << freeSeg.xU[i][j]
+                          << "\n";
             }
         }
         file_cell.close();

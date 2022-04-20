@@ -29,7 +29,9 @@ PlannerParameter defineParam(const MultiBodyTree3D* robot,
 
 template <class Planner>
 void storeRoutines(Planner* hrm) {
-    // calculate original boundary points
+    cout << "Saving results to file..." << endl;
+
+    // TEST: calculate original boundary points
     Boundary bd_ori;
     for (auto arena : hrm->getArena()) {
         bd_ori.arena.push_back(arena.getOriginShape());
@@ -38,7 +40,6 @@ void storeRoutines(Planner* hrm) {
         bd_ori.obstacle.push_back(obstacle.getOriginShape());
     }
 
-    // write to .csv file
     ofstream file_ori_bd;
     file_ori_bd.open("origin_bound_3D.csv");
     for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
