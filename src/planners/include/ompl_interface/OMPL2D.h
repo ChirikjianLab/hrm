@@ -1,5 +1,6 @@
 #pragma once
 
+#include "datastructure/include/DataType.h"
 #include "samplers/include/MinkowskiLibrarySamplerSE2.h"
 #include "samplers/include/MinkowskiSamplerSE2.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
@@ -32,27 +33,29 @@ class OMPL2D {
 
     ~OMPL2D();
 
-    std::vector<std::vector<double>> getSolutionPath() const { return path_; }
+    std::vector<std::vector<Coordinate>> getSolutionPath() const {
+        return path_;
+    }
     bool isSolved() const { return isSolved_; }
     double getPlanningTime() const { return totalTime_; }
     double getLibraryBuildTime() const { return libraryBuildTime_; }
-    unsigned int getNumCollisionChecks() const { return numCollisionChecks_; }
-    unsigned int getNumValidStates() const { return numValidStates_; }
-    unsigned int getNumEdges() const { return numValidEdges_; }
-    size_t getPathLength() const { return lengthPath_; }
-    std::vector<std::vector<double>> getVertices() const { return vertex_; }
-    std::vector<std::pair<int, int>> getEdges() const { return edge_; }
+    Index getNumCollisionChecks() const { return numCollisionChecks_; }
+    Index getNumValidStates() const { return numValidStates_; }
+    Index getNumEdges() const { return numValidEdges_; }
+    Index getPathLength() const { return lengthPath_; }
+    std::vector<std::vector<Coordinate>> getVertices() const { return vertex_; }
+    std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
 
-    void setup(const int spaceId, const int plannerId, const int stateSamplerId,
-               const int validSamplerId);
-    void plan(const std::vector<std::vector<double>> &endPts);
+    void setup(const Index spaceId, const Index plannerId,
+               const Index stateSamplerId, const Index validSamplerId);
+    void plan(const std::vector<std::vector<Coordinate>> &endPts);
 
   protected:
     void getSolution();
     void setEnvBound();
-    void setPlanner(const int plannerId);
-    void setStateSampler(const int stateSamplerId);
-    void setValidStateSampler(const int validSamplerId);
+    void setPlanner(const Index plannerId);
+    void setStateSampler(const Index stateSamplerId);
+    void setValidStateSampler(const Index validSamplerId);
 
     void setCollisionObject();
     bool isStateValid(const ob::State *state);
@@ -73,14 +76,14 @@ class OMPL2D {
 
     bool isSolved_ = false;
     double totalTime_ = 0.0;
-    unsigned int numCollisionChecks_ = 0;
-    unsigned int numValidStates_ = 0;
-    unsigned int numValidEdges_ = 0;
-    size_t lengthPath_ = 0;
+    Index numCollisionChecks_ = 0;
+    Index numValidStates_ = 0;
+    Index numValidEdges_ = 0;
+    Index lengthPath_ = 0;
 
-    std::vector<std::vector<double>> vertex_;
-    std::vector<std::pair<int, int>> edge_;
-    std::vector<std::vector<double>> path_;
+    std::vector<std::vector<Coordinate>> vertex_;
+    std::vector<std::pair<Index, Index>> edge_;
+    std::vector<std::vector<Coordinate>> path_;
 
     std::vector<const ob::State *> validStateLibrary_;
     double libraryBuildTime_ = 0.0;

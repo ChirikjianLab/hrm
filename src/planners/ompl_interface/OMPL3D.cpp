@@ -1,7 +1,7 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
-OMPL3D::OMPL3D(std::vector<double> lowBound, std::vector<double> highBound,
-               const MultiBodyTree3D &robot,
+OMPL3D::OMPL3D(std::vector<Coordinate> lowBound,
+               std::vector<Coordinate> highBound, const MultiBodyTree3D &robot,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obs,
                const std::vector<Mesh> &obsMesh)
@@ -12,8 +12,8 @@ OMPL3D::OMPL3D(std::vector<double> lowBound, std::vector<double> highBound,
 
 OMPL3D::~OMPL3D() {}
 
-void OMPL3D::setup(const int plannerId, const int stateSamplerId,
-                   const int validStateSamplerId) {
+void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
+                   const Index validStateSamplerId) {
     // Set collision checker
     ss_->setStateValidityChecker(
         [this](const ob::State *state) { return isStateValid(state); });
@@ -26,8 +26,9 @@ void OMPL3D::setup(const int plannerId, const int stateSamplerId,
     ss_->setup();
 }
 
-bool OMPL3D::plan(const std::vector<double> &start,
-                  const std::vector<double> &goal, const double maxTimeInSec) {
+bool OMPL3D::plan(const std::vector<Coordinate> &start,
+                  const std::vector<Coordinate> &goal,
+                  const double maxTimeInSec) {
     if (!ss_) {
         return false;
     }
@@ -113,8 +114,8 @@ void OMPL3D::getSolution() {
     validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-void OMPL3D::setStateSpace(const std::vector<double> &lowBound,
-                           const std::vector<double> &highBound) {
+void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
+                           const std::vector<Coordinate> &highBound) {
     auto space(std::make_shared<ob::SE3StateSpace>());
 
     ob::RealVectorBounds bounds(3);
@@ -129,7 +130,7 @@ void OMPL3D::setStateSpace(const std::vector<double> &lowBound,
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL3D::setPlanner(const int plannerId) {
+void OMPL3D::setPlanner(const Index plannerId) {
     // Set planner
     if (plannerId == 0) {
         ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
@@ -151,10 +152,10 @@ void OMPL3D::setPlanner(const int plannerId) {
     }
 }
 
-void OMPL3D::setStateSampler(const int stateSamplerId) {}
+void OMPL3D::setStateSampler(const Index stateSamplerId) {}
 
 // Set the valid state sampler
-void OMPL3D::setValidStateSampler(const int validSamplerId) {
+void OMPL3D::setValidStateSampler(const Index validSamplerId) {
     if (validSamplerId == 0) {
         // Uniform sampler
         OMPL_INFORM("Using Uniform valid state sampler");
@@ -202,8 +203,8 @@ void OMPL3D::setValidStateSampler(const int validSamplerId) {
     }
 }
 
-void OMPL3D::setStartAndGoalState(const std::vector<double> &start,
-                                  const std::vector<double> &goal) {
+void OMPL3D::setStartAndGoalState(const std::vector<Coordinate> &start,
+                                  const std::vector<Coordinate> &goal) {
     ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
     setStateFromVector(&start, &startState);
     startState.enforceBounds();
@@ -251,9 +252,9 @@ bool OMPL3D::isStateValid(const ob::State *state) const {
 
 // Get pose info and transform the robot
 MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
-    std::vector<double> stateVar = setVectorFromState(state);
+    std::vector<Coordinate> stateVar = setVectorFromState(state);
 
-    Eigen::Matrix4d tf;
+    SE3Transform tf;
     tf.topRightCorner(3, 1) =
         Eigen::Array3d({stateVar.at(0), stateVar.at(1), stateVar.at(2)});
     tf.topLeftCorner(3, 3) = Eigen::Quaterniond(stateVar.at(3), stateVar.at(4),
@@ -315,8 +316,8 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     return true;
 }
 
-bool OMPL3D::compareStates(std::vector<double> goal_config,
-                           std::vector<double> last_config) {
+bool OMPL3D::compareStates(std::vector<Coordinate> goal_config,
+                           std::vector<Coordinate> last_config) {
     bool res = true;
     for (size_t i = 0; i < 7; i++) {
         if (std::fabs(last_config[i] - goal_config[i]) > 0.1) {
@@ -331,7 +332,7 @@ void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
 
     // Write the output to .csv files
     std::ofstream file_state;
-    std::vector<double> state;
+    std::vector<Coordinate> state;
 
     file_state.open(filename_prefix + "_state_3D.csv");
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
@@ -361,7 +362,7 @@ void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
 
 void OMPL3D::savePathInfo(const std::string filename_prefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
-    std::vector<double> state;
+    std::vector<Coordinate> state;
 
     std::ofstream file_traj;
     file_traj.open(filename_prefix + "_path_3D.csv");
@@ -402,7 +403,7 @@ void OMPL3D::savePathInfo(const std::string filename_prefix) {
 }
 
 void OMPL3D::setStateFromVector(
-    const std::vector<double> *stateVariables,
+    const std::vector<Coordinate> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) const {
     ob::ScopedState<ob::SE3StateSpace> stateTemp(ss_->getStateSpace());
 
@@ -417,8 +418,9 @@ void OMPL3D::setStateFromVector(
     stateTemp >> *state;
 }
 
-std::vector<double> OMPL3D::setVectorFromState(const ob::State *state) const {
-    std::vector<double> stateVariables(7, 0.0);
+std::vector<Coordinate> OMPL3D::setVectorFromState(
+    const ob::State *state) const {
+    std::vector<Coordinate> stateVariables(7, 0.0);
 
     // Store state in a vector
     stateVariables[0] = state->as<ob::SE3StateSpace::StateType>()->getX();

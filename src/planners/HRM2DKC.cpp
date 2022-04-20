@@ -17,10 +17,10 @@ Boundary HRM2DKC::boundaryGen() {
                              robot_infla.getSemiAxis().at(1) * (1 + infla)});
 
     // calculate Minkowski boundary points
-    for (size_t i = 0; i < size_t(N_s); ++i) {
+    for (Index i = 0; i < N_s; ++i) {
         bd.arena.emplace_back(arena_[i].getMinkSum2D(robot_infla, -1));
     }
-    for (size_t i = 0; i < size_t(N_o); ++i) {
+    for (Index i = 0; i < N_o; ++i) {
         bd.obstacle.emplace_back(obs_[i].getMinkSum2D(robot_infla, +1));
     }
 
@@ -28,15 +28,15 @@ Boundary HRM2DKC::boundaryGen() {
 }
 
 void HRM2DKC::connectMultiLayer() {
-    size_t n = res_.graph_structure.vertex.size();
-    size_t n_11;
-    size_t n_12;
-    size_t n_2;
-    size_t start = 0;
+    Index n = res_.graph_structure.vertex.size();
+    Index n_11;
+    Index n_12;
+    Index n_2;
+    Index start = 0;
 
-    std::vector<double> v1;
-    std::vector<double> v2;
-    std::vector<double> midVtx;
+    std::vector<Coordinate> v1;
+    std::vector<Coordinate> v2;
+    std::vector<Coordinate> midVtx;
 
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         // Find vertex only in adjecent layers
@@ -80,11 +80,11 @@ void HRM2DKC::connectMultiLayer() {
 /*************************************************/
 /**************** Private Functions **************/
 /*************************************************/
-std::vector<double> HRM2DKC::addMiddleVertex(std::vector<double> vtx1,
-                                             std::vector<double> vtx2) {
+std::vector<Coordinate> HRM2DKC::addMiddleVertex(std::vector<Coordinate> vtx1,
+                                                 std::vector<Coordinate> vtx2) {
     // Connect vertexes among different layers, and add a bridge vertex to the
     // roadmap
-    std::vector<double> midVtx, pt, pt1, pt2;
+    std::vector<Coordinate> midVtx, pt, pt1, pt2;
     bool flag;
 
     for (size_t iter = 0; iter < param_.NUM_POINT; iter++) {

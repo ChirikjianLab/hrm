@@ -92,7 +92,7 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find the nearest C-layers
     double minDist = 100;
-    int minIdx = 0;
+    Index minIdx = 0;
     for (size_t i = 0; i < param_.NUM_LAYER - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
         if (dist < minDist) {
@@ -103,23 +103,23 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    size_t n_12 = vtxId_.at(param_.NUM_LAYER - 2).layer;
-    size_t n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
+    Index n_12 = vtxId_.at(param_.NUM_LAYER - 2).layer;
+    Index n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
 
     // Start and end vertics in the nearest layer
-    size_t start = 0;
+    Index start = 0;
     if (minIdx != 0) {
         start = vtxId_.at(minIdx - 1).layer;
     }
-    size_t n_1 = vtxId_.at(minIdx).layer;
+    Index n_1 = vtxId_.at(minIdx).layer;
 
     // Construct bridge C-layer
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);
     bridgeLayer();
 
     // Nearest vertex btw layers
-    std::vector<double> V1;
-    std::vector<double> V2;
+    std::vector<Coordinate> V1;
+    std::vector<Coordinate> V2;
     for (size_t m0 = start; m0 < n_1; ++m0) {
         V1 = res_.graph_structure.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
@@ -146,10 +146,10 @@ void ProbHRM3D::connectMultiLayer() {
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const double tx,
+void ProbHRM3D::generateVertices(const Coordinate tx,
                                  const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
-    std::vector<double> vertex(v_.back().size());
+    std::vector<Coordinate> vertex(v_.back().size());
 
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
@@ -180,12 +180,12 @@ void ProbHRM3D::generateVertices(const double tx,
 }
 
 // Transform the robot
-void ProbHRM3D::setTransform(const std::vector<double>& V) {
+void ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
     // Transformation of base
-    Eigen::Matrix4d g;
+    SE3Transform g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(V[3], V[4], V[5], V[6]).toRotationMatrix();
-    g.topRightCorner(3, 1) = Eigen::Vector3d(V[0], V[1], V[2]);
+    g.topRightCorner(3, 1) = Point3D(V[0], V[1], V[2]);
     g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
     // Transformation of links
@@ -198,13 +198,13 @@ void ProbHRM3D::setTransform(const std::vector<double>& V) {
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
-void ProbHRM3D::computeTFE(const std::vector<double>& v1,
-                           const std::vector<double>& v2,
+void ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
+                           const std::vector<Coordinate>& v2,
                            std::vector<SuperQuadrics>* tfe) {
     tfe->clear();
 
     // Interpolated robot motion from V1 to V2
-    std::vector<std::vector<double>> vInterp =
+    std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     setTransform(v1);

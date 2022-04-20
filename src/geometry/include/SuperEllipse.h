@@ -1,5 +1,7 @@
 #pragma once
 
+#include "datastructure/include/DataType.h"
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <vector>
@@ -14,7 +16,7 @@ class SuperEllipse {
   public:
     SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
                  const std::vector<double> &position, const double angle,
-                 const unsigned int num);
+                 const Index num);
 
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     double getEpsilon() const { return epsilon_; }
@@ -29,7 +31,7 @@ class SuperEllipse {
 
     /** \brief Compute and return the boundary points of the origianl
      * SuperEllipse */
-    Eigen::MatrixXd getOriginShape() const;
+    BoundaryPoints getOriginShape() const;
 
     /**
      * \brief Compute and return the boundary points of the Minkowski sum with
@@ -37,7 +39,8 @@ class SuperEllipse {
      * \param shapeB SuperEllipse class of another shape
      * \param K indicator for sum (+1)/diff (-1)
      */
-    Eigen::MatrixXd getMinkSum2D(const SuperEllipse &shapeB, const int K) const;
+    BoundaryPoints getMinkSum2D(const SuperEllipse &shapeB,
+                                const Indicator K) const;
 
   private:
     std::vector<double> semiAxis_;
@@ -46,5 +49,5 @@ class SuperEllipse {
     double angle_;
 
     // Number of points on boundary
-    unsigned int num_;
+    Index num_;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SuperQuadrics.h"
+#include "datastructure/include/DataType.h"
 #include "util/include/Parse2dCsvFile.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -34,15 +35,15 @@ struct Mesh {
 
 /** \brief Mesh with vertices and faces stored in MatrixXd format */
 struct MeshMatrix {
-    Eigen::MatrixXd vertices;
+    BoundaryPoints vertices;
     Eigen::MatrixXd faces;
 };
 
 /** \brief ParametricPoints vectors of point coordinates */
 struct ParametricPoints {
-    std::vector<double> x;
-    std::vector<double> y;
-    std::vector<double> z;
+    std::vector<Coordinate> x;
+    std::vector<Coordinate> y;
+    std::vector<Coordinate> z;
 };
 
 /** \brief get mesh info from SuperQuadrics class */
@@ -56,9 +57,9 @@ ParametricPoints getBoundary3D(const SuperQuadrics& obj);
 
 /** \brief Generate SuperQuadrics class from configuration .csv file */
 std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
-                                        const int num);
+                                        const Index num);
 
-ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat);
+ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat);
 
-MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
-                                   const int n);
+MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,
+                                   const Index n);

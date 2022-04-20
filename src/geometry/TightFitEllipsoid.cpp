@@ -3,7 +3,7 @@
 
 SuperEllipse getMVCE2D(const std::vector<double>& a,
                        const std::vector<double>& b, const double thetaA,
-                       const double thetaB, const unsigned int num) {
+                       const double thetaB, const Index num) {
     Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
                     Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
@@ -37,8 +37,7 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
 SuperQuadrics getMVCE3D(const std::vector<double>& a,
                         const std::vector<double>& b,
                         const Eigen::Quaterniond& quatA,
-                        const Eigen::Quaterniond& quatB,
-                        const unsigned int num) {
+                        const Eigen::Quaterniond& quatB, const Index num) {
     Eigen::Matrix3d Ra = quatA.toRotationMatrix();
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
@@ -72,8 +71,8 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
 }
 
 SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
-                      const double thetaB, const unsigned int numStep,
-                      const unsigned int num) {
+                      const double thetaB, const Index numStep,
+                      const Index num) {
     SuperEllipse enclosedEllipse = getMVCE2D(a, a, thetaA, thetaB, num);
     double dt = 1.0 / (numStep - 1);
     for (size_t i = 0; i < size_t(numStep); ++i) {
@@ -87,8 +86,8 @@ SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
 
 SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
-                       const Eigen::Quaterniond& quatB,
-                       const unsigned int numStep, const unsigned int num) {
+                       const Eigen::Quaterniond& quatB, const Index numStep,
+                       const Index num) {
     std::vector<Eigen::Quaterniond> interpolatedQuat =
         interpolateSlerp(quatA, quatB, numStep);
 

@@ -1,9 +1,15 @@
 #pragma once
 
+#include "DataType.h"
 #include "geometry/include/SuperQuadrics.h"
 #include "util/include/ParseURDF.h"
 
 #include <eigen3/Eigen/Geometry>
+
+using SE3Transform = Eigen::Matrix4d;
+using BoundaryPoints = Eigen::MatrixXd;
+using Indicator = int;
+using Index = size_t;
 
 class MultiBodyTree3D {
   public:
@@ -14,17 +20,17 @@ class MultiBodyTree3D {
     std::vector<SuperQuadrics> getLinks() const { return link_; }
     std::vector<SuperQuadrics> getBodyShapes();
 
-    double getNumLinks() const { return numLinks_; }
-    std::vector<Eigen::Matrix4d> getTF() const { return tf_; }
+    Index getNumLinks() const { return numLinks_; }
+    std::vector<SE3Transform> getTF() const { return tf_; }
 
     /** \brief Add a new body to the tree */
     void addBody(SuperQuadrics link);
 
     /** \brief Tranform robot */
     void robotTF(Eigen::Matrix4d tf);
-    void robotTF(const std::string urdfFile, const Eigen::Matrix4d* gBase,
+    void robotTF(const std::string urdfFile, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
-    void robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
+    void robotTF(ParseURDF kdl, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
 
     /**
@@ -33,11 +39,12 @@ class MultiBodyTree3D {
      * \param k +1/-1 indicating sum/difference
      * \return A union of sampled points on the Minkowski sums boundary
      */
-    std::vector<Eigen::MatrixXd> minkSum(const SuperQuadrics* s1, const int k);
+    std::vector<BoundaryPoints> minkSum(const SuperQuadrics* s1,
+                                        const Indicator k);
 
   private:
     SuperQuadrics base_;
-    double numLinks_ = 0;
+    Index numLinks_ = 0;
     std::vector<SuperQuadrics> link_;
     std::vector<Eigen::Matrix4d> tf_;
 };

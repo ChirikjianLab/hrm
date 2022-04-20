@@ -9,7 +9,7 @@ FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
 
 void FreeSpace3D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
-    std::vector<Eigen::MatrixXd> auxBoundary;
+    std::vector<BoundaryPoints> auxBoundary;
     for (size_t i = 0; i < arena_->size(); ++i) {
         auxBoundary = robot_->minkSum(&arena_->at(i), -1);
         for (size_t j = 0; j < auxBoundary.size(); ++j) {
@@ -24,8 +24,8 @@ void FreeSpace3D::generateCSpaceBoundary() {
     }
 }
 
-freeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(const double xCoord,
-                                                      const double yCoord) {
+freeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(
+    const Coordinate& xCoord, const Coordinate& yCoord) {
     // Compute intersections between each sweep line and C-obstacles
     intersectSweepLine3D intersects = computeIntersectSweepLine(xCoord, yCoord);
 
@@ -47,10 +47,10 @@ std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
 
     for (size_t i = 0; i < param_->numX; ++i) {
         // x-coordinate
-        double xCoord = param_->xLim.first + i * dx;
+        Coordinate xCoord = param_->xLim.first + i * dx;
         for (size_t j = 0; j < param_->numY; ++j) {
             // y-coordinate
-            double yCoord = param_->yLim.first + j * dy;
+            Coordinate yCoord = param_->yLim.first + j * dy;
 
             // Compute intersections between each sweep line and C-obstacles
             intersectSweepLine3D intersects =
@@ -69,7 +69,7 @@ std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
 }
 
 intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
-    const double xCoord, const double yCoord) const {
+    const Coordinate& xCoord, const Coordinate& yCoord) const {
     Eigen::ArrayXd sweepLine(6);
     sweepLine << xCoord, yCoord, 0.0, 0.0, 0.0, 1.0;
 

@@ -10,7 +10,7 @@
 SuperEllipse::SuperEllipse(const std::vector<double> &semiAxis,
                            const double epsilon,
                            const std::vector<double> &position,
-                           const double angle, const unsigned int num)
+                           const double angle, const Index num)
     : semiAxis_(semiAxis),
       epsilon_(epsilon),
       position_(position),
@@ -29,11 +29,11 @@ void SuperEllipse::setPosition(const std::vector<double> &newPosition) {
 void SuperEllipse::setAngle(const double newAngle) { angle_ = newAngle; }
 
 // Get the points on the boundary of original shape
-Eigen::MatrixXd SuperEllipse::getOriginShape() const {
+BoundaryPoints SuperEllipse::getOriginShape() const {
     double th;
     Eigen::Vector2d x;
     Eigen::MatrixXd C(2, num_);
-    Eigen::MatrixXd X(2, num_);
+    BoundaryPoints X(2, num_);
 
     for (int i = 0; i < int(num_); i++) {
         th = 2.0 * i * pi / (num_ - 1);
@@ -52,9 +52,9 @@ Eigen::MatrixXd SuperEllipse::getOriginShape() const {
 }
 
 // Get the points on Minkowski boundary
-Eigen::MatrixXd SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
-                                           const int K) const {
-    Eigen::MatrixXd X_eb(2, num_);
+BoundaryPoints SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
+                                          const int K) const {
+    BoundaryPoints X_eb(2, num_);
     Eigen::MatrixXd gradPhi(2, num_);
     Eigen::MatrixXd normal(2, num_);
     Eigen::MatrixXd C(2, num_);

@@ -9,7 +9,7 @@ FreeSpace2D::FreeSpace2D(MultiBodyTree2D* robot,
 
 void FreeSpace2D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
-    std::vector<Eigen::MatrixXd> auxBoundary;
+    std::vector<BoundaryPoints> auxBoundary;
     for (size_t i = 0; i < arena_->size(); ++i) {
         auxBoundary = robot_->minkSum(&arena_->at(i), -1);
         for (size_t j = 0; j < auxBoundary.size(); ++j) {
@@ -24,7 +24,7 @@ void FreeSpace2D::generateCSpaceBoundary() {
     }
 }
 
-freeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const double yCoord) {
+freeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const Coordinate& yCoord) {
     // Compute intersections between each sweep line and C-obstacles
     intersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
 
@@ -54,7 +54,7 @@ std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
 }
 
 intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
-    const double yCoord) const {
+    const Coordinate& yCoord) const {
     size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
     size_t numObsMink = configSpaceBoundary_.obsBd.size();
 

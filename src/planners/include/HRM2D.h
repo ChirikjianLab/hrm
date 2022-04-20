@@ -26,7 +26,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual void connectMultiLayer() override;
 
-    virtual void generateVertices(const double tx,
+    virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D* freeSeg) override;
 
     void sweepLineProcess() override;
@@ -34,25 +34,26 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   protected:
     void bridgeLayer() override;
 
-    std::vector<double> bridgeVertex(std::vector<double> v1,
-                                     std::vector<double> v2) override;
+    std::vector<double> bridgeVertex(std::vector<Coordinate> v1,
+                                     std::vector<Coordinate> v2) override;
 
     IntersectionInterval computeIntersections(
         const std::vector<double>& ty) override;
 
-    bool isSameLayerTransitionFree(const std::vector<double>& v1,
-                                   const std::vector<double>& v2) override;
+    bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                   const std::vector<Coordinate>& v2) override;
 
-    bool isMultiLayerTransitionFree(const std::vector<double>& v1,
-                                    const std::vector<double>& v2) override;
+    bool isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                    const std::vector<Coordinate>& v2) override;
 
-    bool isPtInCFree(const int bdIdx, const std::vector<double>& v) override;
+    bool isPtInCFree(const Index bdIdx,
+                     const std::vector<Coordinate>& v) override;
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
-        const std::vector<double>& vertex, const size_t k,
+        const std::vector<Coordinate>& vertex, const Index k,
         const double radius) override;
 
-    virtual void setTransform(const std::vector<double>& v) override;
+    virtual void setTransform(const std::vector<Coordinate>& v) override;
 
     void computeTFE(const double thetaA, const double thetaB,
                     std::vector<SuperEllipse>* tfe);

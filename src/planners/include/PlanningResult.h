@@ -1,22 +1,24 @@
 #pragma once
 
+#include "datastructure/include/DataType.h"
+
 #include <limits>
 #include <vector>
 
-using Edge = std::vector<std::pair<int, int>>;
+using Edge = std::vector<std::pair<Index, Index>>;
 
 /** \param graph vector of vertices, vector of connectable edges */
 struct Graph {
-    std::vector<std::vector<double>> vertex;
+    std::vector<std::vector<Coordinate>> vertex;
     Edge edge;
     std::vector<double> weight;
 };
 
 /** \brief SolutionPathInfo info for solved path */
 struct SolutionPathInfo {
-    std::vector<int> PathId;
-    std::vector<std::vector<double>> solvedPath;
-    std::vector<std::vector<double>> interpolatedPath;
+    std::vector<Index> PathId;
+    std::vector<std::vector<Coordinate>> solvedPath;
+    std::vector<std::vector<Coordinate>> interpolatedPath;
     double cost = 0.0;
 };
 

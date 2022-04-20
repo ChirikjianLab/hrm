@@ -17,14 +17,14 @@ class ProbHRM3D : public HRM3D {
 
     void connectMultiLayer() override;
 
-    void generateVertices(const double tx,
+    void generateVertices(const Coordinate tx,
                           const FreeSegment2D* freeSeg) override;
 
   protected:
-    void setTransform(const std::vector<double>& v) override;
+    void setTransform(const std::vector<Coordinate>& v) override;
 
-    void computeTFE(const std::vector<double>& v1,
-                    const std::vector<double>& v2,
+    void computeTFE(const std::vector<Coordinate>& v1,
+                    const std::vector<Coordinate>& v2,
                     std::vector<SuperQuadrics>* tfe);
 
   private:
@@ -33,5 +33,5 @@ class ProbHRM3D : public HRM3D {
     const double maxJointAngle_ = pi / 2;
 
     // store configuration for each robot shape (at each C-layer)
-    std::vector<std::vector<double>> v_;
+    std::vector<std::vector<Coordinate>> v_;
 };

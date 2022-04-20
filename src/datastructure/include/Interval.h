@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DataType.h"
+
 #include <bits/stdc++.h>
 #include <limits>
 #include <vector>
@@ -7,13 +9,13 @@
 class Interval {
   public:
     Interval();
-    Interval(const double start, const double end);
+    Interval(const Coordinate start, const Coordinate end);
 
-    double s() const { return start_; }
-    double e() const { return end_; }
+    Coordinate s() const { return start_; }
+    Coordinate e() const { return end_; }
 
-    void setStart(const double start) { start_ = start; }
-    void setEnd(const double end) { end_ = end; }
+    void setStart(const Coordinate start) { start_ = start; }
+    void setEnd(const Coordinate end) { end_ = end; }
 
     std::vector<Interval> unions(std::vector<Interval> &ins);
     std::vector<Interval> intersects(std::vector<Interval> &ins);
@@ -21,6 +23,6 @@ class Interval {
                                       std::vector<Interval> &inner);
 
   private:
-    double start_ = std::numeric_limits<double>::quiet_NaN();
-    double end_ = std::numeric_limits<double>::quiet_NaN();
+    Coordinate start_ = std::numeric_limits<double>::quiet_NaN();
+    Coordinate end_ = std::numeric_limits<double>::quiet_NaN();
 };

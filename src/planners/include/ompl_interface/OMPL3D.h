@@ -49,7 +49,9 @@ class OMPL3D {
     virtual ~OMPL3D();
 
     /** \brief Getter function for solved and interpolated path */
-    std::vector<std::vector<double>> getSolutionPath() const { return path_; }
+    std::vector<std::vector<Coordinate>> getSolutionPath() const {
+        return path_;
+    }
 
     /** \brief Indicator of solution */
     bool isSolved() const { return isSolved_; }
@@ -62,28 +64,28 @@ class OMPL3D {
 
     /** \brief Get the number of total collision checks, including both
      * sampling and connecting processes */
-    unsigned int getNumCollisionChecks() const { return numCollisionChecks_; }
+    Index getNumCollisionChecks() const { return numCollisionChecks_; }
 
     /** \brief Get the number of valid states */
-    unsigned int getNumValidStates() const { return numValidStates_; }
+    Index getNumValidStates() const { return numValidStates_; }
 
     /** \brief Get the percentage of valid states */
     double getValidStatePercent() const { return validSpace_; }
 
     /** \brief Get the number of valid vertices in graph */
-    unsigned int getNumVertex() const { return numGraphVertex_; }
+    Index getNumVertex() const { return numGraphVertex_; }
 
     /** \brief Get the number of valid edges connecting two milestones */
-    unsigned int getNumEdges() const { return numGraphEdges_; }
+    Index getNumEdges() const { return numGraphEdges_; }
 
     /** \brief Get the length of the solved path */
-    size_t getPathLength() const { return lengthPath_; }
+    Index getPathLength() const { return lengthPath_; }
 
     /** \brief Get all the milestones */
-    std::vector<std::vector<double>> getVertices() const { return vertex_; }
+    std::vector<std::vector<Coordinate>> getVertices() const { return vertex_; }
 
     /** \brief Get all the valid connection pairs */
-    std::vector<std::pair<int, int>> getEdges() const { return edge_; }
+    std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
 
     /** \brief Set up the planning problem
      *
@@ -103,15 +105,15 @@ class OMPL3D {
      *  5: valid state sampler from Minkowski sum and sweep-line process
      *  6: valid state sampler from Minkowski sum and C-obstacle boundaries
      */
-    void setup(const int plannerId, const int stateSamplerId,
-               const int validSamplerId);
+    void setup(const Index plannerId, const Index stateSamplerId,
+               const Index validSamplerId);
 
     /** \brief Start to plan
      * \param endPts start and goal poses
      * \param maxTimeInSec maximum planning time in seconds
      */
-    bool plan(const std::vector<double>& start, const std::vector<double>& goal,
-              const double maxTimeInSec);
+    bool plan(const std::vector<Coordinate>& start,
+              const std::vector<Coordinate>& goal, const double maxTimeInSec);
 
     void saveVertexEdgeInfo(const std::string filename_prefix);
     void savePathInfo(const std::string filename_prefix);
@@ -119,17 +121,17 @@ class OMPL3D {
   protected:
     void getSolution();
 
-    virtual void setStateSpace(const std::vector<double>& lowBound,
-                               const std::vector<double>& highBound);
+    virtual void setStateSpace(const std::vector<Coordinate>& lowBound,
+                               const std::vector<Coordinate>& highBound);
 
-    void setPlanner(const int plannerId);
-    virtual void setStateSampler(const int stateSamplerId);
-    void setValidStateSampler(const int validSamplerId);
+    void setPlanner(const Index plannerId);
+    virtual void setStateSampler(const Index stateSamplerId);
+    void setValidStateSampler(const Index validSamplerId);
 
-    void setStartAndGoalState(const std::vector<double>& start,
-                              const std::vector<double>& goal);
-    bool compareStates(std::vector<double> goalConfig,
-                       std::vector<double> lastConfig);
+    void setStartAndGoalState(const std::vector<Coordinate>& start,
+                              const std::vector<Coordinate>& goal);
+    bool compareStates(std::vector<Coordinate> goalConfig,
+                       std::vector<Coordinate> lastConfig);
 
     // Collision detection module
     void setCollisionObject();
@@ -138,9 +140,9 @@ class OMPL3D {
     bool isSeparated(const MultiBodyTree3D& robotAux) const;
 
     virtual void setStateFromVector(
-        const std::vector<double>* stateVariables,
+        const std::vector<Coordinate>* stateVariables,
         ob::ScopedState<ob::CompoundStateSpace>* state) const;
-    virtual std::vector<double> setVectorFromState(
+    virtual std::vector<Coordinate> setVectorFromState(
         const ob::State* state) const;
 
     // Variables
@@ -159,16 +161,16 @@ class OMPL3D {
     bool isSolved_ = false;
     double totalTime_ = 0.0;
 
-    unsigned int numCollisionChecks_ = 0;
-    unsigned int numValidStates_ = 0;
+    Index numCollisionChecks_ = 0;
+    Index numValidStates_ = 0;
     double validSpace_ = 0.0;
-    unsigned int numGraphVertex_ = 0;
-    unsigned int numGraphEdges_ = 0;
-    size_t lengthPath_ = 0;
+    Index numGraphVertex_ = 0;
+    Index numGraphEdges_ = 0;
+    Index lengthPath_ = 0;
 
-    std::vector<std::vector<double>> vertex_;
-    std::vector<std::pair<int, int>> edge_;
-    std::vector<std::vector<double>> path_;
+    std::vector<std::vector<Coordinate>> vertex_;
+    std::vector<std::pair<Index, Index>> edge_;
+    std::vector<std::vector<Coordinate>> path_;
 
     // Pre-computed C3F seeds set
     double preComputeTime_ = 0.0;

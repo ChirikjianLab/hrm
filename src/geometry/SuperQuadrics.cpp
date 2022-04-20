@@ -8,7 +8,7 @@
 SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
                              std::vector<double> epsilon,
                              std::vector<double> position,
-                             Eigen::Quaterniond quat, const unsigned int num)
+                             Eigen::Quaterniond quat, const Index num)
     : semiAxis_(semiAxis),
       epsilon_(epsilon),
       position_(position),
@@ -40,9 +40,9 @@ void SuperQuadrics::setQuatSamples(
 }
 
 // Get the points on the boundary of original shape
-Eigen::MatrixXd SuperQuadrics::getOriginShape() const {
-    Eigen::MatrixXd X(3, Num_);
-    Eigen::MatrixXd X_origin(3, Num_);
+BoundaryPoints SuperQuadrics::getOriginShape() const {
+    BoundaryPoints X(3, Num_);
+    BoundaryPoints X_origin(3, Num_);
     Eigen::MatrixXd x;
     Eigen::MatrixXd y;
     Eigen::MatrixXd z;
@@ -73,14 +73,14 @@ Eigen::MatrixXd SuperQuadrics::getOriginShape() const {
 }
 
 // Get the points on Minkowski boundary
-Eigen::MatrixXd SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
-                                            const int K) const {
+BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
+                                           const Indicator K) const {
     if ((shapeB.getEpsilon().at(0) != 1.0) ||
         (shapeB.getEpsilon().at(1) != 1.0)) {
         std::cerr << "Second object is not an ellipsoid" << std::endl;
     }
 
-    Eigen::MatrixXd X_eb(3, Num_);
+    BoundaryPoints X_eb(3, Num_);
     Eigen::MatrixXd gradPhi(3, Num_);
     Eigen::MatrixXd gradPhix(num_, num_);
     Eigen::MatrixXd gradPhiy(num_, num_);

@@ -69,15 +69,15 @@ template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::search() {
     std::vector<Vertex> idx_s;
     std::vector<Vertex> idx_g;
-    size_t num;
+    Index num;
 
     // Construct the roadmap
-    size_t num_vtx = res_.graph_structure.vertex.size();
+    Index num_vtx = res_.graph_structure.vertex.size();
     AdjGraph g(num_vtx);
 
-    for (size_t i = 0; i < res_.graph_structure.edge.size(); ++i) {
-        boost::add_edge(size_t(res_.graph_structure.edge[i].first),
-                        size_t(res_.graph_structure.edge[i].second),
+    for (Index i = 0; i < res_.graph_structure.edge.size(); ++i) {
+        boost::add_edge(Index(res_.graph_structure.edge[i].first),
+                        Index(res_.graph_structure.edge[i].second),
                         Weight(res_.graph_structure.weight[i]), g);
     }
 
@@ -141,15 +141,15 @@ Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
     Boundary bd;
 
     // Minkowski boundary points
-    std::vector<Eigen::MatrixXd> bdAux;
-    for (size_t i = 0; i < size_t(N_s); ++i) {
+    std::vector<BoundaryPoints> bdAux;
+    for (Index i = 0; i < N_s; ++i) {
         bdAux = robot_.minkSum(&arena_.at(i), -1);
         for (size_t j = 0; j < bdAux.size(); ++j) {
             bd.arena.push_back(bdAux.at(j));
         }
         bdAux.clear();
     }
-    for (size_t i = 0; i < size_t(N_o); ++i) {
+    for (Index i = 0; i < N_o; ++i) {
         bdAux = robot_.minkSum(&obs_.at(i), 1);
         for (size_t j = 0; j < bdAux.size(); ++j) {
             bd.obstacle.push_back(bdAux.at(j));
@@ -164,13 +164,13 @@ template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
     const FreeSegment2D* freeSeg) {
     // Add connections to edge list
-    size_t n1 = 0;
-    size_t n2 = 0;
+    Index n1 = 0;
+    Index n2 = 0;
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+    for (Index i = 0; i < freeSeg->ty.size(); ++i) {
         n1 = N_v.plane.at(i);
 
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+        for (Index j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
             // Connect vertex within the same sweep line
             if (j1 != freeSeg->xM[i].size() - 1) {
                 if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
@@ -187,7 +187,7 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
             if (i != freeSeg->ty.size() - 1) {
                 n2 = N_v.plane.at(i + 1);
 
-                for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                for (Index j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2])) {
@@ -204,9 +204,9 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
 }
 
 template <class RobotType, class ObjectType>
-std::vector<std::vector<double>>
+std::vector<std::vector<Coordinate>>
 HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
-    std::vector<std::vector<double>> path;
+    std::vector<std::vector<Coordinate>> path;
     auto poseSize = res_.graph_structure.vertex.at(0).size();
 
     // Start pose
@@ -227,7 +227,7 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
 
 template <class RobotType, class ObjectType>
 FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
-    const std::vector<double>& ty, const IntersectionInterval* intersect) {
+    const std::vector<Coordinate>& ty, const IntersectionInterval* intersect) {
     FreeSegment2D freeLineSegment;
     Interval op;
     std::vector<Interval> interval[ty.size()];
@@ -236,7 +236,7 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
     freeLineSegment.ty = ty;
 
     // CF line segment for each ty
-    for (size_t i = 0; i < ty.size(); ++i) {
+    for (Index i = 0; i < ty.size(); ++i) {
         // Construct intervals at each sweep line
         std::vector<Interval> obsSeg;
         std::vector<Interval> arenaSeg;
@@ -260,11 +260,11 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
         interval[i] = op.complements(arenaIntersect, obsMerge);
 
         // x-(z-)coords
-        std::vector<double> xL;
-        std::vector<double> xU;
-        std::vector<double> xM;
+        std::vector<Coordinate> xL;
+        std::vector<Coordinate> xU;
+        std::vector<Coordinate> xM;
 
-        for (size_t j = 0; j < interval[i].size(); ++j) {
+        for (Index j = 0; j < interval[i].size(); ++j) {
             xL.push_back(interval[i][j].s());
             xU.push_back(interval[i][j].e());
             xM.push_back((interval[i][j].s() + interval[i][j].e()) / 2.0);
@@ -285,9 +285,9 @@ template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
     FreeSegment2D* freeSeg) {
     // Add new vertices within on sweep line
-    for (size_t i = 0; i < freeSeg->ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+    for (Index i = 0; i < freeSeg->ty.size() - 1; ++i) {
+        for (Index j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+            for (Index j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
                 if (freeSeg->xM[i][j1] < freeSeg->xL[i + 1][j2] &&
                     freeSeg->xU[i][j1] >= freeSeg->xL[i + 1][j2]) {
                     freeSeg->xU[i].push_back(freeSeg->xL[i + 1][j2]);
@@ -325,8 +325,8 @@ void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
 
 template <class RobotType, class ObjectType>
 std::vector<double> HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(
-    std::vector<double> v1, std::vector<double> v2) {
-    std::vector<double> newVtx;
+    std::vector<Coordinate> v1, std::vector<Coordinate> v2) {
+    std::vector<Coordinate> newVtx;
 
     return newVtx;
 }

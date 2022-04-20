@@ -1,7 +1,7 @@
 #include "planners/include/ompl_interface/OMPL3DArticulated.h"
 
-OMPL3DArticulated::OMPL3DArticulated(std::vector<double> lowBound,
-                                     std::vector<double> highBound,
+OMPL3DArticulated::OMPL3DArticulated(std::vector<Coordinate> lowBound,
+                                     std::vector<Coordinate> highBound,
                                      const MultiBodyTree3D& robot,
                                      const std::string urdfFile,
                                      const std::vector<SuperQuadrics>& arena,
@@ -18,8 +18,9 @@ OMPL3DArticulated::OMPL3DArticulated(std::vector<double> lowBound,
 
 OMPL3DArticulated::~OMPL3DArticulated() {}
 
-void OMPL3DArticulated::setStateSpace(const std::vector<double>& lowBound,
-                                      const std::vector<double>& highBound) {
+void OMPL3DArticulated::setStateSpace(
+    const std::vector<Coordinate>& lowBound,
+    const std::vector<Coordinate>& highBound) {
     // Create compound state space
     ob::StateSpacePtr SE3(std::make_shared<ob::SE3StateSpace>());
     ob::StateSpacePtr Sn(std::make_shared<ob::RealVectorStateSpace>(numJoint_));
@@ -54,15 +55,15 @@ void OMPL3DArticulated::setStateSpace(const std::vector<double>& lowBound,
 
 MultiBodyTree3D OMPL3DArticulated::transformRobot(
     const ob::State* state) const {
-    const std::vector<double> stateVar = setVectorFromState(state);
+    const std::vector<Coordinate> stateVar = setVectorFromState(state);
 
     // Set pose to the robot base
     const Eigen::Quaterniond quat(stateVar[3], stateVar[4], stateVar[5],
                                   stateVar[6]);
-    Eigen::Matrix4d gBase = Eigen::Matrix4d::Identity();
+    SE3Transform gBase = Eigen::Matrix4d::Identity();
     gBase.topLeftCorner(3, 3) = quat.toRotationMatrix();
     gBase.topRightCorner(3, 1) =
-        Eigen::Array3d({stateVar[0], stateVar[1], stateVar[2]});
+        Point3D({stateVar[0], stateVar[1], stateVar[2]});
 
     // Set joint values to the robot
     Eigen::VectorXd jointConfig(numJoint_);
@@ -77,7 +78,7 @@ MultiBodyTree3D OMPL3DArticulated::transformRobot(
 }
 
 void OMPL3DArticulated::setStateFromVector(
-    const std::vector<double>* stateVariables,
+    const std::vector<Coordinate>* stateVariables,
     ob::ScopedState<ob::CompoundStateSpace>* state) const {
     ob::ScopedState<ob::SE3StateSpace> stateBase(
         ss_->getStateSpace()->as<ob::CompoundStateSpace>()->getSubspace(0));
@@ -101,7 +102,7 @@ void OMPL3DArticulated::setStateFromVector(
 
 std::vector<double> OMPL3DArticulated::setVectorFromState(
     const ob::State* state) const {
-    std::vector<double> stateVariables(7 + numJoint_);
+    std::vector<Coordinate> stateVariables(7 + numJoint_);
     ob::ScopedState<ob::CompoundStateSpace> compoundState(ss_->getStateSpace());
     compoundState = state->as<ob::CompoundState>();
 

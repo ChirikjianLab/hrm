@@ -99,7 +99,7 @@ ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
 //    return obj;
 //}
 
-ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat) {
+ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat) {
     ParametricPoints X;
     for (int i = 0; i < ptsMat.cols(); i++) {
         X.x.push_back(ptsMat(0, i));
@@ -110,8 +110,8 @@ ParametricPoints getBoundaryFromMatrix(const Eigen::MatrixXd& ptsMat) {
     return X;
 }
 
-MeshMatrix getMeshFromParamSurface(const Eigen::MatrixXd& surfBound,
-                                   const int n) {
+MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,
+                                   const Index n) {
     auto Num = (n - 1) * (n - 1);
     Eigen::ArrayXd q((n - 1) * (n - 1));
     for (auto i = 0; i < n - 1; ++i) {

@@ -12,8 +12,9 @@ OMPL2D::OMPL2D(const MultiBodyTree2D &robot,
 
 OMPL2D::~OMPL2D() {}
 
-void OMPL2D::setup(const int spaceId, const int plannerId,
-                   const int stateSamplerId, const int validStateSamplerId) {
+void OMPL2D::setup(const Index spaceId, const Index plannerId,
+                   const Index stateSamplerId,
+                   const Index validStateSamplerId) {
     // Setup space bound
     setEnvBound();
 
@@ -45,7 +46,7 @@ void OMPL2D::setup(const int spaceId, const int plannerId,
     setValidStateSampler(validStateSamplerId);
 }
 
-void OMPL2D::plan(const std::vector<std::vector<double>> &endPts) {
+void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
     numCollisionChecks_ = 0;
 
     // Set start and goal poses
@@ -103,7 +104,7 @@ void OMPL2D::getSolution() {
     // Save vertices and edges
     const ob::State *state;
     vertex_.clear();
-    for (unsigned int i = 0; i < numValidStates_; ++i) {
+    for (auto i = 0; i < numValidStates_; ++i) {
         state = pd.getVertex(i).getState()->as<ob::State>();
         vertex_.push_back(
             {state->as<ob::SE2StateSpace::StateType>()->getX(),
@@ -113,7 +114,7 @@ void OMPL2D::getSolution() {
 
     std::vector<std::vector<unsigned int>> edgeInfo(numValidStates_);
     edge_.clear();
-    for (unsigned int i = 0; i < numValidStates_; i++) {
+    for (auto i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
         for (auto edgeI : edgeInfo[i])
             edge_.push_back(std::make_pair(i, edgeI));
@@ -125,17 +126,18 @@ void OMPL2D::setEnvBound() {
     param_.numY = 50;
 
     double f = 1;
-    std::vector<double> bound = {arena_.at(0).getSemiAxis().at(0) -
-                                     f * robot_.getBase().getSemiAxis().at(0),
-                                 arena_.at(0).getSemiAxis().at(1) -
-                                     f * robot_.getBase().getSemiAxis().at(0)};
+    std::vector<Coordinate> bound = {
+        arena_.at(0).getSemiAxis().at(0) -
+            f * robot_.getBase().getSemiAxis().at(0),
+        arena_.at(0).getSemiAxis().at(1) -
+            f * robot_.getBase().getSemiAxis().at(0)};
     param_.xLim = {arena_.at(0).getPosition().at(0) - bound.at(0),
                    arena_.at(0).getPosition().at(0) + bound.at(0)};
     param_.yLim = {arena_.at(0).getPosition().at(1) - bound.at(1),
                    arena_.at(0).getPosition().at(1) + bound.at(1)};
 }
 
-void OMPL2D::setPlanner(const int plannerId) {
+void OMPL2D::setPlanner(const Index plannerId) {
     // Set the planner
     if (plannerId == 0) {
         ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
@@ -157,7 +159,7 @@ void OMPL2D::setPlanner(const int plannerId) {
     }
 }
 
-void OMPL2D::setStateSampler(const int stateSamplerId) {
+void OMPL2D::setStateSampler(const Index stateSamplerId) {
     // Set the state sampler
     if (stateSamplerId == 1) {
         // Build a pre-computed set of free states, sweep line
@@ -184,7 +186,7 @@ void OMPL2D::setStateSampler(const int stateSamplerId) {
     }
 }
 
-void OMPL2D::setValidStateSampler(const int validSamplerId) {
+void OMPL2D::setValidStateSampler(const Index validSamplerId) {
     // Set the valid state sampler
     if (validSamplerId == 0) {
         // Proposed Minkowski-based sampler
@@ -270,8 +272,8 @@ void OMPL2D::setCollisionObject() {
 
 bool OMPL2D::isStateValid(const ob::State *state) {
     // Get pose info the transform the robot
-    const double x = state->as<ob::SE2StateSpace::StateType>()->getX();
-    const double y = state->as<ob::SE2StateSpace::StateType>()->getY();
+    const Coordinate x = state->as<ob::SE2StateSpace::StateType>()->getX();
+    const Coordinate y = state->as<ob::SE2StateSpace::StateType>()->getY();
     const double th = state->as<ob::SE2StateSpace::StateType>()->getYaw();
 
     Eigen::Matrix3d tf = Eigen::Matrix3d::Identity();

@@ -1,8 +1,9 @@
 #pragma once
 
+#include "DataType.h"
+#include "Interval.h"
+#include "MultiBodyTree2D.h"
 #include "geometry/include/SuperEllipse.h"
-#include "datastructure/include/Interval.h"
-#include "datastructure/include/MultiBodyTree2D.h"
 
 #include <limits>
 #include <vector>
@@ -12,8 +13,8 @@
  * number equals the multiplication of robot bodies number and object number
  */
 struct boundary2D {
-    std::vector<Eigen::Matrix2Xd> arenaBd;
-    std::vector<Eigen::Matrix2Xd> obsBd;
+    std::vector<BoundaryPoints> arenaBd;
+    std::vector<BoundaryPoints> obsBd;
 };
 
 /**
@@ -22,7 +23,7 @@ struct boundary2D {
  * \param xCoords x-coordinates of free segments on the sweep line
  */
 struct freeSegment2D {
-    double yCoord;
+    Coordinate yCoord;
     std::vector<Interval> xCoords;
 };
 
@@ -35,12 +36,12 @@ struct freeSegment2D {
  * \param xLim, yLim limit bounds of x and y directions
  */
 struct parameters2D {
-    size_t numAngle = 50;
-    size_t numY;
-    size_t numPointOnFreeSegment = 20;
+    Index numAngle = 50;
+    Index numY;
+    Index numPointOnFreeSegment = 20;
 
-    std::pair<double, double> xLim;
-    std::pair<double, double> yLim;
+    std::pair<Coordinate, Coordinate> xLim;
+    std::pair<Coordinate, Coordinate> yLim;
 };
 
 /**
@@ -65,16 +66,17 @@ class FreeSpace2D {
     std::vector<freeSegment2D> getFreeSegments() {
         return computeFreeSegments();
     }
-    freeSegment2D getFreeSegmentsGivenY(const double yCoord) {
+    freeSegment2D getFreeSegmentsGivenY(const Coordinate& yCoord) {
         return computeFreeSegmentsGivenY(yCoord);
     }
 
   protected:
-    freeSegment2D computeFreeSegmentsGivenY(const double yCoord);
+    freeSegment2D computeFreeSegmentsGivenY(const Coordinate& yCoord);
     std::vector<freeSegment2D> computeFreeSegments();
 
   private:
-    intersectSweepLine2D computeIntersectSweepLine(const double yCoord) const;
+    intersectSweepLine2D computeIntersectSweepLine(
+        const Coordinate& yCoord) const;
     freeSegment2D computeSweepLineFreeSegment(
         const intersectSweepLine2D& intersects) const;
 

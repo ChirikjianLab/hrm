@@ -5,13 +5,12 @@
 
 #include "gtest/gtest.h"
 
-#define pi 3.1415926
-#define epsilon 1e-5
+static const double epsilon = 1e-5;
 
 // Tests for SuperEllipse
 TEST(TestSuperEllipse, boundarySampling) {
     SuperEllipse S({5.0, 3.0}, 1.25, {-2.6, 3.2}, 0.0, 50);
-    Eigen::MatrixXd boundary = S.getOriginShape();
+    BoundaryPoints boundary = S.getOriginShape();
 
     // Point on major semi axis
     ASSERT_DOUBLE_EQ(boundary(0, 0), 2.4);
@@ -21,7 +20,7 @@ TEST(TestSuperEllipse, boundarySampling) {
 TEST(TestSuperEllipse, minkowskiBoundarySampling) {
     SuperEllipse S({5.0, 3.0}, 1.25, {3.2, -2.5}, 0.0, 50);
     SuperEllipse E({2.5, 1.5}, 1.0, {0.0, 0.0}, 0.0, 50);
-    Eigen::MatrixXd minkBound = S.getMinkSum2D(E, +1);
+    BoundaryPoints minkBound = S.getMinkSum2D(E, +1);
 
     // Point on major semi axis
     ASSERT_DOUBLE_EQ(minkBound(0, 0), 10.7);
@@ -32,7 +31,7 @@ TEST(TestSuperEllipse, minkowskiBoundarySampling) {
 TEST(TestSuperQuadrics, boundarySampling) {
     SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {2.32, -1.5, 4.0},
                     Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
-    Eigen::MatrixXd boundary = S.getOriginShape();
+    BoundaryPoints boundary = S.getOriginShape();
 
     // Point on semi axis
     for (auto i = 0; i < boundary.cols(); ++i) {
@@ -49,7 +48,7 @@ TEST(TestSuperQuadrics, minkowskiBoundarySampling) {
                     Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
     SuperQuadrics E({2.5, 1.5, 1.0}, {1.0, 1.0}, {0.0, 0.0, 0.0},
                     Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
-    Eigen::MatrixXd minkBound = S.getMinkSum3D(E, +1);
+    BoundaryPoints minkBound = S.getMinkSum3D(E, +1);
 
     // Point on semi axis
     for (auto i = 0; i < minkBound.cols(); ++i) {

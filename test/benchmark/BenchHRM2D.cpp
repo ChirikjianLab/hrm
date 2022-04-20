@@ -42,10 +42,10 @@ int main(int argc, char** argv) {
     par.NUM_POINT = 5;
 
     double f = 1.5;
-    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                f * robot.getBase().getSemiAxis().at(0),
-                            env2D->getArena().at(0).getSemiAxis().at(1) -
-                                f * robot.getBase().getSemiAxis().at(0)};
+    vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                    f * robot.getBase().getSemiAxis().at(0),
+                                env2D->getArena().at(0).getSemiAxis().at(1) -
+                                    f * robot.getBase().getSemiAxis().at(0)};
     par.BOUND_LIMIT = {
         env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
         env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
