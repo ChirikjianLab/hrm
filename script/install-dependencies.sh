@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+
+# stop execution instantly. Also print the error location of the running code.
+set -e
 
 # TODO : temporary solution to resolve ssh priviledge. Set the owner of .ssh to the owner of docker, a.k.a, robot
 # docker's username : robot
@@ -22,10 +25,7 @@ buildAndInstall() {
   cd .. && rm -rf build && rm -rf "$1"
 }
 
-# Boost 1.58 install
-wget -O - https://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download | tar zxf -
-cd boost_1_58_0/
-./bootstrap.sh && sudo ./b2 install
+# Depend on Boost 1.71.0 as the default of Ubuntu 20.04
 
 # libccd install from source
 git clone https://github.com/danfis/libccd.git
