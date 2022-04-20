@@ -1,5 +1,4 @@
-#ifndef OMPL2D_H
-#define OMPL2D_H
+#pragma once
 
 #include "samplers/include/MinkowskiLibrarySamplerSE2.h"
 #include "samplers/include/MinkowskiSamplerSE2.h"
@@ -7,14 +6,12 @@
 #include "util/include/EllipsoidSeparation.h"
 
 #include <ompl/base/StateSpace.h>
-#include <ompl/geometric/SimpleSetup.h>
-
 #include <ompl/base/samplers/BridgeTestValidStateSampler.h>
 #include <ompl/base/samplers/GaussianValidStateSampler.h>
 #include <ompl/base/samplers/MaximizeClearanceValidStateSampler.h>
 #include <ompl/base/samplers/ObstacleBasedValidStateSampler.h>
 #include <ompl/base/samplers/UniformValidStateSampler.h>
-
+#include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/est/EST.h>
 #include <ompl/geometric/planners/kpiece/KPIECE1.h>
 #include <ompl/geometric/planners/prm/LazyPRM.h>
@@ -88,5 +85,3 @@ class OMPL2D {
     std::vector<const ob::State *> validStateLibrary_;
     double libraryBuildTime_ = 0.0;
 };
-
-#endif  // OMPL2D_H

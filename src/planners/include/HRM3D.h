@@ -40,6 +40,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         return freeSegOneLayer_;
     }
 
+    std::vector<Eigen::Quaterniond> getSampleOrientation() const { return q_r; }
+
     virtual void buildRoadmap() override;
 
     void sweepLineProcess() override;
@@ -78,13 +80,14 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void setTransform(const std::vector<double>& v) override;
 
-  public:
+  protected:
     /** \param q_r sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_r;
 
-  protected:
+    /** \param layerBoundMesh_ boundary surface as mesh */
     BoundaryMesh layerBoundMesh_;
 
+    /** \param freeSegOneLayer_ collision-free line segments in one C-slice */
     FreeSegment3D freeSegOneLayer_;
 
     /** \param Minkowski boundaries mesh at bridge C-layer */

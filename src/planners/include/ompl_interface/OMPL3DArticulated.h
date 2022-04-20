@@ -1,5 +1,4 @@
-#ifndef OMPL3DARTICULATED_H
-#define OMPL3DARTICULATED_H
+#pragma once
 
 #include "OMPL3D.h"
 #include "samplers/include/C3FGenerator3DArticulated.h"
@@ -35,5 +34,3 @@ class OMPL3DArticulated : public OMPL3D {
     int numJoint_;
     const double maxJointAngle_ = pi / 2;
 };
-
-#endif  // OMPL3DARTICULATED_H

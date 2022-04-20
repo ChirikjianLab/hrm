@@ -79,6 +79,14 @@ class HighwayRoadMap {
      */
     std::vector<std::vector<double>> getSolutionPath();
 
+    RobotType getRobot() const { return robot_; }
+
+    std::vector<ObjectType> getArena() const { return arena_; }
+    std::vector<ObjectType> getObstacle() const { return obs_; }
+
+    std::vector<double> getStart() const { return start_; }
+    std::vector<double> getGoal() const { return goal_; }
+
     /** \brief plan Main routine for HRM-based planners */
     virtual void plan();
 
@@ -194,19 +202,24 @@ class HighwayRoadMap {
      */
     virtual void setTransform(const std::vector<double>& v) = 0;
 
-  public:
+  protected:
+    /** \param robot_ Robot description */
     RobotType robot_;
+
+    /** \param arena_, obs_ Description of arena and obstacles */
     std::vector<ObjectType> arena_;
     std::vector<ObjectType> obs_;
 
+    /** \param start_, goal_ Start/goal configurations */
     std::vector<double> start_;
     std::vector<double> goal_;
 
+    /** \param param_ Planning parameters */
     PlannerParameter param_;
 
+    /** \param res_ Planning results */
     PlanningResult res_;
 
-  protected:
     /** \param N_o number of obstacles */
     size_t N_o;
 

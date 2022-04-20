@@ -31,11 +31,11 @@ template <class Planner>
 void storeRoutines(Planner* hrm) {
     // calculate original boundary points
     Boundary bd_ori;
-    for (size_t i = 0; i < hrm->arena_.size(); ++i) {
-        bd_ori.arena.push_back(hrm->arena_.at(i).getOriginShape());
+    for (auto arena : hrm->getArena()) {
+        bd_ori.arena.push_back(arena.getOriginShape());
     }
-    for (size_t i = 0; i < hrm->obs_.size(); ++i) {
-        bd_ori.obstacle.push_back(hrm->obs_.at(i).getOriginShape());
+    for (auto obstacle : hrm->getObstacle()) {
+        bd_ori.obstacle.push_back(obstacle.getOriginShape());
     }
 
     // write to .csv file

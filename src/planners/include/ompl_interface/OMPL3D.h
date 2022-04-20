@@ -1,5 +1,4 @@
-#ifndef OMPL3D_H
-#define OMPL3D_H
+#pragma once
 
 #include "datastructure/include/MultiBodyTree3D.h"
 #include "samplers/include/C3FGenerator3D.h"
@@ -9,17 +8,14 @@
 #include "util/include/Parse2dCsvFile.h"
 
 #include "ompl/base/SpaceInformation.h"
-#include "ompl/base/spaces/SE3StateSpace.h"
-#include "ompl/config.h"
-#include "ompl/geometric/SimpleSetup.h"
-#include "ompl/util/PPM.h"
-
 #include "ompl/base/samplers/BridgeTestValidStateSampler.h"
 #include "ompl/base/samplers/GaussianValidStateSampler.h"
 #include "ompl/base/samplers/MaximizeClearanceValidStateSampler.h"
 #include "ompl/base/samplers/ObstacleBasedValidStateSampler.h"
 #include "ompl/base/samplers/UniformValidStateSampler.h"
-
+#include "ompl/base/spaces/SE3StateSpace.h"
+#include "ompl/config.h"
+#include "ompl/geometric/SimpleSetup.h"
 #include "ompl/geometric/planners/est/EST.h"
 #include "ompl/geometric/planners/kpiece/KPIECE1.h"
 #include "ompl/geometric/planners/prm/LazyPRM.h"
@@ -27,6 +23,7 @@
 #include "ompl/geometric/planners/rrt/RRT.h"
 #include "ompl/geometric/planners/rrt/RRTConnect.h"
 #include "ompl/geometric/planners/sbl/SBL.h"
+#include "ompl/util/PPM.h"
 
 #include "eigen3/Eigen/Dense"
 #include "eigen3/Eigen/Geometry"
@@ -177,5 +174,3 @@ class OMPL3D {
     double preComputeTime_ = 0.0;
     std::vector<const ob::State*> validStateSet_;
 };
-
-#endif  // OMPL3D_H

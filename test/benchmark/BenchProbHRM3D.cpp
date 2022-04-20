@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
         probHRM.plan(timeLim);
 
         PlanningResult res = probHRM.getPlanningResult();
+        PlannerParameter param = probHRM.getPlannerParameters();
 
         // Store results
         displayPlanningTimeInfo(&res.planning_time);
@@ -77,9 +78,8 @@ int main(int argc, char** argv) {
         displayPathInfo(&res.solution_path);
 
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << probHRM.param_.NUM_LAYER << ','
-                  << probHRM.param_.NUM_LINE_X << ','
-                  << probHRM.param_.NUM_LINE_Y << ','
+                  << param.NUM_LAYER << ',' << param.NUM_LINE_X << ','
+                  << param.NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

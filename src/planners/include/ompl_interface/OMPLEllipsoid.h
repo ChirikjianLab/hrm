@@ -1,5 +1,4 @@
-#ifndef OMPLELLIPSOID_H
-#define OMPLELLIPSOID_H
+#pragma once
 
 #include "OMPL3D.h"
 
@@ -20,5 +19,3 @@ class OMPLEllipsoid : public OMPL3D {
                             const SuperQuadrics& robotAux,
                             const SuperQuadrics& obs) const;
 };
-
-#endif  // OMPLELLIPSOID_H
