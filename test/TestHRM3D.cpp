@@ -3,6 +3,7 @@
 
 using namespace Eigen;
 using namespace std;
+
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, HRM) {

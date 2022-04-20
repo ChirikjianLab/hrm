@@ -1,7 +1,8 @@
 #pragma once
 
-#include "planners/include/PlanningRequest.h"
-#include "planners/include/PlanningResult.h"
+#include "PlanningRequest.h"
+#include "PlanningResult.h"
+#include "datastructure/include/DataType.h"
 
 #include "Eigen/Dense"
 
@@ -24,10 +25,10 @@ using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 /** \brief freeSegment2D collision-free line segments in 2D */
 struct FreeSegment2D {
-    std::vector<double> ty;
-    std::vector<std::vector<double>> xL;
-    std::vector<std::vector<double>> xU;
-    std::vector<std::vector<double>> xM;
+    std::vector<Coordinate> ty;
+    std::vector<std::vector<Coordinate>> xL;
+    std::vector<std::vector<Coordinate>> xU;
+    std::vector<std::vector<Coordinate>> xM;
 };
 
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
@@ -40,16 +41,16 @@ struct IntersectionInterval {
 
 /** \brief Boundary Minkowski boundary points for obstacles and arenas */
 struct Boundary {
-    std::vector<Eigen::MatrixXd> arena;
-    std::vector<Eigen::MatrixXd> obstacle;
+    std::vector<BoundaryPoints> arena;
+    std::vector<BoundaryPoints> obstacle;
 };
 
 /** \brief vertexIdx vertex index at each C-layer, sweep line */
 struct vertexIdx {
-    size_t startId;
-    size_t layer;
-    std::vector<size_t> plane;
-    std::vector<std::vector<size_t>> line;
+    Index startId;
+    Index layer;
+    std::vector<Index> plane;
+    std::vector<std::vector<Index>> line;
 };
 
 /** \class HighwayRoadMap Superclass for HRM-based planners */
@@ -62,7 +63,6 @@ class HighwayRoadMap {
 
     virtual ~HighwayRoadMap();
 
-  public:
     /**
      * \brief getPlanningResult retrieve planning results
      * \return PlanningResult struture
@@ -75,9 +75,19 @@ class HighwayRoadMap {
      */
     PlannerParameter getPlannerParameters() const { return param_; }
 
-    /** \brief getSolutionPath Retrieve solved path
-     * \return 2D vector for representing solved path */
-    std::vector<std::vector<double>> getSolutionPath();
+    /**
+     * \brief getSolutionPath Retrieve solved path
+     * \return 2D vector for representing solved path
+     */
+    std::vector<std::vector<Coordinate>> getSolutionPath();
+
+    RobotType getRobot() const { return robot_; }
+
+    std::vector<ObjectType> getArena() const { return arena_; }
+    std::vector<ObjectType> getObstacle() const { return obs_; }
+
+    std::vector<Coordinate> getStart() const { return start_; }
+    std::vector<Coordinate> getGoal() const { return goal_; }
 
     /** \brief getInterpolatedSolutionPath Interpolate solved path
      * \return 2D vector for representing interpolated path */
@@ -97,7 +107,7 @@ class HighwayRoadMap {
     void refineExistRoadmap(const double timeLim);
 
     /** \brief construct one C-layer */
-    virtual void constructOneLayer(const int layerIdx) = 0;
+    virtual void constructOneLayer(const Index layerIdx) = 0;
 
     /** \brief sampleOrientations generate orientation samples */
     virtual void sampleOrientations() = 0;
@@ -121,7 +131,7 @@ class HighwayRoadMap {
      * 0.0)
      * \param pointer to FreeSegment2D
      */
-    virtual void generateVertices(const double tx,
+    virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D* freeSeg) = 0;
 
     /**
@@ -158,7 +168,7 @@ class HighwayRoadMap {
      * \return IntersectionInterval intersecting points as intervals
      */
     virtual IntersectionInterval computeIntersections(
-        const std::vector<double>& ty) = 0;
+        const std::vector<Coordinate>& ty) = 0;
 
     /** \brief computeFreeSegment compute collision-free segment on each sweep
      * line
@@ -167,7 +177,7 @@ class HighwayRoadMap {
      * intersections
      * \return FreeSegment2D
      */
-    FreeSegment2D computeFreeSegment(const std::vector<double>& ty,
+    FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
                                      const IntersectionInterval* intersect);
 
     /** \brief isSameLayerTransitionFree check whether connection between V1 and
@@ -176,19 +186,22 @@ class HighwayRoadMap {
      * \param V1, V2 vector of queried vertices
      * \return true is transition is valid, false otherwise
      */
-    virtual bool isSameLayerTransitionFree(const std::vector<double>& v1,
-                                           const std::vector<double>& v2) = 0;
+    virtual bool isSameLayerTransitionFree(
+        const std::vector<Coordinate>& v1,
+        const std::vector<Coordinate>& v2) = 0;
 
     /** \brief isMultiLayerTransitionFree check whether connection between V1
      * and V2 is valid through interpolation
      * \param V1, V2 vector of queried vertices
      * \return true is transition is valid, false otherwise
      */
-    virtual bool isMultiLayerTransitionFree(const std::vector<double>& v1,
-                                            const std::vector<double>& v2) = 0;
+    virtual bool isMultiLayerTransitionFree(
+        const std::vector<Coordinate>& v1,
+        const std::vector<Coordinate>& v2) = 0;
 
     /** \brief check whether one point is within C-free */
-    virtual bool isPtInCFree(const int bdIdx, const std::vector<double>& v) = 0;
+    virtual bool isPtInCFree(const Index bdIdx,
+                             const std::vector<Coordinate>& v) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
      * \param FreeSegment2D pointer
@@ -203,24 +216,30 @@ class HighwayRoadMap {
      * \return vector of Vertex structure for the neighboring vertices
      */
     virtual std::vector<Vertex> getNearestNeighborsOnGraph(
-        const std::vector<double>& vertex, const size_t k,
+        const std::vector<Coordinate>& vertex, const Index k,
         const double radius) = 0;
 
     /** \brief setTransform set the transformation for robot
      * \param v configuration of the robot
      */
-    virtual void setTransform(const std::vector<double>& v) = 0;
+    virtual void setTransform(const std::vector<Coordinate>& v) = 0;
 
-  public:
+  protected:
+    /** \param robot_ Robot description */
     RobotType robot_;
+
+    /** \param arena_, obs_ Description of arena and obstacles */
     std::vector<ObjectType> arena_;
     std::vector<ObjectType> obs_;
 
-    std::vector<double> start_;
-    std::vector<double> goal_;
+    /** \param start_, goal_ Start/goal configurations */
+    std::vector<Coordinate> start_;
+    std::vector<Coordinate> goal_;
 
+    /** \param param_ Planning parameters */
     PlannerParameter param_;
 
+    /** \param res_ Planning results */
     PlanningResult res_;
 
   protected:
@@ -231,10 +250,10 @@ class HighwayRoadMap {
     bool isRefine_ = false;
 
     /** \param N_o number of obstacles */
-    size_t N_o;
+    Index N_o;
 
     /** \param N_s number of arenas */
-    size_t N_s;
+    Index N_s;
 
     /** \param Boundary point sets of Minkowski operations */
     Boundary layerBound_;

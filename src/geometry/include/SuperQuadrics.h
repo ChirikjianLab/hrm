@@ -1,5 +1,7 @@
 #pragma once
 
+#include "datastructure/include/DataType.h"
+
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <vector>
@@ -15,15 +17,14 @@ class SuperQuadrics {
   public:
     SuperQuadrics(std::vector<double> semiAxis, std::vector<double> epsilon,
                   std::vector<double> position, Eigen::Quaterniond quat,
-                  const unsigned int num);
+                  const Index num);
 
-  public:
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     std::vector<double> getEpsilon() const { return epsilon_; }
     std::vector<double> getPosition() const { return position_; }
     Eigen::Quaterniond getQuaternion() const { return quat_; }
-    unsigned int getNum() const { return Num_; }
-    unsigned int getNumParam() const { return num_; }
+    Index getNum() const { return Num_; }
+    Index getNumParam() const { return num_; }
     std::vector<Eigen::Quaterniond> getQuatSamples() const { return qSample_; }
 
     void setSemiAxis(const std::vector<double> &newSemiAxis);
@@ -34,7 +35,7 @@ class SuperQuadrics {
 
     /** \brief Compute and return a matrix of boundary points of original
      * surface */
-    Eigen::MatrixXd getOriginShape() const;
+    BoundaryPoints getOriginShape() const;
 
     /**
      * \brief Compute and return a matrix of boundary points of Minkowski sum
@@ -42,8 +43,7 @@ class SuperQuadrics {
      * \param shapeB class of SuperQuadrics
      * \param K indicator for sum (+1) and difference (-1)
      */
-    Eigen::MatrixXd getMinkSum3D(const SuperQuadrics &shapeB,
-                                 const int K) const;
+    BoundaryPoints getMinkSum3D(const SuperQuadrics &shapeB, const int K) const;
 
   private:
     std::vector<double> semiAxis_;
@@ -59,6 +59,6 @@ class SuperQuadrics {
     std::vector<Eigen::Quaterniond> qSample_;
 
     // Number of points of each parameter
-    unsigned int num_;
-    unsigned int Num_;
+    Index num_;
+    Index Num_;
 };

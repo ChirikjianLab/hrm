@@ -1,22 +1,22 @@
 #pragma once
 
 #include "MeshGenerator.h"
+#include "datastructure/include/DataType.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
 #include <vector>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
+std::vector<Point3D> intersectLineMesh3D(const Line3D& line,
+                                         const MeshMatrix& shape);
+
+std::vector<Point3D> intersectVerticalLineMesh3D(const Line3D& line,
                                                  const MeshMatrix& shape);
 
-std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
-    const Eigen::VectorXd& line, const MeshMatrix& shape);
-
-bool intersectLineTriangle3D(const Eigen::VectorXd* line,
-                             const Eigen::Vector3d* t0,
+bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Eigen::Vector3d* pt);
+                             Point3D* pt);
 
 bool isIntersectSegPolygon2D(
     const std::pair<std::vector<double>, std::vector<double>>& seg,

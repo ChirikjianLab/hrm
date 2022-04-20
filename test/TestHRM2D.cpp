@@ -15,10 +15,10 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
 
     // Planning arena boundary
     double f = 1.5;
-    vector<double> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                f * robot->getBase().getSemiAxis().at(0),
-                            env2D->getArena().at(0).getSemiAxis().at(1) -
-                                f * robot->getBase().getSemiAxis().at(0)};
+    vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
+                                    f * robot->getBase().getSemiAxis().at(0),
+                                env2D->getArena().at(0).getSemiAxis().at(1) -
+                                    f * robot->getBase().getSemiAxis().at(0)};
     par.BOUND_LIMIT = {
         env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
         env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
@@ -63,21 +63,17 @@ algorithm planTest(const robotType& robot,
          << hrm.getPlannerParameters().NUM_LINE_Y << endl;
 
     if (isStore) {
-        // calculate original boundary points
+        cout << "Saving results to file..." << endl;
+
+        // TEST: calculate original boundary points
         Boundary bd_ori;
-        for (auto arena : hrm.arena_) {
+        for (auto arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
         }
-        for (auto obs : hrm.obs_) {
-            bd_ori.obstacle.push_back(obs.getOriginShape());
+        for (auto obstacle : hrm.getObstacle()) {
+            bd_ori.obstacle.push_back(obstacle.getOriginShape());
         }
 
-        // Output boundary and cell info
-        Boundary bd = hrm.boundaryGen();
-        FreeSegment2D cell = hrm.getFreeSegmentOneLayer(&bd);
-        hrm.connectOneLayer2D(&cell);
-
-        // write to .csv file
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
         for (auto bd_ori_obs : bd_ori.obstacle) {
@@ -87,6 +83,9 @@ algorithm planTest(const robotType& robot,
             file_ori_bd << bd_ori_arena << "\n";
         }
         file_ori_bd.close();
+
+        // TEST: Minkowski sums boundary
+        Boundary bd = hrm.boundaryGen();
 
         ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
@@ -98,12 +97,16 @@ algorithm planTest(const robotType& robot,
         }
         file_bd.close();
 
+        // TEST: Sweep line process
+        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
+
         ofstream file_cell;
         file_cell.open("segment_2D.csv");
-        for (size_t i = 0; i < cell.ty.size(); i++) {
-            for (size_t j = 0; j < cell.xL[i].size(); j++) {
-                file_cell << cell.ty[i] << ' ' << cell.xL[i][j] << ' '
-                          << cell.xM[i][j] << ' ' << cell.xU[i][j] << "\n";
+        for (size_t i = 0; i < freeSeg.ty.size(); i++) {
+            for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
+                file_cell << freeSeg.ty[i] << ' ' << freeSeg.xL[i][j] << ' '
+                          << freeSeg.xM[i][j] << ' ' << freeSeg.xU[i][j]
+                          << "\n";
             }
         }
         file_cell.close();

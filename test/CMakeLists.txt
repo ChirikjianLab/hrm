@@ -6,8 +6,7 @@ add_executable(TestGeometry TestGeometry.cpp)
 target_link_libraries(TestGeometry
                       UTIL
                       GEOM
-                      ${GTEST_LIBRARIES}
-                      ${CMAKE_THREAD_LIBS_INIT})
+                      ${GTEST_LIBRARIES})
 add_test(TestGeometry ${EXECUTABLE_OUTPUT_PATH}/TestGeometry)
 
 # Planners                      

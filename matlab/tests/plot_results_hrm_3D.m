@@ -7,9 +7,6 @@ path_prefix = '../../resources/3D/';
 %% Results
 [X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, end_pts] = loadResults('3D');
 
-% shortest path
-path_highway = load([loadPath, 'interpolated_path_3D.csv']);
-
 %% Robot
 if size(end_pts, 2) == 7
     urdf_file = [];
@@ -62,8 +59,8 @@ if ~isempty(path_highway)
     plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
         'm-', 'LineWidth', 2)
     
-    for i = 1:ceil(size(path_highway,1)/50):size(path_highway,1)
-        PlotRobotPose(robot, path_highway(i,:), robotURDF);
+    for i = 1:ceil(size(path,1)/50):size(path,1)
+        PlotRobotPose(robot, path(i,:), robotURDF);
     end
 end
 
@@ -73,7 +70,7 @@ is_validation = true;
 if is_validation
     disp('Validating path...')
     
-    high3D = PathValidation3D(robot, arena, obs, path_highway);
+    high3D = PathValidation3D(robot, arena, obs, path);
     high3D.validation();
     high3D.show();
     

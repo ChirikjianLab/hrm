@@ -13,7 +13,7 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 
 HRM3D::~HRM3D() {}
 
-void HRM3D::constructOneLayer(const int layerIdx) {
+void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
     if (isRobotRigid_) {
         setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
@@ -52,7 +52,7 @@ void HRM3D::sampleOrientations() {
 
 void HRM3D::sweepLineProcess() {
     // x- and y-coordinates of sweep lines
-    std::vector<double> ty(param_.NUM_LINE_Y);
+    std::vector<Coordinate> ty(param_.NUM_LINE_Y);
     double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
                 (param_.NUM_LINE_X - 1);
     double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
@@ -78,7 +78,7 @@ void HRM3D::sweepLineProcess() {
 }
 
 IntersectionInterval HRM3D::computeIntersections(
-    const std::vector<double>& ty) {
+    const std::vector<Coordinate>& ty) {
     // Initialize sweep lines
     IntersectionInterval intersect;
     intersect.arenaLow = Eigen::MatrixXd::Constant(
@@ -91,10 +91,10 @@ IntersectionInterval HRM3D::computeIntersections(
         Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
 
     // Find intersections along each sweep line
-    std::vector<Eigen::Vector3d> intersectPointArena;
-    std::vector<Eigen::Vector3d> intersectPointObstacle;
+    std::vector<Point3D> intersectPointArena;
+    std::vector<Point3D> intersectPointObstacle;
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        Eigen::VectorXd lineZ(6);
+        Line3D lineZ(6);
         lineZ << freeSegOneLayer_.tx.back(), ty.at(i), 0, 0, 0, 1;
 
         for (size_t j = 0; j < layerBoundMesh_.arena.size(); ++j) {
@@ -127,7 +127,8 @@ IntersectionInterval HRM3D::computeIntersections(
     return intersect;
 }
 
-void HRM3D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
+void HRM3D::generateVertices(const Coordinate tx,
+                             const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
 
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
@@ -150,8 +151,8 @@ void HRM3D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
 
 // Connect vertices within one C-layer
 void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
-    size_t n1 = 0;
-    size_t n2 = 0;
+    Index n1 = 0;
+    Index n2 = 0;
 
     N_v.line.clear();
     N_v.startId = res_.graph_structure.vertex.size();
@@ -379,8 +380,8 @@ void HRM3D::connectExistLayer(const int layerId) {
     }
 }
 
-std::vector<std::vector<double>> HRM3D::getInterpolatedSolutionPath(
-    const unsigned int num) {
+std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
+    const Index num) {
     std::vector<std::vector<double>> path_interp;
 
     // Compute distance per step
@@ -443,15 +444,15 @@ void HRM3D::bridgeLayer() {
     }
 }
 
-bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
-                                      const std::vector<double>& v2) {
+bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                      const std::vector<Coordinate>& v2) {
     // Define the line connecting v1 and v2
-    Eigen::Vector3d t1{v1[0], v1[1], v1[2]};
-    Eigen::Vector3d t2{v2[0], v2[1], v2[2]};
+    Point3D t1{v1[0], v1[1], v1[2]};
+    Point3D t2{v2[0], v2[1], v2[2]};
     Eigen::Vector3d v12 = t2 - t1;
     v12.normalize();
 
-    Eigen::VectorXd line(6);
+    Line3D line(6);
     line.head(3) = t1;
     line.tail(3) = v12;
 
@@ -475,10 +476,10 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<double>& v1,
     return true;
 }
 
-bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
-                                       const std::vector<double>& v2) {
+bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                       const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
-    std::vector<std::vector<double>> vInterp =
+    std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     for (auto vStep : vInterp) {
@@ -527,9 +528,9 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<double>& v1,
     return true;
 }
 
-bool HRM3D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
+bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     // Ray-casting to check point containment within all C-obstacles
-    Eigen::VectorXd lineZ(6);
+    Line3D lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
     for (auto bound : bridgeLayerBound_.at(bdIdx)) {
@@ -569,7 +570,7 @@ void HRM3D::sampleSO3() {
 }
 
 std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
-    const std::vector<double>& vertex, const size_t k, const double radius) {
+    const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     double minEuclideanDist;
     double minQuatDist;
     double quatDist;
@@ -634,11 +635,11 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HRM3D::setTransform(const std::vector<double>& v) {
-    Eigen::Matrix4d g;
+void HRM3D::setTransform(const std::vector<Coordinate>& v) {
+    SE3Transform g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(v[3], v[4], v[5], v[6]).toRotationMatrix();
-    g.topRightCorner(3, 1) = Eigen::Vector3d(v[0], v[1], v[2]);
+    g.topRightCorner(3, 1) = Point3D(v[0], v[1], v[2]);
     g.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
     robot_.robotTF(g);

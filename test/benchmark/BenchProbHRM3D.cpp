@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
         probHRM.plan(MAX_PLAN_TIME);
 
         PlanningResult res = probHRM.getPlanningResult();
+        PlannerParameter param = probHRM.getPlannerParameters();
 
         // Store results
         displayPlanningTimeInfo(&res.planning_time);
@@ -97,9 +98,8 @@ int main(int argc, char** argv) {
         cout << "==========" << endl;
 
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << probHRM.getPlannerParameters().NUM_LAYER << ','
-                  << probHRM.getPlannerParameters().NUM_LINE_X << ','
-                  << probHRM.getPlannerParameters().NUM_LINE_Y << ','
+                  << param.NUM_LAYER << ',' << param.NUM_LINE_X << ','
+                  << param.NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

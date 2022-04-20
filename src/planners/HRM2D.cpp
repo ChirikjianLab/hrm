@@ -11,7 +11,7 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 
 HRM2D::~HRM2D() {}
 
-void HRM2D::constructOneLayer(const int layerIdx) {
+void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
     setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
@@ -45,9 +45,9 @@ void HRM2D::sampleOrientations() {
 
 void HRM2D::sweepLineProcess() {
     // Compute vector of y-coordinates
-    std::vector<double> ty(param_.NUM_LINE_Y);
-    double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                (param_.NUM_LINE_Y - 1);
+    std::vector<Coordinate> ty(param_.NUM_LINE_Y);
+    Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    (param_.NUM_LINE_Y - 1);
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
         ty[i] = param_.BOUND_LIMIT[2] + i * dy;
     }
@@ -60,7 +60,7 @@ void HRM2D::sweepLineProcess() {
 }
 
 IntersectionInterval HRM2D::computeIntersections(
-    const std::vector<double>& ty) {
+    const std::vector<Coordinate>& ty) {
     IntersectionInterval intersect;
     intersect.arenaLow = Eigen::MatrixXd::Constant(
         ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[0]);
@@ -72,8 +72,8 @@ IntersectionInterval HRM2D::computeIntersections(
         Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
 
     // Find intersecting points to C-obstacles for each raster scan line
-    std::vector<double> intersectPointArena;
-    std::vector<double> intersectPointObstacle;
+    std::vector<Coordinate> intersectPointArena;
+    std::vector<Coordinate> intersectPointObstacle;
     for (size_t i = 0; i < ty.size(); ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
         for (size_t j = 0; j < layerBound_.arena.size(); ++j) {
@@ -109,7 +109,8 @@ IntersectionInterval HRM2D::computeIntersections(
     return intersect;
 }
 
-void HRM2D::generateVertices(const double tx, const FreeSegment2D* freeSeg) {
+void HRM2D::generateVertices(const Coordinate tx,
+                             const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
@@ -142,8 +143,8 @@ void HRM2D::connectMultiLayer() {
 
     size_t j = 0;
 
-    std::vector<double> v1;
-    std::vector<double> v2;
+    std::vector<Coordinate> v1;
+    std::vector<Coordinate> v2;
 
     for (size_t i = 0; i < vtxId_.size(); ++i) {
         startIdCur = vtxId_.at(i).startId;
@@ -251,8 +252,8 @@ void HRM2D::bridgeLayer() {
 }
 
 void HRM2D::bridgeVertex(const int idx1, const int idx2) {
-    std::vector<double> v1 = res_.graph_structure.vertex.at(idx1);
-    std::vector<double> v2 = res_.graph_structure.vertex.at(idx2);
+    std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
+    std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
 
     // Generate new vertex until a certain resolution
     if (std::fabs(v1[1] - v2[1]) <
@@ -303,8 +304,8 @@ void HRM2D::bridgeVertex(const int idx1, const int idx2) {
     }
 }
 
-bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,
-                                      const std::vector<double>& v2) {
+bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                      const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
     for (size_t i = 0; i < layerBound_.obstacle.size(); ++i) {
         if (isIntersectSegPolygon2D(std::make_pair(v1, v2),
@@ -317,12 +318,12 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<double>& v1,
 }
 
 // Connect vertices among different layers
-bool HRM2D::isMultiLayerTransitionFree(const std::vector<double>& v1,
-                                       const std::vector<double>& v2) {
+bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                       const std::vector<Coordinate>& v2) {
     double dt = 1.0 / (param_.NUM_POINT - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolate robot motion linearly from v1 to v2
-        std::vector<double> vStep;
+        std::vector<Coordinate> vStep;
         for (size_t j = 0; j < v1.size(); ++j) {
             vStep.push_back((1.0 - i * dt) * v1[j] + i * dt * v2[j]);
         }
@@ -348,7 +349,7 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<double>& v1,
     return true;
 }
 
-bool HRM2D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
+bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
     for (auto bound : bridgeLayerBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
@@ -434,7 +435,7 @@ bool HRM2D::isPtInCFree(const int bdIdx, const std::vector<double>& v) {
 //}
 
 std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
-    const std::vector<double>& vertex, const size_t k, const double radius) {
+    const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     // Find the closest roadmap vertex
     double minEuclideanDist;
     double minAngleDist;
@@ -491,8 +492,8 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HRM2D::setTransform(const std::vector<double>& v) {
-    Eigen::Matrix3d g;
+void HRM2D::setTransform(const std::vector<Coordinate>& v) {
+    SE2Transform g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
     g.topRightCorner(2, 1) = Eigen::Vector2d(v[0], v[1]);
     g.bottomLeftCorner(1, 3) << 0, 0, 1;

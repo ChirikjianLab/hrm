@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstddef>
+#include "datastructure/include/DataType.h"
+
 #include <limits>
 #include <vector>
 
@@ -16,14 +17,13 @@ static const double inf = std::numeric_limits<double>::infinity();
  * \param NUM_POINT number of interpolation for connections of two C-layers
  */
 struct PlannerParameter {
-    std::vector<double> BOUND_LIMIT;
+    std::vector<Coordinate> BOUND_LIMIT;
 
-    size_t NUM_LAYER = 0;
-    size_t NUM_LINE_X = 0;
-    size_t NUM_LINE_Y = 0;
-    size_t NUM_POINT = 5;
-
-    size_t NUM_SEARCH_NEIGHBOR = 10;
+    Index NUM_LAYER;
+    Index NUM_LINE_X;
+    Index NUM_LINE_Y;
+    Index NUM_POINT = 5;
+    Index NUM_SEARCH_NEIGHBOR = 10;
     double SEARCH_RADIUS = pi / 2;
 };
 
@@ -33,6 +33,6 @@ struct PlanningRequest {
 
     PlannerParameter planner_parameters;
 
-    std::vector<double> start;
-    std::vector<double> goal;
+    std::vector<Coordinate> start;
+    std::vector<Coordinate> goal;
 };

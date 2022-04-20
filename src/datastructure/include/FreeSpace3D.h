@@ -1,8 +1,9 @@
 #pragma once
 
+#include "DataType.h"
+#include "Interval.h"
+#include "MultiBodyTree3D.h"
 #include "geometry/include/SuperQuadrics.h"
-#include "datastructure/include/Interval.h"
-#include "datastructure/include/MultiBodyTree3D.h"
 
 #include <limits>
 #include <vector>
@@ -12,8 +13,8 @@
  * number equals the multiplication of robot bodies number and object number
  */
 struct boundary3D {
-    std::vector<Eigen::Matrix3Xd> arenaBd;
-    std::vector<Eigen::Matrix3Xd> obsBd;
+    std::vector<BoundaryPoints> arenaBd;
+    std::vector<BoundaryPoints> obsBd;
 };
 
 /**
@@ -23,8 +24,8 @@ struct boundary3D {
  * \param zCoords z-coordinates of free segments on the sweep line
  */
 struct freeSegment3D {
-    double xCoord;
-    double yCoord;
+    Coordinate xCoord;
+    Coordinate yCoord;
     std::vector<Interval> zCoords;
 };
 
@@ -39,14 +40,14 @@ struct freeSegment3D {
  * pre-defined rotation samples, in Quaternion
  */
 struct parameters3D {
-    size_t numRotation = 60;
-    size_t numX = 30;
-    size_t numY = 30;
-    size_t numPointOnFreeSegment = 20;
+    Index numRotation = 60;
+    Index numX = 30;
+    Index numY = 30;
+    Index numPointOnFreeSegment = 20;
 
-    std::pair<double, double> xLim;
-    std::pair<double, double> yLim;
-    std::pair<double, double> zLim;
+    std::pair<Coordinate, Coordinate> xLim;
+    std::pair<Coordinate, Coordinate> yLim;
+    std::pair<Coordinate, Coordinate> zLim;
 
     std::vector<Eigen::Quaterniond> qSample;
 };
@@ -73,19 +74,19 @@ class FreeSpace3D {
     std::vector<freeSegment3D> getFreeSegments() {
         return computeFreeSegments();
     }
-    freeSegment3D getFreeSegmentsGivenXY(const double xCoord,
-                                         const double yCoord) {
+    freeSegment3D getFreeSegmentsGivenXY(const Coordinate& xCoord,
+                                         const Coordinate& yCoord) {
         return computeFreeSegmentsGivenXY(xCoord, yCoord);
     }
 
   protected:
-    freeSegment3D computeFreeSegmentsGivenXY(const double xCoord,
-                                             const double yCoord);
+    freeSegment3D computeFreeSegmentsGivenXY(const Coordinate& xCoord,
+                                             const Coordinate& yCoord);
     std::vector<freeSegment3D> computeFreeSegments();
 
   private:
-    intersectSweepLine3D computeIntersectSweepLine(const double xCoord,
-                                                   const double yCoord) const;
+    intersectSweepLine3D computeIntersectSweepLine(
+        const Coordinate& xCoord, const Coordinate& yCoord) const;
     freeSegment3D computeSweepLineFreeSegment(
         const intersectSweepLine3D* intersections) const;
 
