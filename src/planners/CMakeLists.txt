@@ -1,17 +1,20 @@
-add_library(HRM_2D
-            HighwayRoadMap.cpp
-            HighwayRoadMap2d.cpp
-            HRM2DMultiBody.cpp)
-target_link_libraries(HRM_2D
+add_library(HighwayRoadMap HighwayRoadMap.cpp)
+target_link_libraries(HighwayRoadMap
+                      DATA_STRUCTURE
                       GEOM
-                      UTIL)
+                      UTIL
+                      ${OMPL_LIBRARIES})
 
-add_library(HRM_3D
-            HighwayRoadMap3d.cpp
-            Hrm3dMultiBody.cpp
+add_library(HRM2D
+            HRM2D.cpp
+            HRM2DKC.cpp)
+target_link_libraries(HRM2D
+                      HighwayRoadMap)
+
+add_library(HRM3D
+            HRM3D.cpp
             ProbHRM3D.cpp)
-target_link_libraries(HRM_3D
-                      GEOM
-                      UTIL)
+target_link_libraries(HRM3D
+                      HighwayRoadMap)
 
-add_subdirectory(ompl)
+add_subdirectory(ompl_interface)

@@ -3,14 +3,10 @@ cmake_minimum_required(VERSION 3.5)
 # Project's name
 project(HighwayRoadMap VERSION 0.2.2 LANGUAGES CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(default_build_type "Release")
 
-# Specify Binary dir
-set(CMAKE_BINARY_DIR ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
@@ -62,7 +58,7 @@ endif()
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost 1.58 REQUIRED)
+find_package(Boost 1.71 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
@@ -71,4 +67,7 @@ link_libraries(${GTEST_LIBRARIES})
 
 # Subdirectories
 add_subdirectory(src)
+
+set(BUILD_TESTING "" ON)
+enable_testing()
 add_subdirectory(test)

@@ -3,15 +3,11 @@ initAddpath();
 
 [X_ori, X, cf_seg, vtx, edge, path, robot, endPts] = loadResults('2D');
 
-%% For visualizations, add pi to all poses
-vtx = vtx + [0,0,pi];
-endPts = endPts + [0,0,pi];
-
 figure; hold on; axis equal; axis off;
 %% environment
 disp('Environment Initialization...')
 
-sc = 0.2;
+sc = 5;
 % start and goal
 start = endPts(1,:)';
 goal = endPts(2,:)';
@@ -58,7 +54,7 @@ end
 %     plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'g');
 %         plot(cf_seg(i,3), cf_seg(i,1),'k*')
 % end
-%
+
 
 % vertex and connections
 plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3), 'k.', 'LineWidth', 0.5);
@@ -69,7 +65,7 @@ plot3(vtx(:,1), vtx(:,2), sc*vtx(:,3), 'k.', 'LineWidth', 0.5);
 %         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k')
 % end
 
-% Robot motions
+%% Robot motions
 rob = MultiBodyTree2D(SuperEllipse([robot(1,1:6), 50], 'g', 0),...
     size(robot,1)-1);
 for i = 1:size(robot,1)-1
@@ -90,13 +86,16 @@ rob.robotTF(g_goal,1);
 % shortest path
 plot3([start(1) vtx(path(1)+1,1)],...
     [start(2) vtx(path(1)+1,2)],...
-    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 3)
+    sc*[start(3) vtx(path(1)+1,3)], 'r', 'LineWidth', 2)
 plot3([goal(1) vtx(path(end)+1,1)],...
     [goal(2) vtx(path(end)+1,2)],...
-    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 3)
+    sc*[goal(3) vtx(path(end)+1,3)], 'g', 'LineWidth', 2)
 
 for i = 1:size(path,2)-1
     plot3([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
         [vtx(path(i)+1,2) vtx(path(i+1)+1,2)],...
-        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'm', 'LineWidth', 3)
+        sc*[vtx(path(i)+1,3) vtx(path(i+1)+1,3)], 'm', 'LineWidth', 2)
+    
+    plot([vtx(path(i)+1,1) vtx(path(i+1)+1,1)],...
+        [vtx(path(i)+1,2) vtx(path(i+1)+1,2)], 'm', 'LineWidth', 2)
 end

@@ -1,5 +1,4 @@
-#ifndef PARSEURDF_H
-#define PARSEURDF_H
+#pragma once
 
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
@@ -14,7 +13,8 @@ class ParseURDF {
     /** \brief Retrieve KDL tree */
     KDL::Tree getKDLTree() const { return kdlTree_; }
 
-    /** \brief Get the transformation of a body
+    /**
+     * \brief Get the transformation of a body
      * \param jointConfig The configuration of joint angles
      * \param bodyName The name of body to be retrieved
      */
@@ -24,5 +24,3 @@ class ParseURDF {
   private:
     KDL::Tree kdlTree_;
 };
-
-#endif  // PARSEURDF_H

@@ -1,11 +1,12 @@
-#ifndef DISTANCEMETRIC_H
-#define DISTANCEMETRIC_H
+#pragma once
+
+#include "datastructure/include/DataType.h"
 
 #include <cmath>
 #include <numeric>
 #include <vector>
 
-double vectorEuclidean(const std::vector<double>& v1,
-                       const std::vector<double>& v2);
+using Distance = double;
 
-#endif  // DISTANCEMETRIC_H
+Distance vectorEuclidean(const std::vector<Coordinate>& v1,
+                         const std::vector<Coordinate>& v2);

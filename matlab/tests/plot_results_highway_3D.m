@@ -7,15 +7,12 @@ path_prefix = '../../resources/3D/';
 %% Results
 [X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, endPts] = loadResults('3D');
 
-% shortest path
-path_highway = load([loadPath, 'interpolated_path_3D.csv']);
-
 %% Robot
-if size(path_highway, 2) == 7
+if size(vtx, 2) == 7
     urdf_file = [];
-elseif size(path_highway, 2) == 10
+elseif size(vtx, 2) == 10
     urdf_file = [path_prefix, 'urdf/snake.urdf'];
-elseif size(path_highway, 2) == 16
+elseif size(vtx, 2) == 16
     urdf_file = [path_prefix, 'urdf/tri-snake.urdf'];
 end
 
@@ -71,12 +68,12 @@ if ~isempty(X_ori)
     end
 end
 
-if ~isempty(path_highway)
-    plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
+if ~isempty(path)
+    plot3(path(:,1), path(:,2), path(:,3),...
         'm-', 'LineWidth', 2)
     
-    for i = 1:ceil(size(path_highway,1)/50):size(path_highway,1)
-        PlotRobotPose(robot, path_highway(i,:), robotURDF);
+    for i = 1:ceil(size(path,1)/50):size(path,1)
+        PlotRobotPose(robot, path(i,:), robotURDF);
     end
 end
 
@@ -87,7 +84,7 @@ if is_validation
     disp('Validating path...')
     Graph.V = vtx';
     
-    high3D = PathValidation3D(robot, arena, obs, path_highway);
+    high3D = PathValidation3D(robot, arena, obs, path);
     high3D.validation();
     high3D.show();
     

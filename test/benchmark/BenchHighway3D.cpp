@@ -1,5 +1,6 @@
+#include "planners/include/HRM3D.h"
+#include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
-#include "util/include/highway_planner.h"
 
 #include <stdlib.h>
 #include <cstdlib>
@@ -23,8 +24,6 @@ int main(int argc, char** argv) {
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
 
-    vector<vector<double>> stat(N);
-
     // Setup environment config
     PlannerSetting3D* env3D = new PlannerSetting3D();
     env3D->loadEnvironment();
@@ -34,23 +33,27 @@ int main(int argc, char** argv) {
     if (argc == 6 && strcmp(argv[5], "0") != 0) {
         quat_file = string(argv[5]) + '_' + string(argv[2]) + ".csv";
     }
-    MultiBodyTree3D robot =
-        loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
+    auto robot = loadRobotMultiBody3D(quat_file, env3D->getNumSurfParam());
 
     // Options
-    option3D opt;
-    opt.N_o = env3D->getObstacle().size();
-    opt.N_s = env3D->getArena().size();
-    opt.N_layers = size_t(N_l);
-    opt.N_dx = size_t(N_x);
-    opt.N_dy = size_t(N_y);
-    double f = 1.5;
-    opt.Lim = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(1) -
-                   f * robot.getBase().getSemiAxis().at(0),
-               env3D->getArena().at(0).getSemiAxis().at(2) -
-                   f * robot.getBase().getSemiAxis().at(0)};
+    PlannerParameter par;
+    par.NUM_LAYER = size_t(N_l);
+    par.NUM_LINE_X = size_t(N_x);
+    par.NUM_LINE_Y = size_t(N_y);
+
+    double f = 1.0;
+    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(1) -
+                           f * robot.getBase().getSemiAxis().at(0),
+                       env3D->getArena().at(0).getSemiAxis().at(2) -
+                           f * robot.getBase().getSemiAxis().at(0)};
+
+    PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = par;
+    req.start = env3D->getEndPoints().at(0);
+    req.goal = env3D->getEndPoints().at(1);
 
     // Store results
     ofstream file_time;
@@ -64,19 +67,23 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HRM3DMultiBody
-        PlannerHighway3D high3D(robot, env3D->getEndPoints(), env3D->getArena(),
-                                env3D->getObstacle(), opt);
-        high3D.getGraphAndPath();
+        // Path planning using HRM3D
+        HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
+        hrm.plan();
 
-        // Store results
-        file_time << high3D.flag << ',' << high3D.planTime.buildTime << ','
-                  << high3D.planTime.searchTime << ','
-                  << high3D.planTime.buildTime + high3D.planTime.searchTime
-                  << ',' << N_l << ',' << N_x << ',' << N_y << ','
-                  << high3D.vtxEdge.vertex.size() << ','
-                  << high3D.vtxEdge.edge.size() << ','
-                  << high3D.solutionPathInfo.PathId.size() << "\n";
+        PlanningResult res = hrm.getPlanningResult();
+
+        // Display and store results
+        displayPlanningTimeInfo(&res.planning_time);
+        displayGraphInfo(&res.graph_structure);
+        displayPathInfo(&res.solution_path);
+
+        file_time << res.solved << ',' << res.planning_time.buildTime << ','
+                  << res.planning_time.searchTime << ','
+                  << res.planning_time.totalTime << ',' << N_l << ',' << N_x
+                  << ',' << N_y << ',' << res.graph_structure.vertex.size()
+                  << ',' << res.graph_structure.edge.size() << ','
+                  << res.solution_path.PathId.size() << "\n";
     }
     file_time.close();
 

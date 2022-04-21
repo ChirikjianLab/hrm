@@ -10,7 +10,7 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 3.3.0)
-- [Boost](https://www.boost.org/) (version = 1.58.0)
+- [Boost](https://www.boost.org/) (version = 1.71.0)
 - [google-test](https://github.com/google/googletest) (version >= 1.10.x)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 - [cmake-format] (version >= 0.4.5)

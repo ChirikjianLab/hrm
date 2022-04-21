@@ -1,44 +1,32 @@
-#ifndef PARSEPLANNINGSETTINGS_H
-#define PARSEPLANNINGSETTINGS_H
+#pragma once
 
+#include "datastructure/include/MultiBodyTree2D.h"
+#include "datastructure/include/MultiBodyTree3D.h"
 #include "geometry/include/SuperEllipse.h"
 #include "geometry/include/SuperQuadrics.h"
-#include "util/include/MultiBodyTree2D.h"
-#include "util/include/MultiBodyTree3D.h"
 #include "util/include/Parse2dCsvFile.h"
 
-/*
- * \brief Free function for loading vector of 2D superellipses
- */
+/** \brief loadVectorSuperEllipse Load vector of 2D superellipses */
 std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
                                                  const int num_curve_param);
 
-/*
- * \brief Free function for loading vector of 3D superquadrics
- */
+/** \brief loadVectorSuperQuadrics Load vector of 3D superquadrics */
 std::vector<SuperQuadrics> loadVectorSuperQuadrics(
     const std::string config_file, const int num_surf_param);
 
-/*
- * \brief Free function for loading multi-body tree in 2D
- */
+/** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
 MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param);
 
-/*
- * \brief Free function for loading multi-body tree in 3D
- */
+/** loadRobotMultiBody3D \brief Load multi-body tree in 3D */
 MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
                                      const int num_surf_param);
 
-/*
- * \brief Free function for loading predefined quaternion or generating uniform
- * random SO(3) rotations
- */
+/** \brief loadPreDefinedQuaternions Load pre-defined quaternion or generating
+ * uniform random SO(3) rotations */
 void loadPreDefinedQuaternions(const std::string quat_file,
                                SuperQuadrics& robot_base);
 
-/*
- * \class Setting planning environment, pure virtual functions
+/** \class PlannerSetting Setting planning environment, pure virtual functions
  */
 class PlannerSetting {
   public:
@@ -49,9 +37,7 @@ class PlannerSetting {
     virtual void loadEnvironment() = 0;
 };
 
-/*
- * \class Setting 2D planning environment
- */
+/** \class PlannerSetting2D Setting 2D planning environment */
 class PlannerSetting2D : public PlannerSetting {
   public:
     PlannerSetting2D();
@@ -75,9 +61,7 @@ class PlannerSetting2D : public PlannerSetting {
     const int num_curve_param_ = 50;
 };
 
-/*
- * \class Setting 3D planning environment
- */
+/** \class PlannerSetting3D Setting 3D planning environment */
 class PlannerSetting3D : public PlannerSetting {
   public:
     PlannerSetting3D();
@@ -100,5 +84,3 @@ class PlannerSetting3D : public PlannerSetting {
 
     const int num_surf_param_ = 10;
 };
-
-#endif  // PARSEPLANNINGSETTINGS_H

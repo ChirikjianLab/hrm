@@ -1,5 +1,4 @@
-#ifndef MINKOWSKILIBRARYSAMPLERSE2_H
-#define MINKOWSKILIBRARYSAMPLERSE2_H
+#pragma once
 
 #include "ompl/base/ValidStateSampler.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
@@ -7,10 +6,8 @@
 
 namespace ob = ompl::base;
 
-/*
- * \brief Minkowski-based sampler, using pre-computed point-based library to
- * sample
- */
+/** \brief Minkowski-based sampler, using pre-computed point-based library to
+ * sample */
 class MinkowskiPointLibrarySamplerSE2 : public ob::ValidStateSampler {
   public:
     MinkowskiPointLibrarySamplerSE2(const ob::SpaceInformation* si);
@@ -31,10 +28,8 @@ class MinkowskiPointLibrarySamplerSE2 : public ob::ValidStateSampler {
     std::vector<std::vector<double>>* validPoints_;
 };
 
-/*
- * \brief Minkowski-based sampler, using pre-computed segment-based library to
- * sample
- */
+/** \brief Minkowski-based sampler, using pre-computed segment-based library to
+ * sample */
 class MinkowskiSegmentLibrarySamplerSE2 : public ob::ValidStateSampler {
   public:
     MinkowskiSegmentLibrarySamplerSE2(const ob::SpaceInformation* si);
@@ -54,5 +49,3 @@ class MinkowskiSegmentLibrarySamplerSE2 : public ob::ValidStateSampler {
 
     std::vector<std::vector<double>>* validSegments_;
 };
-
-#endif  // MINKOWSKILIBRARYSAMPLERSE2_H

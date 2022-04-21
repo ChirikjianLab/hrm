@@ -71,5 +71,10 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
+### Eclipse ignores ###
+*.cproject
+*.project
+/.settings
+
 # Clion
 /.idea/*

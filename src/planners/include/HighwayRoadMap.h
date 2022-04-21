@@ -1,16 +1,18 @@
-#ifndef HIGHWAYROADMAP_H
-#define HIGHWAYROADMAP_H
+#pragma once
 
-#include "geometry/include/SuperEllipse.h"
-#include "util/include/DistanceMetric.h"
+#include "PlanningRequest.h"
+#include "PlanningResult.h"
+#include "datastructure/include/DataType.h"
 
-#include <ompl/util/Time.h>
-#include <algorithm>
+#include "Eigen/Dense"
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/astar_search.hpp>
 #include <boost/graph/graph_traits.hpp>
-#include <limits>
-#include <vector>
+
+#include <algorithm>
+#include <list>
+#include <random>
 
 using Weight = boost::property<boost::edge_weight_t, double>;
 using AdjGraph =
@@ -19,120 +21,224 @@ using AdjGraph =
 using Vertex = AdjGraph::vertex_descriptor;
 using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
-using Edge = std::vector<std::pair<int, int>>;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
-// cf_cell: collision-free points
-struct cf_cell {
-  public:
-    std::vector<double> ty;
-    std::vector<std::vector<double>> xL;
-    std::vector<std::vector<double>> xU;
-    std::vector<std::vector<double>> xM;
+/** \brief freeSegment2D collision-free line segments in 2D */
+struct FreeSegment2D {
+    std::vector<Coordinate> ty;
+    std::vector<std::vector<Coordinate>> xL;
+    std::vector<std::vector<Coordinate>> xU;
+    std::vector<std::vector<Coordinate>> xM;
 };
 
-// boundary: Minkowski boundary points for obstacles and arenas
-struct boundary {
-  public:
-    std::vector<Eigen::MatrixXd> bd_s;
-    std::vector<Eigen::MatrixXd> bd_o;
+/** \brief Intervals for intersection between sweep line and arenas/obstacles */
+struct IntersectionInterval {
+    Eigen::MatrixXd arenaLow;
+    Eigen::MatrixXd arenaUpp;
+    Eigen::MatrixXd obstacleLow;
+    Eigen::MatrixXd obstacleUpp;
 };
 
-// Parameters for the polyhedron local c-space
-struct polyCSpace {
-  public:
-    std::vector<std::vector<double>> vertex;
-    std::vector<std::vector<double>> invMat;
+/** \brief Boundary Minkowski boundary points for obstacles and arenas */
+struct Boundary {
+    std::vector<BoundaryPoints> arena;
+    std::vector<BoundaryPoints> obstacle;
 };
 
-struct param {
-    double infla;
-    size_t N_layers, N_dy, sampleNum, N_o, N_s;
-    polyCSpace polyVtx;
-
-    /*
-     * \brief Boundary limit of the planning arena
-     * \param Lim: {xLowBound, xHighBound, yLowbound, yHighBound}
-     */
-    std::vector<double> Lim;
+/** \brief vertexIdx vertex index at each C-layer, sweep line */
+struct vertexIdx {
+    Index layer;
+    std::vector<Index> plane;
+    std::vector<std::vector<Index>> line;
 };
 
+/** \class HighwayRoadMap Superclass for HRM-based planners */
+template <class RobotType, class ObjectType>
 class HighwayRoadMap {
   public:
-    HighwayRoadMap(const SuperEllipse& robot,
-                   const std::vector<std::vector<double>>& endpt,
-                   const std::vector<SuperEllipse>& arena,
-                   const std::vector<SuperEllipse>& obs, const param& param);
+    HighwayRoadMap(const RobotType& robot, const std::vector<ObjectType>& arena,
+                   const std::vector<ObjectType>& obstacle,
+                   const PlanningRequest& req);
+
     virtual ~HighwayRoadMap();
 
-  public:
+    /**
+     * \brief getPlanningResult retrieve planning results
+     * \return PlanningResult struture
+     */
+    PlanningResult getPlanningResult() const { return res_; }
+
+    /**
+     * \brief getPlannerParameters retrieve parameters
+     * \return PlannerParameter
+     */
+    PlannerParameter getPlannerParameters() const { return param_; }
+
+    /**
+     * \brief getSolutionPath Retrieve solved path
+     * \return 2D vector for representing solved path
+     */
+    std::vector<std::vector<Coordinate>> getSolutionPath();
+
+    RobotType getRobot() const { return robot_; }
+
+    std::vector<ObjectType> getArena() const { return arena_; }
+    std::vector<ObjectType> getObstacle() const { return obs_; }
+
+    std::vector<Coordinate> getStart() const { return start_; }
+    std::vector<Coordinate> getGoal() const { return goal_; }
+
+    /** \brief plan Main routine for HRM-based planners */
     virtual void plan();
-    virtual void buildRoadmap();
-    virtual boundary boundaryGen();
-    cf_cell rasterScan(std::vector<Eigen::MatrixXd> bd_s,
-                       std::vector<Eigen::MatrixXd> bd_o);
-    void connectOneLayer(cf_cell cell);
-    virtual void connectMultiLayer();
+
+    /** \brief buildRoadmap Subroutine for building roadmap */
+    virtual void buildRoadmap() = 0;
+
+    /** \brief search Subroutine for graph searching */
     void search();
 
-  private:
-    cf_cell enhanceDecomp(cf_cell cell);
-    std::vector<double> addMidVtx(std::vector<double> vtx1,
-                                  std::vector<double> vtx2);
-    size_t getNearestVtxOnGraph(std::vector<double> v);
-
-    /* \brief Variables
-     * N_o       : number of obstacles;
-     * N_s       : number of arenas;
-     * N_dy      : number of sweep lines in each C-layer;
-     * infla     : inflation factor for the robot;
-     * N_layers  : number of C-layers;
-     * N_KCsample: number of samples for searching in the intersection between
-     * two local c-space;
-     * ang_r     : sampled orientations of the robot;
-     * N_v_layer : number of vertex in each layer;
-
-     * graph     : a structure consisting of vertex and edges;
-     * Cost      : cost of the searched path;
-     * Endpt     : start and goal configurations;
-     * Path      : valid path of motions;
-     * polyVtx   : descriptions of polyhedron local c-space
-     * planTime  : planning time: roadmap building time and path search time
+    /**
+     * \brief boundaryGen Generating Minkowski boundary points
+     * \return Boundary structure
      */
-  public:
-    SuperEllipse Robot;
-    std::vector<SuperEllipse> Arena, Obs;
-    std::vector<std::vector<double>> Endpt;
+    virtual Boundary boundaryGen();
 
-    // graph: vector of vertices, vector of connectable edges
-    struct graph {
-      public:
-        std::vector<std::vector<double>> vertex;
-        Edge edge;
-        std::vector<double> weight;
-    } vtxEdge;
+    /**
+     * \brief sweepLineProcess sweep-line process for generating collision-free
+     * line segment
+     */
+    virtual void sweepLineProcess() = 0;
 
-    AdjGraph Graph;
+    /**
+     * \brief generateVertices subroutine for generating collision-free
+     * vertices on the yz-plane
+     * \param tx x-coordinate of a sweep line (for 2D, it is set as constant
+     * 0.0)
+     * \param pointer to FreeSegment2D
+     */
+    virtual void generateVertices(const Coordinate tx,
+                                  const FreeSegment2D* freeSeg) = 0;
 
-    double Cost = 0.0;
-    std::vector<int> Paths;
-    polyCSpace polyVtx;
+    /**
+     * \brief connectOneLayer2D Subroutine for connecting vertices within one
+     * C-layer
+     * \param FreeSegment2D pointer
+     */
+    void connectOneLayer2D(const FreeSegment2D* freeSeg);
 
-    struct Time {
-      public:
-        double buildTime, searchTime;
-    } planTime;
+    /** \brief connectMultiLayer Subroutine for connecting vertices among
+     * adjacent C-layers */
+    virtual void connectMultiLayer() = 0;
 
   protected:
-    Eigen::Index N_o;
-    Eigen::Index N_s;
-    Eigen::Index N_dy;
-    size_t N_layers;
-    double infla;
-    size_t numMidSample;
-    std::vector<double> ang_r;
-    std::vector<size_t> N_v_layer;
-    std::vector<double> Lim;
+    /** \brief bridgeLayer generating bridge C-layer to connect adjacent
+     * C-layers */
+    virtual void bridgeLayer() = 0;
+
+    /**
+     * \brief bridgeVertex generating bridge vertices for failed connections
+     * within one C-layer
+     * \param v1, v2 Two vertices to be connected
+     * \return New bridge vertices
+     */
+    virtual std::vector<double> bridgeVertex(std::vector<Coordinate> v1,
+                                             std::vector<Coordinate> v2);
+
+    /** \brief computeIntersections compute intervals of intersections between
+     * sweep line and arenas/obstacles
+     * \param ty vector of y-coordinates of the sweep line
+     * \param Boundary boundary info of C-layer
+     * \return IntersectionInterval intersecting points as intervals
+     */
+    virtual IntersectionInterval computeIntersections(
+        const std::vector<Coordinate>& ty) = 0;
+
+    /** \brief computeFreeSegment compute collision-free segment on each sweep
+     * line
+     * \param ty vector of y-coordinates of the sweep line
+     * \param IntersectionInterval pointer to intervals of sweep line
+     * intersections
+     * \return FreeSegment2D
+     */
+    FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
+                                     const IntersectionInterval* intersect);
+
+    /** \brief isSameLayerTransitionFree check whether connection between V1 and
+     * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
+     * mesh intersection checking
+     * \param V1, V2 vector of queried vertices
+     * \return true is transition is valid, false otherwise
+     */
+    virtual bool isSameLayerTransitionFree(
+        const std::vector<Coordinate>& v1,
+        const std::vector<Coordinate>& v2) = 0;
+
+    /** \brief isMultiLayerTransitionFree check whether connection between V1
+     * and V2 is valid through interpolation
+     * \param V1, V2 vector of queried vertices
+     * \return true is transition is valid, false otherwise
+     */
+    virtual bool isMultiLayerTransitionFree(
+        const std::vector<Coordinate>& v1,
+        const std::vector<Coordinate>& v2) = 0;
+
+    /** \brief check whether one point is within C-free */
+    virtual bool isPtInCFree(const Index bdIdx,
+                             const std::vector<Coordinate>& v) = 0;
+
+    /** \brief enhanceDecomp Subroutine to enhance vertex generation
+     * \param FreeSegment2D pointer (non-const)
+     */
+    void enhanceDecomp(FreeSegment2D* freeSeg);
+
+    /** \brief find the nearest neighbors of a pose on the graph
+     * \param vertex the queried vertex
+     * \param k number of neighbors
+     * \param radius radius of a neighboring ball around v
+     * \return vector of Vertex structure for the neighboring vertices
+     */
+    virtual std::vector<Vertex> getNearestNeighborsOnGraph(
+        const std::vector<Coordinate>& vertex, const Index k,
+        const double radius) = 0;
+
+    /** \brief setTransform set the transformation for robot
+     * \param v configuration of the robot
+     */
+    virtual void setTransform(const std::vector<Coordinate>& v) = 0;
+
+  protected:
+    /** \param robot_ Robot description */
+    RobotType robot_;
+
+    /** \param arena_, obs_ Description of arena and obstacles */
+    std::vector<ObjectType> arena_;
+    std::vector<ObjectType> obs_;
+
+    /** \param start_, goal_ Start/goal configurations */
+    std::vector<Coordinate> start_;
+    std::vector<Coordinate> goal_;
+
+    /** \param param_ Planning parameters */
+    PlannerParameter param_;
+
+    /** \param res_ Planning results */
+    PlanningResult res_;
+
+    /** \param N_o number of obstacles */
+    Index N_o;
+
+    /** \param N_s number of arenas */
+    Index N_s;
+
+    /** \param Boundary point sets of Minkowski operations */
+    Boundary layerBound_;
+
+    /** \param Vertex index info */
+    vertexIdx N_v;
+    std::vector<vertexIdx> vtxId_;
+
+    /** \param Tightly-fitted ellipsoids at bridge C-layer */
+    std::vector<ObjectType> tfe_;
 };
 
-#endif  // HIGHWAYROADMAP_H
+#include "HighwayRoadMap-inl.h"

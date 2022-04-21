@@ -1,45 +1,35 @@
-#ifndef INTERPOLATESE3_H
-#define INTERPOLATESE3_H
+#pragma once
+
+#include "datastructure/include/DataType.h"
 
 #include <Eigen/Geometry>
 #include <vector>
 
-/*
- * \brief SE(3) interpolation
- * Separately interpolate translation and rotational parts
- */
-std::vector<std::vector<double>> interpolateSE3(
-    const std::vector<double>& vStart, const std::vector<double>& vEnd,
-    const unsigned int N_step);
+/** \brief interpolateSE3 SE(3) interpolation. Separately interpolate
+ * translation and rotational parts */
+std::vector<std::vector<Coordinate>> interpolateSE3(
+    const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
+    const Index numStep);
 
-/*
- * \brief SE(3)xR^n compound interpolation
- */
-std::vector<std::vector<double>> interpolateCompoundSE3Rn(
-    const std::vector<double>& vStart, const std::vector<double>& vEnd,
-    const unsigned int numStep);
+/** \brief interpolateCompoundSE3Rn SE(3)xR^n compound interpolation */
+std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
+    const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
+    const Index numStep);
 
-/*
- * \brief SO(3) interpolation using axis-angle parameterization
- * Find axis of relative rotations, interpolate angles around it
- */
+/** \brief interpolateAngleAxis SO(3) interpolation using axis-angle
+ * parameterization Find axis of relative rotations, interpolate angles around
+ * it */
 std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
-    const unsigned int N_step);
+    const Index numStep);
 
-/*
- * \brief SO(3) interpolation using Spherical Linear Interpolation between two
- * quaternions
- */
+/** \brief interpolateSlerp SO(3) interpolation using Spherical Linear
+ * Interpolation between two quaternions */
 std::vector<Eigen::Quaterniond> interpolateSlerp(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
-    const unsigned int N_step);
+    const Index numStep);
 
-/*
- * \brief R^n interpolation using linear interpolation
- */
-std::vector<std::vector<double>> interpolateRn(
-    const std::vector<double>& vStart, const std::vector<double>& vEnd,
-    const unsigned int N_step);
-
-#endif  // INTERPOLATESE3_H
+/** \brief interpolateRn R^n interpolation using linear interpolation */
+std::vector<std::vector<Coordinate>> interpolateRn(
+    const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
+    const Index numStep);
