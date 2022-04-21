@@ -29,9 +29,9 @@ HRM3DAblation<Planner>::~HRM3DAblation() {}
 
 template <class Planner>
 bool HRM3DAblation<Planner>::isMultiLayerTransitionFree(
-    const std::vector<double>& v1, const std::vector<double>& v2) {
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
-    std::vector<std::vector<double>> vInterp =
+    std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, Planner::param_.NUM_POINT);
 
     for (auto vStep : vInterp) {

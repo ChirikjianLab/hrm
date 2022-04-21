@@ -119,12 +119,12 @@ void ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    size_t n_12 = vtxId_.at(param_.NUM_LAYER - 1).startId;
-    size_t n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
+    Index n_12 = vtxId_.at(param_.NUM_LAYER - 1).startId;
+    Index n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
 
     // Start and end vertics in the nearest layer
-    size_t start = vtxId_.at(minIdx).startId;
-    size_t n_1 = vtxId_.at(minIdx).layer;
+    Index start = vtxId_.at(minIdx).startId;
+    Index n_1 = vtxId_.at(minIdx).layer;
 
     // Construct bridge C-layer
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);

@@ -74,7 +74,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void connectMultiLayer() override;
 
-    void connectExistLayer(const int layerId) override;
+    void connectExistLayer(const Index layerId) override;
 
   protected:
     void generateBoundaryMesh(const Boundary* bound, BoundaryMesh* boundMesh);

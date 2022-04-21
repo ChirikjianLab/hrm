@@ -33,7 +33,7 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL 5.2 REQUIRED)
+find_package(CGAL 5.0 REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 
 find_package(GMP REQUIRED)
@@ -58,7 +58,7 @@ endif()
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost 1.58 REQUIRED)
+find_package(Boost 1.71 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)

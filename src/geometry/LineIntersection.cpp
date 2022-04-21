@@ -1,9 +1,9 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
+std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
                                                  const MeshMatrix& shape) {
-    std::vector<Eigen::Vector3d> points;
+    std::vector<Point3D> points;
 
     /** \brief filter out-of-range case: line direction parallel to
      * axes-defined planes */
@@ -46,8 +46,8 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
 }
 
 std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
-    const Eigen::VectorXd& line, const MeshMatrix& shape) {
-    std::vector<Eigen::Vector3d> points;
+    const Line3D& line, const MeshMatrix& shape) {
+    std::vector<Point3D> points;
 
     if (line(0) > shape.vertices.row(0).maxCoeff() ||
         line(0) < shape.vertices.row(0).minCoeff()) {
@@ -112,10 +112,9 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
     return points;
 }
 
-bool intersectLineTriangle3D(const Eigen::VectorXd* line,
-                             const Eigen::Vector3d* t0,
+bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Eigen::Vector3d* pt) {
+                             Point3D* pt) {
     double tol = 1e-12;
     Eigen::Vector3d n;
     double a, b, uu, uv, vv, wu, wv, D, s, t;

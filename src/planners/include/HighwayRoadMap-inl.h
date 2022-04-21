@@ -301,7 +301,8 @@ template <class RobotType, class ObjectType>
 std::vector<std::vector<double>>
 HighwayRoadMap<RobotType, ObjectType>::getInterpolatedSolutionPath(
     const unsigned int num) {
-    std::vector<std::vector<double>> interpPath = res_.solution_path.solvedPath;
+    std::vector<std::vector<Coordinate>> interpPath =
+        res_.solution_path.solvedPath;
     return interpPath;
 }
 
@@ -406,8 +407,8 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const int idx1,
-                                                         const int idx2) {
+void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
+                                                         const Index idx2) {
     auto v1 = res_.graph_structure.vertex.at(idx1);
     auto v2 = res_.graph_structure.vertex.at(idx2);
 

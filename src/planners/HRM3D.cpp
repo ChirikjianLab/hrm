@@ -264,12 +264,12 @@ void HRM3D::connectMultiLayer() {
 
         // Find vertex only in adjacent layers
         // Start and end vertics in the current layer
-        size_t n22 = vtxId_.at(i).startId;
-        size_t n_2 = vtxId_.at(i).layer;
+        Index n22 = vtxId_.at(i).startId;
+        Index n_2 = vtxId_.at(i).layer;
 
         // Start and end vertics in the nearest layer
-        size_t start = vtxId_.at(minIdx).startId;
-        size_t n2 = vtxId_.at(minIdx).layer;
+        Index start = vtxId_.at(minIdx).startId;
+        Index n2 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
         computeTFE(q_.at(i), q_.at(minIdx), &tfe_);
@@ -338,15 +338,15 @@ void HRM3D::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-void HRM3D::connectExistLayer(const int layerId) {
+void HRM3D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
-    size_t startIdCur = vtxId_.at(layerId).startId;
-    size_t endIdCur = vtxId_.at(layerId).layer;
+    Index startIdCur = vtxId_.at(layerId).startId;
+    Index endIdCur = vtxId_.at(layerId).layer;
 
     // Connect within same C-layer, same index with previous round of search
-    size_t startIdExist = vtxIdAll_.back().at(layerId).startId;
-    size_t endIdExist = vtxIdAll_.back().at(layerId).layer;
+    Index startIdExist = vtxIdAll_.back().at(layerId).startId;
+    Index endIdExist = vtxIdAll_.back().at(layerId).layer;
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
@@ -382,7 +382,7 @@ void HRM3D::connectExistLayer(const int layerId) {
 
 std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     const Index num) {
-    std::vector<std::vector<double>> path_interp;
+    std::vector<std::vector<Coordinate>> path_interp;
 
     // Compute distance per step
     const double distance_step =
@@ -396,9 +396,10 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
                             res_.solution_path.solvedPath.at(i + 1)) /
             distance_step;
 
-        std::vector<std::vector<double>> step_interp = interpolateCompoundSE3Rn(
-            res_.solution_path.solvedPath.at(i),
-            res_.solution_path.solvedPath.at(i + 1), num_step);
+        std::vector<std::vector<Coordinate>> step_interp =
+            interpolateCompoundSE3Rn(res_.solution_path.solvedPath.at(i),
+                                     res_.solution_path.solvedPath.at(i + 1),
+                                     num_step);
 
         path_interp.insert(path_interp.end(), step_interp.begin(),
                            step_interp.end());
@@ -434,10 +435,10 @@ void HRM3D::bridgeLayer() {
 
         // calculate Minkowski boundary points and meshes for obstacles
         std::vector<MeshMatrix> bdMesh;
-        for (size_t j = 0; j < size_t(N_o); ++j) {
-            auto bd = obs_.at(j).getMinkSum3D(tfe_.at(i), +1);
+        for (auto obstacle : obs_) {
+            auto bd = obstacle.getMinkSum3D(tfe_.at(i), +1);
             bdMesh.push_back(
-                getMeshFromParamSurface(bd, obs_.at(j).getNumParam()));
+                getMeshFromParamSurface(bd, obstacle.getNumParam()));
         }
 
         bridgeLayerBound_.at(i) = bdMesh;

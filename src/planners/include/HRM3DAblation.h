@@ -19,8 +19,8 @@ class HRM3DAblation : public Planner {
     ~HRM3DAblation() override;
 
   protected:
-    bool isMultiLayerTransitionFree(const std::vector<double>& v1,
-                                    const std::vector<double>& v2) override;
+    bool isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+                                    const std::vector<Coordinate>& v2) override;
 
     void bridgeLayer() override;
 

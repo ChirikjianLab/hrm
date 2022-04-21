@@ -27,7 +27,7 @@ class MultiBodyTree3D {
     void addBody(SuperQuadrics link);
 
     /** \brief Tranform robot */
-    void robotTF(Eigen::Matrix4d tf);
+    void robotTF(SE3Transform tf);
     void robotTF(const std::string urdfFile, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
     void robotTF(ParseURDF kdl, const SE3Transform* gBase,
@@ -46,5 +46,5 @@ class MultiBodyTree3D {
     SuperQuadrics base_;
     Index numLinks_ = 0;
     std::vector<SuperQuadrics> link_;
-    std::vector<Eigen::Matrix4d> tf_;
+    std::vector<SE3Transform> tf_;
 };

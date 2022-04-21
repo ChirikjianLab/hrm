@@ -94,7 +94,7 @@ intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
 
     // z-coordinate of the intersection btw sweep line and arenas
     for (size_t j = 0; j < numArenaMink; ++j) {
-        std::vector<Eigen::Vector3d> arenaIntersectPts =
+        std::vector<Point3D> arenaIntersectPts =
             intersectVerticalLineMesh3D(sweepLine, surfaceArena[j]);
         if (!arenaIntersectPts.empty()) {
             intersects.arenaZCoords.emplace_back(
@@ -108,7 +108,7 @@ intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
     }
     // z-coordinate of the intersection btw sweep line and obstacles
     for (size_t j = 0; j < numObsMink; ++j) {
-        std::vector<Eigen::Vector3d> obsIntersectPts =
+        std::vector<Point3D> obsIntersectPts =
             intersectVerticalLineMesh3D(sweepLine, surfaceObs[j]);
         if (!obsIntersectPts.empty()) {
             intersects.obsZCords.emplace_back(

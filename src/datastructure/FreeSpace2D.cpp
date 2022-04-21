@@ -44,7 +44,7 @@ std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
 
     for (size_t i = 0; i < param_->numY; ++i) {
         // y-coordinate
-        double yCoord = param_->yLim.first + i * dy;
+        Coordinate yCoord = param_->yLim.first + i * dy;
 
         // Compute free segments on the sweep line
         freeSegments.push_back(getFreeSegmentsGivenY(yCoord));

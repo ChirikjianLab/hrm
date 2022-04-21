@@ -6,6 +6,7 @@ using Coordinate = double;
 using BoundaryPoints = Eigen::MatrixXd;
 using Indicator = int;
 using Index = size_t;
+using Point2D = Eigen::Vector2d;
 using Point3D = Eigen::Vector3d;
 using Line3D = Eigen::VectorXd;
 

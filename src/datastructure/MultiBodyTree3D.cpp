@@ -19,7 +19,7 @@ void MultiBodyTree3D::addBody(SuperQuadrics link) {
     numLinks_++;
 
     // Add tranformation related to Base
-    Eigen::Matrix4d g;
+    SE3Transform g;
     g.setIdentity();
     g.block<3, 3>(0, 0) = link.getQuaternion().toRotationMatrix();
     g.block<3, 1>(0, 3) = Eigen::Vector3d(link.getPosition().data());
@@ -36,7 +36,7 @@ void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
     base_.setQuaternion(quat);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     for (size_t i = 0; i < numLinks_; i++) {
         gLink = g * tf_.at(i);
 
@@ -63,7 +63,7 @@ void MultiBodyTree3D::robotTF(const std::string urdfFile,
     base_.setQuaternion(quatBase);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     KDL::JntArray jointArray;
     jointArray.data = *jointConfig;
 
@@ -92,7 +92,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
     base_.setQuaternion(quat);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     KDL::JntArray jointArray;
     jointArray.data = *jointConfig;
 
@@ -112,7 +112,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
 // Minkowski sums and difference for multi-link robot
 std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
                                                       const int k) {
-    std::vector<Eigen::MatrixXd> mink;
+    std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base
     mink.push_back(s1->getMinkSum3D(base_, k));
@@ -120,7 +120,7 @@ std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
     // Minkowski sums for Links
     for (size_t i = 0; i < numLinks_; i++) {
         mink.push_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
-                       Eigen::Vector3d(link_.at(i).getPosition().data()));
+                       Point3D(link_.at(i).getPosition().data()));
     }
 
     return mink;

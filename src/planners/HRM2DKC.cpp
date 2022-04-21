@@ -17,11 +17,11 @@ Boundary HRM2DKC::boundaryGen() {
                              robot_infla.getSemiAxis().at(1) * (1 + infla)});
 
     // calculate Minkowski boundary points
-    for (Index i = 0; i < N_s; ++i) {
-        bd.arena.emplace_back(arena_[i].getMinkSum2D(robot_infla, -1));
+    for (auto arena : arena_) {
+        bd.arena.emplace_back(arena.getMinkSum2D(robot_infla, -1));
     }
-    for (Index i = 0; i < N_o; ++i) {
-        bd.obstacle.emplace_back(obs_[i].getMinkSum2D(robot_infla, +1));
+    for (auto obstacle : obs_) {
+        bd.obstacle.emplace_back(obstacle.getMinkSum2D(robot_infla, +1));
     }
 
     return bd;

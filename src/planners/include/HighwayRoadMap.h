@@ -147,7 +147,7 @@ class HighwayRoadMap {
 
     /** \brief connectExistLayer Subroutine for connecting vertices with
      * previously existing layers */
-    virtual void connectExistLayer(const int layerId) = 0;
+    virtual void connectExistLayer(const Index layerId) = 0;
 
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
@@ -159,7 +159,7 @@ class HighwayRoadMap {
      * within one C-layer
      * \param idx1, idx2 Indices of two vertices to be connected
      */
-    void bridgeVertex(const int idx1, const int idx2);
+    void bridgeVertex(const Index idx1, const Index idx2);
 
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles

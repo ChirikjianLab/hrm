@@ -136,10 +136,10 @@ void HRM2D::connectMultiLayer() {
     }
 
     // Vertex indexes for list traversal
-    size_t startIdCur;
-    size_t endIdCur;
-    size_t startIdAdj;
-    size_t endIdAdj;
+    Index startIdCur;
+    Index endIdCur;
+    Index startIdAdj;
+    Index endIdAdj;
 
     size_t j = 0;
 
@@ -194,15 +194,15 @@ void HRM2D::connectMultiLayer() {
     }
 }
 
-void HRM2D::connectExistLayer(const int layerId) {
+void HRM2D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
-    size_t startIdCur = vtxId_.at(layerId).startId;
-    size_t endIdCur = vtxId_.at(layerId).layer;
+    Index startIdCur = vtxId_.at(layerId).startId;
+    Index endIdCur = vtxId_.at(layerId).layer;
 
     // Connect within same C-layer, same index with previous round of search
-    size_t startIdExist = vtxIdAll_.back().at(layerId).startId;
-    size_t endIdExist = vtxIdAll_.back().at(layerId).layer;
+    Index startIdExist = vtxIdAll_.back().at(layerId).startId;
+    Index endIdExist = vtxIdAll_.back().at(layerId).layer;
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
@@ -251,7 +251,7 @@ void HRM2D::bridgeLayer() {
     }
 }
 
-void HRM2D::bridgeVertex(const int idx1, const int idx2) {
+void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
     std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
     std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
 
@@ -273,8 +273,8 @@ void HRM2D::bridgeVertex(const int idx1, const int idx2) {
     bool isSuccess = true;
     for (size_t i = 0; i < segment.xM.at(0).size(); ++i) {
         // Generate new vertex and index in graph
-        std::vector<double> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
-                                 v1.at(2)};
+        std::vector<Coordinate> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
+                                     v1.at(2)};
 
         int idxNew = res_.graph_structure.vertex.size();
         res_.graph_structure.vertex.push_back(vNew);
@@ -495,7 +495,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 void HRM2D::setTransform(const std::vector<Coordinate>& v) {
     SE2Transform g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
-    g.topRightCorner(2, 1) = Eigen::Vector2d(v[0], v[1]);
+    g.topRightCorner(2, 1) = Point2D(v[0], v[1]);
     g.bottomLeftCorner(1, 3) << 0, 0, 1;
     robot_.robotTF(g);
 }
@@ -507,7 +507,7 @@ void HRM2D::computeTFE(const double thetaA, const double thetaB,
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
     tfe->push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
-                            uint(param_.NUM_POINT), robot_.getBase().getNum()));
+                            param_.NUM_POINT, robot_.getBase().getNum()));
 
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         Eigen::Rotation2Dd rotLink(
