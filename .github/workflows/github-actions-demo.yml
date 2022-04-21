@@ -3,11 +3,16 @@ on: [push]
 jobs:
   Build-and-Test:
     runs-on: ubuntu-20.04
+    container:
+        image: robotma/focal-dev-qianli:latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Dependencies
+      - name: Check Environement
+        run: pwd && echo $USER
+      - name: Compile
         run: |
-          cd script && ./install-dependencies.sh
+          cd .. && mkdir tmpBuild && cd tmpBuild
+          cmake -G Ninja ../HighwayRoadMap && ninja -j 9
 
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
