@@ -4,6 +4,7 @@
 set -e
 
 if [[ $USER == "roma" ]]; then
+  # TODO : need to check how this can work out with CI pipeline
   eval "$(ssh-agent -s)"
   ssh-add "$HOME"/.ssh/id_ed25519_personal
 elif [[ $USER == "robot" ]]; then
