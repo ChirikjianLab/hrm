@@ -1,13 +1,20 @@
-#!/bin/sh
+#!/bin/bash
 
-# TODO : temporary solution to resolve ssh priviledge. Set the owner of .ssh to the owner of docker, a.k.a, robot
-# docker's username : robot
-# docker's sudo password : robot
-sudo chown -R robot:robot "$HOME"/.ssh
-# Note: After exiting docker, you will need to reset the owner of .ssh on your localhost
+# stop execution instantly. Also print the error location of the running code.
+set -e
 
-eval "$(ssh-agent -s)"
-ssh-add "$HOME"/.ssh/id_rsa
+if [[ $USER == "roma" ]]; then
+  eval "$(ssh-agent -s)"
+  ssh-add "$HOME"/.ssh/id_ed25519_personal
+elif [[ $USER == "robot" ]]; then
+  # TODO : temporary solution to resolve ssh priviledge. Set the owner of .ssh to the owner of docker, a.k.a, robot
+  # docker's username : robot
+  # docker's sudo password : robot
+  sudo chown -R robot:robot "$HOME"/.ssh
+  eval "$(ssh-agent -s)"
+  ssh-add "$HOME"/.ssh/id_rsa
+  # Note: After exiting docker, you will need to reset the owner of .ssh on your localhost
+fi
 
 # Use ninja build system for fast speed
 sudo apt-get install -y ninja-build
@@ -22,10 +29,7 @@ buildAndInstall() {
   cd .. && rm -rf build && rm -rf "$1"
 }
 
-# Boost 1.58 install
-wget -O - https://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.gz/download | tar zxf -
-cd boost_1_58_0/
-./bootstrap.sh && sudo ./b2 install
+# Depend on Boost 1.71.0 as the default of Ubuntu 20.04
 
 # libccd install from source
 git clone https://github.com/danfis/libccd.git
@@ -62,3 +66,5 @@ buildAndInstall "$srcDir"
 
 # install deb package for urdfdom and tinmyxml
 sudo apt install liburdfdom-dev
+
+sudo rm -r "$HOME"/tmpHRM

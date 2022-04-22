@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+# TODO : the versions included here should be explicitly tested out,preferably in CI
+cmake_minimum_required(VERSION 3.16...3.18)
 
 # Project's name
 project(HighwayRoadMap VERSION 0.2.2 LANGUAGES CXX)
@@ -58,7 +59,7 @@ endif()
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
-find_package(Boost 1.71 REQUIRED)
+find_package(Boost 1.71.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
