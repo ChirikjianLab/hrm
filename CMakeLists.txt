@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.16...3.18)
 # Project's name
 project(HighwayRoadMap VERSION 0.2.2 LANGUAGES CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
 set(default_build_type "Release")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -61,6 +61,8 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 
 find_package(Boost 1.71.0 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
+
+find_package(Threads)
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
