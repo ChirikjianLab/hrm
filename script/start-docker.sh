@@ -4,7 +4,7 @@
 set -e
 
 # Docker image to pull
-dockerImage="robotma/focal-dev-qianli:latest"
+dockerImage="robotma/highwayroadmap-gcc-9:latest"
 
 if [[ "$(docker images -q "$dockerImage" 2> /dev/null)" == "" ]]; then
     docker pull "$dockerImage"
