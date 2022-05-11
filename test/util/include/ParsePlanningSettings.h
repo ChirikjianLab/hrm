@@ -8,11 +8,20 @@
 #include "util/include/Parse2dCsvFile.h"
 
 /** \brief loadVectorGeometry Load vector of 2D superellipses*/
-void loadVectorGeometry(const std::string config_file, const int num_param,
+void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
+                        const int num_curve_param,
+                        std::vector<SuperEllipse>& object);
+
+void loadVectorGeometry(const std::string config_file,
+                        const int num_curve_param,
                         std::vector<SuperEllipse>& object);
 
 /** \brief loadVectorGeometry Load vector of 3D superquadrics*/
-void loadVectorGeometry(const std::string config_file, const int num_param,
+void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
+                        const int num_surf_param,
+                        std::vector<SuperQuadrics>& object);
+
+void loadVectorGeometry(const std::string config_file, const int num_surf_param,
                         std::vector<SuperQuadrics>& object);
 
 /** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
@@ -61,6 +70,12 @@ class PlannerSetting {
     ~PlannerSetting() {}
 
   public:
+    void setArena(std::vector<ObjectType> arena) { arena_ = arena; }
+    void setObstacle(std::vector<ObjectType> obstacle) { obstacle_ = obstacle; }
+    void setEndPoints(std::vector<std::vector<double>> end_points) {
+        end_points_ = end_points;
+    }
+
     std::vector<ObjectType> getArena() const { return arena_; }
     std::vector<ObjectType> getObstacle() const { return obstacle_; }
     std::vector<std::vector<double>> getEndPoints() const {

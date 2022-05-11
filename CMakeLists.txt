@@ -71,6 +71,12 @@ link_libraries(${GTEST_LIBRARIES})
 # Subdirectories
 add_subdirectory(src)
 
+# Copy planning config files to build dir
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config/demo/
+          ${CMAKE_CURRENT_SOURCE_DIR}/resources/SO3_sequence/q_icosahedron_60.csv
+          ${CMAKE_CURRENT_SOURCE_DIR}/resources/3D/urdf/snake.urdf
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test/config/)
+
 set(BUILD_TESTING "" ON)
 enable_testing()
 add_subdirectory(test)

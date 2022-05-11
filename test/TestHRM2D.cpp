@@ -145,7 +145,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
     cout << "----------" << endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "../../config/";
+    const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_CURVE_PARAM = 50;
 
     MultiBodyTree2D robot =
@@ -180,7 +180,7 @@ TEST(TestHRMPlanning2D, KC) {
     cout << "----------" << endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "../../config/";
+    const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_CURVE_PARAM = 50;
 
     MultiBodyTree2D robot =

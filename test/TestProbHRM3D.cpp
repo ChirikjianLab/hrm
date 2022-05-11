@@ -7,7 +7,7 @@ using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = "../../config/";
+    const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
 
     PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
@@ -17,9 +17,9 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup URDF file for the robot
     string urdf_file;
     if (env3D->getEndPoints().at(0).size() == 10) {
-        urdf_file = "../../resources/3D/urdf/snake.urdf";
+        urdf_file = "config/snake.urdf";
     } else if (env3D->getEndPoints().at(0).size() == 16) {
-        urdf_file = "../../resources/3D/urdf/tri-snake.urdf";
+        urdf_file = "config/tri-snake.urdf";
     }
 
     // Setup robot
