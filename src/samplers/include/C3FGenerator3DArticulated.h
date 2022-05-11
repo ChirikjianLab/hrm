@@ -1,10 +1,9 @@
 #pragma once
 
 #include "C3FGenerator3D.h"
+#include "planners/include/PlanningRequest.h"
 
 #include "ompl/base/spaces/RealVectorStateSpace.h"
-
-const double pi = 3.1415926;
 
 class C3FGenerator3DArticulated : C3FGenerator3D {
   public:

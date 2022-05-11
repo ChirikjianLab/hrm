@@ -2,14 +2,19 @@
 #include "util/include/ParsePlanningSettings.h"
 
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc < 7) {
+    if (argc != 10) {
         cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
                 "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Robot "
-                "name 7) Max planning time (in seconds, default: 60.0s)"
+                "name 7) Max planning time (in seconds, default: 60.0s) 8) "
+                "Configuration file prefix 9) URDF file prefix"
              << endl;
         return 1;
+    } else {
+        cout << "OMPL for 3D articulated-body planning" << endl;
+        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -24,12 +29,15 @@ int main(int argc, char** argv) {
     const int id_plan_end = atoi(argv[3]);
     const int id_sample_start = atoi(argv[4]);
     const int id_sample_end = atoi(argv[5]);
-    const string robot_name = argv[6];
-    const double max_planning_time = double(atoi(argv[7]));
+    const string ROBOT_NAME = argv[6];
+    const double MAX_PLAN_TIME = double(atoi(argv[7]));
 
     // Read and setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const string CONFIG_FILE_PREFIX = argv[8];
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     const vector<SuperQuadrics>& arena = env3D->getArena();
     const vector<SuperQuadrics>& obs = env3D->getObstacle();
@@ -41,11 +49,15 @@ int main(int argc, char** argv) {
     }
 
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
-    std::string urdfFile = "../resources/3D/urdf/" + robot_name + ".urdf";
+    const string URDF_FILE_PREFIX = argv[9];
+
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+    std::string urdfFile =
+        URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Boundary
-    double f = 1.5;
+    double f = 1.2;
     vector<Coordinate> b1 = {-arena.at(0).getSemiAxis().at(0) +
                                  f * robot.getBase().getSemiAxis().at(0),
                              -arena.at(0).getSemiAxis().at(1) +
@@ -56,6 +68,8 @@ int main(int argc, char** argv) {
 
     // Store results
     std::string filename_prefix = "ompl";
+
+    cout << "Start benchmark..." << endl;
 
     std::ofstream outfile;
     outfile.open("time_ompl_3D.csv");
@@ -81,7 +95,7 @@ int main(int argc, char** argv) {
                 tester.setup(m, 0, n);
 
                 tester.plan(env3D->getEndPoints().at(0),
-                            env3D->getEndPoints().at(1), max_planning_time);
+                            env3D->getEndPoints().at(1), MAX_PLAN_TIME);
 
                 outfile << m << ',' << n << ',' << tester.isSolved() << ','
                         << tester.getPlanningTime() << ','

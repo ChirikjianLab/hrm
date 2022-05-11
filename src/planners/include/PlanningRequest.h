@@ -19,9 +19,9 @@ static const double inf = std::numeric_limits<double>::infinity();
 struct PlannerParameter {
     std::vector<Coordinate> BOUND_LIMIT;
 
-    Index NUM_LAYER;
-    Index NUM_LINE_X;
-    Index NUM_LINE_Y;
+    Index NUM_LAYER = 0;
+    Index NUM_LINE_X = 0;
+    Index NUM_LINE_Y = 0;
     Index NUM_POINT = 5;
 
     Index NUM_SEARCH_NEIGHBOR = 10;

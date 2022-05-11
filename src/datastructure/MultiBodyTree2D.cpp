@@ -8,11 +8,11 @@ void MultiBodyTree2D::addBody(SuperEllipse link) {
     numLinks_++;
 
     // Add tranformation related to Base
-    Eigen::Matrix3d g;
+    SE2Transform g;
     g.setIdentity();
     g.topLeftCorner(2, 2) =
         Eigen::Rotation2Dd(link.getAngle()).toRotationMatrix();
-    g.topRightCorner(2, 1) = Eigen::Vector2d(link.getPosition().data());
+    g.topRightCorner(2, 1) = Point2D(link.getPosition().data());
     tf_.push_back(g);
 }
 
@@ -24,7 +24,7 @@ void MultiBodyTree2D::robotTF(Eigen::Matrix3d g) {
     base_.setAngle(rotMat.angle());
 
     // Set transform for each link
-    Eigen::Matrix3d gLink;
+    SE2Transform gLink;
     for (size_t i = 0; i < numLinks_; i++) {
         gLink = g * tf_.at(i);
 
@@ -37,7 +37,7 @@ void MultiBodyTree2D::robotTF(Eigen::Matrix3d g) {
 
 std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse* s1,
                                                       const int k) {
-    std::vector<Eigen::MatrixXd> mink;
+    std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base
     mink.push_back(s1->getMinkSum2D(base_, k));
@@ -45,7 +45,7 @@ std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse* s1,
     Eigen::Rotation2Dd rotLink;
 
     // Minkowski sums for Links
-    Eigen::Vector2d linkTc;
+    Point2D linkTc;
     for (size_t i = 0; i < numLinks_; i++) {
         rotLink = rotBase * tf_.at(i).topLeftCorner(2, 2);
         link_.at(i).setAngle(rotLink.angle());

@@ -1,41 +1,32 @@
-function [arena, obs, end_points] = Environment3D(obs_shape, opt)
+function [arena, obs, end_points] = Environment3D(obs_shape, env_type)
 %% Retrieve arena, obstacle and end points info
 path_prefix = '../../resources/3D/';
 
-% Elliptical obstacles
-if obs_shape == 1
-    shape_prefix = 'ellipsoid';
-    
-    switch opt
-        case 1
-            env_type = 'sparse';
-        case 2
-            env_type = 'cluttered';
-        case 3
-            env_type = 'maze';
+% Identify existing obstacle shape and environment type
+if strcmp(obs_shape, 'ellipsoid')
+    % Ellipsoidal obstacles
+    if ~ (strcmp(env_tpe, 'sparse') || ...
+            strcmp(env_tpe, 'cluttered') ||...
+            strcmp(env_tpe, 'maze'))
+        error("Environment type not exists!")
     end
     
-    % Superelliptical obstacles
-elseif obs_shape == 2
-    shape_prefix = 'superquadrics';
-    
-    switch opt
-        case 1
-            env_type = 'sparse';
-        case 2
-            env_type = 'cluttered';
-        case 3
-            env_type = 'maze';
-        case 4
-            env_type = 'home';
-        case 5
-            env_type = 'narrow';
+    % Superquadric obstacles
+elseif strcmp(obs_shape, 'superquadrics')
+    if ~ (strcmp(env_type, 'sparse') || ...
+            strcmp(env_type, 'cluttered') ||...
+            strcmp(env_type, 'maze') ||...
+            strcmp(env_type, 'home') ||...
+            strcmp(env_type, 'narrow'))
+        error("Environment type not exists!")
     end
+else
+    error("Obstacle shape not exists!")
 end
 
-arena_config = csvread([path_prefix, 'env_', shape_prefix, '_',...
+arena_config = csvread([path_prefix, 'env_', obs_shape, '_',...
     env_type, '_3D_arena.csv']);
-obs_config = csvread([path_prefix, 'env_', shape_prefix, '_',...
+obs_config = csvread([path_prefix, 'env_', obs_shape, '_',...
     env_type, '_3D_obstacle.csv']);
 
 %% Construct SuperEllipse objects for the arena and obstacles
@@ -59,7 +50,7 @@ for i = 1:N_o
 end
 
 %% Start and goal poses
-end_points = csvread([path_prefix, 'setting_', shape_prefix, '_',...
+end_points = csvread([path_prefix, 'setting_', obs_shape, '_',...
     env_type, '_3D.csv']);
 end_points(:,4:7) = [axang2quat(end_points(1,4:7));
     axang2quat(end_points(2,4:7))];

@@ -1,22 +1,26 @@
-#include "planners/include/HRM3D.h"
+#include "planners/include/ProbHRM3D.h"
 #include "util/include/GTestUtils.h"
 
 using namespace Eigen;
 using namespace std;
-
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
-TEST(TestHRMPlanning3D, HRM) {
+TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = "../../config/";
     const int NUM_SURF_PARAM = 10;
 
     PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    const string quat_file = "0";
 
-    // Using fixed orientations from Icosahedral symmetry group
-    const std::string quat_file =
-        "../../resources/SO3_sequence/q_icosahedron_60.csv";
+    // Setup URDF file for the robot
+    string urdf_file;
+    if (env3D->getEndPoints().at(0).size() == 10) {
+        urdf_file = "../../resources/3D/urdf/snake.urdf";
+    } else if (env3D->getEndPoints().at(0).size() == 16) {
+        urdf_file = "../../resources/3D/urdf/tri-snake.urdf";
+    }
 
     // Setup robot
     MultiBodyTree3D robot =
@@ -27,16 +31,14 @@ TEST(TestHRMPlanning3D, HRM) {
     defineParameters(&robot, env3D, &param);
 
     PlanningRequest req;
-    req.is_robot_rigid = true;
+    req.is_robot_rigid = false;
     req.planner_parameters = param;
     req.start = env3D->getEndPoints().at(0);
     req.goal = env3D->getEndPoints().at(1);
 
-    // Main algorithm
-    cout << "Highway RoadMap for 3D rigid-body planning" << endl;
+    // Main Algorithm
+    cout << "Prob-HRM for 3D articulated-body planning" << endl;
     cout << "----------" << endl;
-    cout << "Input number of C-layers: " << req.planner_parameters.NUM_LAYER
-         << endl;
     cout << "Input number of sweep lines {X,Y}: {"
          << req.planner_parameters.NUM_LINE_X << ','
          << req.planner_parameters.NUM_LINE_Y << '}' << endl;
@@ -44,17 +46,20 @@ TEST(TestHRMPlanning3D, HRM) {
 
     cout << "Start planning..." << endl;
 
-    HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-    hrm.plan(5.0);
-    PlanningResult res = hrm.getPlanningResult();
+    ProbHRM3D probHRM(robot, urdf_file, env3D->getArena(), env3D->getObstacle(),
+                      req);
+    probHRM.plan(300.0);
+    PlanningResult res = probHRM.getPlanningResult();
+    param = probHRM.getPlannerParameters();
 
-    storeRoutines<HRM3D>(&hrm);
+    storeRoutines<ProbHRM3D>(&probHRM);
 
     // Planning results: Time and Path Cost
     cout << "----------" << endl;
+    cout << "Number of C-layers: " << param.NUM_LAYER << endl;
     cout << "Final number of sweep lines {X,Y}: {"
-         << hrm.getPlannerParameters().NUM_LINE_X << ','
-         << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+         << probHRM.getPlannerParameters().NUM_LINE_X << ','
+         << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
 
     showResult(&res, true);
 }

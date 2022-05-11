@@ -34,7 +34,7 @@ find_package(CCD REQUIRED)
 include_directories(${CCD_INCLUDE_DIRS})
 link_libraries(${CCD_LIBRARIES})
 
-find_package(CGAL 5.2 REQUIRED)
+find_package(CGAL 5.0 REQUIRED)
 include_directories(${CGAL_INCLUDE_DIRS})
 
 find_package(GMP REQUIRED)

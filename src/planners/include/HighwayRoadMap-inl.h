@@ -42,27 +42,55 @@ HighwayRoadMap<RobotType, ObjectType>::HighwayRoadMap(
       goal_(req.goal),
       param_(req.planner_parameters),
       N_o(obs.size()),
-      N_s(arena.size()) {}
+      N_s(arena.size()),
+      isRobotRigid_(req.is_robot_rigid) {}
 
 template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::plan() {
+void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
     // Plan and timing
     auto start = Clock::now();
     buildRoadmap();
-    res_.planning_time.buildTime = Durationd(Clock::now() - start).count();
+    res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
 
     start = Clock::now();
     search();
-    res_.planning_time.searchTime = Durationd(Clock::now() - start).count();
+    res_.planning_time.searchTime += Durationd(Clock::now() - start).count();
 
     res_.planning_time.totalTime =
         res_.planning_time.buildTime + res_.planning_time.searchTime;
 
+    // Refine existing roadmap
+    while (!res_.solved && res_.planning_time.totalTime < timeLim) {
+        refineExistRoadmap(timeLim);
+    }
+
     // Get solution path
-    res_.solution_path.solvedPath = getSolutionPath();
+    if (res_.solved) {
+        res_.solution_path.solvedPath = getSolutionPath();
+        res_.solution_path.interpolatedPath =
+            getInterpolatedSolutionPath(param_.NUM_POINT);
+    }
+}
+
+template <class RobotType, class ObjectType>
+void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
+    sampleOrientations();
+
+    // Construct roadmap
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        // construct one C-layer
+        constructOneLayer(i);
+
+        // Record vertex index at each C-layer
+        N_v.layer = res_.graph_structure.vertex.size();
+        vtxId_.push_back(N_v);
+    }
+
+    // Connect adjacent layers using bridge C-layer
+    connectMultiLayer();
 }
 
 template <class RobotType, class ObjectType>
@@ -137,6 +165,47 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
 }
 
 template <class RobotType, class ObjectType>
+void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
+    const double timeLim) {
+    isRefine_ = true;
+
+    vtxIdAll_.push_back(vtxId_);
+    vtxId_.clear();
+
+    param_.NUM_LINE_X *= 2;
+    param_.NUM_LINE_Y *= 2;
+
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        auto start = Clock::now();
+
+        // construct refined C-layer
+        constructOneLayer(i);
+        N_v.layer = res_.graph_structure.vertex.size();
+        vtxId_.push_back(N_v);
+
+        // Connect with existing layers
+        connectExistLayer(i);
+
+        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+
+        // Search
+        start = Clock::now();
+        search();
+        res_.planning_time.searchTime +=
+            Durationd(Clock::now() - start).count();
+
+        res_.planning_time.totalTime =
+            res_.planning_time.buildTime + res_.planning_time.searchTime;
+
+        if (res_.solved || res_.planning_time.totalTime > timeLim) {
+            return;
+        }
+    }
+
+    isRefine_ = false;
+}
+
+template <class RobotType, class ObjectType>
 Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
     Boundary bd;
 
@@ -191,11 +260,14 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2])) {
+                        // Direct success connection
                         res_.graph_structure.edge.push_back(
                             std::make_pair(n1 + j1, n2 + j2));
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + j1],
                             res_.graph_structure.vertex[n2 + j2]));
+                    } else {
+                        bridgeVertex(n1 + j1, n2 + j2);
                     }
                 }
             }
@@ -223,6 +295,15 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     path.push_back(goal_);
 
     return path;
+}
+
+template <class RobotType, class ObjectType>
+std::vector<std::vector<double>>
+HighwayRoadMap<RobotType, ObjectType>::getInterpolatedSolutionPath(
+    const unsigned int num) {
+    std::vector<std::vector<Coordinate>> interpPath =
+        res_.solution_path.solvedPath;
+    return interpPath;
 }
 
 template <class RobotType, class ObjectType>
@@ -276,57 +357,85 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
 
     // Enhanced process to generate more valid vertices within free line
     // segement
-    enhanceDecomp(&freeLineSegment);
-
-    return freeLineSegment;
+    return enhanceDecomp(&freeLineSegment);
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
-    FreeSegment2D* freeSeg) {
+FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
+    const FreeSegment2D* current) {
+    FreeSegment2D enhanced = *current;
+
     // Add new vertices within on sweep line
-    for (Index i = 0; i < freeSeg->ty.size() - 1; ++i) {
-        for (Index j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
-            for (Index j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
-                if (freeSeg->xM[i][j1] < freeSeg->xL[i + 1][j2] &&
-                    freeSeg->xU[i][j1] >= freeSeg->xL[i + 1][j2]) {
-                    freeSeg->xU[i].push_back(freeSeg->xL[i + 1][j2]);
-                    freeSeg->xL[i].push_back(freeSeg->xL[i + 1][j2]);
-                    freeSeg->xM[i].push_back(freeSeg->xL[i + 1][j2]);
-                } else if (freeSeg->xM[i][j1] > freeSeg->xU[i + 1][j2] &&
-                           freeSeg->xL[i][j1] <= freeSeg->xU[i + 1][j2]) {
-                    freeSeg->xU[i].push_back(freeSeg->xU[i + 1][j2]);
-                    freeSeg->xL[i].push_back(freeSeg->xU[i + 1][j2]);
-                    freeSeg->xM[i].push_back(freeSeg->xU[i + 1][j2]);
+    for (size_t i = 0; i < current->ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < current->xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < current->xM[i + 1].size(); ++j2) {
+                if (enhanced.xM[i][j1] < enhanced.xL[i + 1][j2] &&
+                    enhanced.xU[i][j1] >= enhanced.xL[i + 1][j2]) {
+                    enhanced.xU[i].push_back(enhanced.xL[i + 1][j2]);
+                    enhanced.xL[i].push_back(enhanced.xL[i + 1][j2]);
+                    enhanced.xM[i].push_back(enhanced.xL[i + 1][j2]);
+                } else if (enhanced.xM[i][j1] > enhanced.xU[i + 1][j2] &&
+                           enhanced.xL[i][j1] <= enhanced.xU[i + 1][j2]) {
+                    enhanced.xU[i].push_back(enhanced.xU[i + 1][j2]);
+                    enhanced.xL[i].push_back(enhanced.xU[i + 1][j2]);
+                    enhanced.xM[i].push_back(enhanced.xU[i + 1][j2]);
                 }
 
-                if (freeSeg->xM[i + 1][j2] < freeSeg->xL[i][j1] &&
-                    freeSeg->xU[i + 1][j2] >= freeSeg->xL[i][j1]) {
-                    freeSeg->xU[i + 1].push_back(freeSeg->xL[i][j1]);
-                    freeSeg->xL[i + 1].push_back(freeSeg->xL[i][j1]);
-                    freeSeg->xM[i + 1].push_back(freeSeg->xL[i][j1]);
-                } else if (freeSeg->xM[i + 1][j2] > freeSeg->xU[i][j1] &&
-                           freeSeg->xL[i + 1][j2] <= freeSeg->xU[i][j1]) {
-                    freeSeg->xU[i + 1].push_back(freeSeg->xU[i][j1]);
-                    freeSeg->xL[i + 1].push_back(freeSeg->xU[i][j1]);
-                    freeSeg->xM[i + 1].push_back(freeSeg->xU[i][j1]);
+                if (enhanced.xM[i + 1][j2] < enhanced.xL[i][j1] &&
+                    enhanced.xU[i + 1][j2] >= enhanced.xL[i][j1]) {
+                    enhanced.xU[i + 1].push_back(enhanced.xL[i][j1]);
+                    enhanced.xL[i + 1].push_back(enhanced.xL[i][j1]);
+                    enhanced.xM[i + 1].push_back(enhanced.xL[i][j1]);
+                } else if (enhanced.xM[i + 1][j2] > enhanced.xU[i][j1] &&
+                           enhanced.xL[i + 1][j2] <= enhanced.xU[i][j1]) {
+                    enhanced.xU[i + 1].push_back(enhanced.xU[i][j1]);
+                    enhanced.xL[i + 1].push_back(enhanced.xU[i][j1]);
+                    enhanced.xM[i + 1].push_back(enhanced.xU[i][j1]);
                 }
             }
         }
 
-        sort(freeSeg->xL[i].begin(), freeSeg->xL[i].end(),
+        sort(enhanced.xL[i].begin(), enhanced.xL[i].end(),
              [](double a, double b) { return a < b; });
-        sort(freeSeg->xU[i].begin(), freeSeg->xU[i].end(),
+        sort(enhanced.xU[i].begin(), enhanced.xU[i].end(),
              [](double a, double b) { return a < b; });
-        sort(freeSeg->xM[i].begin(), freeSeg->xM[i].end(),
+        sort(enhanced.xM[i].begin(), enhanced.xM[i].end(),
              [](double a, double b) { return a < b; });
     }
+
+    return enhanced;
 }
 
 template <class RobotType, class ObjectType>
-std::vector<double> HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(
-    std::vector<Coordinate> v1, std::vector<Coordinate> v2) {
-    std::vector<Coordinate> newVtx;
+void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
+                                                         const Index idx2) {
+    auto v1 = res_.graph_structure.vertex.at(idx1);
+    auto v2 = res_.graph_structure.vertex.at(idx2);
 
-    return newVtx;
+    // Generate new bridge vertex
+    auto vNew1 = v1;
+    vNew1.at(2) = v2.at(2);
+    auto vNew2 = v2;
+    vNew2.at(2) = v1.at(2);
+
+    auto vNew = v1;
+
+    // Check validity of potential connections
+    if (isSameLayerTransitionFree(v1, vNew1) &&
+        isSameLayerTransitionFree(vNew1, v2)) {
+        vNew = vNew1;
+    } else if (isSameLayerTransitionFree(v1, vNew2) &&
+               isSameLayerTransitionFree(vNew2, v2)) {
+        vNew = vNew2;
+    } else {
+        return;
+    }
+
+    // Add new bridge vertex to graph is new connection is valid
+    int idxNew = res_.graph_structure.vertex.size();
+    res_.graph_structure.vertex.push_back(vNew);
+    res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
+    res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
+    res_.graph_structure.edge.push_back(std::make_pair(idxNew, idx2));
+    res_.graph_structure.weight.push_back(vectorEuclidean(vNew, v2));
 }

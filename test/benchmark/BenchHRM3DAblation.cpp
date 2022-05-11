@@ -1,4 +1,4 @@
-#include "planners/include/HRM3D.h"
+#include "planners/include/HRM3DAblation.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -20,7 +20,8 @@ int main(int argc, char** argv) {
              << endl;
         return 1;
     } else {
-        cout << "Highway RoadMap for 3D rigid-body planning" << endl;
+        cout << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
+             << endl;
         cout << "----------" << endl;
     }
 
@@ -69,7 +70,7 @@ int main(int argc, char** argv) {
 
     // Store results
     ofstream file_time;
-    file_time.open("time_high_3D.csv");
+    file_time.open("time_high_3D_ablation.csv");
     file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
               << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
               << "N_Y" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
@@ -79,11 +80,12 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         cout << "Number of trials: " << i + 1 << endl;
 
-        // Path planning using HRM3D
-        HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-        hrm.plan(MAX_PLAN_TIME);
+        // Path planning using ablated HRM3D with no bridge C-layer
+        HRM3DAblation<HRM3D> hrm_ablation(robot, env3D->getArena(),
+                                          env3D->getObstacle(), req);
+        hrm_ablation.plan(MAX_PLAN_TIME);
 
-        PlanningResult res = hrm.getPlanningResult();
+        PlanningResult res = hrm_ablation.getPlanningResult();
 
         // Display and store results
         displayPlanningTimeInfo(&res.planning_time);
@@ -91,18 +93,18 @@ int main(int argc, char** argv) {
         displayPathInfo(&res.solution_path);
 
         cout << "Final number of C-layers: "
-             << hrm.getPlannerParameters().NUM_LAYER << endl;
+             << hrm_ablation.getPlannerParameters().NUM_LAYER << endl;
         cout << "Final number of sweep lines: {"
-             << hrm.getPlannerParameters().NUM_LINE_X << ", "
-             << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+             << hrm_ablation.getPlannerParameters().NUM_LINE_X << ", "
+             << hrm_ablation.getPlannerParameters().NUM_LINE_Y << '}' << endl;
         cout << "==========" << endl;
 
         file_time << res.solved << ',' << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','
                   << res.planning_time.totalTime << ','
-                  << hrm.getPlannerParameters().NUM_LAYER << ','
-                  << hrm.getPlannerParameters().NUM_LINE_X << ','
-                  << hrm.getPlannerParameters().NUM_LINE_Y << ','
+                  << hrm_ablation.getPlannerParameters().NUM_LAYER << ','
+                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ','
+                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

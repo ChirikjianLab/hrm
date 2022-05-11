@@ -1,10 +1,11 @@
 #include "include/PointInPoly.h"
+#include "datastructure/include/DataType.h"
 
 #include "Eigen/Dense"
 
 bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt) {
     bool flag = 0;
-    Eigen::Matrix4d invMat;
+    SE3Transform invMat;
     Eigen::Vector4d p, alpha;
 
     // convert data structure and compute \alpha for each simplex
@@ -12,7 +13,7 @@ bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt) {
 
     size_t n = polyVtx.invMat.size();
     for (size_t i = 0; i < n; i++) {
-        invMat = Eigen::Map<Eigen::Matrix4d, Eigen::Unaligned>(
+        invMat = Eigen::Map<SE3Transform, Eigen::Unaligned>(
             polyVtx.invMat[i].data(), 4, 4);
         alpha = invMat * p;
         if (alpha.minCoeff() >= 0 && alpha.maxCoeff() <= 1) {

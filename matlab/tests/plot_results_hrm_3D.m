@@ -5,14 +5,14 @@ loadPath = '../../bin/';
 path_prefix = '../../resources/3D/';
 
 %% Results
-[X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, endPts] = loadResults('3D');
+[X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, end_pts] = loadResults('3D');
 
 %% Robot
-if size(vtx, 2) == 7
+if size(end_pts, 2) == 7
     urdf_file = [];
-elseif size(vtx, 2) == 10
+elseif size(end_pts, 2) == 10
     urdf_file = [path_prefix, 'urdf/snake.urdf'];
-elseif size(vtx, 2) == 16
+elseif size(end_pts, 2) == 16
     urdf_file = [path_prefix, 'urdf/tri-snake.urdf'];
 end
 
@@ -20,15 +20,13 @@ end
 
 %% Environment
 figure; hold on; axis equal;
-
-% Plot properties
 light('Position',[-1 0 1])
 
 disp('Environment Initialization...')
 
 % start and goal
-PlotRobotPose(robot, endPts(1,:), robotURDF);
-PlotRobotPose(robot, endPts(2,:), robotURDF);
+PlotRobotPose(robot, end_pts(1,:), robotURDF);
+PlotRobotPose(robot, end_pts(2,:), robotURDF);
 
 % Plot
 ob = load(['../../config/', 'obstacle_config_3D.csv']);
@@ -57,19 +55,8 @@ axis off
 %% Results from C++
 disp("Plotting results from HighwayRoadMap planner...")
 
-% Environment: scattered points
-if ~isempty(X_ori)
-    for i = size(X_ori,1)-2
-        plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'k.');
-    end
-    
-    for i = 1:3:size(X_ori,1)-3
-        plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'b.');
-    end
-end
-
-if ~isempty(path)
-    plot3(path(:,1), path(:,2), path(:,3),...
+if ~isempty(path_highway)
+    plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
         'm-', 'LineWidth', 2)
     
     for i = 1:ceil(size(path,1)/50):size(path,1)
@@ -82,7 +69,6 @@ is_validation = true;
 
 if is_validation
     disp('Validating path...')
-    Graph.V = vtx';
     
     high3D = PathValidation3D(robot, arena, obs, path);
     high3D.validation();

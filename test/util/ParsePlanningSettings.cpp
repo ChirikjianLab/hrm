@@ -1,32 +1,31 @@
 #include "include/ParsePlanningSettings.h"
 
-std::vector<SuperEllipse> loadVectorSuperEllipse(const std::string config_file,
-                                                 const int num_curve_param) {
+void loadVectorGeometry(const std::string config_file,
+                        const int num_curve_param,
+                        std::vector<SuperEllipse>& object) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
 
     // Arena and Obstacles as class of SuperEllipse
-    std::vector<SuperEllipse> object;
+    object.clear();
     for (size_t j = 0; j < object_config.size(); j++) {
         object.emplace_back(SuperEllipse(
             {object_config[j][0], object_config[j][1]}, object_config[j][2],
             {object_config[j][3], object_config[j][4]}, object_config[j][5],
             num_curve_param));
     }
-
-    return object;
 }
 
-std::vector<SuperQuadrics> loadVectorSuperQuadrics(
-    const std::string config_file, const int num_surf_param) {
+void loadVectorGeometry(const std::string config_file, const int num_surf_param,
+                        std::vector<SuperQuadrics>& object) {
     // Read config file
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
 
     // Generate SQ object (orientation from Quaternion parameterization)
-    std::vector<SuperQuadrics> obj;
+    object.clear();
     for (size_t j = 0; j < object_config.size(); j++) {
-        obj.emplace_back(SuperQuadrics(
+        object.emplace_back(SuperQuadrics(
             {object_config[j][0], object_config[j][1], object_config[j][2]},
             {object_config[j][3], object_config[j][4]},
             {object_config[j][5], object_config[j][6], object_config[j][7]},
@@ -34,14 +33,14 @@ std::vector<SuperQuadrics> loadVectorSuperQuadrics(
                                object_config[j][10], object_config[j][11]),
             num_surf_param));
     }
-
-    return obj;
 }
 
-MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param) {
+MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
+                                     const int num_curve_param) {
     // Read robot config file
-    std::vector<SuperEllipse> robot_parts = loadVectorSuperEllipse(
-        "../config/robot_config_2D.csv", num_curve_param);
+    std::vector<SuperEllipse> robot_parts;
+    loadVectorGeometry(path_prefix + "robot_config_2D.csv", num_curve_param,
+                       robot_parts);
 
     // Generate multibody tree for robot
     MultiBodyTree2D robot(robot_parts[0]);
@@ -52,11 +51,13 @@ MultiBodyTree2D loadRobotMultiBody2D(const int num_curve_param) {
     return robot;
 }
 
-MultiBodyTree3D loadRobotMultiBody3D(const std::string quat_file,
+MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
+                                     const std::string quat_file,
                                      const int num_surf_param) {
     // Read and setup robot info
-    std::vector<SuperQuadrics> robot_parts = loadVectorSuperQuadrics(
-        "../config/robot_config_3D.csv", num_surf_param);
+    std::vector<SuperQuadrics> robot_parts;
+    loadVectorGeometry(path_prefix + "robot_config_3D.csv", num_surf_param,
+                       robot_parts);
 
     loadPreDefinedQuaternions(quat_file, robot_parts[0]);
 
@@ -92,38 +93,32 @@ void loadPreDefinedQuaternions(const std::string quat_file,
     }
 }
 
-PlannerSetting::PlannerSetting() {}
-PlannerSetting::~PlannerSetting() {}
+void defineParameters(const MultiBodyTree3D* robot,
+                      const PlannerSetting<SuperQuadrics>* env3D,
+                      PlannerParameter* param) {
+    // Planning arena boundary
+    double f = 1.2;
+    std::vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
+                                     f * robot->getBase().getSemiAxis().at(0),
+                                 env3D->getArena().at(0).getSemiAxis().at(1) -
+                                     f * robot->getBase().getSemiAxis().at(0),
+                                 env3D->getArena().at(0).getSemiAxis().at(2) -
+                                     f * robot->getBase().getSemiAxis().at(0)};
+    param->BOUND_LIMIT = {
+        env3D->getArena().at(0).getPosition().at(0) - bound.at(0),
+        env3D->getArena().at(0).getPosition().at(0) + bound.at(0),
+        env3D->getArena().at(0).getPosition().at(1) - bound.at(1),
+        env3D->getArena().at(0).getPosition().at(1) + bound.at(1),
+        env3D->getArena().at(0).getPosition().at(2) - bound.at(2),
+        env3D->getArena().at(0).getPosition().at(2) + bound.at(2)};
 
-PlannerSetting2D::PlannerSetting2D() {}
-PlannerSetting2D::~PlannerSetting2D() {}
+    param->NUM_LAYER = robot->getBase().getQuatSamples().size();
 
-void PlannerSetting2D::loadEnvironment() {
-    // Read environment config file
-    arena_ = loadVectorSuperEllipse("../config/arena_config_2D.csv",
-                                    num_curve_param_);
+    if (param->NUM_LINE_X == 0 || param->NUM_LINE_Y == 0) {
+        double min_size_obs =
+            computeObstacleMinSize<SuperQuadrics>(env3D->getObstacle());
 
-    obstacle_ = loadVectorSuperEllipse("../config/obstacle_config_2D.csv",
-                                       num_curve_param_);
-
-    // Read end points config file
-    std::vector<std::vector<double>> endPts =
-        parse2DCsvFile("../config/end_points_2D.csv");
-
-    end_points_.push_back(endPts[0]);
-    end_points_.push_back(endPts[1]);
-};
-
-PlannerSetting3D::PlannerSetting3D() {}
-PlannerSetting3D::~PlannerSetting3D() {}
-
-void PlannerSetting3D::loadEnvironment() {
-    // Read and setup environment config
-    arena_ = loadVectorSuperQuadrics("../config/arena_config_3D.csv",
-                                     num_surf_param_);
-    obstacle_ = loadVectorSuperQuadrics("../config/obstacle_config_3D.csv",
-                                        num_surf_param_);
-
-    // Read end points config file
-    end_points_ = parse2DCsvFile("../config/end_points_3D.csv");
+        param->NUM_LINE_X = floor(bound.at(0) / min_size_obs);
+        param->NUM_LINE_Y = floor(bound.at(1) / min_size_obs);
+    }
 }

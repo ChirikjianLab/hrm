@@ -12,11 +12,12 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 int main(int argc, char** argv) {
-    if (argc != 4) {
+    if (argc != 5) {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep lines"
+                "sweep lines 4) Configuration file prefix"
              << endl;
         return 1;
     } else {
@@ -31,9 +32,13 @@ int main(int argc, char** argv) {
     vector<vector<double>> time_stat;
 
     // Load Robot and Environment settings
-    MultiBodyTree2D robot = loadRobotMultiBody2D(50);
-    PlannerSetting2D* env2D = new PlannerSetting2D();
-    env2D->loadEnvironment();
+    const std::string CONFIG_FILE_PREFIX = argv[4];
+    const int NUM_CURVE_PARAM = 50;
+
+    MultiBodyTree2D robot =
+        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    PlannerSetting2D* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
+    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Parameters
     PlannerParameter par;
@@ -52,8 +57,8 @@ int main(int argc, char** argv) {
         env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
         env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
-    cout << "Number of C-layers: " << par.NUM_LAYER << endl;
-    cout << "Number of sweep lines: " << par.NUM_LINE_Y << endl;
+    cout << "Initial number of C-layers: " << par.NUM_LAYER << endl;
+    cout << "Initial number of sweep lines: " << par.NUM_LINE_Y << endl;
     cout << "----------" << endl;
 
     cout << "Start benchmark..." << endl;
@@ -69,7 +74,7 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
-        hrm.plan();
+        hrm.plan(10.0);
 
         PlanningResult res = hrm.getPlanningResult();
 
