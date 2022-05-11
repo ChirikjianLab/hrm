@@ -30,8 +30,8 @@ void loadPreDefinedQuaternions(const std::string quat_file,
                                SuperQuadrics& robot_base);
 
 /** \brief computeObstacleMinSize Compute minimum size of all obstacles */
-template <typename G>
-double computeObstacleMinSize(const std::vector<G> obstacles) {
+template <typename ObjectType>
+double computeObstacleMinSize(const std::vector<ObjectType> obstacles) {
     double min_size_obs = obstacles.at(0).getSemiAxis().at(0);
     for (auto obs : obstacles) {
         for (size_t i = 0; i < obs.getSemiAxis().size(); ++i) {
@@ -46,13 +46,13 @@ double computeObstacleMinSize(const std::vector<G> obstacles) {
 }
 
 /** \class PlannerSetting Setting planning environment */
-template <class G>
+template <class ObjectType>
 class PlannerSetting {
   public:
     PlannerSetting(const int num_param) : num_param_(num_param) {
-        if (typeid(G) == typeid(SuperEllipse)) {
+        if (typeid(ObjectType) == typeid(SuperEllipse)) {
             dim_ = "2D";
-        } else if (typeid(G) == typeid(SuperQuadrics)) {
+        } else if (typeid(ObjectType) == typeid(SuperQuadrics)) {
             dim_ = "3D";
         } else {
             std::cerr << "Invalid dimension" << std::endl;
@@ -61,8 +61,8 @@ class PlannerSetting {
     ~PlannerSetting() {}
 
   public:
-    std::vector<G> getArena() const { return arena_; }
-    std::vector<G> getObstacle() const { return obstacle_; }
+    std::vector<ObjectType> getArena() const { return arena_; }
+    std::vector<ObjectType> getObstacle() const { return obstacle_; }
     std::vector<std::vector<double>> getEndPoints() const {
         return end_points_;
     }
@@ -85,8 +85,8 @@ class PlannerSetting {
 
   protected:
     std::string dim_;
-    std::vector<G> arena_;
-    std::vector<G> obstacle_;
+    std::vector<ObjectType> arena_;
+    std::vector<ObjectType> obstacle_;
     std::vector<std::vector<double>> end_points_;
     const int num_param_;
 };
