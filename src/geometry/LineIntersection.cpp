@@ -1,9 +1,27 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
+std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
                                                  const MeshMatrix& shape) {
-    std::vector<Eigen::Vector3d> points;
+    std::vector<Point3D> points;
+
+    /** \brief filter out-of-range case: line direction parallel to
+     * axes-defined planes */
+    Eigen::Vector3d direction({line(3), line(4), line(5)});
+    std::vector<Eigen::Vector3d> basis;
+    basis.emplace_back(1, 0, 0);
+    basis.emplace_back(0, 1, 0);
+    basis.emplace_back(0, 0, 1);
+
+    for (size_t i = 0; i < basis.size(); ++i) {
+        if (std::fabs(direction.dot(basis.at(i))) < 1e-5 &&
+            (line(i) > shape.vertices.row(i).maxCoeff() ||
+             line(i) < shape.vertices.row(i).minCoeff())) {
+            return points;
+        }
+    }
+
+    /** \brief Line mesh intersection */
     Eigen::Vector3d t0, u, v, pt;
 
     for (auto i = 0; i < shape.faces.rows(); ++i) {
@@ -28,8 +46,8 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Eigen::VectorXd& line,
 }
 
 std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
-    const Eigen::VectorXd& line, const MeshMatrix& shape) {
-    std::vector<Eigen::Vector3d> points;
+    const Line3D& line, const MeshMatrix& shape) {
+    std::vector<Point3D> points;
 
     if (line(0) > shape.vertices.row(0).maxCoeff() ||
         line(0) < shape.vertices.row(0).minCoeff()) {
@@ -94,10 +112,9 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
     return points;
 }
 
-bool intersectLineTriangle3D(const Eigen::VectorXd* line,
-                             const Eigen::Vector3d* t0,
+bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Eigen::Vector3d* pt) {
+                             Point3D* pt) {
     double tol = 1e-12;
     Eigen::Vector3d n;
     double a, b, uu, uv, vv, wu, wv, D, s, t;

@@ -11,43 +11,36 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 
 HRM2D::~HRM2D() {}
 
-void HRM2D::buildRoadmap() {
-    // angle steps
-    double dr = 2 * pi / (param_.NUM_LAYER - 1);
+void HRM2D::constructOneLayer(const Index layerIdx) {
+    // Set rotation matrix to robot
+    setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
-    // Setup rotation angles: angle range [-pi,pi]
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        ang_r.push_back(-pi + dr * i);
-    }
-
-    // Get the current Transformation
-    SE2Transform tf;
-    tf.setIdentity();
-
-    // Construct roadmap
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Set rotation matrix to robot
-        tf.topLeftCorner(2, 2) =
-            Eigen::Rotation2Dd(ang_r.at(i)).toRotationMatrix();
-        robot_.robotTF(tf);
-
+    // Generate new C-layer
+    if (!isRefine_) {
         // Generate Minkowski operation boundaries
         layerBound_ = boundaryGen();
-
-        // Sweep-line process to generate collision free line segments
-        sweepLineProcess();
-
-        // Generate collision-free vertices
-        generateVertices(0.0, &freeSegOneLayer_);
-
-        // Connect vertices within one C-layer
-        connectOneLayer2D(&freeSegOneLayer_);
-
-        vtxId_.push_back(N_v);
+        layerBoundAll_.push_back(layerBound_);
+    } else {
+        layerBound_ = layerBoundAll_.at(layerIdx);
     }
 
-    // Connect adjacent layers using bridge C-layer
-    connectMultiLayer();
+    // Sweep-line process to generate collision free line segments
+    sweepLineProcess();
+
+    // Generate collision-free vertices
+    generateVertices(0.0, &freeSegOneLayer_);
+
+    // Connect vertices within one C-layer
+    connectOneLayer2D(&freeSegOneLayer_);
+}
+
+/** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
+ * exists, no addition and record the index */
+void HRM2D::sampleOrientations() {
+    const double dr = 2 * pi / (param_.NUM_LAYER - 1);
+    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+        headings_.push_back(-pi + dr * i);
+    }
 }
 
 void HRM2D::sweepLineProcess() {
@@ -56,7 +49,7 @@ void HRM2D::sweepLineProcess() {
     Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
                     (param_.NUM_LINE_Y - 1);
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = -param_.BOUND_LIMIT[1] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
@@ -121,6 +114,8 @@ void HRM2D::generateVertices(const Coordinate tx,
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
+    N_v.startId = res_.graph_structure.vertex.size();
+
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
 
@@ -132,69 +127,108 @@ void HRM2D::generateVertices(const Coordinate tx,
         }
     }
     N_v.line.push_back(N_v.plane);
-    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 void HRM2D::connectMultiLayer() {
     // No connection needed if robot only has one orientation
-    if (param_.NUM_LAYER == 1) {
+    if (vtxId_.size() == 1) {
         return;
     }
 
     // Vertex indexes for list traversal
-    Index n1;
-    Index n12;
-    Index n2;
-    Index start = 0;
-    Index j = 0;
+    Index startIdCur;
+    Index endIdCur;
+    Index startIdAdj;
+    Index endIdAdj;
+
+    size_t j = 0;
 
     std::vector<Coordinate> v1;
     std::vector<Coordinate> v2;
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        n1 = vtxId_.at(i).layer;
+    for (size_t i = 0; i < vtxId_.size(); ++i) {
+        startIdCur = vtxId_.at(i).startId;
+        endIdCur = vtxId_.at(i).layer;
 
-        // Construct the bridge C-layer
+        // Find the nearest C-layer
         if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
             j = 0;
         } else {
             j = i + 1;
         }
 
-        if (j != 0) {
-            n12 = vtxId_.at(j - 1).layer;
-        } else {
-            n12 = 0;
-        }
-        n2 = vtxId_.at(j).layer;
+        startIdAdj = vtxId_.at(j).startId;
+        endIdAdj = vtxId_.at(j).layer;
 
         // Compute TFE and construct bridge C-layer
-        computeTFE(ang_r[i], ang_r[j], &tfe_);
+        computeTFE(headings_[i], headings_[j], &tfe_);
         bridgeLayer();
 
         // Connect close vertices btw layers
-        for (size_t m0 = start; m0 < n1; ++m0) {
+        for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
             v1 = res_.graph_structure.vertex[m0];
-            for (size_t m1 = n12; m1 < n2; ++m1) {
+            for (size_t m1 = startIdAdj; m1 < endIdAdj; ++m1) {
                 v2 = res_.graph_structure.vertex[m1];
 
-                // Locate the neighbor vertices in the same sweep line,
-                // check for validity
-                if (std::fabs(v1[1] - v2[1]) <
-                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y &&
-                    isMultiLayerTransitionFree(v1, v2)) {
+                // Locate the neighbor vertices, check for validity
+                if (std::fabs(v1[1] - v2[1]) >
+                    2.0 *
+                        std::fabs(param_.BOUND_LIMIT[3] -
+                                  param_.BOUND_LIMIT[2]) /
+                        param_.NUM_LINE_Y) {
+                    continue;
+                }
+
+                if (isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
                     res_.graph_structure.weight.push_back(
                         vectorEuclidean(v1, v2));
 
                     // Continue from where it pauses
-                    n12 = m1;
+                    startIdAdj = m1;
                     break;
                 }
             }
         }
-        start = n1;
+    }
+}
+
+void HRM2D::connectExistLayer(const Index layerId) {
+    // Attempt to connect the most recent subgraph to previous existing graph
+    // Traverse C-layers through the current subgraph
+    Index startIdCur = vtxId_.at(layerId).startId;
+    Index endIdCur = vtxId_.at(layerId).layer;
+
+    // Connect within same C-layer, same index with previous round of search
+    Index startIdExist = vtxIdAll_.back().at(layerId).startId;
+    Index endIdExist = vtxIdAll_.back().at(layerId).layer;
+
+    // Locate the neighbor vertices in the adjacent
+    // sweep line, check for validity
+    for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
+        auto v1 = res_.graph_structure.vertex[m0];
+        for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
+            auto v2 = res_.graph_structure.vertex[m1];
+
+            // Locate the neighbor vertices in the adjacent
+            // sweep line, check for validity
+            if (std::fabs(v1[1] - v2[1]) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
+                continue;
+            }
+
+            if (isSameLayerTransitionFree(v1, v2)) {
+                // Add new connections
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+
+                // Continue from where it pauses
+                startIdExist = m1;
+                break;
+            }
+        }
     }
 }
 
@@ -217,14 +251,57 @@ void HRM2D::bridgeLayer() {
     }
 }
 
-std::vector<Coordinate> HRM2D::bridgeVertex(std::vector<Coordinate> v1,
-                                            std::vector<Coordinate> v2) {
-    std::vector<Coordinate> newVtx;
+void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
+    std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
+    std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
+
+    // Generate new vertex until a certain resolution
+    if (std::fabs(v1[1] - v2[1]) <
+        (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+            (param_.NUM_POINT * param_.NUM_LINE_Y)) {
+        return;
+    }
 
     // Compute y-coordinate of new sweep line
-    double ty = (v1[1] + v2[1]) / 2.0;
+    std::vector<double> ty{(v1[1] + v2[1]) / 2.0};
 
-    return newVtx;
+    // Compute free segment at the new sweep line
+    IntersectionInterval intersect = computeIntersections(ty);
+    FreeSegment2D segment = computeFreeSegment(ty, &intersect);
+
+    // Attempt to connect new vertex to v1 and v2
+    bool isSuccess = true;
+    for (size_t i = 0; i < segment.xM.at(0).size(); ++i) {
+        // Generate new vertex and index in graph
+        std::vector<Coordinate> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
+                                     v1.at(2)};
+
+        int idxNew = res_.graph_structure.vertex.size();
+        res_.graph_structure.vertex.push_back(vNew);
+
+        // Iteratively attempt to connect
+        if (isSameLayerTransitionFree(v1, vNew)) {
+            isSuccess = true;
+            res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
+            res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
+        } else {
+            isSuccess = false;
+            bridgeVertex(idx1, idxNew);
+        }
+
+        if (isSameLayerTransitionFree(v2, vNew)) {
+            isSuccess = true;
+            res_.graph_structure.edge.push_back(std::make_pair(idx2, idxNew));
+            res_.graph_structure.weight.push_back(vectorEuclidean(v2, vNew));
+        } else {
+            isSuccess = false;
+            bridgeVertex(idx2, idxNew);
+        }
+
+        if (isSuccess) {
+            return;
+        }
+    }
 }
 
 bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
@@ -379,9 +456,9 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
     // Search for k-nn C-layers
     std::vector<double> angList;
-    for (size_t i = 0; i < ang_r.size(); ++i) {
-        if (std::fabs(minAngle - ang_r[i]) < radius) {
-            angList.push_back(ang_r[i]);
+    for (size_t i = 0; i < headings_.size(); ++i) {
+        if (std::fabs(minAngle - headings_[i]) < radius) {
+            angList.push_back(headings_[i]);
         }
 
         if (angList.size() >= k) {
@@ -406,7 +483,8 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
         }
 
         if (std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
-            10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+            radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }
     }
@@ -417,7 +495,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 void HRM2D::setTransform(const std::vector<Coordinate>& v) {
     SE2Transform g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
-    g.topRightCorner(2, 1) = Eigen::Vector2d(v[0], v[1]);
+    g.topRightCorner(2, 1) = Point2D(v[0], v[1]);
     g.bottomLeftCorner(1, 3) << 0, 0, 1;
     robot_.robotTF(g);
 }
@@ -429,7 +507,7 @@ void HRM2D::computeTFE(const double thetaA, const double thetaB,
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
     tfe->push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
-                            uint(param_.NUM_POINT), robot_.getBase().getNum()));
+                            param_.NUM_POINT, robot_.getBase().getNum()));
 
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         Eigen::Rotation2Dd rotLink(

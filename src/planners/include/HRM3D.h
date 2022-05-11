@@ -37,13 +37,32 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      */
     FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
         layerBound_ = *bd;
+        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
         sweepLineProcess();
         return freeSegOneLayer_;
     }
 
-    std::vector<Eigen::Quaterniond> getSampleOrientation() const { return q_r; }
+    /**
+     * \brief getLayerBoundaryMesh Get Minkowski sums boundary mesh
+     * \param idx Index of C-layer
+     * \return Boundary mesh
+     */
+    BoundaryMesh getLayerBoundaryMesh(const Index idx) {
+        return layerBoundMeshAll_.at(idx);
+    }
 
-    virtual void buildRoadmap() override;
+    /**
+     * \brief getLayerBoundary Get Minkowski sums boundary
+     * \param idx Index of C-layer
+     * \return Boundary
+     */
+    Boundary getLayerBoundary(const Index idx) {
+        return layerBoundAll_.at(idx);
+    }
+
+    void constructOneLayer(const Index layerIdx) override;
+
+    virtual void sampleOrientations() override;
 
     void sweepLineProcess() override;
 
@@ -55,11 +74,16 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void connectMultiLayer() override;
 
+    void connectExistLayer(const Index layerId) override;
+
   protected:
+    void generateBoundaryMesh(const Boundary* bound, BoundaryMesh* boundMesh);
+
     void bridgeLayer() override;
 
-    void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
-                    std::vector<SuperQuadrics>* tfe);
+    virtual void computeTFE(const Eigen::Quaterniond& v1,
+                            const Eigen::Quaterniond& v2,
+                            std::vector<SuperQuadrics>* tfe);
 
     IntersectionInterval computeIntersections(
         const std::vector<Coordinate>& ty) override;
@@ -85,10 +109,11 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
   protected:
     /** \param q_r sampled orientations (Quaternion) of the robot */
-    std::vector<Eigen::Quaterniond> q_r;
+    std::vector<Eigen::Quaterniond> q_;
 
     /** \param layerBoundMesh_ boundary surface as mesh */
     BoundaryMesh layerBoundMesh_;
+    std::vector<BoundaryMesh> layerBoundMeshAll_;
 
     /** \param freeSegOneLayer_ collision-free line segments in one C-slice */
     FreeSegment3D freeSegOneLayer_;

@@ -13,7 +13,10 @@ class ProbHRM3D : public HRM3D {
 
     ~ProbHRM3D() override;
 
-    void plan(const double timeLim);
+  public:
+    void plan(const double timeLim) override;
+
+    void sampleOrientations() override;
 
     void connectMultiLayer() override;
 
@@ -31,7 +34,4 @@ class ProbHRM3D : public HRM3D {
     ParseURDF* kdl_;
     std::string urdfFile_;
     const double maxJointAngle_ = pi / 2;
-
-    // store configuration for each robot shape (at each C-layer)
-    std::vector<std::vector<Coordinate>> v_;
 };

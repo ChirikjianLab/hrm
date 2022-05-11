@@ -31,7 +31,7 @@ void SuperEllipse::setAngle(const double newAngle) { angle_ = newAngle; }
 // Get the points on the boundary of original shape
 BoundaryPoints SuperEllipse::getOriginShape() const {
     double th;
-    Eigen::Vector2d x;
+    Point2D x;
     Eigen::MatrixXd C(2, num_);
     BoundaryPoints X(2, num_);
 

@@ -31,3 +31,13 @@ add_executable(BenchProbHRM3D BenchProbHRM3D.cpp)
 target_link_libraries(BenchProbHRM3D
                       HRM3D
                       TEST_UTIL)
+
+add_executable(BenchHRM3DAblation BenchHRM3DAblation.cpp)
+target_link_libraries(BenchHRM3DAblation
+                      HRM3D
+                      TEST_UTIL)
+
+add_executable(BenchProbHRM3DAblation BenchProbHRM3DAblation.cpp)
+target_link_libraries(BenchProbHRM3DAblation
+                      HRM3D
+                      TEST_UTIL)

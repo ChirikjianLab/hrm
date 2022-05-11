@@ -13,49 +13,53 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 
 HRM3D::~HRM3D() {}
 
-void HRM3D::buildRoadmap() {
-    // Samples from SO(3)
-    sampleSO3();
-
-    // Get the current Transformation
-    SE3Transform tf;
-    tf.setIdentity();
-
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        // Set rotation matrix to robot
-        tf.topLeftCorner(3, 3) = q_r.at(i).toRotationMatrix();
-        robot_.robotTF(tf);
-
-        layerBound_ = boundaryGen();
-        sweepLineProcess();
-        connectOneLayer3D(&freeSegOneLayer_);
-
-        // Store the index of vertex in the current layer
-        vtxId_.push_back(N_v);
+void HRM3D::constructOneLayer(const Index layerIdx) {
+    // Set rotation matrix to robot (rigid)
+    if (isRobotRigid_) {
+        setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
+                      q_.at(layerIdx).y(), q_.at(layerIdx).z()});
+    } else {
+        setTransform(v_.at(layerIdx));
     }
-    connectMultiLayer();
+
+    // Add new C-layer
+    if (!isRefine_) {
+        // Generate Minkowski operation boundaries
+        layerBound_ = boundaryGen();
+        layerBoundAll_.push_back(layerBound_);
+
+        // Generate mesh for the boundaries
+        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
+        layerBoundMeshAll_.push_back(layerBoundMesh_);
+    } else {
+        layerBound_ = layerBoundAll_.at(layerIdx);
+        layerBoundMesh_ = layerBoundMeshAll_.at(layerIdx);
+    }
+
+    // Sweep-line process to generate collision free line segments
+    sweepLineProcess();
+
+    // Connect vertices within one C-layer
+    connectOneLayer3D(&freeSegOneLayer_);
+}
+
+/** \brief Sample from SO(3). If the orientation exists, no addition and record
+ * the index */
+void HRM3D::sampleOrientations() {
+    // Generate samples from SO(3)
+    sampleSO3();
 }
 
 void HRM3D::sweepLineProcess() {
-    // Generate mesh for the boundaries
-    layerBoundMesh_.arena.resize(layerBound_.arena.size());
-    layerBoundMesh_.obstacle.resize(layerBound_.obstacle.size());
-    for (size_t i = 0; i < layerBound_.arena.size(); ++i) {
-        layerBoundMesh_.arena.at(i) = getMeshFromParamSurface(
-            layerBound_.arena.at(i), arena_.at(0).getNumParam());
-    }
-    for (size_t i = 0; i < layerBound_.obstacle.size(); ++i) {
-        layerBoundMesh_.obstacle.at(i) = getMeshFromParamSurface(
-            layerBound_.obstacle.at(i), obs_.at(0).getNumParam());
-    }
-
     // x- and y-coordinates of sweep lines
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
-    Coordinate dx = 2 * param_.BOUND_LIMIT[0] / (param_.NUM_LINE_X - 1);
-    Coordinate dy = 2 * param_.BOUND_LIMIT[1] / (param_.NUM_LINE_Y - 1);
+    double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                (param_.NUM_LINE_X - 1);
+    double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                (param_.NUM_LINE_Y - 1);
 
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = -param_.BOUND_LIMIT[1] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
     }
 
     // Find intersections along each sweep line
@@ -63,7 +67,7 @@ void HRM3D::sweepLineProcess() {
     freeSegOneLayer_.freeSegYZ.clear();
     for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
         // x-coordinates of sweep lines
-        freeSegOneLayer_.tx.push_back(-param_.BOUND_LIMIT[0] + i * dx);
+        freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] + i * dx);
 
         IntersectionInterval intersect = computeIntersections(ty);
 
@@ -78,9 +82,9 @@ IntersectionInterval HRM3D::computeIntersections(
     // Initialize sweep lines
     IntersectionInterval intersect;
     intersect.arenaLow = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[2]);
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[4]);
     intersect.arenaUpp = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[2]);
+        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[5]);
     intersect.obstacleLow =
         Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
     intersect.obstacleUpp =
@@ -100,10 +104,10 @@ IntersectionInterval HRM3D::computeIntersections(
             if (intersectPointArena.empty()) continue;
 
             intersect.arenaLow(i, j) = std::fmin(
-                -param_.BOUND_LIMIT[2], std::fmin(intersectPointArena[0](2),
-                                                  intersectPointArena[1](2)));
+                param_.BOUND_LIMIT[4], std::fmin(intersectPointArena[0](2),
+                                                 intersectPointArena[1](2)));
             intersect.arenaUpp(i, j) = std::fmax(
-                param_.BOUND_LIMIT[2], std::fmax(intersectPointArena[0](2),
+                param_.BOUND_LIMIT[5], std::fmax(intersectPointArena[0](2),
                                                  intersectPointArena[1](2)));
         }
 
@@ -126,6 +130,7 @@ IntersectionInterval HRM3D::computeIntersections(
 void HRM3D::generateVertices(const Coordinate tx,
                              const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
+
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
         N_v.plane.push_back(res_.graph_structure.vertex.size());
 
@@ -142,7 +147,6 @@ void HRM3D::generateVertices(const Coordinate tx,
 
     // Record index info
     N_v.line.push_back(N_v.plane);
-    N_v.layer = res_.graph_structure.vertex.size();
 }
 
 // Connect vertices within one C-layer
@@ -151,6 +155,7 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     Index n2 = 0;
 
     N_v.line.clear();
+    N_v.startId = res_.graph_structure.vertex.size();
     for (size_t i = 0; i < freeSeg->tx.size(); ++i) {
         // Generate collision-free vertices
         generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegYZ.at(i));
@@ -158,17 +163,18 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
         // Connect within one plane
         connectOneLayer2D(&freeSeg->freeSegYZ.at(i));
     }
+    N_v.layer = res_.graph_structure.vertex.size();
 
     for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
         for (size_t j = 0; j < freeSeg->freeSegYZ.at(i).ty.size(); ++j) {
+            n1 = N_v.line[i][j];
+            n2 = N_v.line[i + 1][j];
+
             // Connect vertex btw adjacent planes, only connect with same ty
             for (size_t k1 = 0; k1 < freeSeg->freeSegYZ.at(i).xM[j].size();
                  ++k1) {
-                n1 = N_v.line[i][j];
                 for (size_t k2 = 0;
                      k2 < freeSeg->freeSegYZ.at(i + 1).xM[j].size(); ++k2) {
-                    n2 = N_v.line[i + 1][j];
-
                     if (isSameLayerTransitionFree(
                             res_.graph_structure.vertex[n1 + k1],
                             res_.graph_structure.vertex[n2 + k2])) {
@@ -177,6 +183,8 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
                         res_.graph_structure.weight.push_back(vectorEuclidean(
                             res_.graph_structure.vertex[n1 + k1],
                             res_.graph_structure.vertex[n2 + k2]));
+                    } else {
+                        bridgeVertex(n1 + k1, n2 + k2);
                     }
                 }
             }
@@ -185,24 +193,14 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
 }
 
 void HRM3D::connectMultiLayer() {
-    if (param_.NUM_LAYER == 1) {
+    if (vtxId_.size() == 1) {
         return;
     }
-
-    Index j = 0;
-
-    //    size_t n2;
-    //    size_t n22;
-    //    size_t n_2;
-    //    size_t start = 0;
-
-    std::vector<Coordinate> v1;
-    std::vector<Coordinate> v2;
 
     //    int n_check = 0;
     //    int n_connect = 0;
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+    for (size_t i = 0; i < vtxId_.size(); ++i) {
         //        n2 = vtxId_[i].layer;
         //        // Construct the middle layer
         //        if (i == N_layers - 1 && N_layers != 2) {
@@ -254,10 +252,10 @@ void HRM3D::connectMultiLayer() {
         //        n_2 = vtxId_[j].layer;
 
         // Find the nearest C-layers
-        double minDist = 100;
+        double minDist = inf;
         int minIdx = 0;
         for (size_t j = 0; j != i && j < param_.NUM_LAYER; ++j) {
-            double dist = q_r.at(i).angularDistance(q_r.at(j));
+            double dist = q_.at(i).angularDistance(q_.at(j));
             if (dist < minDist) {
                 minDist = dist;
                 minIdx = j;
@@ -266,21 +264,15 @@ void HRM3D::connectMultiLayer() {
 
         // Find vertex only in adjacent layers
         // Start and end vertics in the current layer
-        Index n22 = 0;
-        if (i != 0) {
-            n22 = vtxId_.at(i - 1).layer;
-        }
+        Index n22 = vtxId_.at(i).startId;
         Index n_2 = vtxId_.at(i).layer;
 
         // Start and end vertics in the nearest layer
-        Index start = 0;
-        if (minIdx != 0) {
-            start = vtxId_.at(minIdx - 1).layer;
-        }
+        Index start = vtxId_.at(minIdx).startId;
         Index n2 = vtxId_.at(minIdx).layer;
 
         // Construct the middle layer
-        computeTFE(q_r[i], q_r[j], &tfe_);
+        computeTFE(q_.at(i), q_.at(minIdx), &tfe_);
         bridgeLayer();
 
         //        ////////////////////////////////////////////////////////////
@@ -310,15 +302,17 @@ void HRM3D::connectMultiLayer() {
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n2; ++m0) {
-            v1 = res_.graph_structure.vertex.at(m0);
+            auto v1 = res_.graph_structure.vertex.at(m0);
             for (size_t m1 = n22; m1 < n_2; ++m1) {
-                v2 = res_.graph_structure.vertex[m1];
+                auto v2 = res_.graph_structure.vertex[m1];
 
                 // Locate the nearest vertices
                 if (std::fabs(v1.at(0) - v2.at(0)) >
-                        param_.BOUND_LIMIT[0] / param_.NUM_LINE_X ||
+                        2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                            param_.NUM_LINE_X ||
                     std::fabs(v1.at(1) - v2.at(1)) >
-                        param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+                        2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                            param_.NUM_LINE_Y) {
                     continue;
                 }
 
@@ -344,15 +338,68 @@ void HRM3D::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
+void HRM3D::connectExistLayer(const Index layerId) {
+    // Attempt to connect the most recent subgraph to previous existing graph
+    // Traverse C-layers through the current subgraph
+    Index startIdCur = vtxId_.at(layerId).startId;
+    Index endIdCur = vtxId_.at(layerId).layer;
+
+    // Connect within same C-layer, same index with previous round of search
+    Index startIdExist = vtxIdAll_.back().at(layerId).startId;
+    Index endIdExist = vtxIdAll_.back().at(layerId).layer;
+
+    // Locate the neighbor vertices in the adjacent
+    // sweep line, check for validity
+    for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
+        auto v1 = res_.graph_structure.vertex[m0];
+        for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
+            auto v2 = res_.graph_structure.vertex[m1];
+
+            if (std::fabs(v1.at(0) - v2.at(0)) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                    param_.NUM_LINE_X) {
+                continue;
+            }
+
+            if (std::fabs(v1.at(1) - v2.at(1)) >
+                2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
+                continue;
+            }
+
+            if (isSameLayerTransitionFree(v1, v2)) {
+                // Add new connections
+                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
+                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+
+                // Continue from where it pauses
+                startIdExist = m1;
+                break;
+            }
+        }
+    }
+}
+
 std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     const Index num) {
     std::vector<std::vector<Coordinate>> path_interp;
-    std::vector<std::vector<Coordinate>> path_solved = getSolutionPath();
+
+    // Compute distance per step
+    const double distance_step =
+        res_.solution_path.cost /
+        (num * (res_.solution_path.solvedPath.size() - 1.0));
 
     // Iteratively store interpolated poses along the solved path
-    for (size_t i = 0; i < path_solved.size() - 1; ++i) {
+    for (size_t i = 0; i < res_.solution_path.solvedPath.size() - 1; ++i) {
+        int num_step =
+            vectorEuclidean(res_.solution_path.solvedPath.at(i),
+                            res_.solution_path.solvedPath.at(i + 1)) /
+            distance_step;
+
         std::vector<std::vector<Coordinate>> step_interp =
-            interpolateCompoundSE3Rn(path_solved[i], path_solved[i + 1], num);
+            interpolateCompoundSE3Rn(res_.solution_path.solvedPath.at(i),
+                                     res_.solution_path.solvedPath.at(i + 1),
+                                     num_step);
 
         path_interp.insert(path_interp.end(), step_interp.begin(),
                            step_interp.end());
@@ -364,6 +411,22 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
+void HRM3D::generateBoundaryMesh(const Boundary* bound,
+                                 BoundaryMesh* boundMesh) {
+    // Generate mesh for the boundaries
+    boundMesh->arena.resize(bound->arena.size());
+    boundMesh->obstacle.resize(bound->obstacle.size());
+
+    for (size_t i = 0; i < bound->arena.size(); ++i) {
+        boundMesh->arena.at(i) = getMeshFromParamSurface(
+            bound->arena.at(i), arena_.at(0).getNumParam());
+    }
+    for (size_t i = 0; i < bound->obstacle.size(); ++i) {
+        boundMesh->obstacle.at(i) = getMeshFromParamSurface(
+            bound->obstacle.at(i), obs_.at(0).getNumParam());
+    }
+}
+
 void HRM3D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
@@ -372,10 +435,10 @@ void HRM3D::bridgeLayer() {
 
         // calculate Minkowski boundary points and meshes for obstacles
         std::vector<MeshMatrix> bdMesh;
-        for (size_t j = 0; j < size_t(N_o); ++j) {
-            auto bd = obs_.at(j).getMinkSum3D(tfe_.at(i), +1);
+        for (auto obstacle : obs_) {
+            auto bd = obstacle.getMinkSum3D(tfe_.at(i), +1);
             bdMesh.push_back(
-                getMeshFromParamSurface(bd, obs_.at(j).getNumParam()));
+                getMeshFromParamSurface(bd, obstacle.getNumParam()));
         }
 
         bridgeLayerBound_.at(i) = bdMesh;
@@ -395,19 +458,17 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
     line.tail(3) = v12;
 
     // Intersection between line and mesh
-    double s0, s1;
-    std::vector<Point3D> intersectObs;
-    for (auto CObstacle : layerBoundMesh_.obstacle) {
-        intersectObs = intersectVerticalLineMesh3D(line, CObstacle);
+    for (auto obs : layerBoundMesh_.obstacle) {
+        auto intersectObs = intersectLineMesh3D(line, obs);
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
-            s0 = (intersectObs[0] - t1).norm() / (t2 - t1).norm();
-            s1 = (intersectObs[1] - t1).norm() / (t2 - t1).norm();
+            // Dot product between vectors (t1->intersect) and (t2->intersect)
+            auto s0 = (intersectObs[0] - t1).dot(intersectObs[0] - t2);
+            auto s1 = (intersectObs[1] - t1).dot(intersectObs[1] - t2);
 
-            if ((s0 > 0 && s0 < 1) || (s1 > 0 && s1 < 1)) {
-                return false;
-            } else if (s0 < 0 && s1 > 1) {
+            // Intersect within segment (t1, t2) iff dot product less than 0
+            if ((s0 < 0) || (s1 < 0)) {
                 return false;
             }
         }
@@ -496,15 +557,16 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
 void HRM3D::sampleSO3() {
     srand(unsigned(std::time(NULL)));
 
+    q_.resize(param_.NUM_LAYER);
     if (robot_.getBase().getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
         for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-            q_r.push_back(Eigen::Quaterniond::UnitRandom());
+            q_.at(i) = Eigen::Quaterniond::UnitRandom();
         }
     } else {
         // Pre-defined samples of Quaternions
         param_.NUM_LAYER = robot_.getBase().getQuatSamples().size();
-        q_r = robot_.getBase().getQuatSamples();
+        q_ = robot_.getBase().getQuatSamples();
     }
 }
 
@@ -520,20 +582,20 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
     Eigen::Quaterniond minQuat;
 
     // Find the closest C-layer
-    minQuatDist = queryQuat.angularDistance(q_r[0]);
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        quatDist = queryQuat.angularDistance(q_r[i]);
+    minQuatDist = queryQuat.angularDistance(q_[0]);
+    for (size_t i = 0; i < q_.size(); ++i) {
+        quatDist = queryQuat.angularDistance(q_[i]);
         if (quatDist < minQuatDist) {
             minQuatDist = quatDist;
-            minQuat = q_r[i];
+            minQuat = q_[i];
         }
     }
 
     // Search for k-nn C-layers
     std::vector<Eigen::Quaterniond> quatList;
-    for (size_t i = 0; i < q_r.size(); ++i) {
-        if (minQuat.angularDistance(q_r[i]) < radius) {
-            quatList.push_back(q_r[i]);
+    for (size_t i = 0; i < q_.size(); ++i) {
+        if (minQuat.angularDistance(q_[i]) < radius) {
+            quatList.push_back(q_[i]);
         }
 
         if (quatList.size() >= k) {
@@ -562,9 +624,11 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
         }
 
         if (std::abs(vertex[0] - res_.graph_structure.vertex[idxLayer][0]) <
-                10 * param_.BOUND_LIMIT[0] / param_.NUM_LINE_X &&
+                radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                    param_.NUM_LINE_X &&
             std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
-                10 * param_.BOUND_LIMIT[1] / param_.NUM_LINE_Y) {
+                radius * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                    param_.NUM_LINE_Y) {
             idx.push_back(idxLayer);
         }
     }

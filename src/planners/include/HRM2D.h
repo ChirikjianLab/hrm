@@ -22,20 +22,23 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
         return freeSegOneLayer_;
     }
 
-    virtual void buildRoadmap() override;
+    void constructOneLayer(const Index layerIdx) override;
 
-    virtual void connectMultiLayer() override;
+    virtual void sampleOrientations() override;
 
     virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D* freeSeg) override;
 
     void sweepLineProcess() override;
 
+    virtual void connectMultiLayer() override;
+
+    void connectExistLayer(const Index layerId) override;
+
   protected:
     void bridgeLayer() override;
 
-    std::vector<double> bridgeVertex(std::vector<Coordinate> v1,
-                                     std::vector<Coordinate> v2) override;
+    void bridgeVertex(const Index idx1, const Index idx2);
 
     IntersectionInterval computeIntersections(
         const std::vector<double>& ty) override;
@@ -59,8 +62,8 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
                     std::vector<SuperEllipse>* tfe);
 
   protected:
-    /** \brief ang_r sampled orientations of the robot */
-    std::vector<double> ang_r;
+    /** \brief headings_ sampled orientations of the robot */
+    std::vector<double> headings_;
 
     FreeSegment2D freeSegOneLayer_;
 

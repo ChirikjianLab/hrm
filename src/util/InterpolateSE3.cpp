@@ -29,6 +29,10 @@ std::vector<std::vector<Coordinate>> interpolateSE3(
 std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
+    if (numStep == 0) {
+        return std::vector<std::vector<Coordinate>>({vStart, vEnd});
+    }
+
     if (vStart.size() == 7) {
         return interpolateSE3(vStart, vEnd, numStep);
     } else {

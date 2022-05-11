@@ -34,5 +34,5 @@ class MultiBodyTree2D {
     SuperEllipse base_;
     Index numLinks_ = 0;
     std::vector<SuperEllipse> link_;
-    std::vector<Eigen::Matrix3d> tf_;
+    std::vector<SE2Transform> tf_;
 };

@@ -8,48 +8,61 @@
 
 using namespace Eigen;
 using namespace std;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc != 6) {
+    if (argc != 8) {
         cerr << "Usage: Please add 1) Num of trials 2) robot name 3) Num of "
-                "sweep planes 4) Num of sweep lines 5) Max planning time (in "
-                "seconds, default: 60.0s)"
+                "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
+                "5) Max planning time (in seconds, default: 60.0s) 6) "
+                "Configuration file prefix 7) URDF file prefix"
              << endl;
         return 1;
+    } else {
+        cout << "Probabilistic Highway RoadMap for 3D articulated-body planning"
+             << endl;
+        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
     const size_t N = size_t(atoi(argv[1]));
-    const string robotName = argv[2];
+    const string ROBOT_NAME = argv[2];
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
-    const double timeLim = double(atoi(argv[5]));
+    const double MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
-    PlannerSetting3D* env3D = new PlannerSetting3D();
-    env3D->loadEnvironment();
+    const string CONFIG_FILE_PREFIX = argv[6];
+    const int NUM_SURF_PARAM = 10;
+
+    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
-    MultiBodyTree3D robot = loadRobotMultiBody3D("0", env3D->getNumSurfParam());
-    std::string urdfFile = "../resources/3D/urdf/" + robotName + ".urdf";
+    const string URDF_FILE_PREFIX = argv[7];
+
+    MultiBodyTree3D robot =
+        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+    std::string urdfFile =
+        URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Options
-    PlannerParameter par;
-    par.NUM_LAYER = 0;
-    par.NUM_LINE_X = size_t(N_x);
-    par.NUM_LINE_Y = size_t(N_y);
+    PlannerParameter param;
+    param.NUM_LAYER = 0;
+    param.NUM_LINE_X = size_t(N_x);
+    param.NUM_LINE_Y = size_t(N_y);
 
-    double f = 1.5;
-    par.BOUND_LIMIT = {env3D->getArena().at(0).getSemiAxis().at(0) -
-                           f * robot.getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(1) -
-                           f * robot.getBase().getSemiAxis().at(0),
-                       env3D->getArena().at(0).getSemiAxis().at(2) -
-                           f * robot.getBase().getSemiAxis().at(0)};
+    defineParameters(&robot, env3D, &param);
+
+    cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
+         << param.NUM_LINE_Y << '}' << endl;
+    cout << "----------" << endl;
+
+    cout << "Start benchmark..." << endl;
 
     PlanningRequest req;
     req.is_robot_rigid = false;
-    req.planner_parameters = par;
+    req.planner_parameters = param;
     req.start = env3D->getEndPoints().at(0);
     req.goal = env3D->getEndPoints().at(1);
 
@@ -67,7 +80,7 @@ int main(int argc, char** argv) {
         // Path planning using ProbHRM3D
         ProbHRM3D probHRM(robot, urdfFile, env3D->getArena(),
                           env3D->getObstacle(), req);
-        probHRM.plan(timeLim);
+        probHRM.plan(MAX_PLAN_TIME);
 
         PlanningResult res = probHRM.getPlanningResult();
         PlannerParameter param = probHRM.getPlannerParameters();
@@ -76,6 +89,13 @@ int main(int argc, char** argv) {
         displayPlanningTimeInfo(&res.planning_time);
         displayGraphInfo(&res.graph_structure);
         displayPathInfo(&res.solution_path);
+
+        cout << "Final number of C-layers: "
+             << probHRM.getPlannerParameters().NUM_LAYER << endl;
+        cout << "Final number of sweep lines: {"
+             << probHRM.getPlannerParameters().NUM_LINE_X << ", "
+             << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+        cout << "==========" << endl;
 
         file_time << res.solved << ',' << res.planning_time.totalTime << ','
                   << param.NUM_LAYER << ',' << param.NUM_LINE_X << ','

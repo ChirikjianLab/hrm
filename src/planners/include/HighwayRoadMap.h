@@ -47,6 +47,7 @@ struct Boundary {
 
 /** \brief vertexIdx vertex index at each C-layer, sweep line */
 struct vertexIdx {
+    Index startId;
     Index layer;
     std::vector<Index> plane;
     std::vector<std::vector<Index>> line;
@@ -88,14 +89,28 @@ class HighwayRoadMap {
     std::vector<Coordinate> getStart() const { return start_; }
     std::vector<Coordinate> getGoal() const { return goal_; }
 
+    /** \brief getInterpolatedSolutionPath Interpolate solved path
+     * \return 2D vector for representing interpolated path */
+    virtual std::vector<std::vector<double>> getInterpolatedSolutionPath(
+        const unsigned int num);
+
     /** \brief plan Main routine for HRM-based planners */
-    virtual void plan();
+    virtual void plan(const double timeLim);
 
     /** \brief buildRoadmap Subroutine for building roadmap */
-    virtual void buildRoadmap() = 0;
+    void buildRoadmap();
 
     /** \brief search Subroutine for graph searching */
     void search();
+
+    /** \brief refineExistRoadmap Subroutine for refining existing roadmap */
+    void refineExistRoadmap(const double timeLim);
+
+    /** \brief construct one C-layer */
+    virtual void constructOneLayer(const Index layerIdx) = 0;
+
+    /** \brief sampleOrientations generate orientation samples */
+    virtual void sampleOrientations() = 0;
 
     /**
      * \brief boundaryGen Generating Minkowski boundary points
@@ -130,6 +145,10 @@ class HighwayRoadMap {
      * adjacent C-layers */
     virtual void connectMultiLayer() = 0;
 
+    /** \brief connectExistLayer Subroutine for connecting vertices with
+     * previously existing layers */
+    virtual void connectExistLayer(const Index layerId) = 0;
+
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
      * C-layers */
@@ -138,11 +157,9 @@ class HighwayRoadMap {
     /**
      * \brief bridgeVertex generating bridge vertices for failed connections
      * within one C-layer
-     * \param v1, v2 Two vertices to be connected
-     * \return New bridge vertices
+     * \param idx1, idx2 Indices of two vertices to be connected
      */
-    virtual std::vector<double> bridgeVertex(std::vector<Coordinate> v1,
-                                             std::vector<Coordinate> v2);
+    void bridgeVertex(const Index idx1, const Index idx2);
 
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles
@@ -187,9 +204,10 @@ class HighwayRoadMap {
                              const std::vector<Coordinate>& v) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
-     * \param FreeSegment2D pointer (non-const)
+     * \param FreeSegment2D pointer
+     * \return FreeSegment2D Enhanced free segment with more valid vertices
      */
-    void enhanceDecomp(FreeSegment2D* freeSeg);
+    FreeSegment2D enhanceDecomp(const FreeSegment2D* currFreeSeg);
 
     /** \brief find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
@@ -224,6 +242,13 @@ class HighwayRoadMap {
     /** \param res_ Planning results */
     PlanningResult res_;
 
+  protected:
+    /** \param indicator of rigid-body robot */
+    bool isRobotRigid_ = true;
+
+    /** \param indicator of C-layer refinement */
+    bool isRefine_ = false;
+
     /** \param N_o number of obstacles */
     Index N_o;
 
@@ -232,10 +257,15 @@ class HighwayRoadMap {
 
     /** \param Boundary point sets of Minkowski operations */
     Boundary layerBound_;
+    std::vector<Boundary> layerBoundAll_;
+
+    /** \param store configuration for each robot shape (at each C-layer) */
+    std::vector<std::vector<double>> v_;
 
     /** \param Vertex index info */
     vertexIdx N_v;
     std::vector<vertexIdx> vtxId_;
+    std::vector<std::vector<vertexIdx>> vtxIdAll_;
 
     /** \param Tightly-fitted ellipsoids at bridge C-layer */
     std::vector<ObjectType> tfe_;

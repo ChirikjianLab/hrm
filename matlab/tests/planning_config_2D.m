@@ -8,7 +8,7 @@ outPath = '../../config';
 disp('Environment Initialization...')
 
 obs_shape = 2;
-map_type = 2;
+map_type = 1;
 [ar, obs, end_points] = Environment2D(obs_shape, map_type);
 
 % Store Arena and Obstacles as .csv files

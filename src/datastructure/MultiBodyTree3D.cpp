@@ -19,7 +19,7 @@ void MultiBodyTree3D::addBody(SuperQuadrics link) {
     numLinks_++;
 
     // Add tranformation related to Base
-    Eigen::Matrix4d g;
+    SE3Transform g;
     g.setIdentity();
     g.block<3, 3>(0, 0) = link.getQuaternion().toRotationMatrix();
     g.block<3, 1>(0, 3) = Eigen::Vector3d(link.getPosition().data());
@@ -36,14 +36,14 @@ void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
     base_.setQuaternion(quat);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     for (size_t i = 0; i < numLinks_; i++) {
         gLink = g * tf_.at(i);
 
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
         rotMat = gLink.topLeftCorner(3, 3);
-        quat.matrix() = rotMat;
+        quat = Eigen::Quaterniond(rotMat);
         link_.at(i).setQuaternion(quat);
     }
 }
@@ -63,7 +63,7 @@ void MultiBodyTree3D::robotTF(const std::string urdfFile,
     base_.setQuaternion(quatBase);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     KDL::JntArray jointArray;
     jointArray.data = *jointConfig;
 
@@ -92,7 +92,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
     base_.setQuaternion(quat);
 
     // Set transform for each link
-    Eigen::Matrix4d gLink;
+    SE3Transform gLink;
     KDL::JntArray jointArray;
     jointArray.data = *jointConfig;
 
@@ -104,7 +104,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
         rotMat = gLink.topLeftCorner(3, 3);
-        quat.matrix() = rotMat;
+        quat = Eigen::Quaterniond(rotMat);
         link_.at(i).setQuaternion(quat);
     }
 }
@@ -112,15 +112,15 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
 // Minkowski sums and difference for multi-link robot
 std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
                                                       const int k) {
-    std::vector<Eigen::MatrixXd> mink;
+    std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base
     mink.push_back(s1->getMinkSum3D(base_, k));
 
     // Minkowski sums for Links
     for (size_t i = 0; i < numLinks_; i++) {
-        mink.emplace_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
-                          Eigen::Vector3d(link_.at(i).getPosition().data()));
+        mink.push_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
+                       Point3D(link_.at(i).getPosition().data()));
     }
 
     return mink;
