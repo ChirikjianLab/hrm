@@ -13,6 +13,8 @@ jobs:
         run: |
           cd .. && mkdir tmpBuild && cd tmpBuild
           cmake -G Ninja ../HighwayRoadMap && ninja -j 9
+      - name: Test
+        run: cd ../tmpBuild && ctest
 
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest

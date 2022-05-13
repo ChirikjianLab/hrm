@@ -35,7 +35,7 @@
 /bin/
 
 # Intermediate configuration files
-/config/
+/config/*.csv
 
 ### Qt ignores ###
 # Qt-es

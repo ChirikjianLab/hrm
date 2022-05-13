@@ -1,12 +1,9 @@
 #include "include/ParsePlanningSettings.h"
 
-void loadVectorGeometry(const std::string config_file,
+void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         const int num_curve_param,
                         std::vector<SuperEllipse>& object) {
-    std::vector<std::vector<double>> object_config =
-        parse2DCsvFile(config_file);
-
-    // Arena and Obstacles as class of SuperEllipse
+    // Object as class of SuperEllipse
     object.clear();
     for (size_t j = 0; j < object_config.size(); j++) {
         object.emplace_back(SuperEllipse(
@@ -16,12 +13,18 @@ void loadVectorGeometry(const std::string config_file,
     }
 }
 
-void loadVectorGeometry(const std::string config_file, const int num_surf_param,
-                        std::vector<SuperQuadrics>& object) {
-    // Read config file
+void loadVectorGeometry(const std::string config_file,
+                        const int num_curve_param,
+                        std::vector<SuperEllipse>& object) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
 
+    loadVectorGeometry(object_config, num_curve_param, object);
+}
+
+void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
+                        const int num_surf_param,
+                        std::vector<SuperQuadrics>& object) {
     // Generate SQ object (orientation from Quaternion parameterization)
     object.clear();
     for (size_t j = 0; j < object_config.size(); j++) {
@@ -33,6 +36,14 @@ void loadVectorGeometry(const std::string config_file, const int num_surf_param,
                                object_config[j][10], object_config[j][11]),
             num_surf_param));
     }
+}
+
+void loadVectorGeometry(const std::string config_file, const int num_surf_param,
+                        std::vector<SuperQuadrics>& object) {
+    std::vector<std::vector<double>> object_config =
+        parse2DCsvFile(config_file);
+
+    loadVectorGeometry(object_config, num_surf_param, object);
 }
 
 MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
