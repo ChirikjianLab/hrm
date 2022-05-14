@@ -1,0 +1,18 @@
+name: C++ CI Sanitizers Address and Memory
+on: [push]
+jobs:
+  Build-and-Test-Sanitizers-Address-Memory:
+    runs-on: ubuntu-20.04
+    container:
+        image: robotma/highwayroadmap-gcc-9:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Environement
+        run: pwd && echo $USER
+      - name: Sanitize Address
+        run: |
+          cd .. && mkdir tmpBuild && cd tmpBuild
+          cmake -G Ninja -DSANITIZE_ADDRESS=ON ../HighwayRoadMap && ninja -j 9
+      - name: Sanitize Memory
+        run: |
+          cmake -G Ninja -DSANITIZE_MEMORY=ON ../HighwayRoadMap && ninja -j 9

@@ -1,0 +1,18 @@
+name: C++ CI Sanitizers
+on: [push]
+jobs:
+  Build-and-Test-Sanitizers:
+    runs-on: ubuntu-20.04
+    container:
+        image: robotma/highwayroadmap-gcc-9:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Environement
+        run: pwd && echo $USER
+      - name: Sanitize Thread
+        run: |
+          cd .. && mkdir tmpBuild && cd tmpBuild
+          cmake -G Ninja -DSANITIZE_THREAD=ON ../HighwayRoadMap && ninja -j 9
+      - name: Sanitize Undefined Behavior
+        run: |
+          cmake -G Ninja -DSANITIZE_UNDEFINED=ON ../HighwayRoadMap && ninja -j 9
