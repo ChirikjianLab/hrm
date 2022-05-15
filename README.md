@@ -1,4 +1,5 @@
-![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-demo.yml/badge.svg)
+![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-basic.yml/badge.svg)
+![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
 
 # HighwayRoadMap
 A paradigm for robot motion planning based on parameterizations of the free space

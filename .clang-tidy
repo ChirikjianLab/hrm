@@ -1,0 +1,14 @@
+Checks:   '-*,
+          bugprone-*,
+          google-*,
+          misc-*,
+          modernize-*,
+          readability-*,
+          -readability-identifier-length,
+          -google-readability-namespace-comments,
+          -google-runtime-int,
+          -google-runtime-references,
+          -misc-non-private-member-variables-in-classes'
+
+
+HeaderFilterRegex: '.*'
