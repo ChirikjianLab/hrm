@@ -5,7 +5,7 @@ jobs:
     # Build with clang tidy enabled is very resource consuming
     runs-on: ubuntu-20.04
     container:
-        image: robotma/focal-dev-qianli:latest
+        image: robotma/highwayroadmap-gcc-9:latest
     steps:
       - uses: actions/checkout@v2
       - name: Check Environement
