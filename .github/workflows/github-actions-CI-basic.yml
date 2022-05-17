@@ -1,0 +1,17 @@
+name: C++ CI Basic
+on: [push]
+jobs:
+  Build-and-Test-Basic:
+    runs-on: ubuntu-20.04
+    container:
+        image: robotma/focal-dev-qianli:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Environement
+        run: pwd && echo $USER
+      - name: Compile
+        run: |
+          cd .. && mkdir tmpBuild && cd tmpBuild
+          cmake -G Ninja ../HighwayRoadMap && ninja -j 9
+      - name: Test
+        run: cd ../tmpBuild && ctest

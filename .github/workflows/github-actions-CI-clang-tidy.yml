@@ -1,0 +1,16 @@
+name: C++ Clang-Tidy
+on: [push]
+jobs:
+  Build-with-Clang-Tidy:
+    # Build with clang tidy enabled is very resource consuming
+    runs-on: ubuntu-20.04
+    container:
+        image: robotma/focal-dev-qianli:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Environement
+        run: pwd && echo $USER
+      - name: Compile
+        run: |
+          cd .. && mkdir tmpBuild && cd tmpBuild
+          cmake -G Ninja -DUSE_CLANG_TIDY=ON ../HighwayRoadMap && ninja -j 9
