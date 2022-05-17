@@ -29,6 +29,7 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
     ```
 
 ## Compiling Instructions
+### On Local Host
 This is a standard CMake project, so compiling using the standard way of building is fine, i.e. from the root folder do the following commands:
 ```
 mkdir build
@@ -37,6 +38,23 @@ cmake ../
 make
 ```
 The compilations are tested on Ubuntu 16.04 and 18.04 systems using CMake (>= 3.5). All the binaries are then located in "/bin" folder.
+
+### On Docker (Recommended)
+```
+# Pull directory onto your localhost
+cd $HOME && mkdir HighwayRoadMap_WS
+cd HighwayRoadMap_WS && git clone git@github.com:ruansp/HighwayRoadMap.git
+
+# Fetch docker image from remote and launch it locally (No need to build the image locally)
+./HighwayRoadMap/script/start-doker.sh
+
+# Build the project inside the docker container
+cd HighwayRoadMap_WS
+mkdir build
+cd build
+cmake -G Ninja ../HighwayRoadMap
+ninja -j 9
+```
 
 **Note**: 
 - If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e.
