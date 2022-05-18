@@ -37,9 +37,9 @@ void HRM2D::constructOneLayer(const Index layerIdx) {
 /** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
  * exists, no addition and record the index */
 void HRM2D::sampleOrientations() {
-    const double dr = 2 * pi / (param_.NUM_LAYER - 1);
+    const double dr = 2 * pi / (static_cast<double>(param_.NUM_LAYER) - 1);
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        headings_.push_back(-pi + dr * i);
+        headings_.push_back(-pi + dr * static_cast<double>(i));
     }
 }
 
@@ -47,9 +47,9 @@ void HRM2D::sweepLineProcess() {
     // Compute vector of y-coordinates
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
     Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    (param_.NUM_LINE_Y - 1);
+                    (static_cast<double>(param_.NUM_LINE_Y) - 1);
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + static_cast<double>(i) * dy;
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
@@ -61,22 +61,26 @@ void HRM2D::sweepLineProcess() {
 
 IntersectionInterval HRM2D::computeIntersections(
     const std::vector<Coordinate>& ty) {
+    auto numLine = static_cast<Eigen::Index>(ty.size());
+    auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
+    auto numObstacle = static_cast<Eigen::Index>(layerBound_.obstacle.size());
+
     IntersectionInterval intersect;
-    intersect.arenaLow = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[0]);
-    intersect.arenaUpp = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[1]);
+    intersect.arenaLow =
+        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[0]);
+    intersect.arenaUpp =
+        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[1]);
     intersect.obstacleLow =
-        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
     intersect.obstacleUpp =
-        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
 
     // Find intersecting points to C-obstacles for each raster scan line
     std::vector<Coordinate> intersectPointArena;
     std::vector<Coordinate> intersectPointObstacle;
-    for (size_t i = 0; i < ty.size(); ++i) {
+    for (auto i = 0; i < numLine; ++i) {
         // x-coordinate of the intersection btw sweep line and arenas
-        for (size_t j = 0; j < layerBound_.arena.size(); ++j) {
+        for (auto j = 0; j < numArena; ++j) {
             intersectPointArena = intersectHorizontalLinePolygon2D(
                 ty.at(i), layerBound_.arena.at(j));
             if (intersectPointArena.empty()) {
@@ -92,7 +96,7 @@ IntersectionInterval HRM2D::computeIntersections(
         }
 
         // x-coordinate of the intersection btw sweep line and obstacles
-        for (size_t j = 0; j < layerBound_.obstacle.size(); ++j) {
+        for (auto j = 0; j < numObstacle; ++j) {
             intersectPointObstacle = intersectHorizontalLinePolygon2D(
                 ty.at(i), layerBound_.obstacle.at(j));
             if (intersectPointObstacle.empty()) {
@@ -175,7 +179,7 @@ void HRM2D::connectMultiLayer() {
                     2.0 *
                         std::fabs(param_.BOUND_LIMIT[3] -
                                   param_.BOUND_LIMIT[2]) /
-                        param_.NUM_LINE_Y) {
+                        static_cast<double>(param_.NUM_LINE_Y)) {
                     continue;
                 }
 
@@ -215,7 +219,7 @@ void HRM2D::connectExistLayer(const Index layerId) {
             // sweep line, check for validity
             if (std::fabs(v1[1] - v2[1]) >
                 2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    param_.NUM_LINE_Y) {
+                    static_cast<double>(param_.NUM_LINE_Y)) {
                 continue;
             }
 
@@ -258,7 +262,7 @@ void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
     // Generate new vertex until a certain resolution
     if (std::fabs(v1[1] - v2[1]) <
         (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-            (param_.NUM_POINT * param_.NUM_LINE_Y)) {
+            static_cast<double>(param_.NUM_POINT * param_.NUM_LINE_Y)) {
         return;
     }
 
@@ -276,7 +280,7 @@ void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
         std::vector<Coordinate> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
                                      v1.at(2)};
 
-        int idxNew = res_.graph_structure.vertex.size();
+        auto idxNew = res_.graph_structure.vertex.size();
         res_.graph_structure.vertex.push_back(vNew);
 
         // Iteratively attempt to connect
@@ -320,12 +324,13 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 // Connect vertices among different layers
 bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
                                        const std::vector<Coordinate>& v2) {
-    double dt = 1.0 / (param_.NUM_POINT - 1);
+    double dt = 1.0 / (static_cast<double>(param_.NUM_POINT) - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolate robot motion linearly from v1 to v2
         std::vector<Coordinate> vStep;
         for (size_t j = 0; j < v1.size(); ++j) {
-            vStep.push_back((1.0 - i * dt) * v1[j] + i * dt * v2[j]);
+            vStep.push_back((1.0 - static_cast<double>(i) * dt) * v1[j] +
+                            static_cast<double>(i) * dt * v2[j]);
         }
 
         // Transform the robot
@@ -484,7 +489,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
         if (std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
             radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                param_.NUM_LINE_Y) {
+                static_cast<double>(param_.NUM_LINE_Y)) {
             idx.push_back(idxLayer);
         }
     }

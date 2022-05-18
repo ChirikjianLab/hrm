@@ -322,17 +322,19 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
         std::vector<Interval> obsSeg;
         std::vector<Interval> arenaSeg;
 
+        auto lineIdx = static_cast<Eigen::Index>(i);
+
         for (auto j = 0; j < intersect->arenaLow.cols(); ++j)
-            if (!std::isnan(intersect->arenaLow(i, j)) &&
-                !std::isnan(intersect->arenaUpp(i, j))) {
-                arenaSeg.push_back(
-                    {intersect->arenaLow(i, j), intersect->arenaUpp(i, j)});
+            if (!std::isnan(intersect->arenaLow(lineIdx, j)) &&
+                !std::isnan(intersect->arenaUpp(lineIdx, j))) {
+                arenaSeg.push_back({intersect->arenaLow(lineIdx, j),
+                                    intersect->arenaUpp(lineIdx, j)});
             }
         for (auto j = 0; j < intersect->obstacleLow.cols(); ++j)
-            if (!std::isnan(intersect->obstacleLow(i, j)) &&
-                !std::isnan(intersect->obstacleUpp(i, j))) {
-                obsSeg.push_back({intersect->obstacleLow(i, j),
-                                  intersect->obstacleUpp(i, j)});
+            if (!std::isnan(intersect->obstacleLow(lineIdx, j)) &&
+                !std::isnan(intersect->obstacleUpp(lineIdx, j))) {
+                obsSeg.push_back({intersect->obstacleLow(lineIdx, j),
+                                  intersect->obstacleUpp(lineIdx, j)});
             }
 
         // Set operations for Collision-free intervals at each line

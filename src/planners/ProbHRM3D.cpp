@@ -139,10 +139,10 @@ void ProbHRM3D::connectMultiLayer() {
             // Locate the nearest vertices in the adjacent sweep lines
             if (std::fabs(v1.at(0) - v2.at(0)) >
                     2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                        param_.NUM_LINE_X ||
+                        static_cast<double>(param_.NUM_LINE_X) ||
                 std::fabs(v1.at(1) - v2.at(1)) >
                     2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                        param_.NUM_LINE_Y) {
+                        static_cast<double>(param_.NUM_LINE_Y)) {
                 continue;
             }
 

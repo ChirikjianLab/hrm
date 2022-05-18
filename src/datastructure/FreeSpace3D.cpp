@@ -40,17 +40,18 @@ freeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(
 std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
     std::vector<freeSegment3D> freeSegments;
     // Find intersecting points to C-obstacles for each raster scan line
-    const double dx =
-        (param_->xLim.second - param_->xLim.first) / (param_->numX - 1.0);
-    const double dy =
-        (param_->yLim.second - param_->yLim.first) / (param_->numY - 1.0);
+    const double dx = (param_->xLim.second - param_->xLim.first) /
+                      (static_cast<double>(param_->numX) - 1.0);
+    const double dy = (param_->yLim.second - param_->yLim.first) /
+                      (static_cast<double>(param_->numY) - 1.0);
 
     for (size_t i = 0; i < param_->numX; ++i) {
         // x-coordinate
-        Coordinate xCoord = param_->xLim.first + i * dx;
+        Coordinate xCoord = param_->xLim.first + static_cast<double>(i) * dx;
         for (size_t j = 0; j < param_->numY; ++j) {
             // y-coordinate
-            Coordinate yCoord = param_->yLim.first + j * dy;
+            Coordinate yCoord =
+                param_->yLim.first + static_cast<double>(j) * dy;
 
             // Compute intersections between each sweep line and C-obstacles
             intersectSweepLine3D intersects =

@@ -54,12 +54,12 @@ void HRM3D::sweepLineProcess() {
     // x- and y-coordinates of sweep lines
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
     double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                (param_.NUM_LINE_X - 1);
+                static_cast<double>(param_.NUM_LINE_X - 1);
     double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                (param_.NUM_LINE_Y - 1);
+                static_cast<double>(param_.NUM_LINE_Y - 1);
 
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = param_.BOUND_LIMIT[2] + i * dy;
+        ty[i] = param_.BOUND_LIMIT[2] + static_cast<double>(i) * dy;
     }
 
     // Find intersections along each sweep line
@@ -67,7 +67,8 @@ void HRM3D::sweepLineProcess() {
     freeSegOneLayer_.freeSegYZ.clear();
     for (size_t i = 0; i < param_.NUM_LINE_X; ++i) {
         // x-coordinates of sweep lines
-        freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] + i * dx);
+        freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] +
+                                      static_cast<double>(i) * dx);
 
         IntersectionInterval intersect = computeIntersections(ty);
 
@@ -79,25 +80,29 @@ void HRM3D::sweepLineProcess() {
 
 IntersectionInterval HRM3D::computeIntersections(
     const std::vector<Coordinate>& ty) {
+    auto numLine = static_cast<Eigen::Index>(ty.size());
+    auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
+    auto numObstacle = static_cast<Eigen::Index>(layerBound_.obstacle.size());
+
     // Initialize sweep lines
     IntersectionInterval intersect;
-    intersect.arenaLow = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[4]);
-    intersect.arenaUpp = Eigen::MatrixXd::Constant(
-        ty.size(), layerBound_.arena.size(), param_.BOUND_LIMIT[5]);
+    intersect.arenaLow =
+        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[4]);
+    intersect.arenaUpp =
+        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[5]);
     intersect.obstacleLow =
-        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
     intersect.obstacleUpp =
-        Eigen::MatrixXd::Constant(ty.size(), layerBound_.obstacle.size(), NAN);
+        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
 
     // Find intersections along each sweep line
     std::vector<Point3D> intersectPointArena;
     std::vector<Point3D> intersectPointObstacle;
-    for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
+    for (auto i = 0; i < numLine; ++i) {
         Line3D lineZ(6);
         lineZ << freeSegOneLayer_.tx.back(), ty.at(i), 0, 0, 0, 1;
 
-        for (size_t j = 0; j < layerBoundMesh_.arena.size(); ++j) {
+        for (auto j = 0; j < numArena; ++j) {
             intersectPointArena =
                 intersectVerticalLineMesh3D(lineZ, layerBoundMesh_.arena.at(j));
 
@@ -111,7 +116,7 @@ IntersectionInterval HRM3D::computeIntersections(
                                                  intersectPointArena[1](2)));
         }
 
-        for (size_t j = 0; j < layerBoundMesh_.obstacle.size(); ++j) {
+        for (auto j = 0; j < numObstacle; ++j) {
             intersectPointObstacle = intersectVerticalLineMesh3D(
                 lineZ, layerBoundMesh_.obstacle.at(j));
 
@@ -258,7 +263,7 @@ void HRM3D::connectMultiLayer() {
             double dist = q_.at(i).angularDistance(q_.at(j));
             if (dist < minDist) {
                 minDist = dist;
-                minIdx = j;
+                minIdx = static_cast<int>(j);
             }
         }
 
@@ -309,10 +314,10 @@ void HRM3D::connectMultiLayer() {
                 // Locate the nearest vertices
                 if (std::fabs(v1.at(0) - v2.at(0)) >
                         2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                            param_.NUM_LINE_X ||
+                            static_cast<double>(param_.NUM_LINE_X) ||
                     std::fabs(v1.at(1) - v2.at(1)) >
                         2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                            param_.NUM_LINE_Y) {
+                            static_cast<double>(param_.NUM_LINE_Y)) {
                     continue;
                 }
 
@@ -357,13 +362,13 @@ void HRM3D::connectExistLayer(const Index layerId) {
 
             if (std::fabs(v1.at(0) - v2.at(0)) >
                 2.0 * std::fabs(param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                    param_.NUM_LINE_X) {
+                    static_cast<double>(param_.NUM_LINE_X)) {
                 continue;
             }
 
             if (std::fabs(v1.at(1) - v2.at(1)) >
                 2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    param_.NUM_LINE_Y) {
+                    static_cast<double>(param_.NUM_LINE_Y)) {
                 continue;
             }
 
@@ -387,14 +392,15 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     // Compute distance per step
     const double distance_step =
         res_.solution_path.cost /
-        (num * (res_.solution_path.solvedPath.size() - 1.0));
+        (static_cast<double>(num) *
+         (static_cast<double>(res_.solution_path.solvedPath.size()) - 1.0));
 
     // Iteratively store interpolated poses along the solved path
     for (size_t i = 0; i < res_.solution_path.solvedPath.size() - 1; ++i) {
-        int num_step =
+        auto num_step = static_cast<int>(
             vectorEuclidean(res_.solution_path.solvedPath.at(i),
                             res_.solution_path.solvedPath.at(i + 1)) /
-            distance_step;
+            distance_step);
 
         std::vector<std::vector<Coordinate>> step_interp =
             interpolateCompoundSE3Rn(res_.solution_path.solvedPath.at(i),
@@ -625,10 +631,10 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
 
         if (std::abs(vertex[0] - res_.graph_structure.vertex[idxLayer][0]) <
                 radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                    param_.NUM_LINE_X &&
+                    static_cast<double>(param_.NUM_LINE_X) &&
             std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
                 radius * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    param_.NUM_LINE_Y) {
+                    static_cast<double>(param_.NUM_LINE_Y)) {
             idx.push_back(idxLayer);
         }
     }
