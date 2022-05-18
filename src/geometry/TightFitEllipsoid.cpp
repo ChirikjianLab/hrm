@@ -7,7 +7,7 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
     Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
                     Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
-    double r = fmin(b[0], b[1]);
+    const double r = fmin(b[0], b[1]);
     Eigen::DiagonalMatrix<double, 2> diag, diag_a, diag_c;
     diag.diagonal() = Eigen::Array2d(r / b[0], r / b[1]);
     diag_a.diagonal() = Eigen::Array2d(pow(a[0], -2), pow(a[1], -2));
@@ -41,7 +41,7 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     Eigen::Matrix3d Ra = quatA.toRotationMatrix();
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
-    double r = fmin(b[0], fmin(b[1], b[2]));
+    const double r = fmin(b[0], fmin(b[1], b[2]));
     Eigen::DiagonalMatrix<double, 3> diag, diag_a, diag_c;
     diag.diagonal() = Eigen::Array3d(r / b[0], r / b[1], r / b[2]);
     diag_a.diagonal() =
@@ -74,7 +74,7 @@ SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
                       const double thetaB, const Index numStep,
                       const Index num) {
     SuperEllipse enclosedEllipse = getMVCE2D(a, a, thetaA, thetaB, num);
-    double dt = 1.0 / (numStep - 1);
+    const double dt = 1.0 / (numStep - 1);
     for (size_t i = 0; i < size_t(numStep); ++i) {
         double thetaStep = (1 - i * dt) * thetaA + i * dt * thetaB;
         enclosedEllipse = getMVCE2D(a, enclosedEllipse.getSemiAxis(), thetaStep,
@@ -88,7 +88,7 @@ SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
                        const Eigen::Quaterniond& quatB, const Index numStep,
                        const Index num) {
-    std::vector<Eigen::Quaterniond> interpolatedQuat =
+    const std::vector<Eigen::Quaterniond> interpolatedQuat =
         interpolateSlerp(quatA, quatB, numStep);
 
     // Iteratively compute MVCE and update
