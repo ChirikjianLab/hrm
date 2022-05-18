@@ -46,14 +46,14 @@ void HRM2D::sampleOrientations() {
 void HRM2D::sweepLineProcess() {
     // Compute vector of y-coordinates
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
-    Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    (static_cast<double>(param_.NUM_LINE_Y) - 1);
+    const Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                          (static_cast<double>(param_.NUM_LINE_Y) - 1);
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
         ty[i] = param_.BOUND_LIMIT[2] + static_cast<double>(i) * dy;
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
-    IntersectionInterval intersect = computeIntersections(ty);
+    const IntersectionInterval intersect = computeIntersections(ty);
 
     // Compute collision-free intervals at each sweep line
     freeSegOneLayer_ = computeFreeSegment(ty, &intersect);
@@ -61,9 +61,10 @@ void HRM2D::sweepLineProcess() {
 
 IntersectionInterval HRM2D::computeIntersections(
     const std::vector<Coordinate>& ty) {
-    auto numLine = static_cast<Eigen::Index>(ty.size());
-    auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
-    auto numObstacle = static_cast<Eigen::Index>(layerBound_.obstacle.size());
+    const auto numLine = static_cast<Eigen::Index>(ty.size());
+    const auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
+    const auto numObstacle =
+        static_cast<Eigen::Index>(layerBound_.obstacle.size());
 
     IntersectionInterval intersect;
     intersect.arenaLow =
@@ -256,8 +257,8 @@ void HRM2D::bridgeLayer() {
 }
 
 void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
-    std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
-    std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
+    const std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
+    const std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
 
     // Generate new vertex until a certain resolution
     if (std::fabs(v1[1] - v2[1]) <
@@ -324,7 +325,7 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 // Connect vertices among different layers
 bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
                                        const std::vector<Coordinate>& v2) {
-    double dt = 1.0 / (static_cast<double>(param_.NUM_POINT) - 1);
+    const double dt = 1.0 / (static_cast<double>(param_.NUM_POINT) - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolate robot motion linearly from v1 to v2
         std::vector<Coordinate> vStep;

@@ -95,12 +95,8 @@ void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::search() {
-    std::vector<Vertex> idx_s;
-    std::vector<Vertex> idx_g;
-    Index num;
-
     // Construct the roadmap
-    Index num_vtx = res_.graph_structure.vertex.size();
+    const Index num_vtx = res_.graph_structure.vertex.size();
     AdjGraph g(num_vtx);
 
     for (Index i = 0; i < res_.graph_structure.edge.size(); ++i) {
@@ -110,12 +106,13 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
-    idx_s = getNearestNeighborsOnGraph(start_, param_.NUM_SEARCH_NEIGHBOR,
-                                       param_.SEARCH_RADIUS);
-    idx_g = getNearestNeighborsOnGraph(goal_, param_.NUM_SEARCH_NEIGHBOR,
-                                       param_.SEARCH_RADIUS);
+    const std::vector<Vertex> idx_s = getNearestNeighborsOnGraph(
+        start_, param_.NUM_SEARCH_NEIGHBOR, param_.SEARCH_RADIUS);
+    const std::vector<Vertex> idx_g = getNearestNeighborsOnGraph(
+        goal_, param_.NUM_SEARCH_NEIGHBOR, param_.SEARCH_RADIUS);
 
     // Search for shortest path in the searching regions
+    Index num;
     for (Vertex idxS : idx_s) {
         for (Vertex idxG : idx_g) {
             std::vector<Vertex> p(num_vertices(g));
@@ -322,7 +319,7 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
         std::vector<Interval> obsSeg;
         std::vector<Interval> arenaSeg;
 
-        auto lineIdx = static_cast<Eigen::Index>(i);
+        const auto lineIdx = static_cast<Eigen::Index>(i);
 
         for (auto j = 0; j < intersect->arenaLow.cols(); ++j)
             if (!std::isnan(intersect->arenaLow(lineIdx, j)) &&
@@ -411,8 +408,8 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
                                                          const Index idx2) {
-    auto v1 = res_.graph_structure.vertex.at(idx1);
-    auto v2 = res_.graph_structure.vertex.at(idx2);
+    const auto v1 = res_.graph_structure.vertex.at(idx1);
+    const auto v2 = res_.graph_structure.vertex.at(idx2);
 
     // Generate new bridge vertex
     auto vNew1 = v1;

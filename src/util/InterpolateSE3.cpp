@@ -6,12 +6,12 @@ std::vector<std::vector<Coordinate>> interpolateSE3(
     std::vector<std::vector<Coordinate>> vInterp;
 
     // Interpolate SO(3)
-    std::vector<Eigen::Quaterniond> quatInterp = interpolateSlerp(
+    const std::vector<Eigen::Quaterniond> quatInterp = interpolateSlerp(
         Eigen::Quaterniond(vStart[3], vStart[4], vStart[5], vStart[6]),
         Eigen::Quaterniond(vEnd[3], vEnd[4], vEnd[5], vEnd[6]), numStep);
 
     // Interpolate R^3
-    std::vector<std::vector<Coordinate>> transInterp =
+    const std::vector<std::vector<Coordinate>> transInterp =
         interpolateRn({vStart[0], vStart[1], vStart[2]},
                       {vEnd[0], vEnd[1], vEnd[2]}, numStep);
 
@@ -67,13 +67,13 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
 
-    Eigen::Matrix3d Ra = quatA.toRotationMatrix();
-    Eigen::Matrix3d Rb = quatB.toRotationMatrix();
+    const Eigen::Matrix3d Ra = quatA.toRotationMatrix();
+    const Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
     // relative angle-axis representation, interpolate angles around the axis
-    Eigen::AngleAxisd axang(Ra.transpose() * Rb);
+    const Eigen::AngleAxisd axang(Ra.transpose() * Rb);
     Eigen::AngleAxisd d_axang = axang;
-    double dt = 1.0 / numStep;
+    const double dt = 1.0 / numStep;
 
     for (size_t i = 0; i <= numStep; ++i) {
         d_axang.angle() = i * dt * axang.angle();
@@ -89,7 +89,7 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
 
-    double dt = 1.0 / numStep;
+    const double dt = 1.0 / numStep;
 
     for (size_t i = 0; i <= numStep; ++i) {
         interpolatedQuat.push_back(quatA.slerp(i * dt, quatB));
@@ -103,7 +103,7 @@ std::vector<std::vector<Coordinate>> interpolateRn(
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
 
-    double dt = 1.0 / numStep;
+    const double dt = 1.0 / numStep;
     for (size_t i = 0; i <= numStep; ++i) {
         std::vector<Coordinate> vStep;
         // Translation part

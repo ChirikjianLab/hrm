@@ -26,7 +26,7 @@ void FreeSpace2D::generateCSpaceBoundary() {
 
 freeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const Coordinate& yCoord) {
     // Compute intersections between each sweep line and C-obstacles
-    intersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
+    const intersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
 
     // Compute collision-free segment of each sweep line
     freeSegment2D lineSegments = computeSweepLineFreeSegment(intersects);
@@ -55,14 +55,14 @@ std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
 
 intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     const Coordinate& yCoord) const {
-    size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
-    size_t numObsMink = configSpaceBoundary_.obsBd.size();
+    const size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
+    const size_t numObsMink = configSpaceBoundary_.obsBd.size();
 
     intersectSweepLine2D intersects;
 
     // x-coordinate of the intersection btw sweep line and arenas
     for (size_t j = 0; j < numArenaMink; ++j) {
-        std::vector<double> arenaIntersectPts =
+        const std::vector<double> arenaIntersectPts =
             intersectHorizontalLinePolygon2D(yCoord,
                                              configSpaceBoundary_.arenaBd[j]);
         if (!arenaIntersectPts.empty()) {
@@ -76,8 +76,9 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     }
     // x-coordinate of the intersection btw sweep line and obstacles
     for (size_t j = 0; j < numObsMink; ++j) {
-        std::vector<double> obsIntersectPts = intersectHorizontalLinePolygon2D(
-            yCoord, configSpaceBoundary_.obsBd[j]);
+        const std::vector<double> obsIntersectPts =
+            intersectHorizontalLinePolygon2D(yCoord,
+                                             configSpaceBoundary_.obsBd[j]);
         if (!obsIntersectPts.empty()) {
             intersects.obsXCords.emplace_back(
                 std::fmin(obsIntersectPts[0], obsIntersectPts[1]),

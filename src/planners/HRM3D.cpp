@@ -53,10 +53,10 @@ void HRM3D::sampleOrientations() {
 void HRM3D::sweepLineProcess() {
     // x- and y-coordinates of sweep lines
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
-    double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                static_cast<double>(param_.NUM_LINE_X - 1);
-    double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                static_cast<double>(param_.NUM_LINE_Y - 1);
+    const double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
+                      static_cast<double>(param_.NUM_LINE_X - 1);
+    const double dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                      static_cast<double>(param_.NUM_LINE_Y - 1);
 
     for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
         ty[i] = param_.BOUND_LIMIT[2] + static_cast<double>(i) * dy;
@@ -70,7 +70,7 @@ void HRM3D::sweepLineProcess() {
         freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] +
                                       static_cast<double>(i) * dx);
 
-        IntersectionInterval intersect = computeIntersections(ty);
+        const IntersectionInterval intersect = computeIntersections(ty);
 
         // Store freeSeg info
         freeSegOneLayer_.freeSegYZ.push_back(
@@ -80,9 +80,10 @@ void HRM3D::sweepLineProcess() {
 
 IntersectionInterval HRM3D::computeIntersections(
     const std::vector<Coordinate>& ty) {
-    auto numLine = static_cast<Eigen::Index>(ty.size());
-    auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
-    auto numObstacle = static_cast<Eigen::Index>(layerBound_.obstacle.size());
+    const auto numLine = static_cast<Eigen::Index>(ty.size());
+    const auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
+    const auto numObstacle =
+        static_cast<Eigen::Index>(layerBound_.obstacle.size());
 
     // Initialize sweep lines
     IntersectionInterval intersect;
@@ -397,7 +398,7 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
 
     // Iteratively store interpolated poses along the solved path
     for (size_t i = 0; i < res_.solution_path.solvedPath.size() - 1; ++i) {
-        auto num_step = static_cast<int>(
+        const auto num_step = static_cast<int>(
             vectorEuclidean(res_.solution_path.solvedPath.at(i),
                             res_.solution_path.solvedPath.at(i + 1)) /
             distance_step);
@@ -465,13 +466,13 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 
     // Intersection between line and mesh
     for (auto obs : layerBoundMesh_.obstacle) {
-        auto intersectObs = intersectLineMesh3D(line, obs);
+        const auto intersectObs = intersectLineMesh3D(line, obs);
 
         // Check line segments overlapping
         if (!intersectObs.empty()) {
             // Dot product between vectors (t1->intersect) and (t2->intersect)
-            auto s0 = (intersectObs[0] - t1).dot(intersectObs[0] - t2);
-            auto s1 = (intersectObs[1] - t1).dot(intersectObs[1] - t2);
+            const auto s0 = (intersectObs[0] - t1).dot(intersectObs[0] - t2);
+            const auto s1 = (intersectObs[1] - t1).dot(intersectObs[1] - t2);
 
             // Intersect within segment (t1, t2) iff dot product less than 0
             if ((s0 < 0) || (s1 < 0)) {
@@ -486,7 +487,7 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
                                        const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
-    std::vector<std::vector<Coordinate>> vInterp =
+    const std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     for (auto vStep : vInterp) {
@@ -541,7 +542,7 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
     for (auto bound : bridgeLayerBound_.at(bdIdx)) {
-        auto intersectObs = intersectVerticalLineMesh3D(lineZ, bound);
+        const auto intersectObs = intersectVerticalLineMesh3D(lineZ, bound);
 
         if (!intersectObs.empty()) {
             if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&

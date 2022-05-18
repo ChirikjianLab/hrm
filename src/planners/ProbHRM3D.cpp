@@ -216,7 +216,7 @@ void ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
     tfe->clear();
 
     // Interpolated robot motion from V1 to V2
-    std::vector<std::vector<Coordinate>> vInterp =
+    const std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
     setTransform(v1);
