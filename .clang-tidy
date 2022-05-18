@@ -11,4 +11,4 @@ Checks:   '-*,
           -misc-non-private-member-variables-in-classes'
 
 
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'
