@@ -1,14 +1,10 @@
-Checks:   '-*,
-          bugprone-*,
-          google-*,
-          misc-*,
-          modernize-*,
-          readability-*,
-          -readability-identifier-length,
-          -google-readability-namespace-comments,
-          -google-runtime-int,
-          -google-runtime-references,
-          -misc-non-private-member-variables-in-classes'
+Checks:   'clang-analyzer-*,
+           clang-diagnostic-*,
+           cppcoreguidelines-*,
+           google-*,
+           modernize-*,
+           performance-*,
+           readability-*'
 
 
-HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'
+HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$
