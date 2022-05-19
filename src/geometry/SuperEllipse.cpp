@@ -35,8 +35,8 @@ BoundaryPoints SuperEllipse::getOriginShape() const {
     Eigen::MatrixXd C(2, num_);
     BoundaryPoints X(2, num_);
 
-    for (int i = 0; i < int(num_); i++) {
-        th = 2.0 * i * pi / (num_ - 1);
+    for (auto i = 0; i < int(num_); i++) {
+        th = 2.0 * i * pi / (static_cast<double>(num_) - 1);
 
         x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, 0);
         x(1, 0) = semiAxis_.at(1) * expFun(th, epsilon_, 1);
@@ -84,8 +84,8 @@ BoundaryPoints SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
     R2.angle() = th2;
     Eigen::Matrix2d Tinv = R2.matrix() * diag * R2.matrix().transpose();
 
-    for (int i = 0; i < int(num_); i++) {
-        the(0, i) = 2.0 * i * pi / (num_ - 1);
+    for (auto i = 0; i < int(num_); i++) {
+        the(0, i) = 2.0 * i * pi / (static_cast<double>(num_) - 1);
         gradPhi(0, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 0);
         gradPhi(1, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 1);
     }

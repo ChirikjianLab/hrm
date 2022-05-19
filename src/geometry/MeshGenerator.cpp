@@ -112,23 +112,28 @@ ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat) {
 
 MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,
                                    const Index n) {
-    auto Num = (n - 1) * (n - 1);
-    Eigen::ArrayXd q((n - 1) * (n - 1));
+    const auto numVtx = static_cast<Eigen::Index>(n);
+    const auto numSurfVtx = (numVtx - 1) * (numVtx - 1);
+
+    Eigen::ArrayXd q(numSurfVtx);
     for (auto i = 0; i < n - 1; ++i) {
-        q.segment(i * (n - 1), (n - 1)) =
-            Eigen::ArrayXd::LinSpaced(n - 1, i * n, (i + 1) * n - 2);
+        auto currIdx = static_cast<Eigen::Index>(i);
+
+        q.segment(currIdx * (numVtx - 1), (numVtx - 1)) =
+            Eigen::ArrayXd::LinSpaced(
+                numVtx - 1, static_cast<double>(currIdx * numVtx),
+                static_cast<double>((currIdx + 1) * numVtx - 2));
     }
 
     MeshMatrix M;
     M.vertices = surfBound;
-
-    M.faces = Eigen::MatrixXd::Zero(2 * Num, 3);
-    M.faces.block(0, 0, Num, 1) = q;
-    M.faces.block(0, 1, Num, 1) = q + n;
-    M.faces.block(0, 2, Num, 1) = q + n + 1;
-    M.faces.block(Num, 0, Num, 1) = q;
-    M.faces.block(Num, 1, Num, 1) = q + 1;
-    M.faces.block(Num, 2, Num, 1) = q + n + 1;
+    M.faces = Eigen::MatrixXd::Zero(2 * numSurfVtx, 3);
+    M.faces.block(0, 0, numSurfVtx, 1) = q;
+    M.faces.block(0, 1, numSurfVtx, 1) = q + numVtx;
+    M.faces.block(0, 2, numSurfVtx, 1) = q + numVtx + 1;
+    M.faces.block(numSurfVtx, 0, numSurfVtx, 1) = q;
+    M.faces.block(numSurfVtx, 1, numSurfVtx, 1) = q + 1;
+    M.faces.block(numSurfVtx, 2, numSurfVtx, 1) = q + numVtx + 1;
 
     return M;
 }

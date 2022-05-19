@@ -101,8 +101,9 @@ void OMPL3D::getSolution() {
     edge_.clear();
     for (unsigned int i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
-        for (auto edgeI : edgeInfo[i])
+        for (auto edgeI : edgeInfo[i]) {
             edge_.push_back(std::make_pair(i, edgeI));
+        }
     }
 
     // Total number of checked and valid motions
@@ -354,8 +355,9 @@ void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
     std::vector<std::vector<unsigned int>> edge(pd.numVertices());
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         pd.getEdges(i, edge[i]);
-        for (unsigned int j = 0; j < edge[i].size(); j++)
+        for (unsigned int j = 0; j < edge[i].size(); j++) {
             file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+        }
     }
     file_edge.close();
 }

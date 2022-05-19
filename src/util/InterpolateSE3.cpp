@@ -73,10 +73,10 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     // relative angle-axis representation, interpolate angles around the axis
     const Eigen::AngleAxisd axang(Ra.transpose() * Rb);
     Eigen::AngleAxisd d_axang = axang;
-    const double dt = 1.0 / numStep;
+    const double dt = 1.0 / static_cast<double>(numStep);
 
     for (size_t i = 0; i <= numStep; ++i) {
-        d_axang.angle() = i * dt * axang.angle();
+        d_axang.angle() = static_cast<double>(i) * dt * axang.angle();
         interpolatedQuat.push_back(
             Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()));
     }
@@ -89,10 +89,11 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
 
-    const double dt = 1.0 / numStep;
+    const double dt = 1.0 / static_cast<double>(numStep);
 
     for (size_t i = 0; i <= numStep; ++i) {
-        interpolatedQuat.push_back(quatA.slerp(i * dt, quatB));
+        interpolatedQuat.push_back(
+            quatA.slerp(static_cast<double>(i) * dt, quatB));
     }
 
     return interpolatedQuat;
@@ -103,12 +104,13 @@ std::vector<std::vector<Coordinate>> interpolateRn(
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
 
-    const double dt = 1.0 / numStep;
+    const double dt = 1.0 / static_cast<double>(numStep);
     for (size_t i = 0; i <= numStep; ++i) {
         std::vector<Coordinate> vStep;
         // Translation part
         for (size_t j = 0; j < vStart.size(); ++j) {
-            vStep.push_back((1.0 - i * dt) * vStart[j] + i * dt * vEnd[j]);
+            vStep.push_back((1.0 - static_cast<double>(i) * dt) * vStart[j] +
+                            static_cast<double>(i) * dt * vEnd[j]);
         }
 
         vInterp.push_back(vStep);

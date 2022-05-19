@@ -74,9 +74,10 @@ SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
                       const double thetaB, const Index numStep,
                       const Index num) {
     SuperEllipse enclosedEllipse = getMVCE2D(a, a, thetaA, thetaB, num);
-    const double dt = 1.0 / (numStep - 1);
-    for (size_t i = 0; i < size_t(numStep); ++i) {
-        double thetaStep = (1 - i * dt) * thetaA + i * dt * thetaB;
+    const double dt = 1.0 / (static_cast<double>(numStep) - 1);
+    for (auto i = 0; i < numStep; ++i) {
+        auto currIdx = static_cast<double>(i);
+        double thetaStep = (1 - currIdx * dt) * thetaA + currIdx * dt * thetaB;
         enclosedEllipse = getMVCE2D(a, enclosedEllipse.getSemiAxis(), thetaStep,
                                     enclosedEllipse.getAngle(), num);
     }

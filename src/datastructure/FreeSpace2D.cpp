@@ -39,12 +39,12 @@ std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
     std::vector<freeSegment2D> freeSegments;
 
     // Find intersecting points to C-obstacles for each raster scan line
-    const double dy =
-        (param_->yLim.second - param_->yLim.first) / (param_->numY - 1.0);
+    const double dy = (param_->yLim.second - param_->yLim.first) /
+                      (static_cast<double>(param_->numY) - 1.0);
 
     for (size_t i = 0; i < param_->numY; ++i) {
         // y-coordinate
-        Coordinate yCoord = param_->yLim.first + i * dy;
+        Coordinate yCoord = param_->yLim.first + static_cast<double>(i) * dy;
 
         // Compute free segments on the sweep line
         freeSegments.push_back(getFreeSegmentsGivenY(yCoord));

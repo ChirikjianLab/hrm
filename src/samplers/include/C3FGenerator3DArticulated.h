@@ -22,6 +22,6 @@ class C3FGenerator3DArticulated : C3FGenerator3D {
 
   private:
     ParseURDF *kdl_;
-    int numJoint_;
+    unsigned int numJoint_;
     const double maxJointAngle_ = pi / 2;
 };

@@ -14,9 +14,11 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
     basis.emplace_back(0, 0, 1);
 
     for (size_t i = 0; i < basis.size(); ++i) {
+        auto currIdx = static_cast<Eigen::Index>(i);
+
         if (std::fabs(direction.dot(basis.at(i))) < 1e-5 &&
-            (line(i) > shape.vertices.row(i).maxCoeff() ||
-             line(i) < shape.vertices.row(i).minCoeff())) {
+            (line(currIdx) > shape.vertices.row(currIdx).maxCoeff() ||
+             line(currIdx) < shape.vertices.row(currIdx).minCoeff())) {
             return points;
         }
     }

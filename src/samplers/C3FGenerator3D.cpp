@@ -40,13 +40,14 @@ void C3FGenerator3D::fromSweepLine() {
 
         for (freeSegment3D segment : freeSegments) {
             // Generate uniform distributed points on the free segment
-            double dt = 1.0 / (param_->numPointOnFreeSegment - 1);
+            double dt =
+                1.0 / (static_cast<double>(param_->numPointOnFreeSegment) - 1);
 
             for (size_t j = 0; j < segment.zCoords.size(); ++j) {
                 for (size_t k = 0; k < param_->numPointOnFreeSegment; ++k) {
                     ob::State *state = ss_->getSpaceInformation()->allocState();
 
-                    double t = dt * k;
+                    double t = dt * static_cast<double>(k);
                     state->as<ob::SE3StateSpace::StateType>()->setXYZ(
                         segment.xCoord, segment.yCoord,
                         (1.0 - t) * segment.zCoords[j].s() +

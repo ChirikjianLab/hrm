@@ -139,16 +139,18 @@ freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
     std::vector<Interval> obsSegmentUnion;
     std::vector<Interval> arenaSegmentIntersect;
 
-    for (size_t i = 0; i < intersections->arenaZCoords.size(); ++i)
+    for (size_t i = 0; i < intersections->arenaZCoords.size(); ++i) {
         if (!std::isnan(intersections->arenaZCoords[i].s()) &&
             !std::isnan(intersections->arenaZCoords[i].e())) {
             arenaSegment.push_back(intersections->arenaZCoords[i]);
         }
-    for (size_t i = 0; i < intersections->obsZCords.size(); ++i)
+    }
+    for (size_t i = 0; i < intersections->obsZCords.size(); ++i) {
         if (!std::isnan(intersections->obsZCords[i].s()) &&
             !std::isnan(intersections->obsZCords[i].e())) {
             obsSegment.push_back(intersections->obsZCords[i]);
         }
+    }
 
     // cf-intervals at each line
     Interval op;

@@ -116,8 +116,9 @@ void OMPL2D::getSolution() {
     edge_.clear();
     for (auto i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
-        for (auto edgeI : edgeInfo[i])
+        for (auto edgeI : edgeInfo[i]) {
             edge_.push_back(std::make_pair(i, edgeI));
+        }
     }
 }
 
@@ -327,10 +328,10 @@ void OMPL2D::buildFreeStateLibraryFromSweep() {
     ompl::time::point start = ompl::time::now();
 
     // Generate collision-free samples
-    double dth = 2 * pi / (param_.numAngle - 1);
+    double dth = 2 * pi / (static_cast<double>(param_.numAngle) - 1);
 
     for (size_t i = 0; i < param_.numAngle; ++i) {
-        double th = -pi + i * dth;
+        double th = -pi + static_cast<double>(i) * dth;
 
         Eigen::Matrix3d tf = Eigen::Matrix3d::Identity();
         tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
