@@ -59,7 +59,6 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     void computeTFE(const double& thetaA, const double& thetaB,
                     std::vector<SuperEllipse>* tfe);
 
-  protected:
     /** \brief headings_ sampled orientations of the robot */
     std::vector<double> headings_;
 

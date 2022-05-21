@@ -17,10 +17,9 @@ class HRM2DKC : public HRM2D {
     void connectMultiLayer() override;
 
   private:
-    std::vector<double> addMiddleVertex(std::vector<Coordinate> v1,
-                                        std::vector<Coordinate> v2);
+    std::vector<double> addMiddleVertex(std::vector<Coordinate> vtx1,
+                                        std::vector<Coordinate> vtx2);
 
-  private:
     /** \param polyVtx descriptions of polyhedron local c-space */
     polyCSpace polyVtx;
 

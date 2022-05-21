@@ -36,10 +36,10 @@ BoundaryPoints SuperEllipse::getOriginShape() const {
     BoundaryPoints X(2, num_);
 
     for (auto i = 0; i < int(num_); i++) {
-        th = 2.0 * i * pi / (static_cast<double>(num_) - 1);
+        th = 2 * i * pi / (static_cast<double>(num_) - 1);
 
-        x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, 0);
-        x(1, 0) = semiAxis_.at(1) * expFun(th, epsilon_, 1);
+        x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, false);
+        x(1, 0) = semiAxis_.at(1) * expFun(th, epsilon_, true);
 
         C(0, i) = position_.at(0);
         C(1, i) = position_.at(1);
@@ -85,9 +85,9 @@ BoundaryPoints SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
     Eigen::Matrix2d Tinv = R2.matrix() * diag * R2.matrix().transpose();
 
     for (auto i = 0; i < int(num_); i++) {
-        the(0, i) = 2.0 * i * pi / (static_cast<double>(num_) - 1);
-        gradPhi(0, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 0);
-        gradPhi(1, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, 1);
+        the(0, i) = 2 * i * pi / (static_cast<double>(num_) - 1);
+        gradPhi(0, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, false);
+        gradPhi(1, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, true);
     }
     X_eb = getOriginShape() +
            (K * r * Tinv * Tinv * R1 * gradPhi)

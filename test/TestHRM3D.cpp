@@ -10,6 +10,7 @@ TEST(TestHRMPlanning3D, HRM) {
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
+    const double MAX_PLAN_TIME = 5.0;
 
     PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
@@ -44,7 +45,7 @@ TEST(TestHRMPlanning3D, HRM) {
     cout << "Start planning..." << endl;
 
     HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
-    hrm.plan(5.0);
+    hrm.plan(MAX_PLAN_TIME);
     PlanningResult res = hrm.getPlanningResult();
 
     storeRoutines<HRM3D>(&hrm);

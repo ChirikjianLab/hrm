@@ -27,7 +27,7 @@ class MultiBodyTree3D {
     void addBody(SuperQuadrics link);
 
     /** \brief Tranform robot */
-    void robotTF(SE3Transform tf);
+    void robotTF(SE3Transform g);
     void robotTF(const std::string& urdfFile, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
     void robotTF(ParseURDF kdl, const SE3Transform* gBase,

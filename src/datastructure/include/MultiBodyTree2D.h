@@ -19,7 +19,7 @@ class MultiBodyTree2D {
     void addBody(SuperEllipse link);
 
     /** \brief Tranform robot */
-    void robotTF(SE2Transform tf);
+    void robotTF(SE2Transform g);
 
     /**
      * \brief Closed-form Minkowski sums operation

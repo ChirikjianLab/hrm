@@ -106,7 +106,7 @@ class OMPL3D {
      *  6: valid state sampler from Minkowski sum and C-obstacle boundaries
      */
     void setup(const Index plannerId, const Index stateSamplerId,
-               const Index validSamplerId);
+               const Index validStateSamplerId);
 
     /** \brief Start to plan
      * \param endPts start and goal poses

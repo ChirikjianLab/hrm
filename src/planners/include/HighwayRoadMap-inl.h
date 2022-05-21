@@ -240,7 +240,7 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
             // Connect vertex within the same sweep line
             if (j1 != freeSeg->xM[i].size() - 1) {
                 if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
-                    1e-5) {
+                    1e-6) {
                     res_.graph_structure.edge.push_back(
                         std::make_pair(n1 + j1, n1 + j1 + 1));
                     res_.graph_structure.weight.push_back(vectorEuclidean(
@@ -321,18 +321,20 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::computeFreeSegment(
 
         const auto lineIdx = static_cast<Eigen::Index>(i);
 
-        for (auto j = 0; j < intersect->arenaLow.cols(); ++j)
+        for (auto j = 0; j < intersect->arenaLow.cols(); ++j) {
             if (!std::isnan(intersect->arenaLow(lineIdx, j)) &&
                 !std::isnan(intersect->arenaUpp(lineIdx, j))) {
                 arenaSeg.push_back({intersect->arenaLow(lineIdx, j),
                                     intersect->arenaUpp(lineIdx, j)});
             }
-        for (auto j = 0; j < intersect->obstacleLow.cols(); ++j)
+        }
+        for (auto j = 0; j < intersect->obstacleLow.cols(); ++j) {
             if (!std::isnan(intersect->obstacleLow(lineIdx, j)) &&
                 !std::isnan(intersect->obstacleUpp(lineIdx, j))) {
                 obsSeg.push_back({intersect->obstacleLow(lineIdx, j),
                                   intersect->obstacleUpp(lineIdx, j)});
             }
+        }
 
         // Set operations for Collision-free intervals at each line
         std::vector<Interval> obsMerge = op.unions(obsSeg);

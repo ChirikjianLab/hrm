@@ -68,12 +68,14 @@ bool OMPL3D::plan(const std::vector<Coordinate> &start,
 void OMPL3D::getSolution() {
     if (isSolved_) {
         try {
+            const unsigned int INTERPOLATION_NUMBER = 200;
+
             // Get solution path
             ss_->simplifySolution();
             auto path = ss_->getSolutionPath();
 
             // Save interpolated path
-            path.interpolate(200);
+            path.interpolate(INTERPOLATION_NUMBER);
             for (auto state : path.getStates()) {
                 path_.push_back(setVectorFromState(state));
             }
@@ -317,11 +319,11 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     return true;
 }
 
-bool OMPL3D::compareStates(std::vector<Coordinate> goal_config,
-                           std::vector<Coordinate> last_config) {
+bool OMPL3D::compareStates(std::vector<Coordinate> goalConfig,
+                           std::vector<Coordinate> lastConfig) {
     bool res = true;
     for (size_t i = 0; i < 7; i++) {
-        if (std::fabs(last_config[i] - goal_config[i]) > 0.1) {
+        if (std::fabs(lastConfig[i] - goalConfig[i]) > 0.1) {
             res = false;
         }
     }

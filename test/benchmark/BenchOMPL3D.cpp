@@ -57,8 +57,8 @@ int main(int argc, char** argv) {
                              -arena.at(0).getSemiAxis().at(1) +
                                  f * robot.getBase().getSemiAxis().at(0),
                              -arena.at(0).getSemiAxis().at(2) +
-                                 f * robot.getBase().getSemiAxis().at(0)},
-                       b2 = {-b1[0], -b1[1], -b1[2]};
+                                 f * robot.getBase().getSemiAxis().at(0)};
+    vector<Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Save results
     std::string filename_prefix = "ompl";

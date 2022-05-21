@@ -9,6 +9,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
+    const double MAX_PLAN_TIME = 300.0;
 
     PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
@@ -48,7 +49,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     ProbHRM3D probHRM(robot, urdf_file, env3D->getArena(), env3D->getObstacle(),
                       req);
-    probHRM.plan(300.0);
+    probHRM.plan(MAX_PLAN_TIME);
     PlanningResult res = probHRM.getPlanningResult();
     param = probHRM.getPlannerParameters();
 

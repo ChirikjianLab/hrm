@@ -4,11 +4,13 @@
 SuperEllipse getMVCE2D(const std::vector<double>& a,
                        const std::vector<double>& b, const double& thetaA,
                        const double& thetaB, const Index& num) {
-    Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
-                    Rb = Eigen::Rotation2Dd(thetaB).matrix();
+    Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix();
+    Eigen::Matrix2d Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
     const double r = fmin(b[0], b[1]);
-    Eigen::DiagonalMatrix<double, 2> diag, diag_a, diag_c;
+    Eigen::DiagonalMatrix<double, 2> diag;
+    Eigen::DiagonalMatrix<double, 2> diag_a;
+    Eigen::DiagonalMatrix<double, 2> diag_c;
     diag.diagonal() = Eigen::Array2d(r / b[0], r / b[1]);
     diag_a.diagonal() = Eigen::Array2d(pow(a[0], -2), pow(a[1], -2));
 
@@ -42,7 +44,9 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
     const double r = fmin(b[0], fmin(b[1], b[2]));
-    Eigen::DiagonalMatrix<double, 3> diag, diag_a, diag_c;
+    Eigen::DiagonalMatrix<double, 3> diag;
+    Eigen::DiagonalMatrix<double, 3> diag_a;
+    Eigen::DiagonalMatrix<double, 3> diag_c;
     diag.diagonal() = Eigen::Array3d(r / b[0], r / b[1], r / b[2]);
     diag_a.diagonal() =
         Eigen::Array3d(pow(a[0], -2.0), pow(a[1], -2.0), pow(a[2], -2.0));

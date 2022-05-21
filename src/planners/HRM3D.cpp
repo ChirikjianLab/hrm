@@ -107,7 +107,9 @@ IntersectionInterval HRM3D::computeIntersections(
             intersectPointArena =
                 intersectVerticalLineMesh3D(lineZ, layerBoundMesh_.arena.at(j));
 
-            if (intersectPointArena.empty()) continue;
+            if (intersectPointArena.empty()) {
+                continue;
+            }
 
             intersect.arenaLow(i, j) = std::fmin(
                 param_.BOUND_LIMIT[4], std::fmin(intersectPointArena[0](2),
@@ -121,7 +123,9 @@ IntersectionInterval HRM3D::computeIntersections(
             intersectPointObstacle = intersectVerticalLineMesh3D(
                 lineZ, layerBoundMesh_.obstacle.at(j));
 
-            if (intersectPointObstacle.empty()) continue;
+            if (intersectPointObstacle.empty()) {
+                continue;
+            }
 
             intersect.obstacleLow(i, j) = std::fmin(
                 intersectPointObstacle[0](2), intersectPointObstacle[1](2));

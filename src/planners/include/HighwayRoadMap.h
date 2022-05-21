@@ -207,7 +207,7 @@ class HighwayRoadMap {
      * \param FreeSegment2D pointer
      * \return FreeSegment2D Enhanced free segment with more valid vertices
      */
-    FreeSegment2D enhanceDecomp(const FreeSegment2D* currFreeSeg);
+    FreeSegment2D enhanceDecomp(const FreeSegment2D* current);
 
     /** \brief find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
@@ -224,7 +224,6 @@ class HighwayRoadMap {
      */
     virtual void setTransform(const std::vector<Coordinate>& v) = 0;
 
-  protected:
     /** \param robot_ Robot description */
     RobotType robot_;
 
@@ -242,7 +241,6 @@ class HighwayRoadMap {
     /** \param res_ Planning results */
     PlanningResult res_;
 
-  protected:
     /** \param indicator of rigid-body robot */
     bool isRobotRigid_ = true;
 
