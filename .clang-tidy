@@ -8,4 +8,4 @@ Checks:   '-*,
           -readability-identifier-length'
 
 
-HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$
+HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'

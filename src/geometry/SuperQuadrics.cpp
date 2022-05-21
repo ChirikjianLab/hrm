@@ -8,7 +8,7 @@
 SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
                              std::vector<double> epsilon,
                              std::vector<double> position,
-                             Eigen::Quaterniond quat, const Index num)
+                             Eigen::Quaterniond quat, const Index &num)
     : semiAxis_(semiAxis),
       epsilon_(epsilon),
       position_(position),
@@ -36,7 +36,7 @@ void SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
     quat_ = newQuat;
 }
 void SuperQuadrics::setQuatSamples(
-    const std::vector<Eigen::Quaterniond> qSample) {
+    const std::vector<Eigen::Quaterniond> &qSample) {
     qSample_ = qSample;
 }
 
@@ -78,7 +78,7 @@ BoundaryPoints SuperQuadrics::getOriginShape() const {
 
 // Get the points on Minkowski boundary
 BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
-                                           const Indicator K) const {
+                                           const Indicator &K) const {
     if ((shapeB.getEpsilon().at(0) != 1.0) ||
         (shapeB.getEpsilon().at(1) != 1.0)) {
         std::cerr << "Second object is not an ellipsoid" << std::endl;

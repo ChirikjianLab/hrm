@@ -6,7 +6,7 @@
 /** \class ProbHRM3D Prob-HRM for 3D robot planning */
 class ProbHRM3D : public HRM3D {
   public:
-    ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
+    ProbHRM3D(const MultiBodyTree3D& robot, const std::string& urdfFile,
               const std::vector<SuperQuadrics>& arena,
               const std::vector<SuperQuadrics>& obs,
               const PlanningRequest& req);
@@ -14,13 +14,13 @@ class ProbHRM3D : public HRM3D {
     ~ProbHRM3D() override;
 
   public:
-    void plan(const double timeLim) override;
+    void plan(const double& timeLim) override;
 
     void sampleOrientations() override;
 
     void connectMultiLayer() override;
 
-    void generateVertices(const Coordinate tx,
+    void generateVertices(const Coordinate& tx,
                           const FreeSegment2D* freeSeg) override;
 
   protected:

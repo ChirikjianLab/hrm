@@ -2,7 +2,7 @@
 
 Interval::Interval() {}
 
-Interval::Interval(const double start, const double end)
+Interval::Interval(const Coordinate &start, const Coordinate &end)
     : start_(start), end_(end) {}
 
 std::vector<Interval> Interval::unions(std::vector<Interval> &ins) {

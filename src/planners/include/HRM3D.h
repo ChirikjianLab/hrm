@@ -28,7 +28,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     /** \brief get the resulting solved path and the interpolated one */
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
-        const Index num);
+        const Index& num);
 
     /**
      * \brief get free line segment at one specific C-layer
@@ -47,7 +47,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \param idx Index of C-layer
      * \return Boundary mesh
      */
-    BoundaryMesh getLayerBoundaryMesh(const Index idx) {
+    BoundaryMesh getLayerBoundaryMesh(const Index& idx) {
         return layerBoundMeshAll_.at(idx);
     }
 
@@ -56,17 +56,17 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \param idx Index of C-layer
      * \return Boundary
      */
-    Boundary getLayerBoundary(const Index idx) {
+    Boundary getLayerBoundary(const Index& idx) {
         return layerBoundAll_.at(idx);
     }
 
-    void constructOneLayer(const Index layerIdx) override;
+    void constructOneLayer(const Index& layerIdx) override;
 
     virtual void sampleOrientations() override;
 
     void sweepLineProcess() override;
 
-    virtual void generateVertices(const Coordinate tx,
+    virtual void generateVertices(const Coordinate& tx,
                                   const FreeSegment2D* freeSeg) override;
 
     /** \brief connect within one C-layer */
@@ -74,7 +74,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void connectMultiLayer() override;
 
-    void connectExistLayer(const Index layerId) override;
+    void connectExistLayer(const Index& layerId) override;
 
   protected:
     void generateBoundaryMesh(const Boundary* bound, BoundaryMesh* boundMesh);
@@ -96,10 +96,10 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         const std::vector<Coordinate>& v2) override;
 
     std::vector<Vertex> getNearestNeighborsOnGraph(
-        const std::vector<Coordinate>& vertex, const Index k,
-        const double radius) override;
+        const std::vector<Coordinate>& vertex, const Index& k,
+        const double& radius) override;
 
-    bool isPtInCFree(const Index bdIdx,
+    bool isPtInCFree(const Index& bdIdx,
                      const std::vector<Coordinate>& v) override;
 
     /** \brief uniform random sample SO(3) */

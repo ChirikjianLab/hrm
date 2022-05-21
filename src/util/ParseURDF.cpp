@@ -4,14 +4,14 @@
 
 ParseURDF::ParseURDF(const KDL::Tree& kdlTree) : kdlTree_(kdlTree) {}
 
-ParseURDF::ParseURDF(const std::string urdfFile) {
+ParseURDF::ParseURDF(const std::string& urdfFile) {
     if (!kdl_parser::treeFromFile(urdfFile, kdlTree_)) {
         std::cout << "Failed to parse and construct KDL tree..." << std::endl;
     }
 }
 
 Eigen::Matrix4d ParseURDF::getTransform(const KDL::JntArray* jointConfig,
-                                        const std::string bodyName) {
+                                        const std::string& bodyName) {
     Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
     KDL::Frame frame;
 

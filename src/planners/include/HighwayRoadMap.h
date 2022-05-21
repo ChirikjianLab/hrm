@@ -92,10 +92,10 @@ class HighwayRoadMap {
     /** \brief getInterpolatedSolutionPath Interpolate solved path
      * \return 2D vector for representing interpolated path */
     virtual std::vector<std::vector<double>> getInterpolatedSolutionPath(
-        const unsigned int num);
+        const unsigned int& num);
 
     /** \brief plan Main routine for HRM-based planners */
-    virtual void plan(const double timeLim);
+    virtual void plan(const double& timeLim);
 
     /** \brief buildRoadmap Subroutine for building roadmap */
     void buildRoadmap();
@@ -104,10 +104,10 @@ class HighwayRoadMap {
     void search();
 
     /** \brief refineExistRoadmap Subroutine for refining existing roadmap */
-    void refineExistRoadmap(const double timeLim);
+    void refineExistRoadmap(const double& timeLim);
 
     /** \brief construct one C-layer */
-    virtual void constructOneLayer(const Index layerIdx) = 0;
+    virtual void constructOneLayer(const Index& layerIdx) = 0;
 
     /** \brief sampleOrientations generate orientation samples */
     virtual void sampleOrientations() = 0;
@@ -131,7 +131,7 @@ class HighwayRoadMap {
      * 0.0)
      * \param pointer to FreeSegment2D
      */
-    virtual void generateVertices(const Coordinate tx,
+    virtual void generateVertices(const Coordinate& tx,
                                   const FreeSegment2D* freeSeg) = 0;
 
     /**
@@ -147,7 +147,7 @@ class HighwayRoadMap {
 
     /** \brief connectExistLayer Subroutine for connecting vertices with
      * previously existing layers */
-    virtual void connectExistLayer(const Index layerId) = 0;
+    virtual void connectExistLayer(const Index& layerId) = 0;
 
   protected:
     /** \brief bridgeLayer generating bridge C-layer to connect adjacent
@@ -159,7 +159,7 @@ class HighwayRoadMap {
      * within one C-layer
      * \param idx1, idx2 Indices of two vertices to be connected
      */
-    void bridgeVertex(const Index idx1, const Index idx2);
+    void bridgeVertex(const Index& idx1, const Index& idx2);
 
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles
@@ -200,7 +200,7 @@ class HighwayRoadMap {
         const std::vector<Coordinate>& v2) = 0;
 
     /** \brief check whether one point is within C-free */
-    virtual bool isPtInCFree(const Index bdIdx,
+    virtual bool isPtInCFree(const Index& bdIdx,
                              const std::vector<Coordinate>& v) = 0;
 
     /** \brief enhanceDecomp Subroutine to enhance vertex generation
@@ -216,8 +216,8 @@ class HighwayRoadMap {
      * \return vector of Vertex structure for the neighboring vertices
      */
     virtual std::vector<Vertex> getNearestNeighborsOnGraph(
-        const std::vector<Coordinate>& vertex, const Index k,
-        const double radius) = 0;
+        const std::vector<Coordinate>& vertex, const Index& k,
+        const double& radius) = 0;
 
     /** \brief setTransform set the transformation for robot
      * \param v configuration of the robot

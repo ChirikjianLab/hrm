@@ -1,7 +1,7 @@
 #include "include/ParsePlanningSettings.h"
 
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
-                        const int num_curve_param,
+                        const int& num_curve_param,
                         std::vector<SuperEllipse>& object) {
     // Object as class of SuperEllipse
     object.clear();
@@ -13,8 +13,8 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
     }
 }
 
-void loadVectorGeometry(const std::string config_file,
-                        const int num_curve_param,
+void loadVectorGeometry(const std::string& config_file,
+                        const int& num_curve_param,
                         std::vector<SuperEllipse>& object) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
@@ -23,7 +23,7 @@ void loadVectorGeometry(const std::string config_file,
 }
 
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
-                        const int num_surf_param,
+                        const int& num_surf_param,
                         std::vector<SuperQuadrics>& object) {
     // Generate SQ object (orientation from Quaternion parameterization)
     object.clear();
@@ -38,7 +38,8 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
     }
 }
 
-void loadVectorGeometry(const std::string config_file, const int num_surf_param,
+void loadVectorGeometry(const std::string& config_file,
+                        const int& num_surf_param,
                         std::vector<SuperQuadrics>& object) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
@@ -46,8 +47,8 @@ void loadVectorGeometry(const std::string config_file, const int num_surf_param,
     loadVectorGeometry(object_config, num_surf_param, object);
 }
 
-MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
-                                     const int num_curve_param) {
+MultiBodyTree2D loadRobotMultiBody2D(const std::string& path_prefix,
+                                     const int& num_curve_param) {
     // Read robot config file
     std::vector<SuperEllipse> robot_parts;
     loadVectorGeometry(path_prefix + "robot_config_2D.csv", num_curve_param,
@@ -62,9 +63,9 @@ MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
     return robot;
 }
 
-MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
-                                     const std::string quat_file,
-                                     const int num_surf_param) {
+MultiBodyTree3D loadRobotMultiBody3D(const std::string& path_prefix,
+                                     const std::string& quat_file,
+                                     const int& num_surf_param) {
     // Read and setup robot info
     std::vector<SuperQuadrics> robot_parts;
     loadVectorGeometry(path_prefix + "robot_config_3D.csv", num_surf_param,
@@ -81,7 +82,7 @@ MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
     return robot;
 }
 
-void loadPreDefinedQuaternions(const std::string quat_file,
+void loadPreDefinedQuaternions(const std::string& quat_file,
                                SuperQuadrics& robot_base) {
     // Read predefined quaternions
     if (quat_file.compare("0") == 0) {

@@ -2,8 +2,8 @@
 #include "util/include/InterpolateSE3.h"
 
 SuperEllipse getMVCE2D(const std::vector<double>& a,
-                       const std::vector<double>& b, const double thetaA,
-                       const double thetaB, const Index num) {
+                       const std::vector<double>& b, const double& thetaA,
+                       const double& thetaB, const Index& num) {
     Eigen::Matrix2d Ra = Eigen::Rotation2Dd(thetaA).matrix(),
                     Rb = Eigen::Rotation2Dd(thetaB).matrix();
 
@@ -37,7 +37,7 @@ SuperEllipse getMVCE2D(const std::vector<double>& a,
 SuperQuadrics getMVCE3D(const std::vector<double>& a,
                         const std::vector<double>& b,
                         const Eigen::Quaterniond& quatA,
-                        const Eigen::Quaterniond& quatB, const Index num) {
+                        const Eigen::Quaterniond& quatB, const Index& num) {
     Eigen::Matrix3d Ra = quatA.toRotationMatrix();
     Eigen::Matrix3d Rb = quatB.toRotationMatrix();
 
@@ -70,9 +70,9 @@ SuperQuadrics getMVCE3D(const std::vector<double>& a,
     return SuperQuadrics({c(0), c(1), c(2)}, {1, 1}, {0, 0, 0}, q_c, num);
 }
 
-SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
-                      const double thetaB, const Index numStep,
-                      const Index num) {
+SuperEllipse getTFE2D(const std::vector<double>& a, const double& thetaA,
+                      const double& thetaB, const Index& numStep,
+                      const Index& num) {
     SuperEllipse enclosedEllipse = getMVCE2D(a, a, thetaA, thetaB, num);
     const double dt = 1.0 / (static_cast<double>(numStep) - 1);
     for (auto i = 0; i < numStep; ++i) {
@@ -87,8 +87,8 @@ SuperEllipse getTFE2D(const std::vector<double>& a, const double thetaA,
 
 SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
-                       const Eigen::Quaterniond& quatB, const Index numStep,
-                       const Index num) {
+                       const Eigen::Quaterniond& quatB, const Index& numStep,
+                       const Index& num) {
     const std::vector<Eigen::Quaterniond> interpolatedQuat =
         interpolateSlerp(quatA, quatB, numStep);
 

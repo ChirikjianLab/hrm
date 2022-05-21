@@ -28,7 +28,7 @@ class MultiBodyTree3D {
 
     /** \brief Tranform robot */
     void robotTF(SE3Transform tf);
-    void robotTF(const std::string urdfFile, const SE3Transform* gBase,
+    void robotTF(const std::string& urdfFile, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
     void robotTF(ParseURDF kdl, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
@@ -40,7 +40,7 @@ class MultiBodyTree3D {
      * \return A union of sampled points on the Minkowski sums boundary
      */
     std::vector<BoundaryPoints> minkSum(const SuperQuadrics* s1,
-                                        const Indicator k);
+                                        const Indicator& k);
 
   private:
     SuperQuadrics base_;

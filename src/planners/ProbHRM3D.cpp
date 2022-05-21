@@ -2,7 +2,7 @@
 
 #include "ompl/util/RandomNumbers.h"
 
-ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
+ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string& urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
@@ -12,7 +12,7 @@ ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
 
 ProbHRM3D::~ProbHRM3D() {}
 
-void ProbHRM3D::plan(const double timeLim) {
+void ProbHRM3D::plan(const double& timeLim) {
     auto start = Clock::now();
     param_.NUM_LAYER = 0;
 
@@ -159,7 +159,7 @@ void ProbHRM3D::connectMultiLayer() {
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const Coordinate tx,
+void ProbHRM3D::generateVertices(const Coordinate& tx,
                                  const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
     std::vector<Coordinate> vertex(v_.back().size());

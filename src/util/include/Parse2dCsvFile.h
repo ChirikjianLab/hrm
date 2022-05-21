@@ -5,5 +5,4 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::vector<double>> parse2DCsvFile(
-    const std::string inputFileName);
+std::vector<std::vector<double>> parse2DCsvFile(const std::string& filename);
