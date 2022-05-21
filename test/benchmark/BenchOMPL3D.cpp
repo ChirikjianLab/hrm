@@ -5,16 +5,16 @@ using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
+    if (argc == 8) {
+        cout << "OMPL for 3D rigid-body planning" << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
                 "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Max "
                 "planning time (in seconds, default: 60.0s) 7) Configuration "
                 "file prefix"
              << endl;
         return 1;
-    } else {
-        cout << "OMPL for 3D rigid-body planning" << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
 
     // Boundary
-    double f = 1.2;
+    const double f = 1.2;
     vector<Coordinate> b1 = {-arena.at(0).getSemiAxis().at(0) +
                                  f * robot.getBase().getSemiAxis().at(0),
                              -arena.at(0).getSemiAxis().at(1) +

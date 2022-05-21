@@ -85,7 +85,7 @@ MultiBodyTree3D loadRobotMultiBody3D(const std::string& path_prefix,
 void loadPreDefinedQuaternions(const std::string& quat_file,
                                SuperQuadrics& robot_base) {
     // Read predefined quaternions
-    if (quat_file.compare("0") == 0) {
+    if (quat_file == "0") {
         std::cout << "Will generate uniform random rotations from SO(3)"
                   << std::endl;
     } else {
@@ -109,7 +109,7 @@ void defineParameters(const MultiBodyTree3D* robot,
                       const PlannerSetting<SuperQuadrics>* env3D,
                       PlannerParameter* param) {
     // Planning arena boundary
-    double f = 1.2;
+    const double f = 1.2;
     std::vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
                                      f * robot->getBase().getSemiAxis().at(0),
                                  env3D->getArena().at(0).getSemiAxis().at(1) -

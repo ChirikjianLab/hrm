@@ -5,16 +5,17 @@ using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc != 10) {
+    if (argc == 10) {
+        cout << "OMPL for 3D articulated-body planning" << endl;
+        cout << "----------" << endl;
+
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Planner start ID 3) "
                 "Planner end ID 4) Sampler start ID 5) Sampler end ID 6) Robot "
                 "name 7) Max planning time (in seconds, default: 60.0s) 8) "
                 "Configuration file prefix 9) URDF file prefix"
              << endl;
         return 1;
-    } else {
-        cout << "OMPL for 3D articulated-body planning" << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
         URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Boundary
-    double f = 1.2;
+    const double f = 1.2;
     vector<Coordinate> b1 = {-arena.at(0).getSemiAxis().at(0) +
                                  f * robot.getBase().getSemiAxis().at(0),
                              -arena.at(0).getSemiAxis().at(1) +
