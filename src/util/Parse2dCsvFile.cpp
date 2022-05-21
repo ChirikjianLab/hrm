@@ -23,7 +23,7 @@ std::vector<std::vector<double>> parse2DCsvFile(
                 }
                 try {
                     record.emplace_back(stof(line));
-                } catch (const std::invalid_argument e) {
+                } catch (const std::invalid_argument &e) {
                     std::cout << "NaN found in file " << inputFileName
                               << " line " << l << std::endl;
                     e.what();

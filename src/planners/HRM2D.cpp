@@ -141,15 +141,17 @@ void HRM2D::connectMultiLayer() {
     }
 
     // Vertex indexes for list traversal
-    Index startIdCur;
-    Index endIdCur;
-    Index startIdAdj;
-    Index endIdAdj;
+    Index startIdCur = 0;
+    Index endIdCur = 0;
+    Index startIdAdj = 0;
+    Index endIdAdj = 0;
 
     size_t j = 0;
 
     std::vector<Coordinate> v1;
     std::vector<Coordinate> v2;
+
+    const double distAdjacency = 2.0;
 
     for (size_t i = 0; i < vtxId_.size(); ++i) {
         startIdCur = vtxId_.at(i).startId;
@@ -177,7 +179,7 @@ void HRM2D::connectMultiLayer() {
 
                 // Locate the neighbor vertices, check for validity
                 if (std::fabs(v1[1] - v2[1]) >
-                    2.0 *
+                    distAdjacency *
                         std::fabs(param_.BOUND_LIMIT[3] -
                                   param_.BOUND_LIMIT[2]) /
                         static_cast<double>(param_.NUM_LINE_Y)) {
@@ -211,6 +213,7 @@ void HRM2D::connectExistLayer(const Index layerId) {
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
+    const double distAdjacency = 2.0;
     for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
         auto v1 = res_.graph_structure.vertex[m0];
         for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
@@ -219,7 +222,8 @@ void HRM2D::connectExistLayer(const Index layerId) {
             // Locate the neighbor vertices in the adjacent
             // sweep line, check for validity
             if (std::fabs(v1[1] - v2[1]) >
-                2.0 * std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
+                distAdjacency *
+                    std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
                     static_cast<double>(param_.NUM_LINE_Y)) {
                 continue;
             }
@@ -253,59 +257,6 @@ void HRM2D::bridgeLayer() {
         }
 
         bridgeLayerBound_.at(i) = bd;
-    }
-}
-
-void HRM2D::bridgeVertex(const Index idx1, const Index idx2) {
-    const std::vector<Coordinate> v1 = res_.graph_structure.vertex.at(idx1);
-    const std::vector<Coordinate> v2 = res_.graph_structure.vertex.at(idx2);
-
-    // Generate new vertex until a certain resolution
-    if (std::fabs(v1[1] - v2[1]) <
-        (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-            static_cast<double>(param_.NUM_POINT * param_.NUM_LINE_Y)) {
-        return;
-    }
-
-    // Compute y-coordinate of new sweep line
-    std::vector<double> ty{(v1[1] + v2[1]) / 2.0};
-
-    // Compute free segment at the new sweep line
-    IntersectionInterval intersect = computeIntersections(ty);
-    FreeSegment2D segment = computeFreeSegment(ty, &intersect);
-
-    // Attempt to connect new vertex to v1 and v2
-    bool isSuccess = true;
-    for (size_t i = 0; i < segment.xM.at(0).size(); ++i) {
-        // Generate new vertex and index in graph
-        std::vector<Coordinate> vNew{segment.xM.at(0).at(i), segment.ty.at(0),
-                                     v1.at(2)};
-
-        auto idxNew = res_.graph_structure.vertex.size();
-        res_.graph_structure.vertex.push_back(vNew);
-
-        // Iteratively attempt to connect
-        if (isSameLayerTransitionFree(v1, vNew)) {
-            isSuccess = true;
-            res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
-            res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
-        } else {
-            isSuccess = false;
-            bridgeVertex(idx1, idxNew);
-        }
-
-        if (isSameLayerTransitionFree(v2, vNew)) {
-            isSuccess = true;
-            res_.graph_structure.edge.push_back(std::make_pair(idx2, idxNew));
-            res_.graph_structure.weight.push_back(vectorEuclidean(v2, vNew));
-        } else {
-            isSuccess = false;
-            bridgeVertex(idx2, idxNew);
-        }
-
-        if (isSuccess) {
-            return;
-        }
     }
 }
 
@@ -443,11 +394,11 @@ bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
 std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
     const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     // Find the closest roadmap vertex
-    double minEuclideanDist;
-    double minAngleDist;
+    double minEuclideanDist = inf;
+    double minAngleDist = inf;
     double minAngle = res_.graph_structure.vertex[0][2];
-    double angleDist;
-    double euclideanDist;
+    double angleDist = 0.0;
+    double euclideanDist = 0.0;
     std::vector<Vertex> idx;
 
     // Find the closest C-layer
@@ -474,6 +425,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
     // Find the close vertex within a range (relative to the size of sweep
     // line gaps) at each C-layer
+    const double epsilon = 1e-6;
     for (double angCur : angList) {
         Vertex idxLayer = 0;
         minEuclideanDist =
@@ -482,7 +434,8 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
             euclideanDist =
                 vectorEuclidean(vertex, res_.graph_structure.vertex[i]);
             if ((euclideanDist < minEuclideanDist) &&
-                std::fabs(res_.graph_structure.vertex[i][2] - angCur) < 1e-6) {
+                std::fabs(res_.graph_structure.vertex[i][2] - angCur) <
+                    epsilon) {
                 minEuclideanDist = euclideanDist;
                 idxLayer = i;
             }

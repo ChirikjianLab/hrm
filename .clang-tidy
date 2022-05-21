@@ -4,11 +4,8 @@ Checks:   '-*,
           misc-*,
           modernize-*,
           readability-*,
-          -readability-identifier-length,
-          -google-readability-namespace-comments,
-          -google-runtime-int,
-          -google-runtime-references,
-          -misc-non-private-member-variables-in-classes'
+          performance-*,
+          -readability-identifier-length'
 
 
-HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'
+HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$

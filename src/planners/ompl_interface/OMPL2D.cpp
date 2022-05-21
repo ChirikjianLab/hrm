@@ -67,7 +67,7 @@ void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
     // Solve the planning problem
     try {
         isSolved_ = ss_->solve(60.0);
-    } catch (ompl::Exception ex) {
+    } catch (ompl::Exception &ex) {
     }
 
     getSolution();
@@ -377,10 +377,10 @@ void OMPL2D::buildFreeStateLibraryFromBoundary() {
     ompl::time::point start = ompl::time::now();
 
     // Generate collision-free samples
-    double dth = 2 * pi / (param_.numAngle - 1);
+    double dth = 2 * pi / (static_cast<double>(param_.numAngle) - 1);
 
     for (size_t i = 0; i < param_.numAngle; ++i) {
-        double th = -pi + i * dth;
+        double th = -pi + static_cast<double>(i) * dth;
 
         Eigen::Matrix3d tf = Eigen::Matrix3d::Identity();
         tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
