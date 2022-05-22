@@ -89,7 +89,7 @@ void OMPL2D::getSolution() {
 
         // Save interpolated path
         path.interpolate(INTERPOLATION_NUMBER);
-        for (auto state : path.getStates()) {
+        for (auto *state : path.getStates()) {
             path_.push_back(
                 {state->as<ob::SE2StateSpace::StateType>()->getX(),
                  state->as<ob::SE2StateSpace::StateType>()->getY(),

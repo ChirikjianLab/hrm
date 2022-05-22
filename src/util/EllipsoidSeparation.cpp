@@ -98,19 +98,20 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     // Find the real negative roots
     std::vector<size_t> negRootsId;
     for (size_t i = 0; i < roots.size(); ++i) {
-        if (std::fabs(roots.at(i).imag()) < 1e-8 && roots.at(i).real() < 0) {
+        if (std::fabs(roots.at(i).imag()) < 1e-6 && roots.at(i).real() < 0) {
             negRootsId.push_back(i);
         }
     }
 
     // Separation conditions
+    bool isSeparated = false;
     if (negRootsId.size() == 2 &&
         std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
-            1e-8) {
-        return true;
-    } else {
-        return false;
+            1e-6) {
+        isSeparated = true;
     }
+
+    return isSeparated;
 }
 
 bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
@@ -164,19 +165,20 @@ bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
     // Find the real negative roots
     std::vector<size_t> negRootsId;
     for (size_t i = 0; i < roots.size(); ++i) {
-        if (std::fabs(roots.at(i).imag()) < 1e-8 && roots.at(i).real() < 0) {
+        if (std::fabs(roots.at(i).imag()) < 1e-6 && roots.at(i).real() < 0) {
             negRootsId.push_back(i);
         }
     }
 
     // Separation conditions
+    bool isSeparated = false;
     if (negRootsId.size() == 2 &&
         std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
-            1e-8) {
-        return true;
-    } else {
-        return false;
+            1e-6) {
+        isSeparated = true;
     }
+
+    return isSeparated;
 }
 
 std::vector<std::complex<double>> getRootsPolynomial(

@@ -76,7 +76,7 @@ void OMPL3D::getSolution() {
 
             // Save interpolated path
             path.interpolate(INTERPOLATION_NUMBER);
-            for (auto state : path.getStates()) {
+            for (auto *state : path.getStates()) {
                 path_.push_back(setVectorFromState(state));
             }
         } catch (ompl::Exception &ex) {
