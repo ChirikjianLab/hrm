@@ -15,7 +15,7 @@ void displayGraphInfo(const Graph* graph) {
     std::cout << "Number of valid edges: " << graph->edge.size() << std::endl;
 }
 
-void displayGraphInfo(const Graph* graph, const std::string dim) {
+void displayGraphInfo(const Graph* graph, const std::string& dim) {
     displayGraphInfo(graph);
 
     // Write the output to .csv files
@@ -45,7 +45,7 @@ void displayPathInfo(const SolutionPathInfo* path) {
     std::cout << "Path cost: " << path->cost << std::endl;
 }
 
-void displayPathInfo(const SolutionPathInfo* path, const std::string dim) {
+void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     displayPathInfo(path);
 
     // Write the output to .csv files

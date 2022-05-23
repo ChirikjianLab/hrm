@@ -13,7 +13,7 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
     }
 }
 
-void loadVectorGeometry(const std::string config_file,
+void loadVectorGeometry(const std::string& config_file,
                         const int num_curve_param,
                         std::vector<SuperEllipse>& object) {
     std::vector<std::vector<double>> object_config =
@@ -38,7 +38,8 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
     }
 }
 
-void loadVectorGeometry(const std::string config_file, const int num_surf_param,
+void loadVectorGeometry(const std::string& config_file,
+                        const int num_surf_param,
                         std::vector<SuperQuadrics>& object) {
     std::vector<std::vector<double>> object_config =
         parse2DCsvFile(config_file);
@@ -46,7 +47,7 @@ void loadVectorGeometry(const std::string config_file, const int num_surf_param,
     loadVectorGeometry(object_config, num_surf_param, object);
 }
 
-MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
+MultiBodyTree2D loadRobotMultiBody2D(const std::string& path_prefix,
                                      const int num_curve_param) {
     // Read robot config file
     std::vector<SuperEllipse> robot_parts;
@@ -62,8 +63,8 @@ MultiBodyTree2D loadRobotMultiBody2D(const std::string path_prefix,
     return robot;
 }
 
-MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
-                                     const std::string quat_file,
+MultiBodyTree3D loadRobotMultiBody3D(const std::string& path_prefix,
+                                     const std::string& quat_file,
                                      const int num_surf_param) {
     // Read and setup robot info
     std::vector<SuperQuadrics> robot_parts;
@@ -81,10 +82,10 @@ MultiBodyTree3D loadRobotMultiBody3D(const std::string path_prefix,
     return robot;
 }
 
-void loadPreDefinedQuaternions(const std::string quat_file,
+void loadPreDefinedQuaternions(const std::string& quat_file,
                                SuperQuadrics& robot_base) {
     // Read predefined quaternions
-    if (quat_file.compare("0") == 0) {
+    if (quat_file == "0") {
         std::cout << "Will generate uniform random rotations from SO(3)"
                   << std::endl;
     } else {
@@ -108,7 +109,7 @@ void defineParameters(const MultiBodyTree3D* robot,
                       const PlannerSetting<SuperQuadrics>* env3D,
                       PlannerParameter* param) {
     // Planning arena boundary
-    double f = 1.2;
+    const double f = 1.2;
     std::vector<double> bound = {env3D->getArena().at(0).getSemiAxis().at(0) -
                                      f * robot->getBase().getSemiAxis().at(0),
                                  env3D->getArena().at(0).getSemiAxis().at(1) -

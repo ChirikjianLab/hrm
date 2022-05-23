@@ -11,7 +11,11 @@ using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc < 7) {
+    if (argc >= 7) {
+        cout << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
+             << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
                 "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
                 "5) Max planning time 6) Configuration file prefix 7) "
@@ -19,10 +23,6 @@ int main(int argc, char** argv) {
                 "blank)"
              << endl;
         return 1;
-    } else {
-        cout << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
-             << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials

@@ -1,9 +1,8 @@
 #include "include/Parse2dCsvFile.h"
 
-std::vector<std::vector<double>> parse2DCsvFile(
-    const std::string inputFileName) {
+std::vector<std::vector<double>> parse2DCsvFile(const std::string& filename) {
     std::vector<std::vector<double>> data;
-    std::ifstream inputFile(inputFileName);
+    std::ifstream inputFile(filename);
     int l = 0;
 
     while (inputFile) {
@@ -23,9 +22,9 @@ std::vector<std::vector<double>> parse2DCsvFile(
                 }
                 try {
                     record.emplace_back(stof(line));
-                } catch (const std::invalid_argument &e) {
-                    std::cout << "NaN found in file " << inputFileName
-                              << " line " << l << std::endl;
+                } catch (const std::invalid_argument& e) {
+                    std::cout << "NaN found in file " << filename << " line "
+                              << l << std::endl;
                     e.what();
                 }
             }
@@ -35,7 +34,7 @@ std::vector<std::vector<double>> parse2DCsvFile(
     }
 
     if (!inputFile.eof()) {
-        std::cerr << "Could not read file " << inputFileName << "\n";
+        std::cerr << "Could not read file " << filename << "\n";
         std::__throw_invalid_argument("File not found.");
     }
 

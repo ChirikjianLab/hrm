@@ -8,7 +8,7 @@
 class ParseURDF {
   public:
     ParseURDF(const KDL::Tree& kdlTree);
-    ParseURDF(const std::string urdfFile);
+    ParseURDF(const std::string& urdfFile);
 
     /** \brief Retrieve KDL tree */
     KDL::Tree getKDLTree() const { return kdlTree_; }
@@ -19,7 +19,7 @@ class ParseURDF {
      * \param bodyName The name of body to be retrieved
      */
     Eigen::Matrix4d getTransform(const KDL::JntArray* jointConfig,
-                                 const std::string bodyName);
+                                 const std::string& bodyName);
 
   private:
     KDL::Tree kdlTree_;

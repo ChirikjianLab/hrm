@@ -47,7 +47,7 @@ class OMPL2D {
     std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
 
     void setup(const Index spaceId, const Index plannerId,
-               const Index stateSamplerId, const Index validSamplerId);
+               const Index stateSamplerId, const Index validStateSamplerId);
     void plan(const std::vector<std::vector<Coordinate>> &endPts);
 
   protected:

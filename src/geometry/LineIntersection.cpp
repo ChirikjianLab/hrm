@@ -16,7 +16,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
     for (size_t i = 0; i < basis.size(); ++i) {
         auto currIdx = static_cast<Eigen::Index>(i);
 
-        if (std::fabs(direction.dot(basis.at(i))) < 1e-5 &&
+        if (std::fabs(direction.dot(basis.at(i))) < 1e-6 &&
             (line(currIdx) > shape.vertices.row(currIdx).maxCoeff() ||
              line(currIdx) < shape.vertices.row(currIdx).minCoeff())) {
             return points;
@@ -24,7 +24,10 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
     }
 
     /** \brief Line mesh intersection */
-    Eigen::Vector3d t0, u, v, pt;
+    Eigen::Vector3d t0;
+    Eigen::Vector3d u;
+    Eigen::Vector3d v;
+    Eigen::Vector3d pt;
 
     for (auto i = 0; i < shape.faces.rows(); ++i) {
         // find triangle edge vectors
@@ -60,7 +63,10 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
         return points;
     }
 
-    Eigen::Vector3d t0, u, v, pt;
+    Eigen::Vector3d t0;
+    Eigen::Vector3d u;
+    Eigen::Vector3d v;
+    Eigen::Vector3d pt;
 
     /**
      * \brief Specifially for vertical sweep lines, first do a quick check
@@ -117,9 +123,18 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
 bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
                              const Eigen::Vector3d* u, const Eigen::Vector3d* v,
                              Point3D* pt) {
-    double tol = 1e-12;
+    const double tol = 1e-12;
     Eigen::Vector3d n;
-    double a, b, uu, uv, vv, wu, wv, D, s, t;
+    double a;
+    double b;
+    double uu;
+    double uv;
+    double vv;
+    double wu;
+    double wv;
+    double D;
+    double s;
+    double t;
 
     // triangle normal
     n = u->cross(*v);
@@ -159,11 +174,7 @@ bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
 
     // test second coordinate and third triangle edge
     t = (uv * wu - uu * wv) / D;
-    if ((t < -tol) || (s + t > 1.0 + tol)) {
-        return false;
-    }
-
-    return true;
+    return !((t < -tol) || (s + t > 1.0 + tol));
 }
 
 bool isIntersectSegPolygon2D(

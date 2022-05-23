@@ -81,8 +81,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     void bridgeLayer() override;
 
-    virtual void computeTFE(const Eigen::Quaterniond& v1,
-                            const Eigen::Quaterniond& v2,
+    virtual void computeTFE(const Eigen::Quaterniond& q1,
+                            const Eigen::Quaterniond& q2,
                             std::vector<SuperQuadrics>* tfe);
 
     IntersectionInterval computeIntersections(

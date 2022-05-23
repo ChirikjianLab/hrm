@@ -49,7 +49,7 @@ void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
 }
 
 // Tranform articulated body
-void MultiBodyTree3D::robotTF(const std::string urdfFile,
+void MultiBodyTree3D::robotTF(const std::string& urdfFile,
                               const Eigen::Matrix4d* gBase,
                               const Eigen::VectorXd* jointConfig) {
     ParseURDF kdl(urdfFile);
@@ -111,7 +111,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
 
 // Minkowski sums and difference for multi-link robot
 std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
-                                                      const int k) {
+                                                      const Indicator k) {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base

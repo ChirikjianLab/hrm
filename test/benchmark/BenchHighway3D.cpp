@@ -11,7 +11,10 @@ using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc < 7) {
+    if (argc >= 7) {
+        cout << "Highway RoadMap for 3D rigid-body planning" << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
                 "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
                 "5) Max planning time 6) Configuration file prefix 7) "
@@ -19,9 +22,6 @@ int main(int argc, char** argv) {
                 "blank)"
              << endl;
         return 1;
-    } else {
-        cout << "Highway RoadMap for 3D rigid-body planning" << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -97,7 +97,8 @@ int main(int argc, char** argv) {
              << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
         cout << "==========" << endl;
 
-        file_time << res.solved << ',' << res.planning_time.buildTime << ','
+        file_time << static_cast<int>(res.solved) << ','
+                  << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','
                   << res.planning_time.totalTime << ','
                   << hrm.getPlannerParameters().NUM_LAYER << ','

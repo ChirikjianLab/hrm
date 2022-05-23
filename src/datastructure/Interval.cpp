@@ -2,7 +2,7 @@
 
 Interval::Interval() {}
 
-Interval::Interval(const double start, const double end)
+Interval::Interval(const Coordinate start, const Coordinate end)
     : start_(start), end_(end) {}
 
 std::vector<Interval> Interval::unions(std::vector<Interval> &ins) {
@@ -57,7 +57,10 @@ std::vector<Interval> Interval::complements(std::vector<Interval> &outer,
         return outer;
     }
 
-    std::vector<Interval> res, comp, int_buff, intsect;
+    std::vector<Interval> res;
+    std::vector<Interval> comp;
+    std::vector<Interval> int_buff;
+    std::vector<Interval> intsect;
     sort(inner.begin(), inner.end(),
          [](Interval a, Interval b) { return a.s() < b.s(); });
 
@@ -74,7 +77,9 @@ std::vector<Interval> Interval::complements(std::vector<Interval> &outer,
         int_buff.push_back(outer[0]);
 
         intsect = intersects(int_buff);
-        if (!intsect.empty()) res.push_back(intsect[0]);
+        if (!intsect.empty()) {
+            res.push_back(intsect[0]);
+        }
 
         int_buff.clear();
     }

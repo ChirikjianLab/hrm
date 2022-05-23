@@ -14,7 +14,7 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
     PlannerParameter par;
 
     // Planning arena boundary
-    double f = 1.5;
+    const double f = 1.5;
     vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
                                     f * robot->getBase().getSemiAxis().at(0),
                                 env2D->getArena().at(0).getSemiAxis().at(1) -

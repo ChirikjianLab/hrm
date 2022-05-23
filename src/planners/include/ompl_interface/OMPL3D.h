@@ -106,7 +106,7 @@ class OMPL3D {
      *  6: valid state sampler from Minkowski sum and C-obstacle boundaries
      */
     void setup(const Index plannerId, const Index stateSamplerId,
-               const Index validSamplerId);
+               const Index validStateSamplerId);
 
     /** \brief Start to plan
      * \param endPts start and goal poses
@@ -115,8 +115,8 @@ class OMPL3D {
     bool plan(const std::vector<Coordinate>& start,
               const std::vector<Coordinate>& goal, const double maxTimeInSec);
 
-    void saveVertexEdgeInfo(const std::string filename_prefix);
-    void savePathInfo(const std::string filename_prefix);
+    void saveVertexEdgeInfo(const std::string& filename_prefix);
+    void savePathInfo(const std::string& filename_prefix);
 
   protected:
     void getSolution();
@@ -130,8 +130,8 @@ class OMPL3D {
 
     void setStartAndGoalState(const std::vector<Coordinate>& start,
                               const std::vector<Coordinate>& goal);
-    bool compareStates(std::vector<Coordinate> goalConfig,
-                       std::vector<Coordinate> lastConfig);
+    bool compareStates(const std::vector<Coordinate>& goalConfig,
+                       const std::vector<Coordinate>& lastConfig);
 
     // Collision detection module
     void setCollisionObject();

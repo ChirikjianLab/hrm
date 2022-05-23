@@ -15,10 +15,12 @@ SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
       quat_(quat),
       num_(num) {
     const auto numVtx = static_cast<Eigen::Index>(num_);
-    eta_ =
-        Eigen::RowVectorXd::LinSpaced(numVtx, -pi / 2.0 - 1e-6, pi / 2.0 + 1e-6)
-            .replicate(numVtx, 1);
-    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -pi - 1e-6, pi + 1e-6)
+    const double HALF_PI = pi / 2.0;
+    const double EPS = 1e-6;
+
+    eta_ = Eigen::RowVectorXd::LinSpaced(numVtx, -HALF_PI - EPS, HALF_PI + EPS)
+               .replicate(numVtx, 1);
+    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -pi - EPS, pi + EPS)
                  .replicate(1, numVtx);
     Num_ = num_ * num_;
 }
@@ -36,7 +38,7 @@ void SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
     quat_ = newQuat;
 }
 void SuperQuadrics::setQuatSamples(
-    const std::vector<Eigen::Quaterniond> qSample) {
+    const std::vector<Eigen::Quaterniond> &qSample) {
     qSample_ = qSample;
 }
 
@@ -55,16 +57,16 @@ BoundaryPoints SuperQuadrics::getOriginShape() const {
 
     // Parameterized surface
     x = semiAxis_.at(0) *
-        expFun_mat(eta_, epsilon_.at(0), 0)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), 0));
+        expFun_mat(eta_, epsilon_.at(0), false)
+            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), false));
     x.resize(1, numSurfVtx);
     y = semiAxis_.at(1) *
-        expFun_mat(eta_, epsilon_.at(0), 0)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), 1));
+        expFun_mat(eta_, epsilon_.at(0), false)
+            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), true));
     y.resize(1, numSurfVtx);
     z = semiAxis_.at(2) *
-        expFun_mat(eta_, epsilon_.at(0), 1)
-            .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1));
+        expFun_mat(eta_, epsilon_.at(0), true)
+            .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0));
     z.resize(1, numSurfVtx);
     X.row(0) = x;
     X.row(1) = y;
@@ -111,17 +113,18 @@ BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
     auto numVtx = static_cast<Eigen::Index>(num_);
     auto numSurfVtx = static_cast<Eigen::Index>(Num_);
 
-    gradPhix = expFun_mat(eta_, 2 - eps1, 0)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, 0)) /
+    gradPhix = expFun_mat(eta_, 2 - eps1, false)
+                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, false)) /
                a1;
     gradPhix.resize(1, numSurfVtx);
-    gradPhiy = expFun_mat(eta_, 2 - eps1, 0)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, 1)) /
+    gradPhiy = expFun_mat(eta_, 2 - eps1, false)
+                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, true)) /
                b1;
     gradPhiy.resize(1, numSurfVtx);
-    gradPhiz = expFun_mat(eta_, 2 - eps1, 1)
-                   .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1)) /
-               c1;
+    gradPhiz =
+        expFun_mat(eta_, 2 - eps1, true)
+            .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0)) /
+        c1;
     gradPhiz.resize(1, numSurfVtx);
     gradPhi.row(0) = gradPhix;
     gradPhi.row(1) = gradPhiy;

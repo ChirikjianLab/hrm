@@ -15,14 +15,14 @@ using namespace std;
 using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 int main(int argc, char** argv) {
-    if (argc != 5) {
+    if (argc == 5) {
+        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
                 "sweep lines 4) Configuration file prefix"
              << endl;
         return 1;
-    } else {
-        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
     // Load Robot and Environment settings
     const std::string CONFIG_FILE_PREFIX = argv[4];
     const int NUM_CURVE_PARAM = 50;
+    const double MAX_PLAN_TIME = 10.0;
 
     MultiBodyTree2D robot =
         loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
@@ -46,7 +47,7 @@ int main(int argc, char** argv) {
     par.NUM_LINE_Y = static_cast<size_t>(N_y);
     par.NUM_POINT = 5;
 
-    double f = 1.5;
+    const double f = 1.5;
     vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
                                     f * robot.getBase().getSemiAxis().at(0),
                                 env2D->getArena().at(0).getSemiAxis().at(1) -
@@ -74,7 +75,7 @@ int main(int argc, char** argv) {
         cout << "Number of trials: " << i + 1 << endl;
 
         HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
-        hrm.plan(10.0);
+        hrm.plan(MAX_PLAN_TIME);
 
         PlanningResult res = hrm.getPlanningResult();
 

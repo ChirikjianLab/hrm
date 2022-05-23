@@ -11,17 +11,17 @@ using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
+    if (argc == 8) {
+        cout << "Probabilistic Highway RoadMap for 3D articulated-body planning"
+             << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) robot name 3) Num of "
                 "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
                 "5) Max planning time (in seconds, default: 60.0s) 6) "
                 "Configuration file prefix 7) URDF file prefix"
              << endl;
         return 1;
-    } else {
-        cout << "Probabilistic Highway RoadMap for 3D articulated-body planning"
-             << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials
@@ -97,9 +97,9 @@ int main(int argc, char** argv) {
              << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
         cout << "==========" << endl;
 
-        file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << param.NUM_LAYER << ',' << param.NUM_LINE_X << ','
-                  << param.NUM_LINE_Y << ','
+        file_time << static_cast<int>(res.solved) << ','
+                  << res.planning_time.totalTime << ',' << param.NUM_LAYER
+                  << ',' << param.NUM_LINE_X << ',' << param.NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

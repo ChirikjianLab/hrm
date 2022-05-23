@@ -1,3 +1,4 @@
+---
 Checks:   '-*,
           bugprone-*,
           google-*,
@@ -5,7 +6,15 @@ Checks:   '-*,
           modernize-*,
           readability-*,
           performance-*,
-          -readability-identifier-length'
+          -readability-identifier-length
+          -readability-avoid-const-params-in-decls'
 
 
-HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$
+HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'
+
+CheckOptions:
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: 0;1;2;3;4;5;6;7;8;9;10;11;16;50;60;1000
+  - key: readability-magic-numbers.IgnoredFloatingPointValues
+    value: 0.1;0.5;1.0;2.0;1e-6
+...

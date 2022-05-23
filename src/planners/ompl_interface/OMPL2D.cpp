@@ -15,6 +15,8 @@ OMPL2D::~OMPL2D() {}
 void OMPL2D::setup(const Index spaceId, const Index plannerId,
                    const Index stateSamplerId,
                    const Index validStateSamplerId) {
+    const double STATE_VALIDITY_RESOLUTION = 0.01;
+
     // Setup space bound
     setEnvBound();
 
@@ -38,7 +40,8 @@ void OMPL2D::setup(const Index spaceId, const Index plannerId,
     // Set collision checker
     ss_->setStateValidityChecker(
         [this](const ob::State *state) { return isStateValid(state); });
-    ss_->getSpaceInformation()->setStateValidityCheckingResolution(0.01);
+    ss_->getSpaceInformation()->setStateValidityCheckingResolution(
+        STATE_VALIDITY_RESOLUTION);
     setCollisionObject();
 
     setPlanner(plannerId);
@@ -47,6 +50,7 @@ void OMPL2D::setup(const Index spaceId, const Index plannerId,
 }
 
 void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
+    const double DEFAULT_PLAN_TIME = 60.0;
     numCollisionChecks_ = 0;
 
     // Set start and goal poses
@@ -66,7 +70,7 @@ void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
 
     // Solve the planning problem
     try {
-        isSolved_ = ss_->solve(60.0);
+        isSolved_ = ss_->solve(DEFAULT_PLAN_TIME);
     } catch (ompl::Exception &ex) {
     }
 
@@ -76,14 +80,16 @@ void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
 
 void OMPL2D::getSolution() {
     if (isSolved_) {
+        const unsigned int INTERPOLATION_NUMBER = 200;
+
         // Get solution path
         ss_->simplifySolution();
         auto path = ss_->getSolutionPath();
         lengthPath_ = ss_->getSolutionPath().getStates().size();
 
         // Save interpolated path
-        path.interpolate(200);
-        for (auto state : path.getStates()) {
+        path.interpolate(INTERPOLATION_NUMBER);
+        for (auto *state : path.getStates()) {
             path_.push_back(
                 {state->as<ob::SE2StateSpace::StateType>()->getX(),
                  state->as<ob::SE2StateSpace::StateType>()->getY(),

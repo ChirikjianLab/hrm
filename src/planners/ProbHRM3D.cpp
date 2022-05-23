@@ -2,7 +2,7 @@
 
 #include "ompl/util/RandomNumbers.h"
 
-ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string urdfFile,
+ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string& urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
