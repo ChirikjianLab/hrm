@@ -49,7 +49,7 @@ template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::plan(const double& timeLim) {
+void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
     // Plan and timing
     auto start = Clock::now();
     buildRoadmap();
@@ -163,7 +163,7 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
-    const double& timeLim) {
+    const double timeLim) {
     isRefine_ = true;
 
     vtxIdAll_.push_back(vtxId_);
@@ -297,7 +297,7 @@ HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
 template <class RobotType, class ObjectType>
 std::vector<std::vector<double>>
 HighwayRoadMap<RobotType, ObjectType>::getInterpolatedSolutionPath(
-    const unsigned int& num) {
+    const unsigned int num) {
     std::vector<std::vector<Coordinate>> interpPath =
         res_.solution_path.solvedPath;
     return interpPath;
@@ -408,8 +408,8 @@ FreeSegment2D HighwayRoadMap<RobotType, ObjectType>::enhanceDecomp(
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index& idx1,
-                                                         const Index& idx2) {
+void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
+                                                         const Index idx2) {
     const auto v1 = res_.graph_structure.vertex.at(idx1);
     const auto v2 = res_.graph_structure.vertex.at(idx2);
 

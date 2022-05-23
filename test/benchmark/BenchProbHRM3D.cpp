@@ -97,9 +97,9 @@ int main(int argc, char** argv) {
              << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
         cout << "==========" << endl;
 
-        file_time << res.solved << ',' << res.planning_time.totalTime << ','
-                  << param.NUM_LAYER << ',' << param.NUM_LINE_X << ','
-                  << param.NUM_LINE_Y << ','
+        file_time << static_cast<int>(res.solved) << ','
+                  << res.planning_time.totalTime << ',' << param.NUM_LAYER
+                  << ',' << param.NUM_LINE_X << ',' << param.NUM_LINE_Y << ','
                   << res.graph_structure.vertex.size() << ','
                   << res.graph_structure.edge.size() << ','
                   << res.solution_path.PathId.size() << "\n";

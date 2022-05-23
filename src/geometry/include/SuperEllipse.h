@@ -14,9 +14,9 @@
  */
 class SuperEllipse {
   public:
-    SuperEllipse(const std::vector<double> &semiAxis, const double &epsilon,
-                 const std::vector<double> &position, const double &angle,
-                 const Index &num);
+    SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
+                 const std::vector<double> &position, const double angle,
+                 const Index num);
 
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     double getEpsilon() const { return epsilon_; }
@@ -25,9 +25,9 @@ class SuperEllipse {
     unsigned int getNum() const { return num_; }
 
     void setSemiAxis(const std::vector<double> &newSemiAxis);
-    void setEpsilon(const double &newEpsilon);
+    void setEpsilon(const double newEpsilon);
     void setPosition(const std::vector<double> &newPosition);
-    void setAngle(const double &newAngle);
+    void setAngle(const double newAngle);
 
     /** \brief Compute and return the boundary points of the origianl
      * SuperEllipse */
@@ -40,7 +40,7 @@ class SuperEllipse {
      * \param K indicator for sum (+1)/diff (-1)
      */
     BoundaryPoints getMinkSum2D(const SuperEllipse &shapeB,
-                                const Indicator &K) const;
+                                const Indicator K) const;
 
   private:
     std::vector<double> semiAxis_;

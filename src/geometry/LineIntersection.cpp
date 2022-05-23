@@ -174,11 +174,7 @@ bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
 
     // test second coordinate and third triangle edge
     t = (uv * wu - uu * wv) / D;
-    if ((t < -tol) || (s + t > 1.0 + tol)) {
-        return false;
-    }
-
-    return true;
+    return !((t < -tol) || (s + t > 1.0 + tol));
 }
 
 bool isIntersectSegPolygon2D(

@@ -9,7 +9,7 @@
 class Interval {
   public:
     Interval();
-    Interval(const Coordinate &start, const Coordinate &end);
+    Interval(const Coordinate start, const Coordinate end);
 
     Coordinate s() const { return start_; }
     Coordinate e() const { return end_; }

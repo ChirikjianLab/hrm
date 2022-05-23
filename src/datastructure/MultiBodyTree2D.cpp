@@ -36,7 +36,7 @@ void MultiBodyTree2D::robotTF(Eigen::Matrix3d g) {
 }
 
 std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse* s1,
-                                                      const Indicator& k) {
+                                                      const Indicator k) {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base

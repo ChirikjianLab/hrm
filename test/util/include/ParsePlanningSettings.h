@@ -9,30 +9,30 @@
 
 /** \brief loadVectorGeometry Load vector of 2D superellipses*/
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
-                        const int& num_curve_param,
+                        const int num_curve_param,
                         std::vector<SuperEllipse>& object);
 
 void loadVectorGeometry(const std::string& config_file,
-                        const int& num_curve_param,
+                        const int num_curve_param,
                         std::vector<SuperEllipse>& object);
 
 /** \brief loadVectorGeometry Load vector of 3D superquadrics*/
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
-                        const int& num_surf_param,
+                        const int num_surf_param,
                         std::vector<SuperQuadrics>& object);
 
 void loadVectorGeometry(const std::string& config_file,
-                        const int& num_surf_param,
+                        const int num_surf_param,
                         std::vector<SuperQuadrics>& object);
 
 /** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
 MultiBodyTree2D loadRobotMultiBody2D(const std::string& path_prefix,
-                                     const int& num_curve_param);
+                                     const int num_curve_param);
 
 /** loadRobotMultiBody3D \brief Load multi-body tree in 3D */
 MultiBodyTree3D loadRobotMultiBody3D(const std::string& path_prefix,
                                      const std::string& quat_file,
-                                     const int& num_surf_param);
+                                     const int num_surf_param);
 
 /** \brief loadPreDefinedQuaternions Load pre-defined quaternion or generating
  * uniform random SO(3) rotations */
@@ -59,7 +59,7 @@ double computeObstacleMinSize(const std::vector<ObjectType>& obstacles) {
 template <class ObjectType>
 class PlannerSetting {
   public:
-    PlannerSetting(const int& num_param) : num_param_(num_param) {
+    PlannerSetting(const int num_param) : num_param_(num_param) {
         if (typeid(ObjectType) == typeid(SuperEllipse)) {
             dim_ = "2D";
         } else if (typeid(ObjectType) == typeid(SuperQuadrics)) {

@@ -13,7 +13,7 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
 
 HRM3D::~HRM3D() {}
 
-void HRM3D::constructOneLayer(const Index& layerIdx) {
+void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
     if (isRobotRigid_) {
         setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
@@ -137,7 +137,7 @@ IntersectionInterval HRM3D::computeIntersections(
     return intersect;
 }
 
-void HRM3D::generateVertices(const Coordinate& tx,
+void HRM3D::generateVertices(const Coordinate tx,
                              const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
 
@@ -348,7 +348,7 @@ void HRM3D::connectMultiLayer() {
     //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
-void HRM3D::connectExistLayer(const Index& layerId) {
+void HRM3D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
     Index startIdCur = vtxId_.at(layerId).startId;
@@ -391,7 +391,7 @@ void HRM3D::connectExistLayer(const Index& layerId) {
 }
 
 std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
-    const Index& num) {
+    const Index num) {
     std::vector<std::vector<Coordinate>> path_interp;
 
     // Compute distance per step
@@ -540,7 +540,7 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     return true;
 }
 
-bool HRM3D::isPtInCFree(const Index& bdIdx, const std::vector<double>& v) {
+bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     // Ray-casting to check point containment within all C-obstacles
     Line3D lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
@@ -582,8 +582,7 @@ void HRM3D::sampleSO3() {
 }
 
 std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
-    const std::vector<Coordinate>& vertex, const Index& k,
-    const double& radius) {
+    const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     double minEuclideanDist;
     double minQuatDist;
     double quatDist;

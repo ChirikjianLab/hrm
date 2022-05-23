@@ -28,7 +28,7 @@ class MultiBodyTree2D {
      * \return A union of sampled points on the Minkowski sums boundary
      */
     std::vector<BoundaryPoints> minkSum(const SuperEllipse* s1,
-                                        const Indicator& k);
+                                        const Indicator k);
 
   private:
     SuperEllipse base_;

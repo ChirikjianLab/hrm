@@ -29,8 +29,9 @@ void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
 bool OMPL3D::plan(const std::vector<Coordinate> &start,
                   const std::vector<Coordinate> &goal,
                   const double maxTimeInSec) {
+    isSolved_ = false;
     if (!ss_) {
-        return false;
+        return isSolved_;
     }
 
     // Set start and goal states for planning
@@ -45,9 +46,7 @@ bool OMPL3D::plan(const std::vector<Coordinate> &start,
         // Get solution status
         totalTime_ = ss_->getLastPlanComputationTime();
 
-        if (!solved || totalTime_ > maxTimeInSec) {
-            isSolved_ = false;
-        } else {
+        if (solved && totalTime_ < maxTimeInSec) {
             // Number of nodes in solved path
             lengthPath_ = ss_->getSolutionPath().getStates().size();
             isSolved_ = true;
@@ -319,8 +318,8 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     return true;
 }
 
-bool OMPL3D::compareStates(std::vector<Coordinate> goalConfig,
-                           std::vector<Coordinate> lastConfig) {
+bool OMPL3D::compareStates(const std::vector<Coordinate> &goalConfig,
+                           const std::vector<Coordinate> &lastConfig) {
     bool res = true;
     for (size_t i = 0; i < 7; i++) {
         if (std::fabs(lastConfig[i] - goalConfig[i]) > 0.1) {
@@ -330,7 +329,7 @@ bool OMPL3D::compareStates(std::vector<Coordinate> goalConfig,
     return res;
 }
 
-void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
+void OMPL3D::saveVertexEdgeInfo(const std::string &filename_prefix) {
     ob::PlannerData pd(ss_->getSpaceInformation());
 
     // Write the output to .csv files
@@ -364,7 +363,7 @@ void OMPL3D::saveVertexEdgeInfo(const std::string filename_prefix) {
     file_edge.close();
 }
 
-void OMPL3D::savePathInfo(const std::string filename_prefix) {
+void OMPL3D::savePathInfo(const std::string &filename_prefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
     std::vector<Coordinate> state;
 

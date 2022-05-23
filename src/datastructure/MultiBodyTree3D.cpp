@@ -111,7 +111,7 @@ void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
 
 // Minkowski sums and difference for multi-link robot
 std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
-                                                      const Indicator& k) {
+                                                      const Indicator k) {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base

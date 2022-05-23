@@ -97,7 +97,8 @@ int main(int argc, char** argv) {
              << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
         cout << "==========" << endl;
 
-        file_time << res.solved << ',' << res.planning_time.buildTime << ','
+        file_time << static_cast<int>(res.solved) << ','
+                  << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','
                   << res.planning_time.totalTime << ','
                   << hrm.getPlannerParameters().NUM_LAYER << ','

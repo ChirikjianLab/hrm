@@ -11,7 +11,7 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
 
 HRM2D::~HRM2D() {}
 
-void HRM2D::constructOneLayer(const Index& layerIdx) {
+void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
     setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
@@ -114,7 +114,7 @@ IntersectionInterval HRM2D::computeIntersections(
     return intersect;
 }
 
-void HRM2D::generateVertices(const Coordinate& tx,
+void HRM2D::generateVertices(const Coordinate tx,
                              const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
@@ -201,7 +201,7 @@ void HRM2D::connectMultiLayer() {
     }
 }
 
-void HRM2D::connectExistLayer(const Index& layerId) {
+void HRM2D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
     Index startIdCur = vtxId_.at(layerId).startId;
@@ -306,7 +306,7 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     return true;
 }
 
-bool HRM2D::isPtInCFree(const Index& bdIdx, const std::vector<Coordinate>& v) {
+bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
     for (auto bound : bridgeLayerBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
@@ -392,8 +392,7 @@ bool HRM2D::isPtInCFree(const Index& bdIdx, const std::vector<Coordinate>& v) {
 //}
 
 std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
-    const std::vector<Coordinate>& vertex, const Index& k,
-    const double& radius) {
+    const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     // Find the closest roadmap vertex
     double minEuclideanDist = inf;
     double minAngleDist = inf;
@@ -460,7 +459,7 @@ void HRM2D::setTransform(const std::vector<Coordinate>& v) {
     robot_.robotTF(g);
 }
 
-void HRM2D::computeTFE(const double& thetaA, const double& thetaB,
+void HRM2D::computeTFE(const double thetaA, const double thetaB,
                        std::vector<SuperEllipse>* tfe) {
     tfe->clear();
 

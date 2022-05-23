@@ -17,7 +17,7 @@ class SuperQuadrics {
   public:
     SuperQuadrics(std::vector<double> semiAxis, std::vector<double> epsilon,
                   std::vector<double> position, Eigen::Quaterniond quat,
-                  const Index &num);
+                  const Index num);
 
     std::vector<double> getSemiAxis() const { return semiAxis_; }
     std::vector<double> getEpsilon() const { return epsilon_; }
@@ -44,7 +44,7 @@ class SuperQuadrics {
      * \param K indicator for sum (+1) and difference (-1)
      */
     BoundaryPoints getMinkSum3D(const SuperQuadrics &shapeB,
-                                const Indicator &K) const;
+                                const Indicator K) const;
 
   private:
     std::vector<double> semiAxis_;

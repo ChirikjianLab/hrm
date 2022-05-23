@@ -2,7 +2,7 @@
 
 std::vector<std::vector<Coordinate>> interpolateSE3(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
-    const Index& numStep) {
+    const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
 
     // Interpolate SO(3)
@@ -28,7 +28,7 @@ std::vector<std::vector<Coordinate>> interpolateSE3(
 
 std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
-    const Index& numStep) {
+    const Index numStep) {
     if (numStep == 0) {
         return std::vector<std::vector<Coordinate>>({vStart, vEnd});
     }
@@ -64,7 +64,7 @@ std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
 
 std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
-    const Index& numStep) {
+    const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
 
     const Eigen::Matrix3d Ra = quatA.toRotationMatrix();
@@ -86,7 +86,7 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
 
 std::vector<Eigen::Quaterniond> interpolateSlerp(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
-    const Index& numStep) {
+    const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
 
     const double dt = 1.0 / static_cast<double>(numStep);
@@ -101,7 +101,7 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
 
 std::vector<std::vector<Coordinate>> interpolateRn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
-    const Index& numStep) {
+    const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
 
     const double dt = 1.0 / static_cast<double>(numStep);

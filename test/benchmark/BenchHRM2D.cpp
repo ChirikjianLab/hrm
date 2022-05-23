@@ -15,14 +15,14 @@ using namespace std;
 using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 int main(int argc, char** argv) {
-    if (argc != 5) {
+    if (argc == 5) {
+        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
+        cout << "----------" << endl;
+    } else {
         cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
                 "sweep lines 4) Configuration file prefix"
              << endl;
         return 1;
-    } else {
-        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
-        cout << "----------" << endl;
     }
 
     // Record planning time for N trials

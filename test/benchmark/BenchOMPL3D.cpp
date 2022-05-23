@@ -90,7 +90,8 @@ int main(int argc, char** argv) {
                 tester.plan(env3D->getEndPoints().at(0),
                             env3D->getEndPoints().at(1), MAX_PLAN_TIME);
 
-                outfile << m << ',' << n << ',' << tester.isSolved() << ','
+                outfile << m << ',' << n << ','
+                        << static_cast<int>(tester.isSolved()) << ','
                         << tester.getPlanningTime() << ','
                         << tester.getNumVertex() << "," << tester.getNumEdges()
                         << "," << tester.getPathLength() << ","
