@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
     MultiBodyTree2D robot =
         loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    PlannerSetting2D* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
+    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
     env2D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Parameters

@@ -26,17 +26,17 @@ int main(int argc, char** argv) {
     }
 
     // Record planning time for N trials
-    const size_t N = size_t(atoi(argv[1]));
+    const auto N = size_t(atoi(argv[1]));
     const int N_l = atoi(argv[2]);
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
-    const double MAX_PLAN_TIME = double(atoi(argv[5]));
+    const auto MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
     const string CONFIG_FILE_PREFIX = argv[6];
     const int NUM_SURF_PARAM = 10;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot

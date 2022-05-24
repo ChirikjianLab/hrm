@@ -234,16 +234,15 @@ void OMPL3D::setCollisionObject() {
     }
 
     // Setup collision object for superquadric obstacles
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (std::fabs(obstacles_.at(i).getEpsilon().at(0) - 1.0) < 1e-6 &&
-            std::fabs(obstacles_.at(i).getEpsilon().at(1) - 1.0) < 1e-6) {
-            GeometryPtr_t ellip(
-                new fcl::Ellipsoidd(obstacles_.at(i).getSemiAxis().at(0),
-                                    obstacles_.at(i).getSemiAxis().at(1),
-                                    obstacles_.at(i).getSemiAxis().at(2)));
+    for (const auto &obstacle : obstacles_) {
+        if (std::fabs(obstacle.getEpsilon().at(0) - 1.0) < 1e-6 &&
+            std::fabs(obstacle.getEpsilon().at(1) - 1.0) < 1e-6) {
+            GeometryPtr_t ellip(new fcl::Ellipsoidd(
+                obstacle.getSemiAxis().at(0), obstacle.getSemiAxis().at(1),
+                obstacle.getSemiAxis().at(2)));
             objObs_.push_back(fcl::CollisionObjectd(ellip));
         } else {
-            objObs_.push_back(setCollisionObjectFromSQ(obstacles_.at(i)));
+            objObs_.push_back(setCollisionObjectFromSQ(obstacle));
         }
     }
 }
@@ -369,8 +368,8 @@ void OMPL3D::savePathInfo(const std::string &filename_prefix) {
 
     std::ofstream file_traj;
     file_traj.open(filename_prefix + "_path_3D.csv");
-    for (size_t i = 0; i < states.size(); ++i) {
-        state = setVectorFromState(states[i]->as<ob::State>());
+    for (auto *omplState : states) {
+        state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
             file_traj << state[j];
@@ -385,13 +384,13 @@ void OMPL3D::savePathInfo(const std::string &filename_prefix) {
 
     // Smooth path
     ss_->getSolutionPath().interpolate(50);
-    const std::vector<ob::State *> &s_states =
+    const std::vector<ob::State *> &solutionStates =
         ss_->getSolutionPath().getStates();
 
     std::ofstream file_smooth_traj;
     file_smooth_traj.open(filename_prefix + "_smooth_path_3D.csv");
-    for (size_t i = 0; i < s_states.size(); ++i) {
-        state = setVectorFromState(s_states[i]->as<ob::State>());
+    for (auto *omplState : solutionStates) {
+        state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
             file_smooth_traj << state[j];

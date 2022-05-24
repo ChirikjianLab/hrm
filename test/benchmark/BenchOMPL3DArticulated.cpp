@@ -31,13 +31,13 @@ int main(int argc, char** argv) {
     const int id_sample_start = atoi(argv[4]);
     const int id_sample_end = atoi(argv[5]);
     const string ROBOT_NAME = argv[6];
-    const double MAX_PLAN_TIME = double(atoi(argv[7]));
+    const auto MAX_PLAN_TIME = double(atoi(argv[7]));
 
     // Read and setup environment config
     const string CONFIG_FILE_PREFIX = argv[8];
     const int NUM_SURF_PARAM = 10;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     const vector<SuperQuadrics>& arena = env3D->getArena();
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
 
     // Obstacle mesh
     vector<Mesh> obs_mesh;
-    for (size_t i = 0; i < obs.size(); i++) {
-        obs_mesh.emplace_back(getMeshFromSQ(obs.at(i)));
+    for (const auto& obstacle : obs) {
+        obs_mesh.emplace_back(getMeshFromSQ(obstacle));
     }
 
     // Setup robot

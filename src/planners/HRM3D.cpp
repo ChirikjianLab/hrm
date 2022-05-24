@@ -446,7 +446,7 @@ void HRM3D::bridgeLayer() {
 
         // calculate Minkowski boundary points and meshes for obstacles
         std::vector<MeshMatrix> bdMesh;
-        for (auto obstacle : obs_) {
+        for (const auto& obstacle : obs_) {
             auto bd = obstacle.getMinkSum3D(tfe_.at(i), +1);
             bdMesh.push_back(
                 getMeshFromParamSurface(bd, obstacle.getNumParam()));
@@ -469,7 +469,7 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
     line.tail(3) = v12;
 
     // Intersection between line and mesh
-    for (auto obs : layerBoundMesh_.obstacle) {
+    for (const auto& obs : layerBoundMesh_.obstacle) {
         const auto intersectObs = intersectLineMesh3D(line, obs);
 
         // Check line segments overlapping
@@ -494,7 +494,7 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     const std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
-    for (auto vStep : vInterp) {
+    for (const auto& vStep : vInterp) {
         // Transform the robot
         setTransform(vStep);
 
@@ -545,7 +545,7 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     Line3D lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
-    for (auto bound : bridgeLayerBound_.at(bdIdx)) {
+    for (const auto& bound : bridgeLayerBound_.at(bdIdx)) {
         const auto intersectObs = intersectVerticalLineMesh3D(lineZ, bound);
 
         if (!intersectObs.empty()) {
@@ -594,19 +594,19 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
 
     // Find the closest C-layer
     minQuatDist = queryQuat.angularDistance(q_[0]);
-    for (size_t i = 0; i < q_.size(); ++i) {
-        quatDist = queryQuat.angularDistance(q_[i]);
+    for (const auto& q : q_) {
+        quatDist = queryQuat.angularDistance(q);
         if (quatDist < minQuatDist) {
             minQuatDist = quatDist;
-            minQuat = q_[i];
+            minQuat = q;
         }
     }
 
     // Search for k-nn C-layers
     std::vector<Eigen::Quaterniond> quatList;
-    for (size_t i = 0; i < q_.size(); ++i) {
-        if (minQuat.angularDistance(q_[i]) < radius) {
-            quatList.push_back(q_[i]);
+    for (const auto& q : q_) {
+        if (minQuat.angularDistance(q) < radius) {
+            quatList.push_back(q);
         }
 
         if (quatList.size() >= k) {
@@ -616,7 +616,7 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
 
     // Find the close vertex within a range (relative to the size of sweep line
     // gaps) at each C-layer
-    for (Eigen::Quaterniond quatCur : quatList) {
+    for (const auto& quatCur : quatList) {
         Vertex idxLayer = 0;
         minEuclideanDist = inf;
         for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
