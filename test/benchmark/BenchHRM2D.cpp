@@ -4,8 +4,8 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
-#include <math.h>
 #include <chrono>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>

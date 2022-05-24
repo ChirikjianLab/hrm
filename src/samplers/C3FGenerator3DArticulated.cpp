@@ -6,11 +6,11 @@ C3FGenerator3DArticulated::C3FGenerator3DArticulated(
     MultiBodyTree3D *robot, std::vector<SuperQuadrics> *arena,
     std::vector<SuperQuadrics> *obstacle, parameters3D *param,
     og::SimpleSetupPtr ss, ParseURDF *kdl)
-    : C3FGenerator3D(robot, arena, obstacle, param, ss), kdl_(kdl) {
+    : C3FGenerator3D(robot, arena, obstacle, param, std::move(ss)), kdl_(kdl) {
     numJoint_ = kdl_->getKDLTree().getNrOfJoints();
 }
 
-C3FGenerator3DArticulated::~C3FGenerator3DArticulated() {}
+C3FGenerator3DArticulated::~C3FGenerator3DArticulated() = default;
 
 void C3FGenerator3DArticulated::fromSweepLine() {
     std::cout << "Building free space library using sweep-line process..."

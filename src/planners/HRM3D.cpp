@@ -11,7 +11,7 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HRM3D::~HRM3D() {}
+HRM3D::~HRM3D() = default;
 
 void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
@@ -566,7 +566,7 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
 }
 
 void HRM3D::sampleSO3() {
-    srand(unsigned(std::time(NULL)));
+    srand(unsigned(std::time(nullptr)));
 
     q_.resize(param_.NUM_LAYER);
     if (robot_.getBase().getQuatSamples().empty()) {

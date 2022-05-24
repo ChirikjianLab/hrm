@@ -2,7 +2,6 @@
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
-#include <stdlib.h>
 #include <cstdlib>
 #include <ctime>
 

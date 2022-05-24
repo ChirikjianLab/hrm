@@ -9,7 +9,7 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HRM2D::~HRM2D() {}
+HRM2D::~HRM2D() = default;
 
 void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot

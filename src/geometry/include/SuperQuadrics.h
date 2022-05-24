@@ -16,7 +16,7 @@
 class SuperQuadrics {
   public:
     SuperQuadrics(std::vector<double> semiAxis, std::vector<double> epsilon,
-                  std::vector<double> position, Eigen::Quaterniond quat,
+                  std::vector<double> position, const Eigen::Quaterniond &quat,
                   const Index num);
 
     std::vector<double> getSemiAxis() const { return semiAxis_; }

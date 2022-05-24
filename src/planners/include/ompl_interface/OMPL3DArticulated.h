@@ -8,9 +8,9 @@
 
 class OMPL3DArticulated : public OMPL3D {
   public:
-    OMPL3DArticulated(std::vector<Coordinate> lowBound,
-                      std::vector<Coordinate> highBound,
-                      const MultiBodyTree3D& robot, const std::string urdfFile,
+    OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
+                      const std::vector<Coordinate>& highBound,
+                      const MultiBodyTree3D& robot, std::string urdfFile,
                       const std::vector<SuperQuadrics>& arena,
                       const std::vector<SuperQuadrics>& obs,
                       const std::vector<Mesh>& obsMesh);

@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     const vector<SuperQuadrics>& obs = env3D->getObstacle();
 
     // Obstacle mesh
-    vector<Mesh> obs_mesh;
+    vector<Mesh> obs_mesh(obs.size());
     for (const auto& obstacle : obs) {
         obs_mesh.emplace_back(getMeshFromSQ(obstacle));
     }

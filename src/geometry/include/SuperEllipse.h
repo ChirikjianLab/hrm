@@ -14,8 +14,8 @@
  */
 class SuperEllipse {
   public:
-    SuperEllipse(const std::vector<double> &semiAxis, const double epsilon,
-                 const std::vector<double> &position, const double angle,
+    SuperEllipse(std::vector<double> semiAxis, const double epsilon,
+                 std::vector<double> position, const double angle,
                  const Index num);
 
     std::vector<double> getSemiAxis() const { return semiAxis_; }

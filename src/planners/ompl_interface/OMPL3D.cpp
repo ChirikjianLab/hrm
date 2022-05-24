@@ -1,16 +1,19 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
-OMPL3D::OMPL3D(std::vector<Coordinate> lowBound,
-               std::vector<Coordinate> highBound, const MultiBodyTree3D &robot,
+OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
+               const std::vector<Coordinate> &highBound, MultiBodyTree3D robot,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obs,
                const std::vector<Mesh> &obsMesh)
-    : robot_(robot), arena_(arena), obstacles_(obs), obsMesh_(obsMesh) {
+    : robot_(std::move(robot)),
+      arena_(arena),
+      obstacles_(obs),
+      obsMesh_(obsMesh) {
     // Setup state space
     setStateSpace(lowBound, highBound);
 }
 
-OMPL3D::~OMPL3D() {}
+OMPL3D::~OMPL3D() = default;
 
 void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
                    const Index validStateSamplerId) {
@@ -103,7 +106,7 @@ void OMPL3D::getSolution() {
     for (unsigned int i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
         for (auto edgeI : edgeInfo[i]) {
-            edge_.push_back(std::make_pair(i, edgeI));
+            edge_.emplace_back(std::make_pair(i, edgeI));
         }
     }
 
@@ -224,13 +227,13 @@ void OMPL3D::setCollisionObject() {
         new fcl::Ellipsoidd(robot_.getBase().getSemiAxis().at(0),
                             robot_.getBase().getSemiAxis().at(1),
                             robot_.getBase().getSemiAxis().at(2)));
-    objRobot_.push_back(fcl::CollisionObjectd(ellip));
+    objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         GeometryPtr_t ellip(
             new fcl::Ellipsoidd(robot_.getLinks().at(i).getSemiAxis().at(0),
                                 robot_.getLinks().at(i).getSemiAxis().at(1),
                                 robot_.getLinks().at(i).getSemiAxis().at(2)));
-        objRobot_.push_back(fcl::CollisionObjectd(ellip));
+        objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     }
 
     // Setup collision object for superquadric obstacles
@@ -240,9 +243,9 @@ void OMPL3D::setCollisionObject() {
             GeometryPtr_t ellip(new fcl::Ellipsoidd(
                 obstacle.getSemiAxis().at(0), obstacle.getSemiAxis().at(1),
                 obstacle.getSemiAxis().at(2)));
-            objObs_.push_back(fcl::CollisionObjectd(ellip));
+            objObs_.emplace_back(fcl::CollisionObjectd(ellip));
         } else {
-            objObs_.push_back(setCollisionObjectFromSQ(obstacle));
+            objObs_.emplace_back(setCollisionObjectFromSQ(obstacle));
         }
     }
 }
