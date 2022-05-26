@@ -78,3 +78,6 @@ CMakeLists.txt.user*
 
 # Clion
 /.idea/*
+
+# Doxygen ignores
+/doc/doxygen/
