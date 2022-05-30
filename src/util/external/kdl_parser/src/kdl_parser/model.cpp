@@ -54,25 +54,25 @@
 
 namespace urdf {
 
-bool Model::initXml(TiXmlDocument* xml_doc) {
-    if (!xml_doc) {
+bool Model::initXml(TiXmlDocument* xml) {
+    if (!xml) {
         std::cout << "Could not parse the xml document" << std::endl;
         return false;
     }
 
     std::stringstream ss;
-    ss << *xml_doc;
+    ss << *xml;
 
     return Model::initString(ss.str());
 }
 
 // My take on that method. It is however, necessary to ckeck if COLLADA is
 // needed in some cases...
-bool Model::initString(const std::string& xml_string) {
+bool Model::initString(const std::string& xmlString) {
     ModelInterfaceSharedPtr model;
 
     // necessary for COLLADA compatibility
-    model = parseURDF(xml_string);
+    model = parseURDF(xmlString);
 
     // copy data from model into this object
     if (model) {
