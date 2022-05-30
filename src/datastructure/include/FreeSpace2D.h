@@ -77,8 +77,8 @@ class FreeSpace2D {
   private:
     intersectSweepLine2D computeIntersectSweepLine(
         const Coordinate& yCoord) const;
-    freeSegment2D computeSweepLineFreeSegment(
-        const intersectSweepLine2D& intersections) const;
+    static freeSegment2D computeSweepLineFreeSegment(
+        const intersectSweepLine2D& intersections);
 
   protected:
     boundary2D configSpaceBoundary_;

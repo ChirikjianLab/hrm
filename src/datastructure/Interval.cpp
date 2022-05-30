@@ -1,6 +1,6 @@
 #include "include/Interval.h"
 
-Interval::Interval() {}
+Interval::Interval() = default;
 
 Interval::Interval(const Coordinate start, const Coordinate end)
     : start_(start), end_(end) {}
@@ -65,11 +65,11 @@ std::vector<Interval> Interval::complements(std::vector<Interval> &outer,
          [](Interval a, Interval b) { return a.s() < b.s(); });
 
     // Compliment of the inner intervals
-    comp.push_back({-std::numeric_limits<double>::max(), inner[0].s()});
+    comp.emplace_back(-std::numeric_limits<double>::max(), inner[0].s());
     for (size_t i = 0; i < inner.size() - 1; i++) {
-        comp.push_back({inner[i].e(), inner[i + 1].s()});
+        comp.emplace_back(inner[i].e(), inner[i + 1].s());
     }
-    comp.push_back({inner.back().e(), std::numeric_limits<double>::max()});
+    comp.emplace_back(inner.back().e(), std::numeric_limits<double>::max());
 
     // Intersection with outer interval
     for (auto curr : comp) {

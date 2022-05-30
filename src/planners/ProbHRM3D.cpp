@@ -2,11 +2,11 @@
 
 #include "ompl/util/RandomNumbers.h"
 
-ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string& urdfFile,
+ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, std::string urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
-    : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(urdfFile) {
+    : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(std::move(urdfFile)) {
     kdl_ = new ParseURDF(urdfFile_);
 }
 

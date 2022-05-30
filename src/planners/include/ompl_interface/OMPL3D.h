@@ -130,8 +130,8 @@ class OMPL3D {
 
     void setStartAndGoalState(const std::vector<Coordinate>& start,
                               const std::vector<Coordinate>& goal);
-    bool compareStates(const std::vector<Coordinate>& goalConfig,
-                       const std::vector<Coordinate>& lastConfig);
+    static bool compareStates(const std::vector<Coordinate>& goalConfig,
+                              const std::vector<Coordinate>& lastConfig);
 
     // Collision detection module
     void setCollisionObject();

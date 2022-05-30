@@ -128,7 +128,7 @@ intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
 }
 
 freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
-    const intersectSweepLine3D* intersections) const {
+    const intersectSweepLine3D* intersections) {
     // Collision-free segment of the current sweep line
     freeSegment3D currentLine;
 
@@ -152,8 +152,8 @@ freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
 
     // cf-intervals at each line
     Interval op;
-    obsSegmentUnion = op.unions(obsSegment);
-    arenaSegmentIntersect = op.intersects(arenaSegment);
+    obsSegmentUnion = Interval::unions(obsSegment);
+    arenaSegmentIntersect = Interval::intersects(arenaSegment);
     collisionFreeSegment =
         op.complements(arenaSegmentIntersect, obsSegmentUnion);
 

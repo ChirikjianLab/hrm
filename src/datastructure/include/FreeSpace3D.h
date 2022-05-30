@@ -87,8 +87,8 @@ class FreeSpace3D {
   private:
     intersectSweepLine3D computeIntersectSweepLine(
         const Coordinate& xCoord, const Coordinate& yCoord) const;
-    freeSegment3D computeSweepLineFreeSegment(
-        const intersectSweepLine3D* intersections) const;
+    static freeSegment3D computeSweepLineFreeSegment(
+        const intersectSweepLine3D* intersections);
 
   protected:
     boundary3D configSpaceBoundary_;

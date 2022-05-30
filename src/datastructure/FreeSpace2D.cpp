@@ -94,7 +94,7 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
 }
 
 freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
-    const intersectSweepLine2D& intersections) const {
+    const intersectSweepLine2D& intersections) {
     // Collision-free segment of the current sweep line
     freeSegment2D currentLine;
 
@@ -118,8 +118,8 @@ freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
 
     // cf-intervals at each line
     Interval op;
-    obsSegmentUnion = op.unions(obsSegment);
-    arenaSegmentIntersect = op.intersects(arenaSegment);
+    obsSegmentUnion = Interval::unions(obsSegment);
+    arenaSegmentIntersect = Interval::intersects(arenaSegment);
     collisionFreeSegment =
         op.complements(arenaSegmentIntersect, obsSegmentUnion);
 
