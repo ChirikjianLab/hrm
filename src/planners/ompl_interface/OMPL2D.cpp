@@ -5,12 +5,13 @@
 #include "ompl/base/spaces/ReedsSheppStateSpace.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
 
-OMPL2D::OMPL2D(const MultiBodyTree2D &robot,
-               const std::vector<SuperEllipse> &arena,
-               const std::vector<SuperEllipse> &obstacle)
-    : robot_(robot), arena_(arena), obstacle_(obstacle) {}
+OMPL2D::OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
+               std::vector<SuperEllipse> obstacle)
+    : robot_(std::move(robot)),
+      arena_(std::move(arena)),
+      obstacle_(std::move(obstacle)) {}
 
-OMPL2D::~OMPL2D() {}
+OMPL2D::~OMPL2D() = default;
 
 void OMPL2D::setup(const Index spaceId, const Index plannerId,
                    const Index stateSamplerId,
@@ -123,7 +124,7 @@ void OMPL2D::getSolution() {
     for (auto i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
         for (auto edgeI : edgeInfo[i]) {
-            edge_.push_back(std::make_pair(i, edgeI));
+            edge_.emplace_back(std::make_pair(i, edgeI));
         }
     }
 }
@@ -272,7 +273,7 @@ void OMPL2D::setCollisionObject() {
     }
 
     // Setup collision object for superquadric obstacles
-    for (SuperEllipse obs : obstacle_) {
+    for (const auto &obs : obstacle_) {
         obsGeom_.push_back(setCollisionObjectFromSQ(obs));
     }
 }

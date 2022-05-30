@@ -13,7 +13,7 @@ bool MinkowskiPointLibrarySamplerSE2::sample(ob::State* state) {
 
     do {
         // randomly select an index of the list
-        size_t idx = size_t(rng_.uniformInt(0, int(validPoints_->size() - 1)));
+        auto idx = size_t(rng_.uniformInt(0, int(validPoints_->size() - 1)));
 
         state->as<ob::SE2StateSpace::StateType>()->setXY(
             validPoints_->at(idx).at(0), validPoints_->at(idx).at(1));
@@ -42,7 +42,7 @@ MinkowskiSegmentLibrarySamplerSE2::MinkowskiSegmentLibrarySamplerSE2(
 
 bool MinkowskiSegmentLibrarySamplerSE2::sample(ob::State* state) {
     // randomly select an index of the list
-    size_t idx = size_t(rng_.uniformInt(0, int(validSegments_->size() - 1)));
+    auto idx = size_t(rng_.uniformInt(0, int(validSegments_->size() - 1)));
     double t = rng_.uniformReal(0.0, 1.0);
     double xSample = (1.0 - t) * validSegments_->at(idx).at(0) +
                      t * validSegments_->at(idx).at(1);

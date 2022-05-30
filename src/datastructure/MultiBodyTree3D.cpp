@@ -1,19 +1,19 @@
 #include "include/MultiBodyTree3D.h"
 
-MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(base) {}
+MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(std::move(base)) {}
 
 std::vector<SuperQuadrics> MultiBodyTree3D::getBodyShapes() {
     std::vector<SuperQuadrics> body;
 
     body.push_back(base_);
-    for (auto link : link_) {
+    for (const auto& link : link_) {
         body.push_back(link);
     }
 
     return body;
 }
 
-void MultiBodyTree3D::addBody(SuperQuadrics link) {
+void MultiBodyTree3D::addBody(const SuperQuadrics& link) {
     // Add link
     link_.push_back(link);
     numLinks_++;
@@ -27,7 +27,7 @@ void MultiBodyTree3D::addBody(SuperQuadrics link) {
 }
 
 // Transform rigid body
-void MultiBodyTree3D::robotTF(Eigen::Matrix4d g) {
+void MultiBodyTree3D::robotTF(const Eigen::Matrix4d& g) {
     // Set transform of base
     base_.setPosition({g(0, 3), g(1, 3), g(2, 3)});
 
@@ -118,9 +118,9 @@ std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics* s1,
     mink.push_back(s1->getMinkSum3D(base_, k));
 
     // Minkowski sums for Links
-    for (size_t i = 0; i < numLinks_; i++) {
-        mink.push_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
-                       Point3D(link_.at(i).getPosition().data()));
+    for (size_t i = 0; i < numLinks_; ++i) {
+        mink.emplace_back(s1->getMinkSum3D(link_.at(i), k).colwise() -
+                          Point3D(link_.at(i).getPosition().data()));
     }
 
     return mink;

@@ -67,19 +67,19 @@ algorithm planTest(const robotType& robot,
 
         // TEST: calculate original boundary points
         Boundary bd_ori;
-        for (auto arena : hrm.getArena()) {
+        for (const auto& arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
         }
-        for (auto obstacle : hrm.getObstacle()) {
+        for (const auto& obstacle : hrm.getObstacle()) {
             bd_ori.obstacle.push_back(obstacle.getOriginShape());
         }
 
         ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
-        for (auto bd_ori_obs : bd_ori.obstacle) {
+        for (const auto& bd_ori_obs : bd_ori.obstacle) {
             file_ori_bd << bd_ori_obs << "\n";
         }
-        for (auto bd_ori_arena : bd_ori.arena) {
+        for (const auto& bd_ori_arena : bd_ori.arena) {
             file_ori_bd << bd_ori_arena << "\n";
         }
         file_ori_bd.close();
@@ -89,10 +89,10 @@ algorithm planTest(const robotType& robot,
 
         ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
-        for (auto bd_obs : bd.obstacle) {
+        for (const auto& bd_obs : bd.obstacle) {
             file_bd << bd_obs << "\n";
         }
-        for (auto bd_arena : bd.arena) {
+        for (const auto& bd_arena : bd.arena) {
             file_bd << bd_arena << "\n";
         }
         file_bd.close();
@@ -150,7 +150,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
 
     MultiBodyTree2D robot =
         loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    PlannerSetting2D* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
+    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
     env2D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Parameters
@@ -185,7 +185,7 @@ TEST(TestHRMPlanning2D, KC) {
 
     MultiBodyTree2D robot =
         loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    PlannerSetting2D* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
+    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
     env2D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Parameters

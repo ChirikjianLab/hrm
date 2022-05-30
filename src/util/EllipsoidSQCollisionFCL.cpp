@@ -58,8 +58,7 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
     } else {
         // Mesh model
         Mesh objMesh = getMeshFromSQ(object);
-        fcl::BVHModel<fcl::OBBRSS<double>>* model =
-            new fcl::BVHModel<fcl::OBBRSS<double>>();
+        auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
         model->beginModel();
         model->addSubModel(objMesh.vertices, objMesh.triangles);
         model->endModel();
@@ -83,8 +82,7 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
             {object.getEpsilon(), 0.1}, {0.0, 0.0, 0.0},
             Eigen::Quaterniond::Identity(), 10);
         Mesh objMesh = getMeshFromSQ(objAux);
-        fcl::BVHModel<fcl::OBBRSS<double>>* model =
-            new fcl::BVHModel<fcl::OBBRSS<double>>();
+        auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
         model->beginModel();
         model->addSubModel(objMesh.vertices, objMesh.triangles);
         model->endModel();

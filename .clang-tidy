@@ -6,6 +6,7 @@ Checks:   '-*,
           modernize-*,
           readability-*,
           performance-*,
+          -modernize-use-trailing-return-type,
           -readability-identifier-length
           -readability-avoid-const-params-in-decls'
 

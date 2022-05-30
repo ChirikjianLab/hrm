@@ -10,16 +10,16 @@ FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
 void FreeSpace3D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
     std::vector<BoundaryPoints> auxBoundary;
-    for (size_t i = 0; i < arena_->size(); ++i) {
-        auxBoundary = robot_->minkSum(&arena_->at(i), -1);
-        for (size_t j = 0; j < auxBoundary.size(); ++j) {
-            configSpaceBoundary_.arenaBd.push_back(auxBoundary[j]);
+    for (const auto& arena : *arena_) {
+        auxBoundary = robot_->minkSum(&arena, -1);
+        for (const auto& boundary : auxBoundary) {
+            configSpaceBoundary_.arenaBd.push_back(boundary);
         }
     }
-    for (size_t i = 0; i < obstacle_->size(); ++i) {
-        auxBoundary = robot_->minkSum(&obstacle_->at(i), +1);
-        for (size_t j = 0; j < auxBoundary.size(); ++j) {
-            configSpaceBoundary_.obsBd.push_back(auxBoundary[j]);
+    for (const auto& obstacle : *obstacle_) {
+        auxBoundary = robot_->minkSum(&obstacle, +1);
+        for (const auto& boundary : auxBoundary) {
+            configSpaceBoundary_.obsBd.push_back(boundary);
         }
     }
 }
@@ -139,16 +139,14 @@ freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
     std::vector<Interval> obsSegmentUnion;
     std::vector<Interval> arenaSegmentIntersect;
 
-    for (size_t i = 0; i < intersections->arenaZCoords.size(); ++i) {
-        if (!std::isnan(intersections->arenaZCoords[i].s()) &&
-            !std::isnan(intersections->arenaZCoords[i].e())) {
-            arenaSegment.push_back(intersections->arenaZCoords[i]);
+    for (auto arenaZCoord : intersections->arenaZCoords) {
+        if (!std::isnan(arenaZCoord.s()) && !std::isnan(arenaZCoord.e())) {
+            arenaSegment.push_back(arenaZCoord);
         }
     }
-    for (size_t i = 0; i < intersections->obsZCords.size(); ++i) {
-        if (!std::isnan(intersections->obsZCords[i].s()) &&
-            !std::isnan(intersections->obsZCords[i].e())) {
-            obsSegment.push_back(intersections->obsZCords[i]);
+    for (auto obsZCoord : intersections->obsZCords) {
+        if (!std::isnan(obsZCoord.s()) && !std::isnan(obsZCoord.e())) {
+            obsSegment.push_back(obsZCoord);
         }
     }
 
@@ -160,8 +158,8 @@ freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
         op.complements(arenaSegmentIntersect, obsSegmentUnion);
 
     // z-coords
-    for (size_t i = 0; i < collisionFreeSegment.size(); ++i) {
-        currentLine.zCoords.push_back(collisionFreeSegment[i]);
+    for (auto segment : collisionFreeSegment) {
+        currentLine.zCoords.push_back(segment);
     }
 
     return currentLine;

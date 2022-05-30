@@ -41,8 +41,7 @@ bool MinkowskiSweepLineSamplerSE3::sample(ob::State* state) {
 
         if (!seg.zCoords.empty()) {
             // Compute the sampled z-coord
-            size_t zIdx =
-                size_t(rng_.uniformInt(0, int(seg.zCoords.size() - 1)));
+            auto zIdx = size_t(rng_.uniformInt(0, int(seg.zCoords.size() - 1)));
             double t = rng_.uniformReal(0.0, 1.0);
             zSample =
                 (1.0 - t) * seg.zCoords[zIdx].s() + t * seg.zCoords[zIdx].e();
@@ -97,8 +96,7 @@ bool MinkowskiSweepLineSamplerSE3::sampleNear(ob::State* state,
 
         if (!seg.zCoords.empty()) {
             // Compute the sampled z-coord
-            size_t zIdx =
-                size_t(rng_.uniformInt(0, int(seg.zCoords.size() - 1)));
+            auto zIdx = size_t(rng_.uniformInt(0, int(seg.zCoords.size() - 1)));
             double t = rng_.uniformReal(0.0, 1.0);
             zSample =
                 (1.0 - t) * seg.zCoords[zIdx].s() + t * seg.zCoords[zIdx].e();
@@ -139,7 +137,7 @@ bool MinkowskiBoundarySamplerSE3::sample(ob::State* state) {
 
         // Compute and get a random C-obstacle boundary
         boundary3D bound = fs.getCSpaceBoundary();
-        size_t obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
         Eigen::Matrix3Xd selectedObsBound = bound.obsBd[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle
@@ -201,7 +199,7 @@ bool MinkowskiBoundarySamplerSE3::sampleNear(ob::State* state,
 
         // Compute and get a random C-obstacle boundary
         boundary3D bound = fs.getCSpaceBoundary();
-        size_t obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
         Eigen::Matrix3Xd selectedObsBound = bound.obsBd[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle

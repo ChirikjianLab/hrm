@@ -28,8 +28,8 @@ const double pi = 3.1415926535;
 
 class OMPL2D {
   public:
-    OMPL2D(const MultiBodyTree2D &robot, const std::vector<SuperEllipse> &arena,
-           const std::vector<SuperEllipse> &obstacle);
+    OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
+           std::vector<SuperEllipse> obstacle);
 
     ~OMPL2D();
 

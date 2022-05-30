@@ -41,8 +41,8 @@ using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 class OMPL3D {
   public:
-    OMPL3D(std::vector<double> lowBound, std::vector<double> highBound,
-           const MultiBodyTree3D& robot,
+    OMPL3D(const std::vector<double>& lowBound,
+           const std::vector<double>& highBound, MultiBodyTree3D robot,
            const std::vector<SuperQuadrics>& arena,
            const std::vector<SuperQuadrics>& obs,
            const std::vector<Mesh>& obsMesh);

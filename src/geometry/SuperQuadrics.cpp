@@ -8,10 +8,10 @@
 SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
                              std::vector<double> epsilon,
                              std::vector<double> position,
-                             Eigen::Quaterniond quat, const Index num)
-    : semiAxis_(semiAxis),
-      epsilon_(epsilon),
-      position_(position),
+                             const Eigen::Quaterniond &quat, const Index num)
+    : semiAxis_(std::move(semiAxis)),
+      epsilon_(std::move(epsilon)),
+      position_(std::move(position)),
       quat_(quat),
       num_(num) {
     const auto numVtx = static_cast<Eigen::Index>(num_);

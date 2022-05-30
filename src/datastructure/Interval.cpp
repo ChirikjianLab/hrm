@@ -72,8 +72,8 @@ std::vector<Interval> Interval::complements(std::vector<Interval> &outer,
     comp.push_back({inner.back().e(), std::numeric_limits<double>::max()});
 
     // Intersection with outer interval
-    for (size_t i = 0; i < comp.size(); i++) {
-        int_buff.push_back(comp[i]);
+    for (auto curr : comp) {
+        int_buff.push_back(curr);
         int_buff.push_back(outer[0]);
 
         intsect = intersects(int_buff);

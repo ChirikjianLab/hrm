@@ -8,11 +8,11 @@ C3FGenerator3D::C3FGenerator3D(MultiBodyTree3D *robot,
       arena_(arena),
       obstacle_(obstacle),
       param_(param),
-      ss_(ss) {
+      ss_(std::move(ss)) {
     std::cout << "Generating C3F seeds for sampling-based planners..."
               << std::endl;
 }
-C3FGenerator3D::~C3FGenerator3D() {}
+C3FGenerator3D::~C3FGenerator3D() = default;
 
 void C3FGenerator3D::fromSweepLine() {
     std::cout << "Building via sweep-line process..." << std::endl;

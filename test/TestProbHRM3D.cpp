@@ -11,7 +11,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 300.0;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
     const string quat_file = "0";
 
