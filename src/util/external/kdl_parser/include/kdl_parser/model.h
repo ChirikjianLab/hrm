@@ -46,7 +46,7 @@
 #ifndef URDF_MODEL_H
 #define URDF_MODEL_H
 
-#include <tinyxml2.h>
+#include <tinyxml.h>
 #include <urdf_model/model.h>
 #include <map>
 #include <string>
@@ -56,7 +56,7 @@ namespace urdf {
 class Model : public ModelInterface {
   public:
     /// \brief Load Model from TiXMLDocument
-    bool initXml(tinyxml2::XMLDocument* xml);
+    bool initXml(TiXmlDocument* xml);
     /// \brief Load Model from a XML-string
     bool initString(const std::string& xml_string);
 };

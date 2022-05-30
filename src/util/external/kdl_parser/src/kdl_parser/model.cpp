@@ -54,16 +54,16 @@
 
 namespace urdf {
 
-bool Model::initXml(tinyxml2::XMLDocument* xml) {
+bool Model::initXml(TiXmlDocument* xml) {
     if (xml == nullptr) {
         std::cout << "Could not parse the xml document" << std::endl;
         return false;
     }
 
-    tinyxml2::XMLPrinter printer;
-    xml->Print(&printer);
+    std::stringstream ss;
+    ss << *xml;
 
-    return Model::initString(printer.CStr());
+    return Model::initString(ss.str());
 }
 
 // My take on that method. It is however, necessary to ckeck if COLLADA is
