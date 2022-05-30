@@ -60,7 +60,6 @@ else()
     message(STATUS "ROS version of KDL_Parser NOT FOUND, will use pure CMake version")
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/util/external/kdl_parser)
 endif()
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/util/external/kdl_parser)
 
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
