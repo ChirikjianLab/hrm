@@ -117,11 +117,10 @@ freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
     }
 
     // cf-intervals at each line
-    Interval op;
     obsSegmentUnion = Interval::unions(obsSegment);
     arenaSegmentIntersect = Interval::intersects(arenaSegment);
     collisionFreeSegment =
-        op.complements(arenaSegmentIntersect, obsSegmentUnion);
+        Interval::complements(arenaSegmentIntersect, obsSegmentUnion);
 
     // x-coords
     for (auto segment : collisionFreeSegment) {

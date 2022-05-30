@@ -6,7 +6,7 @@ IF (urdfdom_FOUND)
 ENDIF()
 
 
-find_library(TinyXML NAMES tinyxml)
+find_library(TinyXML2 NAMES tinyxml2)
 
 file(GLOB KDL_Parser_SOURCES src/kdl_parser/*.cpp)
 
@@ -15,7 +15,7 @@ include_directories(include)
 add_library(KDL_Parser STATIC ${KDL_Parser_SOURCES})
 target_link_libraries(KDL_Parser
                       ${orocos_kdl_LIBRARIES}
-                      ${TINYXML_LIBRARIES}
+                      ${TINYXML2_LIBRARIES}
                       ${TinyXML}
                       ${Boost_LIBRARIES}
                       ${urdfdom_LIBRARIES})

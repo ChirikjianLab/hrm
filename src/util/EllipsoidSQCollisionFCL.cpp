@@ -55,16 +55,16 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
             object.getSemiAxis().at(2)));
 
         return fcl::CollisionObject<double>(ellipsoid);
-    } else {
-        // Mesh model
-        Mesh objMesh = getMeshFromSQ(object);
-        auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
-        model->beginModel();
-        model->addSubModel(objMesh.vertices, objMesh.triangles);
-        model->endModel();
-
-        return fcl::CollisionObject<double>(GeometryPtr_t(model));
     }
+
+    // Mesh model
+    Mesh objMesh = getMeshFromSQ(object);
+    auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
+    model->beginModel();
+    model->addSubModel(objMesh.vertices, objMesh.triangles);
+    model->endModel();
+
+    return fcl::CollisionObject<double>(GeometryPtr_t(model));
 }
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
@@ -75,18 +75,18 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
             object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1));
 
         return fcl::CollisionObject<double>(ellipse);
-    } else {
-        // Mesh model
-        SuperQuadrics objAux(
-            {object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1},
-            {object.getEpsilon(), 0.1}, {0.0, 0.0, 0.0},
-            Eigen::Quaterniond::Identity(), 10);
-        Mesh objMesh = getMeshFromSQ(objAux);
-        auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
-        model->beginModel();
-        model->addSubModel(objMesh.vertices, objMesh.triangles);
-        model->endModel();
-
-        return fcl::CollisionObject<double>(GeometryPtr_t(model));
     }
+
+    // Mesh model
+    SuperQuadrics objAux(
+        {object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1},
+        {object.getEpsilon(), 0.1}, {0.0, 0.0, 0.0},
+        Eigen::Quaterniond::Identity(), 10);
+    Mesh objMesh = getMeshFromSQ(objAux);
+    auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
+    model->beginModel();
+    model->addSubModel(objMesh.vertices, objMesh.triangles);
+    model->endModel();
+
+    return fcl::CollisionObject<double>(GeometryPtr_t(model));
 }

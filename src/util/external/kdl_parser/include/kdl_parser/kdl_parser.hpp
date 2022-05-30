@@ -46,7 +46,7 @@
 #ifndef KDL_PARSER_H
 #define KDL_PARSER_H
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <urdf_model/model.h>
 #include <kdl/tree.hpp>
 #include <string>
@@ -65,7 +65,7 @@ bool treeFromFile(const std::string& file, KDL::Tree& tree);
  * robot \param tree The resulting KDL Tree returns true on success, false
  * on failure
  */
-bool treeFromXml(TiXmlDocument* xml_doc, KDL::Tree& tree);
+bool treeFromXml(tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree);
 
 /** Constructs a KDL tree from a URDF robot model
  * \param robot_model The URDF robot model
