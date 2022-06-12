@@ -494,7 +494,6 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
             return isIntersect;
         }
 
-      private:
         Line3D line_;
         Point3D t1_;
         Point3D t2_;
@@ -503,25 +502,6 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
     return !std::any_of(layerBoundMesh_.obstacle.cbegin(),
                         layerBoundMesh_.obstacle.cend(),
                         intersect(line, t1, t2));
-
-    //    for (const auto& obs : layerBoundMesh_.obstacle) {
-    //        const auto intersectObs = intersectLineMesh3D(line, obs);
-
-    //        // Check line segments overlapping
-    //        if (!intersectObs.empty()) {
-    //            // Dot product between vectors (t1->intersect) and
-    //            (t2->intersect) const auto s0 = (intersectObs[0] -
-    //            t1).dot(intersectObs[0] - t2); const auto s1 =
-    //            (intersectObs[1] - t1).dot(intersectObs[1] - t2);
-
-    //            // Intersect within segment (t1, t2) iff dot product less than
-    //            0 if ((s0 < 0) || (s1 < 0)) {
-    //                return false;
-    //            }
-    //        }
-    //    }
-
-    //    return true;
 }
 
 bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
@@ -599,7 +579,6 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
             return isIntersect;
         }
 
-      private:
         Line3D lineZ_;
         std::vector<double> v_;
     };
@@ -607,29 +586,6 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     return !std::any_of(bridgeLayerBound_.at(bdIdx).cbegin(),
                         bridgeLayerBound_.at(bdIdx).cend(),
                         intersect(lineZ, v));
-
-    //    for (const auto& bound : bridgeLayerBound_.at(bdIdx)) {
-    //        const auto intersectObs = intersectVerticalLineMesh3D(lineZ,
-    //        bound);
-
-    //        if (!intersectObs.empty()) {
-    //            if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2])
-    //            &&
-    //                v[2] < std::fmax(intersectObs[0][2], intersectObs[1][2]))
-    //                {
-    //                //                std::cout << "Collide with " <<
-    //                //                std::to_string(i)
-    //                //                          << " Obstacle!!!" <<
-    //                std::endl;
-
-    //                return false;
-    //            }
-    //        }
-    //    }
-
-    //    //    std::cout << "In Free Space!" << std::endl;
-
-    //    return true;
 }
 
 void HRM3D::sampleSO3() {

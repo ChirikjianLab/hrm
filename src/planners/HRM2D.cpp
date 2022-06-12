@@ -271,21 +271,12 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
             return isIntersectSegPolygon2D(std::make_pair(v1_, v2_), obstacle);
         }
 
-      private:
         std::vector<Coordinate> v1_;
         std::vector<Coordinate> v2_;
     };
 
     return !std::any_of(layerBound_.obstacle.cbegin(),
                         layerBound_.obstacle.cend(), intersect(v1, v2));
-
-    //    for (const auto& obstacle : layerBound_.obstacle) {
-    //        if (isIntersectSegPolygon2D(std::make_pair(v1, v2), obstacle)) {
-    //            return false;
-    //        }
-    //    }
-
-    //    return true;
 }
 
 // Connect vertices among different layers
