@@ -59,12 +59,12 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
 
     // Mesh model
     Mesh objMesh = getMeshFromSQ(object);
-    auto* model = new fcl::BVHModel<fcl::OBBRSS<double>>();
-    model->beginModel();
-    model->addSubModel(objMesh.vertices, objMesh.triangles);
-    model->endModel();
+    auto modelPtr = std::make_shared<fcl::BVHModel<fcl::OBBRSS<double>>>();
+    modelPtr->beginModel();
+    modelPtr->addSubModel(objMesh.vertices, objMesh.triangles);
+    modelPtr->endModel();
 
-    return fcl::CollisionObject<double>(GeometryPtr_t(model));
+    return fcl::CollisionObject<double>(GeometryPtr_t(modelPtr));
 }
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
