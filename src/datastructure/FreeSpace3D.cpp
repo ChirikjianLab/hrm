@@ -4,7 +4,7 @@
 FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
                          std::vector<SuperQuadrics>* arena,
                          std::vector<SuperQuadrics>* obstacle,
-                         parameters3D* param)
+                         Parameters3D* param)
     : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
 void FreeSpace3D::generateCSpaceBoundary() {
@@ -13,33 +13,33 @@ void FreeSpace3D::generateCSpaceBoundary() {
     for (const auto& arena : *arena_) {
         auxBoundary = robot_->minkSum(&arena, -1);
         for (const auto& boundary : auxBoundary) {
-            configSpaceBoundary_.arenaBd.push_back(boundary);
+            configSpaceBoundary_.arena.push_back(boundary);
         }
     }
     for (const auto& obstacle : *obstacle_) {
         auxBoundary = robot_->minkSum(&obstacle, +1);
         for (const auto& boundary : auxBoundary) {
-            configSpaceBoundary_.obsBd.push_back(boundary);
+            configSpaceBoundary_.obstacle.push_back(boundary);
         }
     }
 }
 
-freeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(
+FreeSegment3D FreeSpace3D::computeFreeSegmentsGivenXY(
     const Coordinate& xCoord, const Coordinate& yCoord) {
     // Compute intersections between each sweep line and C-obstacles
-    const intersectSweepLine3D intersects =
+    const IntersectSweepLine3D intersects =
         computeIntersectSweepLine(xCoord, yCoord);
 
     // Compute collision-free segment of each sweep line
-    freeSegment3D lineSegments = computeSweepLineFreeSegment(&intersects);
+    FreeSegment3D lineSegments = computeSweepLineFreeSegment(&intersects);
     lineSegments.xCoord = xCoord;
     lineSegments.yCoord = yCoord;
 
     return lineSegments;
 }
 
-std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
-    std::vector<freeSegment3D> freeSegments;
+std::vector<FreeSegment3D> FreeSpace3D::computeFreeSegments() {
+    std::vector<FreeSegment3D> freeSegments;
     // Find intersecting points to C-obstacles for each raster scan line
     const double dx = (param_->xLim.second - param_->xLim.first) /
                       (static_cast<double>(param_->numX) - 1.0);
@@ -56,11 +56,11 @@ std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
                 param_->yLim.first + static_cast<double>(j) * dy;
 
             // Compute intersections between each sweep line and C-obstacles
-            const intersectSweepLine3D intersects =
+            const IntersectSweepLine3D intersects =
                 computeIntersectSweepLine(xCoord, yCoord);
 
             // Compute collision-free segment of each sweep line
-            const freeSegment3D lineSegments =
+            const FreeSegment3D lineSegments =
                 computeSweepLineFreeSegment(&intersects);
             freeSegments.push_back(lineSegments);
             freeSegments.back().xCoord = xCoord;
@@ -71,15 +71,15 @@ std::vector<freeSegment3D> FreeSpace3D::computeFreeSegments() {
     return freeSegments;
 }
 
-intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
+IntersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
     const Coordinate& xCoord, const Coordinate& yCoord) const {
     Eigen::ArrayXd sweepLine(6);
     sweepLine << xCoord, yCoord, 0.0, 0.0, 0.0, 1.0;
 
-    size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
-    size_t numObsMink = configSpaceBoundary_.obsBd.size();
+    size_t numArenaMink = configSpaceBoundary_.arena.size();
+    size_t numObsMink = configSpaceBoundary_.obstacle.size();
 
-    intersectSweepLine3D intersects;
+    IntersectSweepLine3D intersects;
 
     // Generate mesh for the boundaries
     std::vector<MeshMatrix> surfaceArena;
@@ -87,11 +87,11 @@ intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
 
     for (size_t i = 0; i < numArenaMink; ++i) {
         surfaceArena.emplace_back(getMeshFromParamSurface(
-            configSpaceBoundary_.arenaBd[i], int(arena_->at(0).getNumParam())));
+            configSpaceBoundary_.arena[i], int(arena_->at(0).getNumParam())));
     }
     for (size_t i = 0; i < numObsMink; ++i) {
         surfaceObs.emplace_back(
-            getMeshFromParamSurface(configSpaceBoundary_.obsBd[i],
+            getMeshFromParamSurface(configSpaceBoundary_.obstacle[i],
                                     int(obstacle_->at(0).getNumParam())));
     }
 
@@ -127,10 +127,10 @@ intersectSweepLine3D FreeSpace3D::computeIntersectSweepLine(
     return intersects;
 }
 
-freeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
-    const intersectSweepLine3D* intersections) {
+FreeSegment3D FreeSpace3D::computeSweepLineFreeSegment(
+    const IntersectSweepLine3D* intersections) {
     // Collision-free segment of the current sweep line
-    freeSegment3D currentLine;
+    FreeSegment3D currentLine;
 
     // Construct intervals of the current sweep line
     std::vector<Interval> collisionFreeSegment;

@@ -65,7 +65,7 @@ algorithm planTest(const robotType& robot,
         std::cout << "Saving results to file..." << std::endl;
 
         // TEST: calculate original boundary points
-        Boundary bd_ori;
+        BoundaryInfo bd_ori;
         for (const auto& arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
         }
@@ -84,7 +84,7 @@ algorithm planTest(const robotType& robot,
         file_ori_bd.close();
 
         // TEST: Minkowski sums boundary
-        Boundary bd = hrm.boundaryGen();
+        BoundaryInfo bd = hrm.boundaryGen();
 
         std::ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");

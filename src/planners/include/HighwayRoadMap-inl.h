@@ -203,8 +203,8 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
 }
 
 template <class RobotType, class ObjectType>
-Boundary HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
-    Boundary bd;
+BoundaryInfo HighwayRoadMap<RobotType, ObjectType>::boundaryGen() {
+    BoundaryInfo bd;
 
     // Minkowski boundary points
     std::vector<BoundaryPoints> bdAux;

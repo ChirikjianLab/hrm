@@ -16,7 +16,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
      * \param Boundary pointer to Minkowski boundaries
      * \return FreeSegment2D
      */
-    FreeSegment2D getFreeSegmentOneLayer(const Boundary* bd) {
+    FreeSegment2D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
         sweepLineProcess();
         return freeSegOneLayer_;
@@ -65,5 +65,5 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     FreeSegment2D freeSegOneLayer_;
 
     /** \param Minkowski boundaries at bridge C-layer */
-    std::vector<Boundary> bridgeLayerBound_;
+    std::vector<BoundaryInfo> bridgeLayerBound_;
 };

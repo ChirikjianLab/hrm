@@ -422,7 +422,7 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-void HRM3D::generateBoundaryMesh(const Boundary* bound,
+void HRM3D::generateBoundaryMesh(const BoundaryInfo* bound,
                                  BoundaryMesh* boundMesh) {
     // Generate mesh for the boundaries
     boundMesh->arena.resize(bound->arena.size());

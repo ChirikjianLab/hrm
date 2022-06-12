@@ -12,3 +12,9 @@ using Line3D = Eigen::VectorXd;
 
 using SE2Transform = Eigen::Matrix3d;
 using SE3Transform = Eigen::Matrix4d;
+
+/** \brief Structure of boundary points for arenas and obstacles */
+struct BoundaryInfo {
+    std::vector<BoundaryPoints> arena;
+    std::vector<BoundaryPoints> obstacle;
+};

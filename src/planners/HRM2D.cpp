@@ -251,7 +251,7 @@ void HRM2D::bridgeLayer() {
         tfe_.at(i).setPosition({0.0, 0.0});
 
         // calculate Minkowski boundary points
-        Boundary bd;
+        BoundaryInfo bd;
         for (size_t j = 0; j < size_t(N_o); ++j) {
             bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
         }

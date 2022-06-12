@@ -6,11 +6,6 @@
 
 #include <eigen3/Eigen/Geometry>
 
-using SE3Transform = Eigen::Matrix4d;
-using BoundaryPoints = Eigen::MatrixXd;
-using Indicator = int;
-using Index = size_t;
-
 class MultiBodyTree3D {
   public:
     MultiBodyTree3D(SuperQuadrics base);

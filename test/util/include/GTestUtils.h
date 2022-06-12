@@ -9,7 +9,7 @@
 template <class Planner>
 void storeRoutines(Planner* hrm) {
     // calculate original boundary points
-    Boundary bd_ori;
+    BoundaryInfo bd_ori;
     for (auto arena : hrm->getArena()) {
         bd_ori.arena.push_back(arena.getOriginShape());
     }
@@ -29,7 +29,7 @@ void storeRoutines(Planner* hrm) {
     file_ori_bd.close();
 
     // TEST: Minkowski boundary
-    Boundary bd_mink = hrm->getLayerBoundary(0);
+    BoundaryInfo bd_mink = hrm->getLayerBoundary(0);
 
     // write to .csv file
     std::ofstream file_bd;

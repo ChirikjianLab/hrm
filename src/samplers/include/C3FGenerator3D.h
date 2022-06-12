@@ -13,7 +13,7 @@ namespace og = ompl::geometric;
 class C3FGenerator3D {
   public:
     C3FGenerator3D(MultiBodyTree3D *robot, std::vector<SuperQuadrics> *arena,
-                   std::vector<SuperQuadrics> *obstacle, parameters3D *param,
+                   std::vector<SuperQuadrics> *obstacle, Parameters3D *param,
                    og::SimpleSetupPtr ss);
     virtual ~C3FGenerator3D();
 
@@ -41,7 +41,7 @@ class C3FGenerator3D {
     MultiBodyTree3D *robot_;
     std::vector<SuperQuadrics> *arena_;
     std::vector<SuperQuadrics> *obstacle_;
-    parameters3D *param_;
+    Parameters3D *param_;
     og::SimpleSetupPtr ss_;
 
     // Pre-computed free sample seeds set
