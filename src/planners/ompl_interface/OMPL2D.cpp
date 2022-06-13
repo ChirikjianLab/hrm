@@ -346,9 +346,9 @@ void OMPL2D::buildFreeStateLibraryFromSweep() {
 
         FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        std::vector<freeSegment2D> freeSegments = fs.getFreeSegments();
+        std::vector<FreeSegment2D> freeSegments = fs.getFreeSegments();
 
-        for (freeSegment2D segment : freeSegments) {
+        for (FreeSegment2D segment : freeSegments) {
             // Generate several random points on the free segment
             for (size_t j = 0; j < segment.xCoords.size(); ++j) {
                 for (size_t k = 0; k < param_.numPointOnFreeSegment; ++k) {
@@ -395,9 +395,9 @@ void OMPL2D::buildFreeStateLibraryFromBoundary() {
 
         FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        boundary2D boundaries = fs.getCSpaceBoundary();
+        BoundaryInfo boundaries = fs.getCSpaceBoundary();
 
-        for (Eigen::Matrix2Xd bound : boundaries.obsBd) {
+        for (Eigen::Matrix2Xd bound : boundaries.obstacle) {
             for (Eigen::Index j = 0; j < bound.cols(); ++j) {
                 if (bound(0, j) > param_.xLim.first &&
                     bound(0, j) < param_.xLim.second &&

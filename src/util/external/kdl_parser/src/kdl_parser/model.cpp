@@ -54,14 +54,14 @@
 
 namespace urdf {
 
-bool Model::initXml(TiXmlDocument* xml_doc) {
-    if (!xml_doc) {
+bool Model::initXml(TiXmlDocument* xml) {
+    if (xml == nullptr) {
         std::cout << "Could not parse the xml document" << std::endl;
         return false;
     }
 
     std::stringstream ss;
-    ss << *xml_doc;
+    ss << *xml;
 
     return Model::initString(ss.str());
 }

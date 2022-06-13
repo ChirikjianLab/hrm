@@ -35,7 +35,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \param Boundary pointer to Minkowski boundaries
      * \return FreeSegment3D
      */
-    FreeSegment3D getFreeSegmentOneLayer(const Boundary* bd) {
+    FreeSegment3D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
         generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
         sweepLineProcess();
@@ -56,7 +56,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \param idx Index of C-layer
      * \return Boundary
      */
-    Boundary getLayerBoundary(const Index idx) {
+    BoundaryInfo getLayerBoundary(const Index idx) {
         return layerBoundAll_.at(idx);
     }
 
@@ -77,7 +77,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     void connectExistLayer(const Index layerId) override;
 
   protected:
-    void generateBoundaryMesh(const Boundary* bound, BoundaryMesh* boundMesh);
+    void generateBoundaryMesh(const BoundaryInfo* bound,
+                              BoundaryMesh* boundMesh);
 
     void bridgeLayer() override;
 

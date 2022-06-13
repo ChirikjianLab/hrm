@@ -27,7 +27,7 @@ class MinkowskiSweepLineSamplerSE3 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperQuadrics>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters3D* param) { param_ = param; }
+    void setParam(Parameters3D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -36,7 +36,7 @@ class MinkowskiSweepLineSamplerSE3 : public ob::ValidStateSampler {
     MultiBodyTree3D* robot_;
     std::vector<SuperQuadrics>* arena_;
     std::vector<SuperQuadrics>* obstacle_;
-    parameters3D* param_;
+    Parameters3D* param_;
 };
 
 class MinkowskiBoundarySamplerSE3 : public ob::ValidStateSampler {
@@ -54,7 +54,7 @@ class MinkowskiBoundarySamplerSE3 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperQuadrics>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters3D* param) { param_ = param; }
+    void setParam(Parameters3D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -63,5 +63,5 @@ class MinkowskiBoundarySamplerSE3 : public ob::ValidStateSampler {
     MultiBodyTree3D* robot_;
     std::vector<SuperQuadrics>* arena_;
     std::vector<SuperQuadrics>* obstacle_;
-    parameters3D* param_;
+    Parameters3D* param_;
 };

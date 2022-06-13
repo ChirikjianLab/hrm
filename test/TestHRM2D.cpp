@@ -5,8 +5,6 @@
 
 #include "gtest/gtest.h"
 
-using namespace Eigen;
-using namespace std;
 using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 PlannerParameter defineParam(const MultiBodyTree2D* robot,
@@ -15,10 +13,11 @@ PlannerParameter defineParam(const MultiBodyTree2D* robot,
 
     // Planning arena boundary
     const double f = 1.5;
-    vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                    f * robot->getBase().getSemiAxis().at(0),
-                                env2D->getArena().at(0).getSemiAxis().at(1) -
-                                    f * robot->getBase().getSemiAxis().at(0)};
+    std::vector<Coordinate> bound = {
+        env2D->getArena().at(0).getSemiAxis().at(0) -
+            f * robot->getBase().getSemiAxis().at(0),
+        env2D->getArena().at(0).getSemiAxis().at(1) -
+            f * robot->getBase().getSemiAxis().at(0)};
     par.BOUND_LIMIT = {
         env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
         env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
@@ -44,29 +43,29 @@ algorithm planTest(const robotType& robot,
                    const std::vector<SuperEllipse>& obs,
                    const PlanningRequest& req, const bool isStore) {
     // Main algorithm
-    cout << "Input number of C-layers: " << req.planner_parameters.NUM_LAYER
-         << endl;
-    cout << "Input number of sweep lines: " << req.planner_parameters.NUM_LINE_Y
-         << endl;
-    cout << "----------" << endl;
+    std::cout << "Input number of C-layers: "
+              << req.planner_parameters.NUM_LAYER << std::endl;
+    std::cout << "Input number of sweep lines: "
+              << req.planner_parameters.NUM_LINE_Y << std::endl;
+    std::cout << "----------" << std::endl;
 
-    cout << "Start planning..." << endl;
+    std::cout << "Start planning..." << std::endl;
 
     algorithm hrm(robot, arena, obs, req);
     hrm.plan(2.0);
 
-    cout << "Finished planning!" << endl;
+    std::cout << "Finished planning!" << std::endl;
 
-    cout << "Final number of C-layers: " << hrm.getPlannerParameters().NUM_LAYER
-         << endl;
-    cout << "Final number of sweep lines: "
-         << hrm.getPlannerParameters().NUM_LINE_Y << endl;
+    std::cout << "Final number of C-layers: "
+              << hrm.getPlannerParameters().NUM_LAYER << std::endl;
+    std::cout << "Final number of sweep lines: "
+              << hrm.getPlannerParameters().NUM_LINE_Y << std::endl;
 
     if (isStore) {
-        cout << "Saving results to file..." << endl;
+        std::cout << "Saving results to file..." << std::endl;
 
         // TEST: calculate original boundary points
-        Boundary bd_ori;
+        BoundaryInfo bd_ori;
         for (const auto& arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
         }
@@ -74,7 +73,7 @@ algorithm planTest(const robotType& robot,
             bd_ori.obstacle.push_back(obstacle.getOriginShape());
         }
 
-        ofstream file_ori_bd;
+        std::ofstream file_ori_bd;
         file_ori_bd.open("origin_bound_2D.csv");
         for (const auto& bd_ori_obs : bd_ori.obstacle) {
             file_ori_bd << bd_ori_obs << "\n";
@@ -85,9 +84,9 @@ algorithm planTest(const robotType& robot,
         file_ori_bd.close();
 
         // TEST: Minkowski sums boundary
-        Boundary bd = hrm.boundaryGen();
+        BoundaryInfo bd = hrm.boundaryGen();
 
-        ofstream file_bd;
+        std::ofstream file_bd;
         file_bd.open("mink_bound_2D.csv");
         for (const auto& bd_obs : bd.obstacle) {
             file_bd << bd_obs << "\n";
@@ -100,7 +99,7 @@ algorithm planTest(const robotType& robot,
         // TEST: Sweep line process
         FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
 
-        ofstream file_cell;
+        std::ofstream file_cell;
         file_cell.open("segment_2D.csv");
         for (size_t i = 0; i < freeSeg.ty.size(); i++) {
             for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
@@ -116,7 +115,7 @@ algorithm planTest(const robotType& robot,
 }
 
 void showResult(const PlanningResult* res, const bool isStore) {
-    cout << "----------" << endl;
+    std::cout << "----------" << std::endl;
 
     displayPlanningTimeInfo(&res->planning_time);
 
@@ -139,10 +138,10 @@ void showResult(const PlanningResult* res, const bool isStore) {
 }
 
 TEST(TestHRMPlanning2D, MultiBody) {
-    cout << "Highway RoadMap for 2D planning" << endl;
-    cout << "Robot type: Multi-link rigid body" << endl;
-    cout << "Layer connection method: Bridge C-layer" << endl;
-    cout << "----------" << endl;
+    std::cout << "Highway RoadMap for 2D planning" << std::endl;
+    std::cout << "Robot type: Multi-link rigid body" << std::endl;
+    std::cout << "Layer connection method: Bridge C-layer" << std::endl;
+    std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
     const std::string CONFIG_FILE_PREFIX = "config/";
@@ -172,12 +171,12 @@ TEST(TestHRMPlanning2D, MultiBody) {
 }
 
 TEST(TestHRMPlanning2D, KC) {
-    cout << "Highway RoadMap for 2D planning" << endl;
-    cout << "Robot type: Multi-link rigid body" << endl;
-    cout << "Layer connection method: Local C-space using Kinematics of "
-            "Containment (KC)"
-         << endl;
-    cout << "----------" << endl;
+    std::cout << "Highway RoadMap for 2D planning" << std::endl;
+    std::cout << "Robot type: Multi-link rigid body" << std::endl;
+    std::cout << "Layer connection method: Local C-space using Kinematics of "
+                 "Containment (KC)"
+              << std::endl;
+    std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
     const std::string CONFIG_FILE_PREFIX = "config/";

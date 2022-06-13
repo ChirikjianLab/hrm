@@ -8,9 +8,9 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
 
 HRM2DKC::~HRM2DKC() = default;
 
-Boundary HRM2DKC::boundaryGen() {
+BoundaryInfo HRM2DKC::boundaryGen() {
     SuperEllipse robot_infla = robot_.getBase();
-    Boundary bd;
+    BoundaryInfo bd;
 
     // Enlarge the robot
     robot_infla.setSemiAxis({robot_infla.getSemiAxis().at(0) * (1 + infla),

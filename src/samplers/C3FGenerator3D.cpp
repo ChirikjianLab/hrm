@@ -3,7 +3,7 @@
 C3FGenerator3D::C3FGenerator3D(MultiBodyTree3D *robot,
                                std::vector<SuperQuadrics> *arena,
                                std::vector<SuperQuadrics> *obstacle,
-                               parameters3D *param, og::SimpleSetupPtr ss)
+                               Parameters3D *param, og::SimpleSetupPtr ss)
     : robot_(robot),
       arena_(arena),
       obstacle_(obstacle),
@@ -36,9 +36,9 @@ void C3FGenerator3D::fromSweepLine() {
 
         FreeSpace3D fs(robot_, arena_, obstacle_, param_);
         fs.generateCSpaceBoundary();
-        std::vector<freeSegment3D> freeSegments = fs.getFreeSegments();
+        std::vector<FreeSegment3D> freeSegments = fs.getFreeSegments();
 
-        for (freeSegment3D segment : freeSegments) {
+        for (FreeSegment3D segment : freeSegments) {
             // Generate uniform distributed points on the free segment
             double dt =
                 1.0 / (static_cast<double>(param_->numPointOnFreeSegment) - 1);
@@ -95,9 +95,9 @@ void C3FGenerator3D::fromBoundary() {
 
         FreeSpace3D fs(robot_, arena_, obstacle_, param_);
         fs.generateCSpaceBoundary();
-        boundary3D boundaries = fs.getCSpaceBoundary();
+        BoundaryInfo boundaries = fs.getCSpaceBoundary();
 
-        for (Eigen::Matrix3Xd bound : boundaries.obsBd) {
+        for (Eigen::Matrix3Xd bound : boundaries.obstacle) {
             for (Eigen::Index j = 0; j < bound.cols(); ++j) {
                 if (bound(0, j) > param_->xLim.first &&
                     bound(0, j) < param_->xLim.second &&

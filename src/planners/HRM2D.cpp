@@ -251,7 +251,7 @@ void HRM2D::bridgeLayer() {
         tfe_.at(i).setPosition({0.0, 0.0});
 
         // calculate Minkowski boundary points
-        Boundary bd;
+        BoundaryInfo bd;
         for (size_t j = 0; j < size_t(N_o); ++j) {
             bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
         }
@@ -263,13 +263,20 @@ void HRM2D::bridgeLayer() {
 bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                       const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
-    for (const auto& obstacle : layerBound_.obstacle) {
-        if (isIntersectSegPolygon2D(std::make_pair(v1, v2), obstacle)) {
-            return false;
-        }
-    }
+    struct intersect {
+        intersect(std::vector<Coordinate> v1, std::vector<Coordinate> v2)
+            : v1_(std::move(v1)), v2_(std::move(v2)) {}
 
-    return true;
+        bool operator()(const BoundaryPoints& obstacle) {
+            return isIntersectSegPolygon2D(std::make_pair(v1_, v2_), obstacle);
+        }
+
+        std::vector<Coordinate> v1_;
+        std::vector<Coordinate> v2_;
+    };
+
+    return !std::any_of(layerBound_.obstacle.cbegin(),
+                        layerBound_.obstacle.cend(), intersect(v1, v2));
 }
 
 // Connect vertices among different layers

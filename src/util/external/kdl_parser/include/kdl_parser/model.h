@@ -40,7 +40,7 @@
  *   some cases. Use this at your own risk!
  *
  * Further modified: Sipu Ruan
- *   changed boost::shared_ptr into urdf::*ShredPtr
+ *   changed boost::shared_ptr into urdf::*SharedPtr
  */
 
 #ifndef URDF_MODEL_H
@@ -58,7 +58,7 @@ class Model : public ModelInterface {
     /// \brief Load Model from TiXMLDocument
     bool initXml(TiXmlDocument* xml);
     /// \brief Load Model from a XML-string
-    bool initString(const std::string& xmlstring);
+    bool initString(const std::string& xml_string);
 };
 
 }  // namespace urdf

@@ -69,7 +69,7 @@ class OMPL2D {
     MultiBodyTree2D robot_;
     std::vector<SuperEllipse> arena_;
     std::vector<SuperEllipse> obstacle_;
-    parameters2D param_;
+    Parameters2D param_;
 
     std::vector<fcl::CollisionObject<double>> robotGeom_;
     std::vector<fcl::CollisionObject<double>> obsGeom_;

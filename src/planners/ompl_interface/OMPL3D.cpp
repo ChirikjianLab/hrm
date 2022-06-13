@@ -24,6 +24,7 @@ void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
 
     // Set planner and sampler
     setPlanner(plannerId);
+    setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
 
     ss_->setup();

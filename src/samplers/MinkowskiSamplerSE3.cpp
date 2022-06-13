@@ -37,7 +37,7 @@ bool MinkowskiSweepLineSamplerSE3::sample(ob::State* state) {
         yRand = rng_.uniformReal(param_->yLim.first, param_->yLim.second);
 
         // Compute free segments
-        freeSegment3D seg = fs.getFreeSegmentsGivenXY(xRand, yRand);
+        FreeSegment3D seg = fs.getFreeSegmentsGivenXY(xRand, yRand);
 
         if (!seg.zCoords.empty()) {
             // Compute the sampled z-coord
@@ -92,7 +92,7 @@ bool MinkowskiSweepLineSamplerSE3::sampleNear(ob::State* state,
         // Compute free segments
         double xRand = state->as<ob::SE3StateSpace::StateType>()->getX();
         double yRand = state->as<ob::SE3StateSpace::StateType>()->getY();
-        freeSegment3D seg = fs.getFreeSegmentsGivenXY(xRand, yRand);
+        FreeSegment3D seg = fs.getFreeSegmentsGivenXY(xRand, yRand);
 
         if (!seg.zCoords.empty()) {
             // Compute the sampled z-coord
@@ -136,9 +136,9 @@ bool MinkowskiBoundarySamplerSE3::sample(ob::State* state) {
         robot_->robotTF(tf);
 
         // Compute and get a random C-obstacle boundary
-        boundary3D bound = fs.getCSpaceBoundary();
-        auto obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
-        Eigen::Matrix3Xd selectedObsBound = bound.obsBd[obsId];
+        BoundaryInfo bound = fs.getCSpaceBoundary();
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obstacle.size() - 1)));
+        Eigen::Matrix3Xd selectedObsBound = bound.obstacle[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle
         Eigen::Index pointId = rng_.uniformInt(0, int(selectedObsBound.cols()));
@@ -198,9 +198,9 @@ bool MinkowskiBoundarySamplerSE3::sampleNear(ob::State* state,
         robot_->robotTF(tf);
 
         // Compute and get a random C-obstacle boundary
-        boundary3D bound = fs.getCSpaceBoundary();
-        auto obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
-        Eigen::Matrix3Xd selectedObsBound = bound.obsBd[obsId];
+        BoundaryInfo bound = fs.getCSpaceBoundary();
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obstacle.size() - 1)));
+        Eigen::Matrix3Xd selectedObsBound = bound.obstacle[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle
         Eigen::Index pointId = rng_.uniformInt(0, int(selectedObsBound.cols()));

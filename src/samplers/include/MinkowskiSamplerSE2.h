@@ -26,7 +26,7 @@ class MinkowskiSweepLineSamplerSE2 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperEllipse>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters2D* param) { param_ = param; }
+    void setParam(Parameters2D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -35,7 +35,7 @@ class MinkowskiSweepLineSamplerSE2 : public ob::ValidStateSampler {
     MultiBodyTree2D* robot_;
     std::vector<SuperEllipse>* arena_;
     std::vector<SuperEllipse>* obstacle_;
-    parameters2D* param_;
+    Parameters2D* param_;
 };
 
 class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
@@ -53,7 +53,7 @@ class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
     void setObstacle(std::vector<SuperEllipse>* obstacle) {
         obstacle_ = obstacle;
     }
-    void setParam(parameters2D* param) { param_ = param; }
+    void setParam(Parameters2D* param) { param_ = param; }
 
   protected:
     ompl::RNG rng_;
@@ -62,5 +62,5 @@ class MinkowskiBoundarySamplerSE2 : public ob::ValidStateSampler {
     MultiBodyTree2D* robot_;
     std::vector<SuperEllipse>* arena_;
     std::vector<SuperEllipse>* obstacle_;
-    parameters2D* param_;
+    Parameters2D* param_;
 };
