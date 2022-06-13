@@ -8,8 +8,9 @@ Checks:   '-*,
           performance-*,
           -misc-no-recursion,
           -modernize-use-trailing-return-type,
-          -readability-identifier-length
-          -readability-avoid-const-params-in-decls'
+          -readability-identifier-length,
+          -readability-avoid-const-params-in-decls,
+          -misc-non-private-member-variables-in-classes'
 
 
 HeaderFilterRegex: 'src/cm[^/]*\.(h|hxx|cxx)$'
