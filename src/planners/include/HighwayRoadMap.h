@@ -25,233 +25,249 @@ using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 /** \brief Collision-free line segments in 2D */
 struct FreeSegment2D {
+    /** \brief Vector of y-coordinates defining the sweep lines */
     std::vector<Coordinate> ty;
+
+    /** \brief Vector of lower bound of free segments within each sweep line */
     std::vector<std::vector<Coordinate>> xL;
+
+    /** \brief Vector of upper bound of free segments within each sweep line */
     std::vector<std::vector<Coordinate>> xU;
+
+    /** \brief Vector of middle point of free segments within each sweep line */
     std::vector<std::vector<Coordinate>> xM;
 };
 
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
+    /** \brief Lower bounds of line segment within arena */
     Eigen::MatrixXd arenaLow;
+
+    /** \brief Upper bounds of line segment within arena */
     Eigen::MatrixXd arenaUpp;
+
+    /** \brief Lower bounds of line segment within obstacle */
     Eigen::MatrixXd obstacleLow;
+
+    /** \brief Upper bounds of line segment within obstacle */
     Eigen::MatrixXd obstacleUpp;
 };
 
-/** \brief Vertex index at each C-layer, sweep line */
+/** \brief Vertex index at each C-slice, sweep line */
 struct VertexIdx {
+    /** \brief Index of the starting vertex in the slice */
     Index startId;
+
+    /** \brief Index of the last vertex in the slice */
     Index layer;
+
+    /** \brief Index of the last vertices in the sweep planes */
     std::vector<Index> plane;
+
+    /** \brief Index of the last vertices in the sweep lines */
     std::vector<std::vector<Index>> line;
 };
 
-/** \class HighwayRoadMap Superclass for HRM-based planners */
+/** \class HighwayRoadMap
+ * \brief Superclass for HRM-based planners */
 template <class RobotType, class ObjectType>
 class HighwayRoadMap {
   public:
+    /** \brief Constructor
+     * \param robot MultibodyTree type defining the robot
+     * \param arena vector of geometric types definint the planning arena
+     * \param obstacle vector of geometric types defining obstacles
+     * \param req PlanningRequest structure */
     HighwayRoadMap(const RobotType& robot, const std::vector<ObjectType>& arena,
                    const std::vector<ObjectType>& obstacle,
                    const PlanningRequest& req);
 
     virtual ~HighwayRoadMap();
 
-    /**
-     * \brief getPlanningResult retrieve planning results
-     * \return PlanningResult struture
-     */
+    /** \brief Retrieve planning results
+     * \return PlanningResult struture */
     PlanningResult getPlanningResult() const { return res_; }
 
-    /**
-     * \brief getPlannerParameters retrieve parameters
-     * \return PlannerParameter
-     */
+    /** \brief Retrieve parameters
+     * \return PlannerParameter */
     PlannerParameter getPlannerParameters() const { return param_; }
 
-    /**
-     * \brief getSolutionPath Retrieve solved path
-     * \return 2D vector for representing solved path
-     */
+    /** \brief Retrieve solved path
+     * \return 2D vector for representing solved path */
     std::vector<std::vector<Coordinate>> getSolutionPath();
 
+    /** \brief Retrieve robot information
+     * \return MultibodyTree structure */
     RobotType getRobot() const { return robot_; }
 
+    /** \brief Retrieve arena information
+     * \return Vector of geometric types */
     std::vector<ObjectType> getArena() const { return arena_; }
+
+    /** \brief Retrieve obstacles information
+     * \return Vector of geometric types */
     std::vector<ObjectType> getObstacle() const { return obs_; }
 
+    /** \brief Retrieve start configuration
+     * \return Coordinate of the start configuration */
     std::vector<Coordinate> getStart() const { return start_; }
+
+    /** \brief Retrieve goal configuration
+     * \return Coordinate of the goal configuration */
     std::vector<Coordinate> getGoal() const { return goal_; }
 
-    /** \brief getInterpolatedSolutionPath Interpolate solved path
+    /** \brief Interpolate solved path
      * \return 2D vector for representing interpolated path */
     virtual std::vector<std::vector<double>> getInterpolatedSolutionPath(
         const unsigned int num);
 
-    /** \brief plan Main routine for HRM-based planners */
+    /** \brief Main routine for HRM-based planners */
     virtual void plan(const double timeLim);
 
-    /** \brief buildRoadmap Subroutine for building roadmap */
+    /** \brief Subroutine for building roadmap */
     void buildRoadmap();
 
-    /** \brief search Subroutine for graph searching */
+    /** \brief Subroutine for graph searching */
     void search();
 
-    /** \brief refineExistRoadmap Subroutine for refining existing roadmap */
+    /** \brief Subroutine for refining existing roadmap */
     void refineExistRoadmap(const double timeLim);
 
-    /** \brief construct one C-layer */
+    /** \brief Construct one C-slice */
     virtual void constructOneLayer(const Index layerIdx) = 0;
 
-    /** \brief sampleOrientations generate orientation samples */
+    /** \brief Generate orientation samples */
     virtual void sampleOrientations() = 0;
 
-    /**
-     * \brief boundaryGen Generating Minkowski boundary points
-     * \return BoundaryInfo structure
-     */
+    /** \brief Generating Minkowski sum boundary points
+     * \return BoundaryInfo structure */
     virtual BoundaryInfo boundaryGen();
 
-    /**
-     * \brief sweepLineProcess sweep-line process for generating collision-free
-     * line segment
-     */
+    /** \brief Sweep-line process for generating collision-free line segment */
     virtual void sweepLineProcess() = 0;
 
-    /**
-     * \brief generateVertices subroutine for generating collision-free
-     * vertices on the yz-plane
+    /** \brief Subroutine for generating collision-free vertices on the yz-plane
      * \param tx x-coordinate of a sweep line (for 2D, it is set as constant
      * 0.0)
-     * \param pointer to FreeSegment2D
-     */
+     * \param pointer to FreeSegment2D */
     virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D* freeSeg) = 0;
 
-    /**
-     * \brief connectOneLayer2D Subroutine for connecting vertices within one
-     * C-layer
-     * \param FreeSegment2D pointer
-     */
+    /** \brief Subroutine for connecting vertices within one C-slice
+     * \param FreeSegment2D pointer */
     void connectOneLayer2D(const FreeSegment2D* freeSeg);
 
-    /** \brief connectMultiLayer Subroutine for connecting vertices among
-     * adjacent C-layers */
+    /** \brief Subroutine for connecting vertices among adjacent C-slices */
     virtual void connectMultiLayer() = 0;
 
-    /** \brief connectExistLayer Subroutine for connecting vertices with
-     * previously existing layers */
+    /** \brief Subroutine for connecting vertices with previously existing
+     * layers */
     virtual void connectExistLayer(const Index layerId) = 0;
 
   protected:
-    /** \brief bridgeLayer generating bridge C-layer to connect adjacent
-     * C-layers */
+    /** \brief Generate bridge C-slice to connect adjacent C-slices */
     virtual void bridgeLayer() = 0;
 
-    /**
-     * \brief bridgeVertex generating bridge vertices for failed connections
-     * within one C-layer
-     * \param idx1, idx2 Indices of two vertices to be connected
-     */
+    /** \brief Generate bridge vertices for failed connections within one
+     * C-slice
+     * \param idx1, idx2 Indices of two vertices to be connected */
     void bridgeVertex(const Index idx1, const Index idx2);
 
-    /** \brief computeIntersections compute intervals of intersections between
-     * sweep line and arenas/obstacles
+    /** \brief Compute intervals of intersections between sweep line and
+     * arenas/obstacles
      * \param ty vector of y-coordinates of the sweep line
      * \param BoundaryInfo boundary info of C-layer
-     * \return IntersectionInterval intersecting points as intervals
-     */
+     * \return IntersectionInterval intersecting points as intervals */
     virtual IntersectionInterval computeIntersections(
         const std::vector<Coordinate>& ty) = 0;
 
-    /** \brief computeFreeSegment compute collision-free segment on each sweep
-     * line
+    /** \brief Compute collision-free segment on each sweep line
      * \param ty vector of y-coordinates of the sweep line
      * \param IntersectionInterval pointer to intervals of sweep line
      * intersections
-     * \return FreeSegment2D
-     */
+     * \return FreeSegment2D */
     FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
                                      const IntersectionInterval* intersect);
 
-    /** \brief isSameLayerTransitionFree check whether connection between V1 and
+    /** \brief Check whether connection between V1 and
      * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
      * mesh intersection checking
      * \param V1, V2 vector of queried vertices
-     * \return true is transition is valid, false otherwise
-     */
+     * \return true is transition is valid, false otherwise */
     virtual bool isSameLayerTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
 
-    /** \brief isMultiLayerTransitionFree check whether connection between V1
+    /** \brief Check whether connection between V1
      * and V2 is valid through interpolation
      * \param V1, V2 vector of queried vertices
-     * \return true is transition is valid, false otherwise
-     */
+     * \return true is transition is valid, false otherwise */
     virtual bool isMultiLayerTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
 
-    /** \brief check whether one point is within C-free */
+    /** \brief Check whether one point is within C-free */
     virtual bool isPtInCFree(const Index bdIdx,
                              const std::vector<Coordinate>& v) = 0;
 
-    /** \brief enhanceDecomp Subroutine to enhance vertex generation
+    /** \brief Subroutine to enhance vertex generation
      * \param FreeSegment2D pointer
-     * \return FreeSegment2D Enhanced free segment with more valid vertices
-     */
+     * \return FreeSegment2D Enhanced free segment with more valid vertices */
     FreeSegment2D enhanceDecomp(const FreeSegment2D* current);
 
-    /** \brief find the nearest neighbors of a pose on the graph
+    /** \brief Find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
      * \param k number of neighbors
      * \param radius radius of a neighboring ball around v
-     * \return vector of Vertex structure for the neighboring vertices
-     */
+     * \return vector of Vertex structure for the neighboring vertices */
     virtual std::vector<Vertex> getNearestNeighborsOnGraph(
         const std::vector<Coordinate>& vertex, const Index k,
         const double radius) = 0;
 
-    /** \brief setTransform set the transformation for robot
-     * \param v configuration of the robot
-     */
+    /** \brief Set the transformation for robot
+     * \param v configuration of the robot */
     virtual void setTransform(const std::vector<Coordinate>& v) = 0;
 
-    /** \param robot_ Robot description */
+    /** \param Robot description */
     RobotType robot_;
 
-    /** \param arena_, obs_ Description of arena and obstacles */
+    /** \param Description of arena */
     std::vector<ObjectType> arena_;
+
+    /** \param Description of obstacles */
     std::vector<ObjectType> obs_;
 
-    /** \param start_, goal_ Start/goal configurations */
+    /** \param Start configuration */
     std::vector<Coordinate> start_;
+
+    /** \param Goal configuration */
     std::vector<Coordinate> goal_;
 
-    /** \param param_ Planning parameters */
+    /** \param Planning parameters */
     PlannerParameter param_;
 
-    /** \param res_ Planning results */
+    /** \param Planning results */
     PlanningResult res_;
 
-    /** \param indicator of rigid-body robot */
+    /** \param Indicator of rigid-body robot, otherwise articulated robot */
     bool isRobotRigid_ = true;
 
-    /** \param indicator of C-layer refinement */
+    /** \param Indicator of C-slice refinement */
     bool isRefine_ = false;
 
-    /** \param N_o number of obstacles */
+    /** \param Number of obstacles */
     Index N_o;
 
-    /** \param N_s number of arenas */
+    /** \param Number of arenas */
     Index N_s;
 
-    /** \param BoundaryInfo point sets of Minkowski operations */
+    /** \param Boundary info for each C-slice */
     BoundaryInfo layerBound_;
+
+    /** \param Record boundary info for all C-slices */
     std::vector<BoundaryInfo> layerBoundAll_;
 
-    /** \param store configuration for each robot shape (at each C-layer) */
+    /** \param store configuration for each robot shape (at each C-slice) */
     std::vector<std::vector<double>> v_;
 
     /** \param Vertex index info */
@@ -259,7 +275,7 @@ class HighwayRoadMap {
     std::vector<VertexIdx> vtxId_;
     std::vector<std::vector<VertexIdx>> vtxIdAll_;
 
-    /** \param Tightly-fitted ellipsoids at bridge C-layer */
+    /** \param Tightly-fitted ellipsoids at bridge C-slice */
     std::vector<ObjectType> tfe_;
 };
 
