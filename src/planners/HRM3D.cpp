@@ -473,7 +473,7 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
         intersect(Line3D line, Point3D t1, Point3D t2)
             : line_(std::move(line)), t1_(std::move(t1)), t2_(std::move(t2)) {}
 
-        bool operator()(const MeshMatrix& obs) {
+        bool operator()(const MeshMatrix& obs) const {
             bool isIntersect = false;
             const auto intersectObs = intersectLineMesh3D(line_, obs);
 
