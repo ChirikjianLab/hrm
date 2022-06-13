@@ -9,7 +9,7 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HRM2D::~HRM2D() {}
+HRM2D::~HRM2D() = default;
 
 void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
@@ -251,7 +251,7 @@ void HRM2D::bridgeLayer() {
         tfe_.at(i).setPosition({0.0, 0.0});
 
         // calculate Minkowski boundary points
-        Boundary bd;
+        BoundaryInfo bd;
         for (size_t j = 0; j < size_t(N_o); ++j) {
             bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
         }
@@ -263,14 +263,20 @@ void HRM2D::bridgeLayer() {
 bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                       const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
-    for (size_t i = 0; i < layerBound_.obstacle.size(); ++i) {
-        if (isIntersectSegPolygon2D(std::make_pair(v1, v2),
-                                    layerBound_.obstacle.at(i))) {
-            return false;
-        }
-    }
+    struct intersect {
+        intersect(std::vector<Coordinate> v1, std::vector<Coordinate> v2)
+            : v1_(std::move(v1)), v2_(std::move(v2)) {}
 
-    return true;
+        bool operator()(const BoundaryPoints& obstacle) {
+            return isIntersectSegPolygon2D(std::make_pair(v1_, v2_), obstacle);
+        }
+
+        std::vector<Coordinate> v1_;
+        std::vector<Coordinate> v2_;
+    };
+
+    return !std::any_of(layerBound_.obstacle.cbegin(),
+                        layerBound_.obstacle.cend(), intersect(v1, v2));
 }
 
 // Connect vertices among different layers
@@ -308,7 +314,7 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
 
 bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
-    for (auto bound : bridgeLayerBound_.at(bdIdx).obstacle) {
+    for (const auto& bound : bridgeLayerBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
 
         if (!intersectObs.empty()) {
@@ -403,19 +409,19 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
     // Find the closest C-layer
     minAngleDist = std::fabs(vertex[2] - minAngle);
-    for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
-        angleDist = std::fabs(vertex[2] - res_.graph_structure.vertex[i][2]);
+    for (auto vtx : res_.graph_structure.vertex) {
+        angleDist = std::fabs(vertex[2] - vtx[2]);
         if (angleDist < minAngleDist) {
             minAngleDist = angleDist;
-            minAngle = res_.graph_structure.vertex[i][2];
+            minAngle = vtx[2];
         }
     }
 
     // Search for k-nn C-layers
     std::vector<double> angList;
-    for (size_t i = 0; i < headings_.size(); ++i) {
-        if (std::fabs(minAngle - headings_[i]) < radius) {
-            angList.push_back(headings_[i]);
+    for (auto heading : headings_) {
+        if (std::fabs(minAngle - heading) < radius) {
+            angList.push_back(heading);
         }
 
         if (angList.size() >= k) {

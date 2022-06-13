@@ -1,8 +1,8 @@
 #include "include/MultiBodyTree2D.h"
 
-MultiBodyTree2D::MultiBodyTree2D(SuperEllipse base) : base_(base) {}
+MultiBodyTree2D::MultiBodyTree2D(SuperEllipse base) : base_(std::move(base)) {}
 
-void MultiBodyTree2D::addBody(SuperEllipse link) {
+void MultiBodyTree2D::addBody(const SuperEllipse& link) {
     // Add link
     link_.push_back(link);
     numLinks_++;
@@ -16,7 +16,7 @@ void MultiBodyTree2D::addBody(SuperEllipse link) {
     tf_.push_back(g);
 }
 
-void MultiBodyTree2D::robotTF(Eigen::Matrix3d g) {
+void MultiBodyTree2D::robotTF(const Eigen::Matrix3d& g) {
     // Set transform of base
     base_.setPosition({g(0, 2), g(1, 2)});
 

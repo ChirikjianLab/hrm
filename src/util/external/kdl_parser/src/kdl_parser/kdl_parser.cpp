@@ -64,7 +64,7 @@ KDL::Frame toKdl(urdf::Pose p) {
 }
 
 // construct joint
-KDL::Joint toKdl(urdf::JointSharedPtr jnt) {
+KDL::Joint toKdl(const urdf::JointSharedPtr& jnt) {
     KDL::Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
 
     switch (jnt->type) {
@@ -96,7 +96,7 @@ KDL::Joint toKdl(urdf::JointSharedPtr jnt) {
 }
 
 // construct inertia
-KDL::RigidBodyInertia toKdl(urdf::InertialSharedPtr i) {
+KDL::RigidBodyInertia toKdl(const urdf::InertialSharedPtr& i) {
     KDL::Frame origin = toKdl(i->origin);
 
     // the mass is frame independent
@@ -128,7 +128,7 @@ KDL::RigidBodyInertia toKdl(urdf::InertialSharedPtr i) {
 }
 
 // recursive function to walk through tree
-bool addChildrenToTree(urdf::LinkConstSharedPtr root, KDL::Tree& tree) {
+bool addChildrenToTree(const urdf::LinkConstSharedPtr& root, KDL::Tree& tree) {
     std::vector<urdf::LinkSharedPtr> children = root->child_links;
 
     // constructs the optional inertia
@@ -149,8 +149,8 @@ bool addChildrenToTree(urdf::LinkConstSharedPtr root, KDL::Tree& tree) {
     tree.addSegment(sgm, root->parent_joint->parent_link_name);
 
     // recurslively add all children
-    for (size_t i = 0; i < children.size(); i++) {
-        if (!addChildrenToTree(children[i], tree)) {
+    for (const auto& child : children) {
+        if (!addChildrenToTree(child, tree)) {
             return false;
         }
     }

@@ -4,39 +4,39 @@
 FreeSpace2D::FreeSpace2D(MultiBodyTree2D* robot,
                          std::vector<SuperEllipse>* arena,
                          std::vector<SuperEllipse>* obstacle,
-                         parameters2D* param)
+                         Parameters2D* param)
     : robot_(robot), arena_(arena), obstacle_(obstacle), param_(param) {}
 
 void FreeSpace2D::generateCSpaceBoundary() {
     // calculate Minkowski boundary points
     std::vector<BoundaryPoints> auxBoundary;
-    for (size_t i = 0; i < arena_->size(); ++i) {
-        auxBoundary = robot_->minkSum(&arena_->at(i), -1);
-        for (size_t j = 0; j < auxBoundary.size(); ++j) {
-            configSpaceBoundary_.arenaBd.push_back(auxBoundary[j]);
+    for (const auto& arena : *arena_) {
+        auxBoundary = robot_->minkSum(&arena, -1);
+        for (const auto& boundary : auxBoundary) {
+            configSpaceBoundary_.arena.push_back(boundary);
         }
     }
-    for (size_t i = 0; i < obstacle_->size(); ++i) {
-        auxBoundary = robot_->minkSum(&obstacle_->at(i), +1);
-        for (size_t j = 0; j < auxBoundary.size(); ++j) {
-            configSpaceBoundary_.obsBd.push_back(auxBoundary[j]);
+    for (const auto& obstacle : *obstacle_) {
+        auxBoundary = robot_->minkSum(&obstacle, +1);
+        for (const auto& boundary : auxBoundary) {
+            configSpaceBoundary_.obstacle.push_back(boundary);
         }
     }
 }
 
-freeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const Coordinate& yCoord) {
+FreeSegment2D FreeSpace2D::computeFreeSegmentsGivenY(const Coordinate& yCoord) {
     // Compute intersections between each sweep line and C-obstacles
-    const intersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
+    const IntersectSweepLine2D intersects = computeIntersectSweepLine(yCoord);
 
     // Compute collision-free segment of each sweep line
-    freeSegment2D lineSegments = computeSweepLineFreeSegment(intersects);
+    FreeSegment2D lineSegments = computeSweepLineFreeSegment(intersects);
     lineSegments.yCoord = yCoord;
 
     return lineSegments;
 }
 
-std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
-    std::vector<freeSegment2D> freeSegments;
+std::vector<FreeSegment2D> FreeSpace2D::computeFreeSegments() {
+    std::vector<FreeSegment2D> freeSegments;
 
     // Find intersecting points to C-obstacles for each raster scan line
     const double dy = (param_->yLim.second - param_->yLim.first) /
@@ -53,18 +53,18 @@ std::vector<freeSegment2D> FreeSpace2D::computeFreeSegments() {
     return freeSegments;
 }
 
-intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
+IntersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     const Coordinate& yCoord) const {
-    const size_t numArenaMink = configSpaceBoundary_.arenaBd.size();
-    const size_t numObsMink = configSpaceBoundary_.obsBd.size();
+    const size_t numArenaMink = configSpaceBoundary_.arena.size();
+    const size_t numObsMink = configSpaceBoundary_.obstacle.size();
 
-    intersectSweepLine2D intersects;
+    IntersectSweepLine2D intersects;
 
     // x-coordinate of the intersection btw sweep line and arenas
     for (size_t j = 0; j < numArenaMink; ++j) {
         const std::vector<double> arenaIntersectPts =
             intersectHorizontalLinePolygon2D(yCoord,
-                                             configSpaceBoundary_.arenaBd[j]);
+                                             configSpaceBoundary_.arena[j]);
         if (!arenaIntersectPts.empty()) {
             intersects.arenaXCoords.emplace_back(
                 std::fmin(param_->xLim.first, std::fmin(arenaIntersectPts[0],
@@ -78,7 +78,7 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     for (size_t j = 0; j < numObsMink; ++j) {
         const std::vector<double> obsIntersectPts =
             intersectHorizontalLinePolygon2D(yCoord,
-                                             configSpaceBoundary_.obsBd[j]);
+                                             configSpaceBoundary_.obstacle[j]);
         if (!obsIntersectPts.empty()) {
             intersects.obsXCords.emplace_back(
                 std::fmin(obsIntersectPts[0], obsIntersectPts[1]),
@@ -93,10 +93,10 @@ intersectSweepLine2D FreeSpace2D::computeIntersectSweepLine(
     return intersects;
 }
 
-freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
-    const intersectSweepLine2D& intersections) const {
+FreeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
+    const IntersectSweepLine2D& intersections) {
     // Collision-free segment of the current sweep line
-    freeSegment2D currentLine;
+    FreeSegment2D currentLine;
 
     // Construct intervals of the current sweep line
     std::vector<Interval> collisionFreeSegment;
@@ -105,29 +105,26 @@ freeSegment2D FreeSpace2D::computeSweepLineFreeSegment(
     std::vector<Interval> obsSegmentUnion;
     std::vector<Interval> arenaSegmentIntersect;
 
-    for (size_t i = 0; i < intersections.arenaXCoords.size(); ++i) {
-        if (!std::isnan(intersections.arenaXCoords[i].s()) &&
-            !std::isnan(intersections.arenaXCoords[i].e())) {
-            arenaSegment.push_back(intersections.arenaXCoords[i]);
+    for (auto arenaXCoord : intersections.arenaXCoords) {
+        if (!std::isnan(arenaXCoord.s()) && !std::isnan(arenaXCoord.e())) {
+            arenaSegment.push_back(arenaXCoord);
         }
     }
-    for (size_t i = 0; i < intersections.obsXCords.size(); ++i) {
-        if (!std::isnan(intersections.obsXCords[i].s()) &&
-            !std::isnan(intersections.obsXCords[i].e())) {
-            obsSegment.push_back(intersections.obsXCords[i]);
+    for (auto obsXCoord : intersections.obsXCords) {
+        if (!std::isnan(obsXCoord.s()) && !std::isnan(obsXCoord.e())) {
+            obsSegment.push_back(obsXCoord);
         }
     }
 
     // cf-intervals at each line
-    Interval op;
-    obsSegmentUnion = op.unions(obsSegment);
-    arenaSegmentIntersect = op.intersects(arenaSegment);
+    obsSegmentUnion = Interval::unions(obsSegment);
+    arenaSegmentIntersect = Interval::intersects(arenaSegment);
     collisionFreeSegment =
-        op.complements(arenaSegmentIntersect, obsSegmentUnion);
+        Interval::complements(arenaSegmentIntersect, obsSegmentUnion);
 
     // x-coords
-    for (size_t i = 0; i < collisionFreeSegment.size(); ++i) {
-        currentLine.xCoords.push_back(collisionFreeSegment[i]);
+    for (auto segment : collisionFreeSegment) {
+        currentLine.xCoords.push_back(segment);
     }
 
     return currentLine;

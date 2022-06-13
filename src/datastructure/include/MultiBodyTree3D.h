@@ -6,11 +6,6 @@
 
 #include <eigen3/Eigen/Geometry>
 
-using SE3Transform = Eigen::Matrix4d;
-using BoundaryPoints = Eigen::MatrixXd;
-using Indicator = int;
-using Index = size_t;
-
 class MultiBodyTree3D {
   public:
     MultiBodyTree3D(SuperQuadrics base);
@@ -24,10 +19,10 @@ class MultiBodyTree3D {
     std::vector<SE3Transform> getTF() const { return tf_; }
 
     /** \brief Add a new body to the tree */
-    void addBody(SuperQuadrics link);
+    void addBody(const SuperQuadrics& link);
 
     /** \brief Tranform robot */
-    void robotTF(SE3Transform g);
+    void robotTF(const SE3Transform& g);
     void robotTF(const std::string& urdfFile, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
     void robotTF(ParseURDF kdl, const SE3Transform* gBase,

@@ -17,10 +17,10 @@ class Interval {
     void setStart(const Coordinate start) { start_ = start; }
     void setEnd(const Coordinate end) { end_ = end; }
 
-    std::vector<Interval> unions(std::vector<Interval> &ins);
-    std::vector<Interval> intersects(std::vector<Interval> &ins);
-    std::vector<Interval> complements(std::vector<Interval> &outer,
-                                      std::vector<Interval> &inner);
+    static std::vector<Interval> unions(const std::vector<Interval> &ins);
+    static std::vector<Interval> intersects(const std::vector<Interval> &ins);
+    static std::vector<Interval> complements(
+        const std::vector<Interval> &outer, const std::vector<Interval> &inner);
 
   private:
     Coordinate start_ = std::numeric_limits<double>::quiet_NaN();

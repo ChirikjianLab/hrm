@@ -16,10 +16,10 @@ class MultiBodyTree2D {
     std::vector<SE2Transform> getTF() const { return tf_; }
 
     /** \brief Add a new body to the tree */
-    void addBody(SuperEllipse link);
+    void addBody(const SuperEllipse& link);
 
     /** \brief Tranform robot */
-    void robotTF(SE2Transform g);
+    void robotTF(const SE2Transform& g);
 
     /**
      * \brief Closed-form Minkowski sums operation

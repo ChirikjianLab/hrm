@@ -1,16 +1,19 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
-OMPL3D::OMPL3D(std::vector<Coordinate> lowBound,
-               std::vector<Coordinate> highBound, const MultiBodyTree3D &robot,
+OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
+               const std::vector<Coordinate> &highBound, MultiBodyTree3D robot,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obs,
                const std::vector<Mesh> &obsMesh)
-    : robot_(robot), arena_(arena), obstacles_(obs), obsMesh_(obsMesh) {
+    : robot_(std::move(robot)),
+      arena_(arena),
+      obstacles_(obs),
+      obsMesh_(obsMesh) {
     // Setup state space
     setStateSpace(lowBound, highBound);
 }
 
-OMPL3D::~OMPL3D() {}
+OMPL3D::~OMPL3D() = default;
 
 void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
                    const Index validStateSamplerId) {
@@ -21,6 +24,7 @@ void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
 
     // Set planner and sampler
     setPlanner(plannerId);
+    setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
 
     ss_->setup();
@@ -103,7 +107,7 @@ void OMPL3D::getSolution() {
     for (unsigned int i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
         for (auto edgeI : edgeInfo[i]) {
-            edge_.push_back(std::make_pair(i, edgeI));
+            edge_.emplace_back(std::make_pair(i, edgeI));
         }
     }
 
@@ -224,26 +228,25 @@ void OMPL3D::setCollisionObject() {
         new fcl::Ellipsoidd(robot_.getBase().getSemiAxis().at(0),
                             robot_.getBase().getSemiAxis().at(1),
                             robot_.getBase().getSemiAxis().at(2)));
-    objRobot_.push_back(fcl::CollisionObjectd(ellip));
+    objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         GeometryPtr_t ellip(
             new fcl::Ellipsoidd(robot_.getLinks().at(i).getSemiAxis().at(0),
                                 robot_.getLinks().at(i).getSemiAxis().at(1),
                                 robot_.getLinks().at(i).getSemiAxis().at(2)));
-        objRobot_.push_back(fcl::CollisionObjectd(ellip));
+        objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     }
 
     // Setup collision object for superquadric obstacles
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (std::fabs(obstacles_.at(i).getEpsilon().at(0) - 1.0) < 1e-6 &&
-            std::fabs(obstacles_.at(i).getEpsilon().at(1) - 1.0) < 1e-6) {
-            GeometryPtr_t ellip(
-                new fcl::Ellipsoidd(obstacles_.at(i).getSemiAxis().at(0),
-                                    obstacles_.at(i).getSemiAxis().at(1),
-                                    obstacles_.at(i).getSemiAxis().at(2)));
-            objObs_.push_back(fcl::CollisionObjectd(ellip));
+    for (const auto &obstacle : obstacles_) {
+        if (std::fabs(obstacle.getEpsilon().at(0) - 1.0) < 1e-6 &&
+            std::fabs(obstacle.getEpsilon().at(1) - 1.0) < 1e-6) {
+            GeometryPtr_t ellip(new fcl::Ellipsoidd(
+                obstacle.getSemiAxis().at(0), obstacle.getSemiAxis().at(1),
+                obstacle.getSemiAxis().at(2)));
+            objObs_.emplace_back(fcl::CollisionObjectd(ellip));
         } else {
-            objObs_.push_back(setCollisionObjectFromSQ(obstacles_.at(i)));
+            objObs_.emplace_back(setCollisionObjectFromSQ(obstacle));
         }
     }
 }
@@ -369,8 +372,8 @@ void OMPL3D::savePathInfo(const std::string &filename_prefix) {
 
     std::ofstream file_traj;
     file_traj.open(filename_prefix + "_path_3D.csv");
-    for (size_t i = 0; i < states.size(); ++i) {
-        state = setVectorFromState(states[i]->as<ob::State>());
+    for (auto *omplState : states) {
+        state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
             file_traj << state[j];
@@ -385,13 +388,13 @@ void OMPL3D::savePathInfo(const std::string &filename_prefix) {
 
     // Smooth path
     ss_->getSolutionPath().interpolate(50);
-    const std::vector<ob::State *> &s_states =
+    const std::vector<ob::State *> &solutionStates =
         ss_->getSolutionPath().getStates();
 
     std::ofstream file_smooth_traj;
     file_smooth_traj.open(filename_prefix + "_smooth_path_3D.csv");
-    for (size_t i = 0; i < s_states.size(); ++i) {
-        state = setVectorFromState(s_states[i]->as<ob::State>());
+    for (auto *omplState : solutionStates) {
+        state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
             file_smooth_traj << state[j];

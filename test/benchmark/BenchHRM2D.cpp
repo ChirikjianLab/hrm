@@ -4,24 +4,23 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
-#include <math.h>
 #include <chrono>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-using namespace Eigen;
-using namespace std;
 using PlannerSetting2D = PlannerSetting<SuperEllipse>;
 
 int main(int argc, char** argv) {
     if (argc == 5) {
-        cout << "Highway RoadMap for 2D rigid-body planning" << endl;
-        cout << "----------" << endl;
+        std::cout << "Highway RoadMap for 2D rigid-body planning" << std::endl;
+        std::cout << "----------" << std::endl;
     } else {
-        cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep lines 4) Configuration file prefix"
-             << endl;
+        std::cerr
+            << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
+               "sweep lines 4) Configuration file prefix"
+            << std::endl;
         return 1;
     }
 
@@ -29,7 +28,7 @@ int main(int argc, char** argv) {
     int N = atoi(argv[1]);
     int N_l = atoi(argv[2]);
     int N_y = atoi(argv[3]);
-    vector<vector<double>> time_stat;
+    std::vector<std::vector<double>> time_stat;
 
     // Load Robot and Environment settings
     const std::string CONFIG_FILE_PREFIX = argv[4];
@@ -38,7 +37,7 @@ int main(int argc, char** argv) {
 
     MultiBodyTree2D robot =
         loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    PlannerSetting2D* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
+    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
     env2D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Parameters
@@ -48,21 +47,23 @@ int main(int argc, char** argv) {
     par.NUM_POINT = 5;
 
     const double f = 1.5;
-    vector<Coordinate> bound = {env2D->getArena().at(0).getSemiAxis().at(0) -
-                                    f * robot.getBase().getSemiAxis().at(0),
-                                env2D->getArena().at(0).getSemiAxis().at(1) -
-                                    f * robot.getBase().getSemiAxis().at(0)};
+    std::vector<Coordinate> bound = {
+        env2D->getArena().at(0).getSemiAxis().at(0) -
+            f * robot.getBase().getSemiAxis().at(0),
+        env2D->getArena().at(0).getSemiAxis().at(1) -
+            f * robot.getBase().getSemiAxis().at(0)};
     par.BOUND_LIMIT = {
         env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
         env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
         env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
         env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
 
-    cout << "Initial number of C-layers: " << par.NUM_LAYER << endl;
-    cout << "Initial number of sweep lines: " << par.NUM_LINE_Y << endl;
-    cout << "----------" << endl;
+    std::cout << "Initial number of C-layers: " << par.NUM_LAYER << std::endl;
+    std::cout << "Initial number of sweep lines: " << par.NUM_LINE_Y
+              << std::endl;
+    std::cout << "----------" << std::endl;
 
-    cout << "Start benchmark..." << endl;
+    std::cout << "Start benchmark..." << std::endl;
 
     // Multiple planning trials
     PlanningRequest req;
@@ -72,7 +73,7 @@ int main(int argc, char** argv) {
     req.goal = env2D->getEndPoints().at(1);
 
     for (int i = 0; i < N; i++) {
-        cout << "Number of trials: " << i + 1 << endl;
+        std::cout << "Number of trials: " << i + 1 << std::endl;
 
         HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
         hrm.plan(MAX_PLAN_TIME);
@@ -88,24 +89,24 @@ int main(int argc, char** argv) {
              static_cast<double>(res.solution_path.PathId.size())});
 
         // Planning Time and Path Cost
-        cout << "Roadmap build time: " << res.planning_time.buildTime << "s"
-             << endl;
-        cout << "Path search time: " << res.planning_time.searchTime << "s"
-             << endl;
-        cout << "Total Planning Time: " << res.planning_time.totalTime << 's'
-             << endl;
+        std::cout << "Roadmap build time: " << res.planning_time.buildTime
+                  << "s" << std::endl;
+        std::cout << "Path search time: " << res.planning_time.searchTime << "s"
+                  << std::endl;
+        std::cout << "Total Planning Time: " << res.planning_time.totalTime
+                  << 's' << std::endl;
 
-        cout << "Number of valid configurations: "
-             << res.graph_structure.vertex.size() << endl;
-        cout << "Number of valid edges: " << res.graph_structure.edge.size()
-             << endl;
-        cout << "Number of configurations in Path: "
-             << res.solution_path.PathId.size() << endl;
-        cout << "Cost: " << res.solution_path.cost << endl;
+        std::cout << "Number of valid configurations: "
+                  << res.graph_structure.vertex.size() << std::endl;
+        std::cout << "Number of valid edges: "
+                  << res.graph_structure.edge.size() << std::endl;
+        std::cout << "Number of configurations in Path: "
+                  << res.solution_path.PathId.size() << std::endl;
+        std::cout << "Cost: " << res.solution_path.cost << std::endl;
     }
 
     // Store results
-    ofstream file_time;
+    std::ofstream file_time;
     file_time.open("time_hrm_2D.csv");
     file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
               << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','

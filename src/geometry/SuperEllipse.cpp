@@ -1,19 +1,18 @@
 #include "include/SuperEllipse.h"
 #include "util/include/ExponentialFunction.h"
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <vector>
 
 #define pi 3.1415926
 
-SuperEllipse::SuperEllipse(const std::vector<double> &semiAxis,
-                           const double epsilon,
-                           const std::vector<double> &position,
-                           const double angle, const Index num)
-    : semiAxis_(semiAxis),
+SuperEllipse::SuperEllipse(std::vector<double> semiAxis, const double epsilon,
+                           std::vector<double> position, const double angle,
+                           const Index num)
+    : semiAxis_(std::move(semiAxis)),
       epsilon_(epsilon),
-      position_(position),
+      position_(std::move(position)),
       angle_(angle),
       num_(num) {}
 

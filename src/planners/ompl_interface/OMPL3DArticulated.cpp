@@ -1,14 +1,14 @@
 #include "planners/include/ompl_interface/OMPL3DArticulated.h"
 
-OMPL3DArticulated::OMPL3DArticulated(std::vector<Coordinate> lowBound,
-                                     std::vector<Coordinate> highBound,
+OMPL3DArticulated::OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
+                                     const std::vector<Coordinate>& highBound,
                                      const MultiBodyTree3D& robot,
-                                     const std::string urdfFile,
+                                     std::string urdfFile,
                                      const std::vector<SuperQuadrics>& arena,
                                      const std::vector<SuperQuadrics>& obs,
                                      const std::vector<Mesh>& obsMesh)
     : OMPL3D(lowBound, highBound, robot, arena, obs, obsMesh),
-      urdfFile_(urdfFile) {
+      urdfFile_(std::move(urdfFile)) {
     // Parse URDF file and construct KDL tree
     kdl_ = new ParseURDF(urdfFile_);
     numJoint_ = kdl_->getKDLTree().getNrOfJoints();
@@ -16,7 +16,7 @@ OMPL3DArticulated::OMPL3DArticulated(std::vector<Coordinate> lowBound,
     setStateSpace(lowBound, highBound);
 }
 
-OMPL3DArticulated::~OMPL3DArticulated() {}
+OMPL3DArticulated::~OMPL3DArticulated() = default;
 
 void OMPL3DArticulated::setStateSpace(
     const std::vector<Coordinate>& lowBound,
@@ -94,7 +94,7 @@ void OMPL3DArticulated::setStateFromVector(
     ob::ScopedState<ob::RealVectorStateSpace> stateJoint(
         ss_->getStateSpace()->as<ob::CompoundStateSpace>()->getSubspace(1));
     for (uint i = 0; i < numJoint_; ++i) {
-        stateJoint.get()->values[i] = stateVariables->at(i + 7);
+        stateJoint->values[i] = stateVariables->at(i + 7);
     }
     stateJoint.enforceBounds();
     stateJoint >> *state;
@@ -124,7 +124,7 @@ std::vector<double> OMPL3DArticulated::setVectorFromState(
     stateVariables[6] = stateBase->rotation().z;
 
     for (uint i = 0; i < numJoint_; ++i) {
-        stateVariables[7 + i] = stateJoint.get()->values[i];
+        stateVariables[7 + i] = stateJoint->values[i];
     }
 
     return stateVariables;

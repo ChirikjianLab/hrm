@@ -3,7 +3,7 @@
 
 #include "Eigen/Dense"
 
-bool isPtInPoly(polyCSpace polyVtx, std::vector<double> pt) {
+bool isPtInPoly(PolyCSpace polyVtx, const std::vector<double>& pt) {
     bool flag = false;
     SE3Transform invMat;
     Eigen::Vector4d p;

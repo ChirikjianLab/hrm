@@ -34,12 +34,11 @@ bool MinkowskiSweepLineSamplerSE2::sample(ob::State* state) {
         yRand = rng_.uniformReal(param_->yLim.first, param_->yLim.second);
 
         // Compute free segments
-        freeSegment2D seg = fs.getFreeSegmentsGivenY(yRand);
+        FreeSegment2D seg = fs.getFreeSegmentsGivenY(yRand);
 
         if (!seg.xCoords.empty()) {
             // Compute the sampled x-coord
-            size_t xIdx =
-                size_t(rng_.uniformInt(0, int(seg.xCoords.size() - 1)));
+            auto xIdx = size_t(rng_.uniformInt(0, int(seg.xCoords.size() - 1)));
             double t = rng_.uniformReal(0.0, 1.0);
             xSample =
                 (1.0 - t) * seg.xCoords[xIdx].s() + t * seg.xCoords[xIdx].e();
@@ -80,12 +79,11 @@ bool MinkowskiSweepLineSamplerSE2::sampleNear(ob::State* state,
 
         // Compute free segments
         double yRand = state->as<ob::SE2StateSpace::StateType>()->getY();
-        freeSegment2D seg = fs.getFreeSegmentsGivenY(yRand);
+        FreeSegment2D seg = fs.getFreeSegmentsGivenY(yRand);
 
         if (!seg.xCoords.empty()) {
             // Compute the sampled x-coord
-            size_t xIdx =
-                size_t(rng_.uniformInt(0, int(seg.xCoords.size() - 1)));
+            auto xIdx = size_t(rng_.uniformInt(0, int(seg.xCoords.size() - 1)));
             double t = rng_.uniformReal(0.0, 1.0);
             xSample =
                 (1.0 - t) * seg.xCoords[xIdx].s() + t * seg.xCoords[xIdx].e();
@@ -125,9 +123,9 @@ bool MinkowskiBoundarySamplerSE2::sample(ob::State* state) {
         robot_->robotTF(tf);
 
         // Compute and get a random C-obstacle boundary
-        boundary2D bound = fs.getCSpaceBoundary();
-        size_t obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
-        Eigen::Matrix2Xd selectedObsBound = bound.obsBd[obsId];
+        BoundaryInfo bound = fs.getCSpaceBoundary();
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obstacle.size() - 1)));
+        Eigen::Matrix2Xd selectedObsBound = bound.obstacle[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle
         Eigen::Index pointId = rng_.uniformInt(0, int(selectedObsBound.cols()));
@@ -173,9 +171,9 @@ bool MinkowskiBoundarySamplerSE2::sampleNear(ob::State* state,
         robot_->robotTF(tf);
 
         // Compute and get a random C-obstacle boundary
-        boundary2D bound = fs.getCSpaceBoundary();
-        size_t obsId = size_t(rng_.uniformInt(0, int(bound.obsBd.size() - 1)));
-        Eigen::Matrix2Xd selectedObsBound = bound.obsBd[obsId];
+        BoundaryInfo bound = fs.getCSpaceBoundary();
+        auto obsId = size_t(rng_.uniformInt(0, int(bound.obstacle.size() - 1)));
+        Eigen::Matrix2Xd selectedObsBound = bound.obstacle[obsId];
 
         // Randomly select a point on the boundary of the selected C-obstacle
         Eigen::Index pointId = rng_.uniformInt(0, int(selectedObsBound.cols()));

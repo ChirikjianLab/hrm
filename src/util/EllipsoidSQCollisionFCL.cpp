@@ -50,45 +50,43 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
     if (std::fabs(object.getEpsilon().at(0) - 1.0) < 1e-6 &&
         std::fabs(object.getEpsilon().at(1) - 1.0) < 1e-6) {
         // Ellipsoid model
-        GeometryPtr_t ellipsoid(new fcl::Ellipsoid<double>(
+        const GeometryPtr_t ellipsoid(new fcl::Ellipsoid<double>(
             object.getSemiAxis().at(0), object.getSemiAxis().at(1),
             object.getSemiAxis().at(2)));
 
         return fcl::CollisionObject<double>(ellipsoid);
-    } else {
-        // Mesh model
-        Mesh objMesh = getMeshFromSQ(object);
-        fcl::BVHModel<fcl::OBBRSS<double>>* model =
-            new fcl::BVHModel<fcl::OBBRSS<double>>();
-        model->beginModel();
-        model->addSubModel(objMesh.vertices, objMesh.triangles);
-        model->endModel();
-
-        return fcl::CollisionObject<double>(GeometryPtr_t(model));
     }
+
+    // Mesh model
+    const Mesh objMesh = getMeshFromSQ(object);
+    auto modelPtr = std::make_shared<fcl::BVHModel<fcl::OBBRSS<double>>>();
+    modelPtr->beginModel();
+    modelPtr->addSubModel(objMesh.vertices, objMesh.triangles);
+    modelPtr->endModel();
+
+    return fcl::CollisionObject<double>(GeometryPtr_t(modelPtr));
 }
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperEllipse& object) {
     if (std::fabs(object.getEpsilon() - 1.0) < 1e-6) {
         // Ellipsoid model
-        GeometryPtr_t ellipse(new fcl::Ellipsoid<double>(
+        const GeometryPtr_t ellipse(new fcl::Ellipsoid<double>(
             object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1));
 
         return fcl::CollisionObject<double>(ellipse);
-    } else {
-        // Mesh model
-        SuperQuadrics objAux(
-            {object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1},
-            {object.getEpsilon(), 0.1}, {0.0, 0.0, 0.0},
-            Eigen::Quaterniond::Identity(), 10);
-        Mesh objMesh = getMeshFromSQ(objAux);
-        fcl::BVHModel<fcl::OBBRSS<double>>* model =
-            new fcl::BVHModel<fcl::OBBRSS<double>>();
-        model->beginModel();
-        model->addSubModel(objMesh.vertices, objMesh.triangles);
-        model->endModel();
-
-        return fcl::CollisionObject<double>(GeometryPtr_t(model));
     }
+
+    // Mesh model
+    const SuperQuadrics objAux(
+        {object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1},
+        {object.getEpsilon(), 0.1}, {0.0, 0.0, 0.0},
+        Eigen::Quaterniond::Identity(), 10);
+    const Mesh objMesh = getMeshFromSQ(objAux);
+    auto modelPtr = std::make_shared<fcl::BVHModel<fcl::OBBRSS<double>>>();
+    modelPtr->beginModel();
+    modelPtr->addSubModel(objMesh.vertices, objMesh.triangles);
+    modelPtr->endModel();
+
+    return fcl::CollisionObject<double>(GeometryPtr_t(modelPtr));
 }

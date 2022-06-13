@@ -13,7 +13,7 @@ class HRM2DKC : public HRM2D {
 
     ~HRM2DKC();
 
-    Boundary boundaryGen() override;
+    BoundaryInfo boundaryGen() override;
     void connectMultiLayer() override;
 
   private:
@@ -21,7 +21,7 @@ class HRM2DKC : public HRM2D {
                                         std::vector<Coordinate> vtx2);
 
     /** \param polyVtx descriptions of polyhedron local c-space */
-    polyCSpace polyVtx;
+    PolyCSpace polyVtx;
 
     /** \param infla inflation factor for the robot */
     double infla;

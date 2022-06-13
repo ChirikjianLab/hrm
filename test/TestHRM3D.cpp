@@ -1,9 +1,6 @@
 #include "planners/include/HRM3D.h"
 #include "util/include/GTestUtils.h"
 
-using namespace Eigen;
-using namespace std;
-
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, HRM) {
@@ -12,7 +9,7 @@ TEST(TestHRMPlanning3D, HRM) {
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Using fixed orientations from Icosahedral symmetry group
@@ -33,16 +30,16 @@ TEST(TestHRMPlanning3D, HRM) {
     req.goal = env3D->getEndPoints().at(1);
 
     // Main algorithm
-    cout << "Highway RoadMap for 3D rigid-body planning" << endl;
-    cout << "----------" << endl;
-    cout << "Input number of C-layers: " << req.planner_parameters.NUM_LAYER
-         << endl;
-    cout << "Input number of sweep lines {X,Y}: {"
-         << req.planner_parameters.NUM_LINE_X << ','
-         << req.planner_parameters.NUM_LINE_Y << '}' << endl;
-    cout << "----------" << endl;
+    std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
+    std::cout << "----------" << std::endl;
+    std::cout << "Input number of C-layers: "
+              << req.planner_parameters.NUM_LAYER << std::endl;
+    std::cout << "Input number of sweep lines {X,Y}: {"
+              << req.planner_parameters.NUM_LINE_X << ','
+              << req.planner_parameters.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "----------" << std::endl;
 
-    cout << "Start planning..." << endl;
+    std::cout << "Start planning..." << std::endl;
 
     HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
     hrm.plan(MAX_PLAN_TIME);
@@ -51,10 +48,10 @@ TEST(TestHRMPlanning3D, HRM) {
     storeRoutines<HRM3D>(&hrm);
 
     // Planning results: Time and Path Cost
-    cout << "----------" << endl;
-    cout << "Final number of sweep lines {X,Y}: {"
-         << hrm.getPlannerParameters().NUM_LINE_X << ','
-         << hrm.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+    std::cout << "----------" << std::endl;
+    std::cout << "Final number of sweep lines {X,Y}: {"
+              << hrm.getPlannerParameters().NUM_LINE_X << ','
+              << hrm.getPlannerParameters().NUM_LINE_Y << '}' << std::endl;
 
     showResult(&res, true);
 }

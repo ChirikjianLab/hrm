@@ -6,21 +6,21 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                  const PlanningRequest& req)
     : HRM2D(robot, arena, obs, req) {}
 
-HRM2DKC::~HRM2DKC() {}
+HRM2DKC::~HRM2DKC() = default;
 
-Boundary HRM2DKC::boundaryGen() {
+BoundaryInfo HRM2DKC::boundaryGen() {
     SuperEllipse robot_infla = robot_.getBase();
-    Boundary bd;
+    BoundaryInfo bd;
 
     // Enlarge the robot
     robot_infla.setSemiAxis({robot_infla.getSemiAxis().at(0) * (1 + infla),
                              robot_infla.getSemiAxis().at(1) * (1 + infla)});
 
     // calculate Minkowski boundary points
-    for (auto arena : arena_) {
+    for (const auto& arena : arena_) {
         bd.arena.emplace_back(arena.getMinkSum2D(robot_infla, -1));
     }
-    for (auto obstacle : obs_) {
+    for (const auto& obstacle : obs_) {
         bd.obstacle.emplace_back(obstacle.getMinkSum2D(robot_infla, +1));
     }
 

@@ -23,7 +23,7 @@ using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
-/** \brief freeSegment2D collision-free line segments in 2D */
+/** \brief Collision-free line segments in 2D */
 struct FreeSegment2D {
     std::vector<Coordinate> ty;
     std::vector<std::vector<Coordinate>> xL;
@@ -39,14 +39,8 @@ struct IntersectionInterval {
     Eigen::MatrixXd obstacleUpp;
 };
 
-/** \brief Boundary Minkowski boundary points for obstacles and arenas */
-struct Boundary {
-    std::vector<BoundaryPoints> arena;
-    std::vector<BoundaryPoints> obstacle;
-};
-
-/** \brief vertexIdx vertex index at each C-layer, sweep line */
-struct vertexIdx {
+/** \brief Vertex index at each C-layer, sweep line */
+struct VertexIdx {
     Index startId;
     Index layer;
     std::vector<Index> plane;
@@ -114,9 +108,9 @@ class HighwayRoadMap {
 
     /**
      * \brief boundaryGen Generating Minkowski boundary points
-     * \return Boundary structure
+     * \return BoundaryInfo structure
      */
-    virtual Boundary boundaryGen();
+    virtual BoundaryInfo boundaryGen();
 
     /**
      * \brief sweepLineProcess sweep-line process for generating collision-free
@@ -164,7 +158,7 @@ class HighwayRoadMap {
     /** \brief computeIntersections compute intervals of intersections between
      * sweep line and arenas/obstacles
      * \param ty vector of y-coordinates of the sweep line
-     * \param Boundary boundary info of C-layer
+     * \param BoundaryInfo boundary info of C-layer
      * \return IntersectionInterval intersecting points as intervals
      */
     virtual IntersectionInterval computeIntersections(
@@ -253,17 +247,17 @@ class HighwayRoadMap {
     /** \param N_s number of arenas */
     Index N_s;
 
-    /** \param Boundary point sets of Minkowski operations */
-    Boundary layerBound_;
-    std::vector<Boundary> layerBoundAll_;
+    /** \param BoundaryInfo point sets of Minkowski operations */
+    BoundaryInfo layerBound_;
+    std::vector<BoundaryInfo> layerBoundAll_;
 
     /** \param store configuration for each robot shape (at each C-layer) */
     std::vector<std::vector<double>> v_;
 
     /** \param Vertex index info */
-    vertexIdx N_v;
-    std::vector<vertexIdx> vtxId_;
-    std::vector<std::vector<vertexIdx>> vtxIdAll_;
+    VertexIdx N_v;
+    std::vector<VertexIdx> vtxId_;
+    std::vector<std::vector<VertexIdx>> vtxIdAll_;
 
     /** \param Tightly-fitted ellipsoids at bridge C-layer */
     std::vector<ObjectType> tfe_;

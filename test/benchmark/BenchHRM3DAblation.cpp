@@ -2,47 +2,46 @@
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
-#include <stdlib.h>
 #include <cstdlib>
 #include <ctime>
 
-using namespace Eigen;
-using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
     if (argc >= 7) {
-        cout << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
-             << endl;
-        cout << "----------" << endl;
+        std::cout
+            << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
+            << std::endl;
+        std::cout << "----------" << std::endl;
     } else {
-        cerr << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
-                "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
-                "5) Max planning time 6) Configuration file prefix 7) "
-                "Pre-defined quaternions file prefix (if no, enter 0 or leave "
-                "blank)"
-             << endl;
+        std::cerr
+            << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
+               "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
+               "5) Max planning time 6) Configuration file prefix 7) "
+               "Pre-defined quaternions file prefix (if no, enter 0 or leave "
+               "blank)"
+            << std::endl;
         return 1;
     }
 
     // Record planning time for N trials
-    const size_t N = size_t(atoi(argv[1]));
+    const auto N = size_t(atoi(argv[1]));
     const int N_l = atoi(argv[2]);
     const int N_x = atoi(argv[3]);
     const int N_y = atoi(argv[4]);
-    const double MAX_PLAN_TIME = double(atoi(argv[5]));
+    const auto MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
-    const string CONFIG_FILE_PREFIX = argv[6];
+    const std::string CONFIG_FILE_PREFIX = argv[6];
     const int NUM_SURF_PARAM = 10;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
-    string quat_file = "0";
+    std::string quat_file = "0";
     if (argc == 8 && strcmp(argv[7], "0") != 0) {
-        quat_file = string(argv[7]) + '_' + string(argv[2]) + ".csv";
+        quat_file = std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
     }
     auto robot =
         loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
@@ -55,12 +54,12 @@ int main(int argc, char** argv) {
 
     defineParameters(&robot, env3D, &param);
 
-    cout << "Initial number of C-layers: " << param.NUM_LAYER << endl;
-    cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
-         << param.NUM_LINE_Y << '}' << endl;
-    cout << "----------" << endl;
+    std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
+    std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
+              << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "----------" << std::endl;
 
-    cout << "Start benchmark..." << endl;
+    std::cout << "Start benchmark..." << std::endl;
 
     PlanningRequest req;
     req.is_robot_rigid = true;
@@ -69,7 +68,7 @@ int main(int argc, char** argv) {
     req.goal = env3D->getEndPoints().at(1);
 
     // Store results
-    ofstream file_time;
+    std::ofstream file_time;
     file_time.open("time_high_3D_ablation.csv");
     file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
               << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
@@ -78,7 +77,7 @@ int main(int argc, char** argv) {
               << "\n";
 
     for (size_t i = 0; i < N; i++) {
-        cout << "Number of trials: " << i + 1 << endl;
+        std::cout << "Number of trials: " << i + 1 << std::endl;
 
         // Path planning using ablated HRM3D with no bridge C-layer
         HRM3DAblation<HRM3D> hrm_ablation(robot, env3D->getArena(),
@@ -92,12 +91,13 @@ int main(int argc, char** argv) {
         displayGraphInfo(&res.graph_structure);
         displayPathInfo(&res.solution_path);
 
-        cout << "Final number of C-layers: "
-             << hrm_ablation.getPlannerParameters().NUM_LAYER << endl;
-        cout << "Final number of sweep lines: {"
-             << hrm_ablation.getPlannerParameters().NUM_LINE_X << ", "
-             << hrm_ablation.getPlannerParameters().NUM_LINE_Y << '}' << endl;
-        cout << "==========" << endl;
+        std::cout << "Final number of C-layers: "
+                  << hrm_ablation.getPlannerParameters().NUM_LAYER << std::endl;
+        std::cout << "Final number of sweep lines: {"
+                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ", "
+                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << '}'
+                  << std::endl;
+        std::cout << "==========" << std::endl;
 
         file_time << res.solved << ',' << res.planning_time.buildTime << ','
                   << res.planning_time.searchTime << ','

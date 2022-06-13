@@ -28,8 +28,8 @@ const double pi = 3.1415926535;
 
 class OMPL2D {
   public:
-    OMPL2D(const MultiBodyTree2D &robot, const std::vector<SuperEllipse> &arena,
-           const std::vector<SuperEllipse> &obstacle);
+    OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
+           std::vector<SuperEllipse> obstacle);
 
     ~OMPL2D();
 
@@ -69,7 +69,7 @@ class OMPL2D {
     MultiBodyTree2D robot_;
     std::vector<SuperEllipse> arena_;
     std::vector<SuperEllipse> obstacle_;
-    parameters2D param_;
+    Parameters2D param_;
 
     std::vector<fcl::CollisionObject<double>> robotGeom_;
     std::vector<fcl::CollisionObject<double>> obsGeom_;

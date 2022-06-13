@@ -11,7 +11,7 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {}
 
-HRM3D::~HRM3D() {}
+HRM3D::~HRM3D() = default;
 
 void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
@@ -422,7 +422,7 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
 /***************************************************************/
 /**************** Protected and private Functions **************/
 /***************************************************************/
-void HRM3D::generateBoundaryMesh(const Boundary* bound,
+void HRM3D::generateBoundaryMesh(const BoundaryInfo* bound,
                                  BoundaryMesh* boundMesh) {
     // Generate mesh for the boundaries
     boundMesh->arena.resize(bound->arena.size());
@@ -446,7 +446,7 @@ void HRM3D::bridgeLayer() {
 
         // calculate Minkowski boundary points and meshes for obstacles
         std::vector<MeshMatrix> bdMesh;
-        for (auto obstacle : obs_) {
+        for (const auto& obstacle : obs_) {
             auto bd = obstacle.getMinkSum3D(tfe_.at(i), +1);
             bdMesh.push_back(
                 getMeshFromParamSurface(bd, obstacle.getNumParam()));
@@ -469,23 +469,39 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
     line.tail(3) = v12;
 
     // Intersection between line and mesh
-    for (auto obs : layerBoundMesh_.obstacle) {
-        const auto intersectObs = intersectLineMesh3D(line, obs);
+    struct intersect {
+        intersect(Line3D line, Point3D t1, Point3D t2)
+            : line_(std::move(line)), t1_(std::move(t1)), t2_(std::move(t2)) {}
 
-        // Check line segments overlapping
-        if (!intersectObs.empty()) {
-            // Dot product between vectors (t1->intersect) and (t2->intersect)
-            const auto s0 = (intersectObs[0] - t1).dot(intersectObs[0] - t2);
-            const auto s1 = (intersectObs[1] - t1).dot(intersectObs[1] - t2);
+        bool operator()(const MeshMatrix& obs) const {
+            bool isIntersect = false;
+            const auto intersectObs = intersectLineMesh3D(line_, obs);
 
-            // Intersect within segment (t1, t2) iff dot product less than 0
-            if ((s0 < 0) || (s1 < 0)) {
-                return false;
+            // Check line segments overlapping
+            if (!intersectObs.empty()) {
+                // Dot product between vectors (t1->intersect) and
+                // (t2->intersect)
+                const auto s0 =
+                    (intersectObs[0] - t1_).dot(intersectObs[0] - t2_);
+                const auto s1 =
+                    (intersectObs[1] - t1_).dot(intersectObs[1] - t2_);
+
+                // Intersect within segment (t1, t2) iff dot product
+                // less than 0
+                isIntersect = ((s0 < 0) || (s1 < 0));
             }
-        }
-    }
 
-    return true;
+            return isIntersect;
+        }
+
+        Line3D line_;
+        Point3D t1_;
+        Point3D t2_;
+    };
+
+    return !std::any_of(layerBoundMesh_.obstacle.cbegin(),
+                        layerBoundMesh_.obstacle.cend(),
+                        intersect(line, t1, t2));
 }
 
 bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
@@ -494,7 +510,7 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     const std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
 
-    for (auto vStep : vInterp) {
+    for (const auto& vStep : vInterp) {
         // Transform the robot
         setTransform(vStep);
 
@@ -545,28 +561,35 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
     Line3D lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
 
-    for (auto bound : bridgeLayerBound_.at(bdIdx)) {
-        const auto intersectObs = intersectVerticalLineMesh3D(lineZ, bound);
+    struct intersect {
+        intersect(Line3D lineZ, std::vector<double> v)
+            : lineZ_(std::move(lineZ)), v_(std::move(v)) {}
 
-        if (!intersectObs.empty()) {
-            if (v[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
-                v[2] < std::fmax(intersectObs[0][2], intersectObs[1][2])) {
-                //                std::cout << "Collide with " <<
-                //                std::to_string(i)
-                //                          << " Obstacle!!!" << std::endl;
+        bool operator()(const MeshMatrix& bound) {
+            bool isIntersect = false;
+            const auto intersectObs =
+                intersectVerticalLineMesh3D(lineZ_, bound);
 
-                return false;
+            if (!intersectObs.empty()) {
+                isIntersect =
+                    v_[2] > std::fmin(intersectObs[0][2], intersectObs[1][2]) &&
+                    v_[2] < std::fmax(intersectObs[0][2], intersectObs[1][2]);
             }
+
+            return isIntersect;
         }
-    }
 
-    //    std::cout << "In Free Space!" << std::endl;
+        Line3D lineZ_;
+        std::vector<double> v_;
+    };
 
-    return true;
+    return !std::any_of(bridgeLayerBound_.at(bdIdx).cbegin(),
+                        bridgeLayerBound_.at(bdIdx).cend(),
+                        intersect(lineZ, v));
 }
 
 void HRM3D::sampleSO3() {
-    srand(unsigned(std::time(NULL)));
+    srand(unsigned(std::time(nullptr)));
 
     q_.resize(param_.NUM_LAYER);
     if (robot_.getBase().getQuatSamples().empty()) {
@@ -594,19 +617,19 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
 
     // Find the closest C-layer
     minQuatDist = queryQuat.angularDistance(q_[0]);
-    for (size_t i = 0; i < q_.size(); ++i) {
-        quatDist = queryQuat.angularDistance(q_[i]);
+    for (const auto& q : q_) {
+        quatDist = queryQuat.angularDistance(q);
         if (quatDist < minQuatDist) {
             minQuatDist = quatDist;
-            minQuat = q_[i];
+            minQuat = q;
         }
     }
 
     // Search for k-nn C-layers
     std::vector<Eigen::Quaterniond> quatList;
-    for (size_t i = 0; i < q_.size(); ++i) {
-        if (minQuat.angularDistance(q_[i]) < radius) {
-            quatList.push_back(q_[i]);
+    for (const auto& q : q_) {
+        if (minQuat.angularDistance(q) < radius) {
+            quatList.push_back(q);
         }
 
         if (quatList.size() >= k) {
@@ -616,7 +639,7 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
 
     // Find the close vertex within a range (relative to the size of sweep line
     // gaps) at each C-layer
-    for (Eigen::Quaterniond quatCur : quatList) {
+    for (const auto& quatCur : quatList) {
         Vertex idxLayer = 0;
         minEuclideanDist = inf;
         for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {

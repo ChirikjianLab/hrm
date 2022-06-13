@@ -5,12 +5,13 @@
 #include "ompl/base/spaces/ReedsSheppStateSpace.h"
 #include "ompl/base/spaces/SE2StateSpace.h"
 
-OMPL2D::OMPL2D(const MultiBodyTree2D &robot,
-               const std::vector<SuperEllipse> &arena,
-               const std::vector<SuperEllipse> &obstacle)
-    : robot_(robot), arena_(arena), obstacle_(obstacle) {}
+OMPL2D::OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
+               std::vector<SuperEllipse> obstacle)
+    : robot_(std::move(robot)),
+      arena_(std::move(arena)),
+      obstacle_(std::move(obstacle)) {}
 
-OMPL2D::~OMPL2D() {}
+OMPL2D::~OMPL2D() = default;
 
 void OMPL2D::setup(const Index spaceId, const Index plannerId,
                    const Index stateSamplerId,
@@ -123,7 +124,7 @@ void OMPL2D::getSolution() {
     for (auto i = 0; i < numValidStates_; i++) {
         pd.getEdges(i, edgeInfo[i]);
         for (auto edgeI : edgeInfo[i]) {
-            edge_.push_back(std::make_pair(i, edgeI));
+            edge_.emplace_back(std::make_pair(i, edgeI));
         }
     }
 }
@@ -272,7 +273,7 @@ void OMPL2D::setCollisionObject() {
     }
 
     // Setup collision object for superquadric obstacles
-    for (SuperEllipse obs : obstacle_) {
+    for (const auto &obs : obstacle_) {
         obsGeom_.push_back(setCollisionObjectFromSQ(obs));
     }
 }
@@ -345,9 +346,9 @@ void OMPL2D::buildFreeStateLibraryFromSweep() {
 
         FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        std::vector<freeSegment2D> freeSegments = fs.getFreeSegments();
+        std::vector<FreeSegment2D> freeSegments = fs.getFreeSegments();
 
-        for (freeSegment2D segment : freeSegments) {
+        for (FreeSegment2D segment : freeSegments) {
             // Generate several random points on the free segment
             for (size_t j = 0; j < segment.xCoords.size(); ++j) {
                 for (size_t k = 0; k < param_.numPointOnFreeSegment; ++k) {
@@ -394,9 +395,9 @@ void OMPL2D::buildFreeStateLibraryFromBoundary() {
 
         FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
         fs.generateCSpaceBoundary();
-        boundary2D boundaries = fs.getCSpaceBoundary();
+        BoundaryInfo boundaries = fs.getCSpaceBoundary();
 
-        for (Eigen::Matrix2Xd bound : boundaries.obsBd) {
+        for (Eigen::Matrix2Xd bound : boundaries.obstacle) {
             for (Eigen::Index j = 0; j < bound.cols(); ++j) {
                 if (bound(0, j) > param_.xLim.first &&
                     bound(0, j) < param_.xLim.second &&

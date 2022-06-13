@@ -2,15 +2,15 @@
 
 #include "ompl/util/RandomNumbers.h"
 
-ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, const std::string& urdfFile,
+ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, std::string urdfFile,
                      const std::vector<SuperQuadrics>& arena,
                      const std::vector<SuperQuadrics>& obs,
                      const PlanningRequest& req)
-    : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(urdfFile) {
+    : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(std::move(urdfFile)) {
     kdl_ = new ParseURDF(urdfFile_);
 }
 
-ProbHRM3D::~ProbHRM3D() {}
+ProbHRM3D::~ProbHRM3D() = default;
 
 void ProbHRM3D::plan(const double timeLim) {
     auto start = Clock::now();
@@ -63,18 +63,18 @@ void ProbHRM3D::plan(const double timeLim) {
 
 void ProbHRM3D::sampleOrientations() {
     // Iteratively add layers with random orientations
-    srand(unsigned(std::time(NULL)));
+    srand(unsigned(std::time(nullptr)));
     ompl::RNG rng;
 
     // Randomly sample rotation of base
     if (param_.NUM_LAYER == 0) {
-        q_.push_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
-                                        start_.at(5), start_.at(6)));
+        q_.emplace_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
+                                           start_.at(5), start_.at(6)));
     } else if (param_.NUM_LAYER == 1) {
-        q_.push_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4), goal_.at(5),
-                                        goal_.at(6)));
+        q_.emplace_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
+                                           goal_.at(5), goal_.at(6)));
     } else {
-        q_.push_back(Eigen::Quaterniond::UnitRandom());
+        q_.emplace_back(Eigen::Quaterniond::UnitRandom());
     }
 
     std::vector<double> config{0.0,           0.0,           0.0,
@@ -223,7 +223,7 @@ void ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
     std::vector<SuperQuadrics> robotAux = robot_.getBodyShapes();
     std::vector<SuperQuadrics> mvce = robotAux;
 
-    for (auto vStep : vInterp) {
+    for (const auto& vStep : vInterp) {
         setTransform(vStep);
         robotAux = robot_.getBodyShapes();
 

@@ -10,7 +10,7 @@ class C3FGenerator3DArticulated : C3FGenerator3D {
     C3FGenerator3DArticulated(MultiBodyTree3D *robot,
                               std::vector<SuperQuadrics> *arena,
                               std::vector<SuperQuadrics> *obstacle,
-                              parameters3D *param, og::SimpleSetupPtr ss,
+                              Parameters3D *param, og::SimpleSetupPtr ss,
                               ParseURDF *kdl);
 
     ~C3FGenerator3DArticulated() override;

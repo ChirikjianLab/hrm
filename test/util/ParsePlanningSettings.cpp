@@ -5,11 +5,10 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         std::vector<SuperEllipse>& object) {
     // Object as class of SuperEllipse
     object.clear();
-    for (size_t j = 0; j < object_config.size(); j++) {
-        object.emplace_back(SuperEllipse(
-            {object_config[j][0], object_config[j][1]}, object_config[j][2],
-            {object_config[j][3], object_config[j][4]}, object_config[j][5],
-            num_curve_param));
+    for (auto config : object_config) {
+        object.emplace_back(SuperEllipse({config[0], config[1]}, config[2],
+                                         {config[3], config[4]}, config[5],
+                                         num_curve_param));
     }
 }
 
@@ -27,13 +26,11 @@ void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         std::vector<SuperQuadrics>& object) {
     // Generate SQ object (orientation from Quaternion parameterization)
     object.clear();
-    for (size_t j = 0; j < object_config.size(); j++) {
+    for (auto config : object_config) {
         object.emplace_back(SuperQuadrics(
-            {object_config[j][0], object_config[j][1], object_config[j][2]},
-            {object_config[j][3], object_config[j][4]},
-            {object_config[j][5], object_config[j][6], object_config[j][7]},
-            Eigen::Quaterniond(object_config[j][8], object_config[j][9],
-                               object_config[j][10], object_config[j][11]),
+            {config[0], config[1], config[2]}, {config[3], config[4]},
+            {config[5], config[6], config[7]},
+            Eigen::Quaterniond(config[8], config[9], config[10], config[11]),
             num_surf_param));
     }
 }
@@ -93,12 +90,12 @@ void loadPreDefinedQuaternions(const std::string& quat_file,
             parse2DCsvFile(quat_file);
 
         std::vector<Eigen::Quaterniond> q_sample;
-        for (size_t i = 0; i < quat_sample.size(); i++) {
+        for (auto sample : quat_sample) {
             Eigen::Quaterniond q;
-            q.w() = quat_sample[i][3];
-            q.x() = quat_sample[i][0];
-            q.y() = quat_sample[i][1];
-            q.z() = quat_sample[i][2];
+            q.w() = sample[3];
+            q.x() = sample[0];
+            q.y() = sample[1];
+            q.z() = sample[2];
             q_sample.emplace_back(q);
         }
         robot_base.setQuatSamples(q_sample);

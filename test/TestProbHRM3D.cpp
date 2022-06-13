@@ -1,8 +1,6 @@
 #include "planners/include/ProbHRM3D.h"
 #include "util/include/GTestUtils.h"
 
-using namespace Eigen;
-using namespace std;
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, ProbHRM) {
@@ -11,12 +9,12 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 300.0;
 
-    PlannerSetting3D* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
-    const string quat_file = "0";
+    const std::string quat_file = "0";
 
     // Setup URDF file for the robot
-    string urdf_file;
+    std::string urdf_file;
     if (env3D->getEndPoints().at(0).size() == 10) {
         urdf_file = "config/snake.urdf";
     } else if (env3D->getEndPoints().at(0).size() == 16) {
@@ -38,14 +36,14 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     req.goal = env3D->getEndPoints().at(1);
 
     // Main Algorithm
-    cout << "Prob-HRM for 3D articulated-body planning" << endl;
-    cout << "----------" << endl;
-    cout << "Input number of sweep lines {X,Y}: {"
-         << req.planner_parameters.NUM_LINE_X << ','
-         << req.planner_parameters.NUM_LINE_Y << '}' << endl;
-    cout << "----------" << endl;
+    std::cout << "Prob-HRM for 3D articulated-body planning" << std::endl;
+    std::cout << "----------" << std::endl;
+    std::cout << "Input number of sweep lines {X,Y}: {"
+              << req.planner_parameters.NUM_LINE_X << ','
+              << req.planner_parameters.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "----------" << std::endl;
 
-    cout << "Start planning..." << endl;
+    std::cout << "Start planning..." << std::endl;
 
     ProbHRM3D probHRM(robot, urdf_file, env3D->getArena(), env3D->getObstacle(),
                       req);
@@ -56,11 +54,11 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     storeRoutines<ProbHRM3D>(&probHRM);
 
     // Planning results: Time and Path Cost
-    cout << "----------" << endl;
-    cout << "Number of C-layers: " << param.NUM_LAYER << endl;
-    cout << "Final number of sweep lines {X,Y}: {"
-         << probHRM.getPlannerParameters().NUM_LINE_X << ','
-         << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << endl;
+    std::cout << "----------" << std::endl;
+    std::cout << "Number of C-layers: " << param.NUM_LAYER << std::endl;
+    std::cout << "Final number of sweep lines {X,Y}: {"
+              << probHRM.getPlannerParameters().NUM_LINE_X << ','
+              << probHRM.getPlannerParameters().NUM_LINE_Y << '}' << std::endl;
 
     showResult(&res, true);
 }

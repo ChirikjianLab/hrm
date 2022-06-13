@@ -184,7 +184,7 @@ bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
 std::vector<std::complex<double>> getRootsPolynomial(
     const std::vector<double>& coeffs) {
     const auto matsz = static_cast<Eigen::Index>(coeffs.size() - 1);
-    std::vector<std::complex<double>> vret;
+    std::vector<std::complex<double>> vret(matsz);
     Eigen::MatrixXd companionMatrix = Eigen::MatrixXd::Zero(matsz, matsz);
 
     // Construct the companion matrix

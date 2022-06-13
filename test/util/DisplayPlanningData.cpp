@@ -22,10 +22,10 @@ void displayGraphInfo(const Graph* graph, const std::string& dim) {
 
     std::ofstream fileVtx;
     fileVtx.open("vertex_" + dim + ".csv");
-    std::vector<std::vector<double>> vtx = graph->vertex;
-    for (size_t i = 0; i < vtx.size(); ++i) {
-        for (size_t j = 0; j < vtx.at(i).size(); ++j) {
-            fileVtx << vtx[i][j] << ',';
+    std::vector<std::vector<double>> vertexList = graph->vertex;
+    for (const auto& vertex : vertexList) {
+        for (const auto& vtx : vertex) {
+            fileVtx << vtx << ',';
         }
         fileVtx << "\n";
     }
@@ -33,9 +33,8 @@ void displayGraphInfo(const Graph* graph, const std::string& dim) {
 
     std::ofstream fileEdge;
     fileEdge.open("edge_" + dim + ".csv");
-    for (size_t i = 0; i < graph->edge.size(); ++i) {
-        fileEdge << graph->edge.at(i).first << ',' << graph->edge.at(i).second
-                 << "\n";
+    for (auto edge : graph->edge) {
+        fileEdge << edge.first << ',' << edge.second << "\n";
     }
     fileEdge.close();
 }
@@ -52,8 +51,8 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     std::ofstream filePathId;
     filePathId.open("path_id_" + dim + ".csv");
     if (!path->PathId.empty()) {
-        for (size_t i = 0; i < path->PathId.size(); i++) {
-            filePathId << path->PathId[i] << ',';
+        for (auto pathId : path->PathId) {
+            filePathId << pathId << ',';
         }
     }
     filePathId.close();
@@ -61,9 +60,9 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     // Retrieve solution path
     std::ofstream filePath;
     filePath.open("solution_path_" + dim + ".csv");
-    for (size_t i = 0; i < path->solvedPath.size(); ++i) {
-        for (size_t j = 0; j < path->solvedPath.at(i).size(); ++j) {
-            filePath << path->solvedPath.at(i).at(j) << ',';
+    for (const auto& solvedPath : path->solvedPath) {
+        for (const auto& solvedPathVal : solvedPath) {
+            filePath << solvedPathVal << ',';
         }
         filePath << "\n";
     }
@@ -71,9 +70,9 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
 
     std::ofstream fileInterpPath;
     fileInterpPath.open("interpolated_path_" + dim + ".csv");
-    for (size_t i = 0; i < path->interpolatedPath.size(); ++i) {
-        for (size_t j = 0; j < path->interpolatedPath.at(i).size(); ++j) {
-            fileInterpPath << path->interpolatedPath.at(i).at(j) << ',';
+    for (const auto& interpPath : path->interpolatedPath) {
+        for (const auto& interpPathVal : interpPath) {
+            fileInterpPath << interpPathVal << ',';
         }
         fileInterpPath << "\n";
     }
