@@ -2,9 +2,12 @@
 
 #include <vector>
 
-/** \brief Parameters for the polyhedron local c-space */
+/** \brief Parameters for the polyhedron local C-space */
 struct PolyCSpace {
+    /** \brief List of vertex of the polyhedron */
     std::vector<std::vector<double>> vertex;
+
+    /** \brief Pre-computed list of inverse matrices for convex combination */
     std::vector<std::vector<double>> invMat;
 };
 
