@@ -154,7 +154,7 @@ class HighwayRoadMap {
                                   const FreeSegment2D* freeSeg) = 0;
 
     /** \brief Subroutine for connecting vertices within one C-slice
-     * \param FreeSegment2D pointer */
+     * \param freeSeg Pointer to the collision-free line segment */
     void connectOneLayer2D(const FreeSegment2D* freeSeg);
 
     /** \brief Subroutine for connecting vertices among adjacent C-slices */
@@ -175,33 +175,33 @@ class HighwayRoadMap {
 
     /** \brief Compute intervals of intersections between sweep line and
      * arenas/obstacles
-     * \param ty vector of y-coordinates of the sweep line
-     * \param BoundaryInfo boundary info of C-layer
-     * \return IntersectionInterval intersecting points as intervals */
+     * \param ty Vector of y-coordinates of the sweep line
+     * \return Intersecting points as IntersectionInterval type */
     virtual IntersectionInterval computeIntersections(
         const std::vector<Coordinate>& ty) = 0;
 
     /** \brief Compute collision-free segment on each sweep line
      * \param ty vector of y-coordinates of the sweep line
-     * \param IntersectionInterval pointer to intervals of sweep line
-     * intersections
-     * \return FreeSegment2D */
+     * \param intersect Pointer to intervals of sweep line intersections
+     * \return Collision-free line segment as FreeSegment2D type */
     FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
                                      const IntersectionInterval* intersect);
 
-    /** \brief Check whether connection between V1 and
-     * V2 within one C-layer is valid through line segment V1-V2 and C-obstacle
-     * mesh intersection checking
-     * \param V1, V2 vector of queried vertices
-     * \return true is transition is valid, false otherwise */
+    /** \brief Check whether connection between v1 and v2 within one C-layer is
+     * valid through line segment V1-V2 and C-obstacle mesh intersection
+     * checking
+     * \param v1 The starting vertex
+     * \param v2 The goal vertex
+     * \return true if transition is valid, false otherwise */
     virtual bool isSameLayerTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
 
-    /** \brief Check whether connection between V1
-     * and V2 is valid through interpolation
-     * \param V1, V2 vector of queried vertices
-     * \return true is transition is valid, false otherwise */
+    /** \brief Check whether connection between v1 and v2 is valid through
+     * interpolation
+     * \param v1 The starting vertex
+     * \param v2 The goal vertex
+     * \return true if transition is valid, false otherwise */
     virtual bool isMultiLayerTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
@@ -211,8 +211,9 @@ class HighwayRoadMap {
                              const std::vector<Coordinate>& v) = 0;
 
     /** \brief Subroutine to enhance vertex generation
-     * \param FreeSegment2D pointer
-     * \return FreeSegment2D Enhanced free segment with more valid vertices */
+     * \param current Pointer to the current free segment
+     * \return Enhanced free segment with more valid vertices as FreeSegment2D
+     * type */
     FreeSegment2D enhanceDecomp(const FreeSegment2D* current);
 
     /** \brief Find the nearest neighbors of a pose on the graph
@@ -270,9 +271,13 @@ class HighwayRoadMap {
     /** \param store configuration for each robot shape (at each C-slice) */
     std::vector<std::vector<double>> v_;
 
-    /** \param Vertex index info */
+    /** \param Vertex index info on the current C-slice */
     VertexIdx N_v;
+
+    /** \param Storage of vertex index info in the roadmap */
     std::vector<VertexIdx> vtxId_;
+
+    /** \param Storage of all vertex index info after refinement */
     std::vector<std::vector<VertexIdx>> vtxIdAll_;
 
     /** \param Tightly-fitted ellipsoids at bridge C-slice */

@@ -32,7 +32,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Constructor
      * \param robot MultibodyTree type defining the robot
      * \param arena vector of geometric types definint the planning arena
-     * \param obstacle vector of geometric types defining obstacles
+     * \param obs vector of geometric types defining obstacles
      * \param req PlanningRequest structure */
     HRM3D(const MultiBodyTree3D& robot, const std::vector<SuperQuadrics>& arena,
           const std::vector<SuperQuadrics>& obs, const PlanningRequest& req);
@@ -43,11 +43,9 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
         const Index num);
 
-    /**
-     * \brief Get free line segment at one specific C-layer
-     * \param Boundary pointer to Minkowski boundaries
-     * \return FreeSegment3D
-     */
+    /** \brief Get free line segment at one specific C-layer
+     * \param bd Pointer to Minkowski boundaries
+     * \return Collision-free line segment as FreeSegment3D type */
     FreeSegment3D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
         generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
@@ -55,20 +53,16 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         return freeSegOneLayer_;
     }
 
-    /**
-     * \brief Get Minkowski sums boundary mesh
+    /** \brief Get Minkowski sums boundary mesh
      * \param idx Index of C-layer
-     * \return Boundary mesh
-     */
+     * \return Boundary mesh */
     BoundaryMesh getLayerBoundaryMesh(const Index idx) {
         return layerBoundMeshAll_.at(idx);
     }
 
-    /**
-     * \brief Get Minkowski sums boundary
+    /** \brief Get Minkowski sums boundary
      * \param idx Index of C-layer
-     * \return Boundary
-     */
+     * \return Boundary */
     BoundaryInfo getLayerBoundary(const Index idx) {
         return layerBoundAll_.at(idx);
     }
@@ -83,7 +77,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
                                   const FreeSegment2D* freeSeg) override;
 
     /** \brief Connect within one C-layer
-     * \param 3D collision-free line segments */
+     * \param freeSeg 3D collision-free line segments */
     void connectOneLayer3D(const FreeSegment3D* freeSeg);
 
     virtual void connectMultiLayer() override;
