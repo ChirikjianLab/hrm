@@ -7,31 +7,44 @@
 #include "geometry/include/TightFitEllipsoid.h"
 #include "util/include/InterpolateSE3.h"
 
-/** \brief FreeSegment3D collision-free line segments in 3D */
+/** \brief Collision-free line segments in 3D */
 struct FreeSegment3D {
+    /** \brief x-coordinates of the 3D line segments */
     std::vector<Coordinate> tx;
+
+    /** \brief Vector of line segments in yz-plane as FreeSegment2D type */
     std::vector<FreeSegment2D> freeSegYZ;
 };
 
-/** \brief BoundaryMesh mesh representation of Minkowski operations */
+/** \brief Mesh representation of Minkowski operations */
 struct BoundaryMesh {
+    /** \brief Mesh of arena */
     std::vector<MeshMatrix> arena;
+
+    /** \brief Mesh of obstacles */
     std::vector<MeshMatrix> obstacle;
 };
 
+/** \class HRM3D
+ * \brief Highway RoadMap planner for 3D rigid-body robot */
 class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
   public:
+    /** \brief Constructor
+     * \param robot MultibodyTree type defining the robot
+     * \param arena vector of geometric types definint the planning arena
+     * \param obstacle vector of geometric types defining obstacles
+     * \param req PlanningRequest structure */
     HRM3D(const MultiBodyTree3D& robot, const std::vector<SuperQuadrics>& arena,
           const std::vector<SuperQuadrics>& obs, const PlanningRequest& req);
 
     virtual ~HRM3D();
 
-    /** \brief get the resulting solved path and the interpolated one */
+    /** \brief Get the resulting solved path and the interpolated one */
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
         const Index num);
 
     /**
-     * \brief get free line segment at one specific C-layer
+     * \brief Get free line segment at one specific C-layer
      * \param Boundary pointer to Minkowski boundaries
      * \return FreeSegment3D
      */
@@ -43,7 +56,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     }
 
     /**
-     * \brief getLayerBoundaryMesh Get Minkowski sums boundary mesh
+     * \brief Get Minkowski sums boundary mesh
      * \param idx Index of C-layer
      * \return Boundary mesh
      */
@@ -52,7 +65,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     }
 
     /**
-     * \brief getLayerBoundary Get Minkowski sums boundary
+     * \brief Get Minkowski sums boundary
      * \param idx Index of C-layer
      * \return Boundary
      */
@@ -69,7 +82,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D* freeSeg) override;
 
-    /** \brief connect within one C-layer */
+    /** \brief Connect within one C-layer
+     * \param 3D collision-free line segments */
     void connectOneLayer3D(const FreeSegment3D* freeSeg);
 
     virtual void connectMultiLayer() override;
@@ -77,11 +91,20 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     void connectExistLayer(const Index layerId) override;
 
   protected:
+    /** \brief Generate C-free boundary as mesh
+     * \param bound C-arena/C-obstacle boundary points
+     * \param boundMesh The generated mesh type */
     void generateBoundaryMesh(const BoundaryInfo* bound,
                               BoundaryMesh* boundMesh);
 
     void bridgeLayer() override;
 
+    /** \brief Compute Tightly-Fitted Ellipsoid (TFE) to enclose robot parts
+     * when rotating around its center
+     * \param q1 Start orientation of the robot
+     * \param q2 Goal orientation of the robot
+     * \param tfe Resulting TFE that fully encloses the robot while under pure
+     * rotational motions */
     virtual void computeTFE(const Eigen::Quaterniond& q1,
                             const Eigen::Quaterniond& q2,
                             std::vector<SuperQuadrics>* tfe);
@@ -109,14 +132,16 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void setTransform(const std::vector<Coordinate>& v) override;
 
   protected:
-    /** \param q_r sampled orientations (Quaternion) of the robot */
+    /** \param Sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_;
 
-    /** \param layerBoundMesh_ boundary surface as mesh */
+    /** \param Boundary surface as mesh */
     BoundaryMesh layerBoundMesh_;
+
+    /** \param Storage of boundary surface mesh */
     std::vector<BoundaryMesh> layerBoundMeshAll_;
 
-    /** \param freeSegOneLayer_ collision-free line segments in one C-slice */
+    /** \param Collision-free line segments in one C-slice */
     FreeSegment3D freeSegOneLayer_;
 
     /** \param Minkowski boundaries mesh at bridge C-layer */
