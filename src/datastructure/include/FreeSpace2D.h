@@ -8,40 +8,43 @@
 #include <limits>
 #include <vector>
 
-/**
- * \brief Collision-free horizontal sweep line segments
- * \param yCoord y-coordinate
- * \param xCoords x-coordinates of free segments on the sweep line
- */
+/** \brief Collision-free horizontal sweep line segments */
 struct FreeSegment2D {
+    /** \brief y-coordinate defining the sweep line */
     Coordinate yCoord;
+
+    /** \brief x-coordinates of free segments on the sweep line */
     std::vector<Interval> xCoords;
 };
 
-/**
- * \brief Parameters for free space parameterization
- * \param numAngle number of rotation angles, default = 50
- * \param numY number of sweep lines
- * \param numPointOnFreeSegment number of sampled points on free segment,
- * default = 20
- * \param xLim, yLim limit bounds of x and y directions
- */
+/** \brief Parameters for free space parameterization */
 struct Parameters2D {
+    /** \brief Number of rotation angles, default = 50 */
     Index numAngle = 50;
+
+    /** \brief Number of sweep lines */
     Index numY;
+
+    /** \brief Number of sampled points on free segment, default = 20 */
     Index numPointOnFreeSegment = 20;
 
+    /** \brief Bound limits in x-direction */
     std::pair<Coordinate, Coordinate> xLim;
+
+    /** \brief Bound limits in y-direction */
     std::pair<Coordinate, Coordinate> yLim;
 };
 
 /** \brief Interections between each sweep line and C-space object boundaries */
 struct IntersectSweepLine2D {
+    /** \brief Intersections with arena */
     std::vector<Interval> arenaXCoords;
+
+    /** \brief Intersections with obstacles */
     std::vector<Interval> obsXCords;
 };
 
-/** \class FreeSpace2D class to compute free space in SE(2) */
+/** \class Compute free space in SE(2) */
 class FreeSpace2D {
   public:
     FreeSpace2D(MultiBodyTree2D* robot, std::vector<SuperEllipse>* arena,

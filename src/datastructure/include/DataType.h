@@ -15,6 +15,9 @@ using SE3Transform = Eigen::Matrix4d;
 
 /** \brief Structure of boundary points for arenas and obstacles */
 struct BoundaryInfo {
+    /** \brief Boundary points on Arena */
     std::vector<BoundaryPoints> arena;
+
+    /** \brief Boundary points on obstacles */
     std::vector<BoundaryPoints> obstacle;
 };

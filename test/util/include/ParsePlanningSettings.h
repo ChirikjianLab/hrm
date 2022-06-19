@@ -7,39 +7,65 @@
 #include "planners/include/PlanningRequest.h"
 #include "util/include/Parse2dCsvFile.h"
 
-/** \brief loadVectorGeometry Load vector of 2D superellipses*/
+/** \brief Load vector of 2D superellipses
+ * \param object_config Configuration of the geometric object
+ * \param num_curve_param Number of sampled points on the curve
+ * \param object SuperEllipse object */
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         const int num_curve_param,
                         std::vector<SuperEllipse>& object);
 
+/** \brief Load vector of 2D superellipses from file
+ * \param config_file Configuration file of the geometric object
+ * \param num_curve_param Number of sampled points on the curve
+ * \param object SuperEllipse object */
 void loadVectorGeometry(const std::string& config_file,
                         const int num_curve_param,
                         std::vector<SuperEllipse>& object);
 
-/** \brief loadVectorGeometry Load vector of 3D superquadrics*/
+/** \brief Load vector of 3D Superquadrics
+ * \param object_config Configuration of the geometric object
+ * \param num_surf_param Number of sampled points on the surface
+ * \param object SuperQuadrics object */
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         const int num_surf_param,
                         std::vector<SuperQuadrics>& object);
 
+/** \brief Load vector of 3D Superquadrics from file
+ * \param config_file Configuration file of the geometric object
+ * \param num_surf_param Number of sampled points on the surface
+ * \param object SuperQuadrics object */
 void loadVectorGeometry(const std::string& config_file,
                         const int num_surf_param,
                         std::vector<SuperQuadrics>& object);
 
-/** \brief loadRobotMultiBody2D Load multi-body tree in 2D */
+/** \brief Load multi-body tree in 2D
+ * \param path_prefix Configuration file path
+ * \param num_curve_param Number of sampled points on the curve
+ * \return MultiBodyTree2D object */
 MultiBodyTree2D loadRobotMultiBody2D(const std::string& path_prefix,
                                      const int num_curve_param);
 
-/** loadRobotMultiBody3D \brief Load multi-body tree in 3D */
+/** \brief Load multi-body tree in 3D
+ * \param path_prefix Configuration file path
+ * \param quat_file File path for the pre-defined orientations in Quaternion
+ * format
+ * \param num_surf_param Number of sampled points on the surface
+ * \return MultiBodyTree3D object */
 MultiBodyTree3D loadRobotMultiBody3D(const std::string& path_prefix,
                                      const std::string& quat_file,
                                      const int num_surf_param);
 
-/** \brief loadPreDefinedQuaternions Load pre-defined quaternion or generating
- * uniform random SO(3) rotations */
+/** \brief Load pre-defined quaternion or generating uniform random SO(3)
+ * rotations
+ * \param quat_file File path for the pre-defined Quaternions
+ * \param robot_base SuperQuadrics object for the robot base */
 void loadPreDefinedQuaternions(const std::string& quat_file,
                                SuperQuadrics& robot_base);
 
-/** \brief computeObstacleMinSize Compute minimum size of all obstacles */
+/** \brief Compute minimum size of all obstacles
+ * \param obstacles List of geometric objects for the obstacles
+ * \return The minimum size among all the obstacles */
 template <typename ObjectType>
 double computeObstacleMinSize(const std::vector<ObjectType>& obstacles) {
     double min_size_obs = obstacles.at(0).getSemiAxis().at(0);
@@ -55,10 +81,12 @@ double computeObstacleMinSize(const std::vector<ObjectType>& obstacles) {
     return min_size_obs;
 }
 
-/** \class PlannerSetting Setting planning environment */
+/** \class Setting planning environment */
 template <class ObjectType>
 class PlannerSetting {
   public:
+    /** \brief Constructor
+     * \param num_param Number of sampled points */
     PlannerSetting(const int num_param) : num_param_(num_param) {
         if (typeid(ObjectType) == typeid(SuperEllipse)) {
             dim_ = "2D";
@@ -70,20 +98,40 @@ class PlannerSetting {
     }
     ~PlannerSetting() {}
 
-  public:
+    /** \brief Set arena
+     * \param arena List of geometric objects */
     void setArena(std::vector<ObjectType> arena) { arena_ = arena; }
+
+    /** \brief Set obstacles
+     * \param obstacle List of geometric objects */
     void setObstacle(std::vector<ObjectType> obstacle) { obstacle_ = obstacle; }
+
+    /** \brief Set start/goal configurations
+     * \param end_points List of configurations for start and goal */
     void setEndPoints(std::vector<std::vector<double>> end_points) {
         end_points_ = end_points;
     }
 
+    /** \brief Get arena object
+     * \return List of geometric objects */
     std::vector<ObjectType> getArena() const { return arena_; }
+
+    /** \brief Get obstacle object
+     * \return List of geometric objects */
     std::vector<ObjectType> getObstacle() const { return obstacle_; }
+
+    /** \brief Get start/goal configurations
+     * \return List of configurations for start and goal */
     std::vector<std::vector<double>> getEndPoints() const {
         return end_points_;
     }
+
+    /** \brief Get parameter for sampled points
+     * \return Parameter number */
     int getNumParam() const { return num_param_; }
 
+    /** \brief Load environment
+     * \param path_prefix Configuration file path */
     void loadEnvironment(const std::string& path_prefix) {
         // Read environment config file
         const std::string arena_config_file =
@@ -100,14 +148,26 @@ class PlannerSetting {
     };
 
   protected:
+    /** \brief Dimension of the objects */
     std::string dim_;
+
+    /** \brief Arena object */
     std::vector<ObjectType> arena_;
+
+    /** \brief Obstacles object */
     std::vector<ObjectType> obstacle_;
+
+    /** \brief Start/goal configurations */
     std::vector<std::vector<double>> end_points_;
+
+    /** \brief Parameter for sampled points */
     const int num_param_;
 };
 
-/** \brief Define planning parameters */
+/** \brief Define planning parameters
+ * \param robot MultiBodyTree3D object defining the robot
+ * \param env3D Planning environment
+ * \param param Planning parameters */
 void defineParameters(const MultiBodyTree3D* robot,
                       const PlannerSetting<SuperQuadrics>* env3D,
                       PlannerParameter* param);
