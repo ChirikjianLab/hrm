@@ -56,7 +56,8 @@ struct IntersectSweepLine3D {
     std::vector<Interval> obsZCords;
 };
 
-/** \class Compute free space in SE(3) */
+/** \class FreeSpace3D
+ * \brief Compute free space in SE(3) */
 class FreeSpace3D {
   public:
     /** \brief Constructor

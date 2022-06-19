@@ -5,6 +5,8 @@
 
 #include <Eigen/Dense>
 
+/** \class ParseURDF
+ * \brief URDF file parser */
 class ParseURDF {
   public:
     /** \brief Constructor
@@ -25,5 +27,6 @@ class ParseURDF {
                                  const std::string& bodyName);
 
   private:
+    /** \brief KDL::Tree object */
     KDL::Tree kdlTree_;
 };

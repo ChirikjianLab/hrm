@@ -44,7 +44,8 @@ struct IntersectSweepLine2D {
     std::vector<Interval> obsXCords;
 };
 
-/** \class Compute free space in SE(2) */
+/** \class FreeSpace2D
+ * \brief Compute free space in SE(2) */
 class FreeSpace2D {
   public:
     /** \brief Constructor

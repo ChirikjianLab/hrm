@@ -81,7 +81,8 @@ double computeObstacleMinSize(const std::vector<ObjectType>& obstacles) {
     return min_size_obs;
 }
 
-/** \class Setting planning environment */
+/** \class PlannerSetting
+ * \brief Setting planning environment */
 template <class ObjectType>
 class PlannerSetting {
   public:
