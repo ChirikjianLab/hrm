@@ -47,36 +47,69 @@ struct IntersectSweepLine2D {
 /** \class Compute free space in SE(2) */
 class FreeSpace2D {
   public:
+    /** \brief Constructor
+     * \param robot MultiBodyTree2D object defining the robot
+     * \param arena Geometric object of arena
+     * \param obstacle Geometric object of obstacles
+     * \param param Planning parameters */
     FreeSpace2D(MultiBodyTree2D* robot, std::vector<SuperEllipse>* arena,
                 std::vector<SuperEllipse>* obstacle, Parameters2D* param);
     ~FreeSpace2D() {}
 
+    /** \brief Generate C-space obstacles boundary */
     void generateCSpaceBoundary();
 
+    /** \brief Get C-space obstacles boundary
+     * \return BoundaryInfo object */
     BoundaryInfo getCSpaceBoundary() { return configSpaceBoundary_; }
 
+    /** \brief Get collision-free line segments
+     * \return List of free segments */
     std::vector<FreeSegment2D> getFreeSegments() {
         return computeFreeSegments();
     }
 
+    /** \brief Get collision-free line segments on a specific line
+     * \param yCoord y-coordinate of the desired sweep line
+     * \return FreeSegment2D object */
     FreeSegment2D getFreeSegmentsGivenY(const Coordinate& yCoord) {
         return computeFreeSegmentsGivenY(yCoord);
     }
 
   private:
+    /** \brief Compute collision-free line segments on a specific line
+     * \param yCoord y-coordinate of the desired sweep line
+     * \return FreeSegment2D object */
     FreeSegment2D computeFreeSegmentsGivenY(const Coordinate& yCoord);
 
+    /** \brief Compute collision-free line segments
+     * \return List of free segments */
     std::vector<FreeSegment2D> computeFreeSegments();
 
+    /** \brief Compute intersection between a sweep line and C-obstacles
+     * \param yCoord y-coordinate of the sweep line
+     * \return IntersectSweepLine2D object */
     IntersectSweepLine2D computeIntersectSweepLine(
         const Coordinate& yCoord) const;
 
+    /** \brief Compute collision-free line segment given intersections
+     * \param intersections Intersecting points on the sweep line
+     * \return FreeSegment2D object */
     static FreeSegment2D computeSweepLineFreeSegment(
         const IntersectSweepLine2D& intersections);
 
+    /** \brief C-space boundary */
     BoundaryInfo configSpaceBoundary_;
+
+    /** \brief MultiBodyTree2D object defining the robot */
     MultiBodyTree2D* robot_;
+
+    /** \brief Geometric object of arena */
     std::vector<SuperEllipse>* arena_;
+
+    /** \brief Geometric objects of obstacles */
     std::vector<SuperEllipse>* obstacle_;
+
+    /** \brief Planning parameters */
     Parameters2D* param_;
 };
