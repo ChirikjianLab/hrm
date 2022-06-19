@@ -4,18 +4,23 @@
 #include "datastructure/include/MultiBodyTree2D.h"
 #include "geometry/include/TightFitEllipsoid.h"
 
+/** \class HRM2D
+ * \brief Highway RoadMap planner for 2D rigid-body robot */
 class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
   public:
+    /** \brief Constructor
+     * \param robot MultibodyTree type defining the robot
+     * \param arena vector of geometric types definint the planning arena
+     * \param obs vector of geometric types defining obstacles
+     * \param req PlanningRequest structure */
     HRM2D(const MultiBodyTree2D& robot, const std::vector<SuperEllipse>& arena,
           const std::vector<SuperEllipse>& obs, const PlanningRequest& req);
 
     virtual ~HRM2D() override;
 
-    /**
-     * \brief get free line segment at one specific C-layer
-     * \param Boundary pointer to Minkowski boundaries
-     * \return FreeSegment2D
-     */
+    /** \brief Get free line segment at one specific C-slice
+     * \param bd Pointer to Minkowski boundaries
+     * \return Collision-free line segment as FreeSegment2D type */
     FreeSegment2D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
         sweepLineProcess();
@@ -56,12 +61,19 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     virtual void setTransform(const std::vector<Coordinate>& v) override;
 
+    /** \brief Compute Tightly-Fitted Ellipse (TFE) to enclose robot parts when
+     * rotating around its center
+     * \param thetaA Start heading angle of the robot
+     * \param thetaB Goal heading angle of the robot
+     * \param tfe Resulting TFE that fully encloses the robot while under pure
+     * rotational motions */
     void computeTFE(const double thetaA, const double thetaB,
                     std::vector<SuperEllipse>* tfe);
 
-    /** \brief headings_ sampled orientations of the robot */
+    /** \param Sampled heading angles of the robot */
     std::vector<double> headings_;
 
+    /** \param Collision-free line segment */
     FreeSegment2D freeSegOneLayer_;
 
     /** \param Minkowski boundaries at bridge C-layer */
