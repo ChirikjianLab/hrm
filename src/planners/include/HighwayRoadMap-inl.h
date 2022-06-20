@@ -15,10 +15,17 @@ using Durationd = std::chrono::duration<double>;
 /** \brief visitor that terminates when we find the goal */
 struct AStarFoundGoal {};
 
+/** \class AStarGoalVisitor */
 template <class Vertex>
 class AStarGoalVisitor : public boost::default_astar_visitor {
   public:
+    /** \brief Constructor
+     * \param goal Goal vertex */
     AStarGoalVisitor(Vertex goal) : goal_(goal) {}
+
+    /** \brief Examine whether reaches goal
+     * \param u Current vertex
+     * \param g Graph structure */
     template <class Graph>
     void examine_vertex(Vertex u, Graph& g) {
         if (u == goal_) {
@@ -27,6 +34,7 @@ class AStarGoalVisitor : public boost::default_astar_visitor {
     }
 
   private:
+    /** \brief Goal vertex */
     Vertex goal_;
 };
 
