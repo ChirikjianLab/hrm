@@ -29,30 +29,41 @@ using Point_3 = K::Point_3;
 
 /** \brief Mesh as a structure of vertices and triangles */
 struct Mesh {
+    /** \brief List of fcl::Vector3d object for vertices */
     std::vector<fcl::Vector3d> vertices;
+
+    /** \brief List of fcl::Triangle object for faces */
     std::vector<fcl::Triangle> triangles;
 };
 
 /** \brief Mesh with vertices and faces stored in MatrixXd format */
 struct MeshMatrix {
+    /** \brief List of vertices */
     BoundaryPoints vertices;
+
+    /** \brief Faces in the matrix format */
     Eigen::MatrixXd faces;
 };
 
-/** \brief ParametricPoints vectors of point coordinates */
+/** \brief Vectors of point coordinates */
 struct ParametricPoints {
+    /** \brief x-coordinate of the surface points */
     std::vector<Coordinate> x;
+
+    /** \brief y-coordinate of the surface points */
     std::vector<Coordinate> y;
+
+    /** \brief z-coordinate of the surface points */
     std::vector<Coordinate> z;
 };
 
-/** \brief get mesh info from SuperQuadrics class */
+/** \brief Get mesh info from SuperQuadrics class */
 Mesh getMeshFromSQ(SuperQuadrics sq);
 
-/** \brief get mesh info from 3D point cloud */
+/** \brief Get mesh info from 3D point cloud */
 Mesh getMesh(const ParametricPoints& points);
 
-/** \brief get 3D point cloud from SuperQuadric class */
+/** \brief Get 3D point cloud from SuperQuadric class */
 ParametricPoints getBoundary3D(const SuperQuadrics& obj);
 
 /** \brief Generate SuperQuadrics class from configuration .csv file */
