@@ -33,5 +33,13 @@ target_link_libraries(TestProbHRM3D
                       ${GTEST_LIBRARIES})
 add_test(TestProbHRM3D ${EXECUTABLE_OUTPUT_PATH}/TestProbHRM3D)
 
+# Ablated version
+add_executable(TestHRM3DAblation TestHRM3DAblation.cpp)
+target_link_libraries(TestHRM3DAblation
+                      HRM3D
+                      TEST_UTIL
+                      ${GTEST_LIBRARIES})
+add_test(TestHRM3DAblation ${EXECUTABLE_OUTPUT_PATH}/TestHRM3DAblation)
+
 add_subdirectory(benchmark)
 add_subdirectory(util)
