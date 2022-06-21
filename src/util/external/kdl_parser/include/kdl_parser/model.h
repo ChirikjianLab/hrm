@@ -53,11 +53,14 @@
 
 namespace urdf {
 
+/** \class Model
+ * \brief KDL model */
 class Model : public ModelInterface {
   public:
-    /// \brief Load Model from TiXMLDocument
+    /** \brief Load Model from TiXMLDocument */
     bool initXml(TiXmlDocument* xml);
-    /// \brief Load Model from a XML-string
+
+    /** \brief Load Model from a XML-string */
     bool initString(const std::string& xml_string);
 };
 

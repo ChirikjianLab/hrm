@@ -6,7 +6,7 @@
 #include <limits>
 #include <vector>
 
-/** \class Inverval
+/** \class Interval
  * \brief Operations for invervals on a line */
 class Interval {
   public:

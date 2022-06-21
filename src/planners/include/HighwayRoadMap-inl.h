@@ -15,7 +15,8 @@ using Durationd = std::chrono::duration<double>;
 /** \brief visitor that terminates when we find the goal */
 struct AStarFoundGoal {};
 
-/** \class AStarGoalVisitor */
+/** \class AStarGoalVisitor
+ * \brief Class for goal visitor in A* search */
 template <class Vertex>
 class AStarGoalVisitor : public boost::default_astar_visitor {
   public:
@@ -38,7 +39,8 @@ class AStarGoalVisitor : public boost::default_astar_visitor {
     Vertex goal_;
 };
 
-/** \class HighwayRoadMap superclass for HRM-based planners */
+/** \class HighwayRoadMap
+ * \brief Superclass for HRM-based planners */
 template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::HighwayRoadMap(
     const RobotType& robot, const std::vector<ObjectType>& arena,
