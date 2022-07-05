@@ -14,7 +14,6 @@ OMPL2D::OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
 OMPL2D::~OMPL2D() = default;
 
 void OMPL2D::setup(const Index spaceId, const Index plannerId,
-                   const Index stateSamplerId,
                    const Index validStateSamplerId) {
     const double STATE_VALIDITY_RESOLUTION = 0.01;
 
@@ -46,7 +45,6 @@ void OMPL2D::setup(const Index spaceId, const Index plannerId,
     setCollisionObject();
 
     setPlanner(plannerId);
-    setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
 }
 
@@ -167,66 +165,9 @@ void OMPL2D::setPlanner(const Index plannerId) {
     }
 }
 
-void OMPL2D::setStateSampler(const Index stateSamplerId) {
-    // Set the state sampler
-    if (stateSamplerId == 1) {
-        // Build a pre-computed set of free states, sweep line
-        if (validStateLibrary_.empty()) {
-            buildFreeStateLibraryFromSweep();
-        }
-
-        ss_->getStateSpace()->setStateSamplerAllocator(
-            [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
-                return std::make_shared<ob::PrecomputedStateSampler>(
-                    ss, validStateLibrary_);
-            });
-    } else if (stateSamplerId == 2) {
-        // Build a pre-computed set of free states, C-obstacle boundary
-        if (validStateLibrary_.empty()) {
-            buildFreeStateLibraryFromBoundary();
-        }
-
-        ss_->getStateSpace()->setStateSamplerAllocator(
-            [this](const ob::StateSpace *ss) -> ob::StateSamplerPtr {
-                return std::make_shared<ob::PrecomputedStateSampler>(
-                    ss, validStateLibrary_);
-            });
-    }
-}
-
 void OMPL2D::setValidStateSampler(const Index validSamplerId) {
     // Set the valid state sampler
-    if (validSamplerId == 0) {
-        // Proposed Minkowski-based sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto sampler =
-                    std::make_shared<MinkowskiSweepLineSamplerSE2>(si);
-
-                // Setup robot and environment for sampler
-                sampler->setRobot(&robot_);
-                sampler->setArena(&arena_);
-                sampler->setObstacle(&obstacle_);
-                sampler->setParam(&param_);
-
-                return sampler;
-            });
-    } else if (validSamplerId == 1) {
-        // Proposed Minkowski-based sampler, sample on boundary
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [this](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto sampler =
-                    std::make_shared<MinkowskiBoundarySamplerSE2>(si);
-
-                // Setup robot and environment for sampler
-                sampler->setRobot(&robot_);
-                sampler->setArena(&arena_);
-                sampler->setObstacle(&obstacle_);
-                sampler->setParam(&param_);
-
-                return sampler;
-            });
-    } else if (validSamplerId == 2) {
+    if (validSamplerId == 2) {
         // Uniform sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
@@ -322,102 +263,4 @@ bool OMPL2D::isStateValid(const ob::State *state) {
     numCollisionChecks_++;
 
     return true;
-}
-
-void OMPL2D::buildFreeStateLibraryFromSweep() {
-    std::cout << "Building free space library using sweep-line process..."
-              << std::endl;
-    std::cout << "Number of rotation samples: " << param_.numAngle << '\n'
-              << "Number of sweep lines: " << param_.numY << '\n'
-              << "Number of points on free segment: "
-              << param_.numPointOnFreeSegment << std::endl;
-
-    ompl::time::point start = ompl::time::now();
-
-    // Generate collision-free samples
-    double dth = 2 * pi / (static_cast<double>(param_.numAngle) - 1);
-
-    for (size_t i = 0; i < param_.numAngle; ++i) {
-        double th = -pi + static_cast<double>(i) * dth;
-
-        Eigen::Matrix3d tf = Eigen::Matrix3d::Identity();
-        tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
-        robot_.robotTF(tf);
-
-        FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
-        fs.generateCSpaceBoundary();
-        std::vector<FreeSegment2D> freeSegments = fs.getFreeSegments();
-
-        for (FreeSegment2D segment : freeSegments) {
-            // Generate several random points on the free segment
-            for (size_t j = 0; j < segment.xCoords.size(); ++j) {
-                for (size_t k = 0; k < param_.numPointOnFreeSegment; ++k) {
-                    ob::State *state = ss_->getSpaceInformation()->allocState();
-
-                    ompl::RNG rng;
-                    double t = rng.uniformReal(0.0, 1.0);
-                    state->as<ob::SE2StateSpace::StateType>()->setXY(
-                        (1.0 - t) * segment.xCoords[j].s() +
-                            t * segment.xCoords[j].e(),
-                        segment.yCoord);
-                    state->as<ob::SE2StateSpace::StateType>()->setYaw(th);
-
-                    validStateLibrary_.push_back(state);
-                }
-            }
-        }
-    }
-
-    libraryBuildTime_ = ompl::time::seconds(ompl::time::now() - start);
-
-    std::cout << "Number of free samples: " << validStateLibrary_.size()
-              << std::endl;
-    std::cout << "Time to build free sample library: " << libraryBuildTime_
-              << " seconds" << std::endl;
-}
-
-void OMPL2D::buildFreeStateLibraryFromBoundary() {
-    std::cout << "Building free space library from C-obstacle boundary..."
-              << std::endl;
-    std::cout << "Number of rotation samples: " << param_.numAngle << std::endl;
-
-    ompl::time::point start = ompl::time::now();
-
-    // Generate collision-free samples
-    double dth = 2 * pi / (static_cast<double>(param_.numAngle) - 1);
-
-    for (size_t i = 0; i < param_.numAngle; ++i) {
-        double th = -pi + static_cast<double>(i) * dth;
-
-        Eigen::Matrix3d tf = Eigen::Matrix3d::Identity();
-        tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
-        robot_.robotTF(tf);
-
-        FreeSpace2D fs(&robot_, &arena_, &obstacle_, &param_);
-        fs.generateCSpaceBoundary();
-        BoundaryInfo boundaries = fs.getCSpaceBoundary();
-
-        for (Eigen::Matrix2Xd bound : boundaries.obstacle) {
-            for (Eigen::Index j = 0; j < bound.cols(); ++j) {
-                if (bound(0, j) > param_.xLim.first &&
-                    bound(0, j) < param_.xLim.second &&
-                    bound(1, j) > param_.yLim.first &&
-                    bound(1, j) < param_.yLim.second) {
-                    ob::State *state = ss_->getSpaceInformation()->allocState();
-                    state->as<ob::SE2StateSpace::StateType>()->setXY(
-                        bound(0, j), bound(1, j));
-                    state->as<ob::SE2StateSpace::StateType>()->setYaw(th);
-
-                    validStateLibrary_.push_back(state);
-                }
-            }
-        }
-    }
-
-    libraryBuildTime_ = ompl::time::seconds(ompl::time::now() - start);
-
-    std::cout << "Number of free samples: " << validStateLibrary_.size()
-              << std::endl;
-    std::cout << "Time to build free sample library: " << libraryBuildTime_
-              << " seconds" << std::endl;
 }

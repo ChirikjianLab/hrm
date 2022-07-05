@@ -15,8 +15,7 @@ OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
 
 OMPL3D::~OMPL3D() = default;
 
-void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
-                   const Index validStateSamplerId) {
+void OMPL3D::setup(const Index plannerId, const Index validStateSamplerId) {
     // Set collision checker
     ss_->setStateValidityChecker(
         [this](const ob::State *state) { return isStateValid(state); });
@@ -24,7 +23,6 @@ void OMPL3D::setup(const Index plannerId, const Index stateSamplerId,
 
     // Set planner and sampler
     setPlanner(plannerId);
-    setStateSampler(stateSamplerId);
     setValidStateSampler(validStateSamplerId);
 
     ss_->setup();
@@ -270,39 +268,12 @@ MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
     MultiBodyTree3D robotAux = robot_;
     robotAux.robotTF(tf);
 
-    //    std::vector<SuperQuadrics> robotAux;
-    //    for (size_t i = 0; i < robot_.size(); ++i) {
-    //        robotAux.push_back(robot_.at(i));
-    //        robotAux.back().setPosition(
-    //            {state->as<ob::SE3StateSpace::StateType>()->getX(),
-    //             state->as<ob::SE3StateSpace::StateType>()->getY(),
-    //             state->as<ob::SE3StateSpace::StateType>()->getZ()});
-
-    //        robotAux.back().setQuaternion(Eigen::Quaterniond(
-    //            state->as<ob::SE3StateSpace::StateType>()->rotation().w,
-    //            state->as<ob::SE3StateSpace::StateType>()->rotation().x,
-    //            state->as<ob::SE3StateSpace::StateType>()->rotation().y,
-    //            state->as<ob::SE3StateSpace::StateType>()->rotation().z));
-    //    }
-
     return robotAux;
 }
 
 // Checking collision with obstacles
 bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     for (size_t i = 0; i < obstacles_.size(); ++i) {
-        //        if (std::fabs(obstacles_.at(i).getEpsilon().at(0) - 1.0) <
-        //        1e-6 &&
-        //            std::fabs(obstacles_.at(i).getEpsilon().at(1) - 1.0) <
-        //            1e-6) {
-        //            // For two ellipsoids, use ASC algorithm
-        //            for (size_t j = 0; j < robotAux.size(); ++j) {
-        //                if (!isEllipsoidSeparated(robotAux.at(j),
-        //                obstacles_.at(i))) {
-        //                    return false;
-        //                }
-        //            }
-        //        } else {
         // For an ellipsoid and superquadrics, use FCL
         if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacles_.at(i),
                         objObs_.at(i))) {
@@ -315,7 +286,6 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
                 return false;
             }
         }
-        //        }
     }
 
     return true;

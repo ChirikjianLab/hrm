@@ -1,7 +1,6 @@
 #pragma once
 
 #include "OMPL3D.h"
-#include "samplers/include/C3FGenerator3DArticulated.h"
 #include "util/include/ParseURDF.h"
 
 #include "ompl/base/spaces/RealVectorStateSpace.h"

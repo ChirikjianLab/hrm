@@ -1,8 +1,8 @@
 #pragma once
 
 #include "datastructure/include/DataType.h"
-#include "samplers/include/MinkowskiLibrarySamplerSE2.h"
-#include "samplers/include/MinkowskiSamplerSE2.h"
+#include "datastructure/include/FreeSpace2D.h"
+#include "datastructure/include/MultiBodyTree2D.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 #include "util/include/EllipsoidSeparation.h"
 
@@ -50,9 +50,6 @@ class OMPL2D {
     /** \brief Getter function of total planning time */
     double getPlanningTime() const { return totalTime_; }
 
-    /** \brief Get the time of generating C3F seeds set */
-    double getLibraryBuildTime() const { return libraryBuildTime_; }
-
     /** \brief Get the number of total collision checks, including both
      * sampling and connecting processes */
     Index getNumCollisionChecks() const { return numCollisionChecks_; }
@@ -75,10 +72,9 @@ class OMPL2D {
     /** \brief Set up the planning problem
      * \param spaceId ID of the state space
      * \param plannerId ID of the planner
-     * \param stateSamplerId ID of the StateSampler
      * \param validStateSamplerId ID of the ValidStateSampler */
     void setup(const Index spaceId, const Index plannerId,
-               const Index stateSamplerId, const Index validStateSamplerId);
+               const Index validStateSamplerId);
 
     /** \brief Main routine for planning
      * \param endPts Start/goal states */
@@ -95,10 +91,6 @@ class OMPL2D {
      * \param plannerId Planner ID */
     void setPlanner(const Index plannerId);
 
-    /** \brief Set the state sampler
-     * \param stateSamplerId State sampler ID */
-    void setStateSampler(const Index stateSamplerId);
-
     /** \brief Set the valid state sampler
      * \param validSamplerId Valid state sampler ID */
     void setValidStateSampler(const Index validSamplerId);
@@ -109,14 +101,6 @@ class OMPL2D {
     /** \brief Check collision
      * \param state ompl::base::State pointer */
     bool isStateValid(const ob::State *state);
-
-    /** \brief Build pre-computed set of valid states using sweep-line process
-     */
-    void buildFreeStateLibraryFromSweep();
-
-    /** \brief Build pre-computed set of valid states from C-obstacles boundary
-     */
-    void buildFreeStateLibraryFromBoundary();
 
   protected:
     /** \brief Pointer to ompl::geometric::SimpleSetup */
@@ -166,10 +150,4 @@ class OMPL2D {
 
     /** \brief States in solved path */
     std::vector<std::vector<Coordinate>> path_;
-
-    /** \brief Pre-computed C3F seeds set */
-    std::vector<const ob::State *> validStateLibrary_;
-
-    /** \brief Pre-computation time for C3F seeds set */
-    double libraryBuildTime_ = 0.0;
 };
