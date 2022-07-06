@@ -52,7 +52,7 @@ link_libraries(${orocos_kdl_LIBRARIES})
 
 # kdl_parser is OPTIONAL for now, we have provided a lite-version of KDL_parser
 find_package(kdl_parser QUIET)
-if(kdl_parser_FOUND)
+if(NOT kdl_parser_FOUND)
     message(STATUS "Found KDL_Parser from ROS dependencies")
     link_libraries(${kdl_parser_LIBRARIES})
     include_directories(${kdl_parser_INCLUDE_DIRS})
