@@ -158,18 +158,18 @@ bool addChildrenToTree(const urdf::LinkConstSharedPtr& root, KDL::Tree& tree) {
 }
 
 bool treeFromFile(const std::string& file, KDL::Tree& tree) {
-    TiXmlDocument urdf_xml;
-    urdf_xml.LoadFile(file);
+    tinyxml2::XMLDocument urdf_xml;
+    urdf_xml.LoadFile(file.c_str());
     return treeFromXml(&urdf_xml, tree);
 }
 
 bool treeFromString(const std::string& xml, KDL::Tree& tree) {
-    TiXmlDocument urdf_xml;
+    tinyxml2::XMLDocument urdf_xml;
     urdf_xml.Parse(xml.c_str());
     return treeFromXml(&urdf_xml, tree);
 }
 
-bool treeFromXml(TiXmlDocument* xml_doc, KDL::Tree& tree) {
+bool treeFromXml(const tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree) {
     urdf::Model robot_model;
     if (!robot_model.initXml(xml_doc)) {
         std::cout << "Could not generate robot model";

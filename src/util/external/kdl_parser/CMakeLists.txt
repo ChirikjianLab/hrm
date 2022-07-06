@@ -1,3 +1,5 @@
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/util/external/kdl_parser/cmake)
+
 find_package(urdfdom REQUIRED)
 IF (urdfdom_FOUND)
   include_directories(BEFORE
@@ -6,7 +8,7 @@ IF (urdfdom_FOUND)
 ENDIF()
 
 
-find_library(TinyXML NAMES tinyxml)
+find_package(TinyXML2 REQUIRED)
 
 file(GLOB KDL_Parser_SOURCES src/kdl_parser/*.cpp)
 
@@ -15,8 +17,7 @@ include_directories(include)
 add_library(KDL_Parser STATIC ${KDL_Parser_SOURCES})
 target_link_libraries(KDL_Parser
                       ${orocos_kdl_LIBRARIES}
-                      ${TINYXML_LIBRARIES}
-                      ${TinyXML}
+                      ${TinyXML2_LIBRARIES}
                       ${Boost_LIBRARIES}
                       ${urdfdom_LIBRARIES})
 

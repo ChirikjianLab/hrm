@@ -46,32 +46,31 @@
 #ifndef KDL_PARSER_H
 #define KDL_PARSER_H
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include <urdf_model/model.h>
 #include <kdl/tree.hpp>
 #include <string>
 
 namespace kdl_parser {
 
-/** Constructs a KDL tree from a file, given the file name
+/** \brief Constructs a KDL tree from a file, given the file name
  * \param file The filename from where to read the xml
  * \param tree The resulting KDL Tree
- * returns true on success, false on failure
- */
+ * \return True on success, false on failure */
 bool treeFromFile(const std::string& file, KDL::Tree& tree);
 
-/** Constructs a KDL tree from a TiXmlDocument
+/** \brief Constructs a KDL tree from a TiXmlDocument
  * \param xml_doc The TiXmlDocument containting the xml description of the
- * robot \param tree The resulting KDL Tree returns true on success, false
+ * robot
+ * \param tree The resulting KDL Tree returns true on success, false
  * on failure
- */
-bool treeFromXml(TiXmlDocument* xml_doc, KDL::Tree& tree);
+ * \return True on success, false on failure */
+bool treeFromXml(const tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree);
 
-/** Constructs a KDL tree from a URDF robot model
+/** \brief Constructs a KDL tree from a URDF robot model
  * \param robot_model The URDF robot model
  * \param tree The resulting KDL Tree
- * returns true on success, false on failure
- */
+ * \return True on success, false on failure */
 bool treeFromUrdfModel(const urdf::ModelInterface& robot_model,
                        KDL::Tree& tree);
 }  // namespace kdl_parser

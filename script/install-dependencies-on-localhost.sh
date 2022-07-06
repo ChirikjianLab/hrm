@@ -57,7 +57,7 @@ git clone https://github.com/google/googletest.git -b release-1.10.0
 srcDir="googletest"
 buildAndInstall "$srcDir"
 
-# install deb package for urdfdom and tinmyxml
-sudo apt install liburdfdom-dev
+# install deb package for urdfdom and tinmyxml2
+sudo apt install liburdfdom-dev libtinyxml2-dev
 
 sudo rm -r "$HOME"/tmpHRM
