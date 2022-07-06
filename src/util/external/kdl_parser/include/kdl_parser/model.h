@@ -58,7 +58,7 @@ namespace urdf {
 class Model : public ModelInterface {
   public:
     /** \brief Load Model from TiXMLDocument */
-    bool initXml(tinyxml2::XMLDocument* xml);
+    bool initXml(const tinyxml2::XMLDocument* xml);
 
     /** \brief Load Model from a XML-string */
     bool initString(const std::string& xml_string);

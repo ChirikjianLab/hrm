@@ -65,7 +65,7 @@ bool treeFromFile(const std::string& file, KDL::Tree& tree);
  * \param tree The resulting KDL Tree returns true on success, false
  * on failure
  * \return True on success, false on failure */
-bool treeFromXml(tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree);
+bool treeFromXml(const tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree);
 
 /** \brief Constructs a KDL tree from a URDF robot model
  * \param robot_model The URDF robot model

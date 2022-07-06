@@ -169,7 +169,7 @@ bool treeFromString(const std::string& xml, KDL::Tree& tree) {
     return treeFromXml(&urdf_xml, tree);
 }
 
-bool treeFromXml(tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree) {
+bool treeFromXml(const tinyxml2::XMLDocument* xml_doc, KDL::Tree& tree) {
     urdf::Model robot_model;
     if (!robot_model.initXml(xml_doc)) {
         std::cout << "Could not generate robot model";

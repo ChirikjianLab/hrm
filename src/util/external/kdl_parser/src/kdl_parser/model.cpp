@@ -54,7 +54,7 @@
 
 namespace urdf {
 
-bool Model::initXml(tinyxml2::XMLDocument* xml) {
+bool Model::initXml(const tinyxml2::XMLDocument* xml) {
     if (xml == nullptr) {
         std::cout << "Could not parse the xml document" << std::endl;
         return false;
