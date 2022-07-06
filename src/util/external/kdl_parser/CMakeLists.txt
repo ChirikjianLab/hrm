@@ -6,7 +6,7 @@ IF (urdfdom_FOUND)
 ENDIF()
 
 
-find_library(TinyXML NAMES tinyxml)
+find_library(TinyXML NAMES tinyxml2)
 
 file(GLOB KDL_Parser_SOURCES src/kdl_parser/*.cpp)
 

@@ -12,6 +12,7 @@ RUN apt update
 RUN apt install -y ninja-build python3-pip cmake gcc-9 g++-9 && \
     apt install -y git vim powerline fonts-powerline clang-tidy clang-format clang-tidy-12 clang-format-12 && \
     apt install -y libeigen3-dev libgmp-dev libompl-dev ompl-demos liburdfdom-dev libcgal-dev && \
+    apt install -y libtinyxml2-dev && \
     pip3 install powerline-status powerline-shell && \
     pip install conan && \
     apt clean
