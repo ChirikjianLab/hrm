@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
                 OMPL3DArticulated tester(b1, b2, robot, urdfFile, arena, obs,
                                          obs_mesh);
-                tester.setup(m, 0, n);
+                tester.setup(m, n);
 
                 tester.plan(env3D->getEndPoints().at(0),
                             env3D->getEndPoints().at(1), MAX_PLAN_TIME);

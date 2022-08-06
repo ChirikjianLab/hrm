@@ -5,6 +5,4 @@ add_library(OMPL_PLANNER
 target_link_libraries(OMPL_PLANNER
                       DATA_STRUCTURE
                       GEOM
-                      SAMPLER_2D
-                      SAMPLER_3D
                       UTIL)

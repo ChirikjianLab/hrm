@@ -1,8 +1,8 @@
 #pragma once
 
+#include "datastructure/include/FreeSpace3D.h"
 #include "datastructure/include/MultiBodyTree3D.h"
-#include "samplers/include/C3FGenerator3D.h"
-#include "samplers/include/MinkowskiSamplerSE3.h"
+#include "planners/include/PlanningRequest.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 #include "util/include/EllipsoidSeparation.h"
 #include "util/include/Parse2dCsvFile.h"
@@ -68,9 +68,6 @@ class OMPL3D {
     /** \brief Getter function of total planning time */
     double getPlanningTime() const { return totalTime_; }
 
-    /** \brief Get the time of generating C3F seeds set */
-    double getC3FGenerateTime() const { return preComputeTime_; }
-
     /** \brief Get the number of total collision checks, including both
      * sampling and connecting processes */
     Index getNumCollisionChecks() const { return numCollisionChecks_; }
@@ -98,20 +95,13 @@ class OMPL3D {
 
     /** \brief Set up the planning problem
      * \param plannerId ID of the planner
-     * \param stateSamplerId ID of the StateSampler
-     *  0: default for the corresponding state space;
-     *  1: precomputed library of valid states by sweep-line process
-     *  2: precomputed library of valid states from C-obstacle boundaries
      * \param validStateSamplerId ID of the ValidStateSampler
      *  0: uniform valid state sampler
      *  1: Gaussian valid state sampler
      *  2: obstacle-based valid state sampler
      *  3: maximum-clearance valid state sampler
-     *  4: bridge-test valid state sampler
-     *  5: valid state sampler from Minkowski sum and sweep-line process
-     *  6: valid state sampler from Minkowski sum and C-obstacle boundaries */
-    void setup(const Index plannerId, const Index stateSamplerId,
-               const Index validStateSamplerId);
+     *  4: bridge-test valid state sampler */
+    void setup(const Index plannerId, const Index validStateSamplerId);
 
     /** \brief Start to plan
      * \param start Start configuration
@@ -245,10 +235,4 @@ class OMPL3D {
 
     /** \brief States in solved path */
     std::vector<std::vector<Coordinate>> path_;
-
-    /** \brief Pre-computation time for C3F seeds set */
-    double preComputeTime_ = 0.0;
-
-    /** \brief Pre-computed C3F seeds set */
-    std::vector<const ob::State*> validStateSet_;
 };

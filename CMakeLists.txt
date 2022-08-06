@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.16...3.18)
 
 # Project's name
-project(HighwayRoadMap VERSION 0.2.2 LANGUAGES CXX)
+project(HighwayRoadMap VERSION 0.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
 set(default_build_type "Release")
@@ -18,12 +18,6 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 
 find_package(static_analysis)
 find_package(sanitizers)
-
-#add_compile_options(
-#        -Wall
-#        -Wextra
-#        -Woverloaded-virtual
-#)
 
 # Dependency packages
 

@@ -207,60 +207,7 @@ void HRM3D::connectMultiLayer() {
         return;
     }
 
-    //    int n_check = 0;
-    //    int n_connect = 0;
-
     for (size_t i = 0; i < vtxId_.size(); ++i) {
-        //        n2 = vtxId_[i].layer;
-        //        // Construct the middle layer
-        //        if (i == N_layers - 1 && N_layers != 2) {
-        //            j = 0;
-
-        //            //
-        //            ////////////////////////////////////////////////////////////////////
-        //            //            std::ofstream file_pose;
-        //            //            file_pose.open("robot_pose_mid.csv");
-        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
-        //            << ',' <<
-        //            //            q_r[i].y()
-        //            //                      << ',' << q_r[i].z() << std::endl
-        //            //                      << q_r[0].w() << ',' << q_r[0].x()
-        //            << ',' <<
-        //            //                      q_r[0].y()
-        //            //                      << ',' << q_r[0].z() << std::endl;
-        //            //            file_pose.close();
-        //            //
-        //            ////////////////////////////////////////////////////////////////////
-
-        //        } else {
-        //            j = i + 1;
-
-        //            //
-        //            ////////////////////////////////////////////////////////////////////
-        //            //            std::ofstream file_pose;
-        //            //            file_pose.open("robot_pose_mid.csv");
-        //            //            file_pose << q_r[i].w() << ',' << q_r[i].x()
-        //            << ',' <<
-        //            //            q_r[i].y()
-        //            //                      << ',' << q_r[i].z() << std::endl
-        //            //                      << q_r[i + 1].w() << ',' << q_r[i
-        //            + 1].x()
-        //            //                      << ','
-        //            //                      << q_r[i + 1].y() << ',' << q_r[i
-        //            + 1].z()
-        //            //                      << std::endl;
-        //            //            file_pose.close();
-        //            //
-        //            ////////////////////////////////////////////////////////////////////
-        //        }
-
-        //        if (j != 0) {
-        //            n22 = vtxId_[j - 1].layer;
-        //        } else {
-        //            n22 = 0;
-        //        }
-        //        n_2 = vtxId_[j].layer;
-
         // Find the nearest C-layers
         double minDist = inf;
         int minIdx = 0;
@@ -284,31 +231,6 @@ void HRM3D::connectMultiLayer() {
         // Construct the middle layer
         computeTFE(q_.at(i), q_.at(minIdx), &tfe_);
         bridgeLayer();
-
-        //        ////////////////////////////////////////////////////////////
-        //        std::ofstream file_mid;
-        //        file_mid.open("mid_3d.csv");
-        //        for (size_t i = 0; i < mid.size(); i++) {
-        //            file_mid << mid[i].getSemiAxis()[0] << ','
-        //                     << mid[i].getSemiAxis()[1] << ','
-        //                     << mid[i].getSemiAxis()[2] << ','
-        //                     << mid[i].getPosition()[0] << ','
-        //                     << mid[i].getPosition()[1] << ','
-        //                     << mid[i].getPosition()[2] << ','
-        //                     << mid[i].getQuaternion().w() << ','
-        //                     << mid[i].getQuaternion().x() << ','
-        //                     << mid[i].getQuaternion().y() << ','
-        //                     << mid[i].getQuaternion().z() << std::endl;
-        //        }
-        //        file_mid.close();
-        //        /////////////////////////////////////////////////////////////
-
-        //        ////////////////////////////////////////////////////////////////////
-        //        std::ofstream file_bd;
-        //        file_bd.open("mid_layer_mink_bound_3D.csv");
-        //        file_bd << bridgeLayerBdMultiLink.at(0).at(0).vertices <<
-        //        "\n"; file_bd.close();
-        //        ////////////////////////////////////////////////////////////////////
 
         // Nearest vertex btw layers
         for (size_t m0 = start; m0 < n2; ++m0) {
@@ -334,8 +256,6 @@ void HRM3D::connectMultiLayer() {
                     res_.graph_structure.weight.push_back(
                         vectorEuclidean(v1, v2));
 
-                    //                    n_connect++;
-
                     // Continue from where it pauses
                     n22 = m1;
                     break;
@@ -344,8 +264,6 @@ void HRM3D::connectMultiLayer() {
         }
         start = n2;
     }
-
-    //    std::cout << n_check << ',' << n_connect << std::endl;
 }
 
 void HRM3D::connectExistLayer(const Index layerId) {
@@ -516,16 +434,6 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
 
         // Base: determine whether each step is within CF-Line of bridgeLayer
         if (!isPtInCFree(0, robot_.getBase().getPosition())) {
-            //            std::cout << "[Base] Current step: " << vStep[0] << ",
-            //            " << vStep[1]
-            //                      << ", " << vStep[2] << std::endl;
-            //            std::cout << "Actual step: " <<
-            //            RobotM.getBase().getPosition()[0]
-            //                      << ", " << RobotM.getBase().getPosition()[1]
-            //                      << ", "
-            //                      << RobotM.getBase().getPosition()[2] <<
-            //                      std::endl;
-
             return false;
         }
 
@@ -533,21 +441,6 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
         // region between 4 CF-Lines in bridgeLayer
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
             if (!isPtInCFree(j + 1, robot_.getLinks()[j].getPosition())) {
-                //                std::cout << "[Link " << std::to_string(j)
-                //                          << "] Current step: " << vStep[0] <<
-                //                          ", " << vStep[1]
-                //                          << ", " << vStep[2] << std::endl;
-                //                std::cout << "Actual step: "
-                //                          <<
-                //                          RobotM.getLinks()[j].getPosition()[0]
-                //                          << ", "
-                //                          <<
-                //                          RobotM.getLinks()[j].getPosition()[1]
-                //                          << ", "
-                //                          <<
-                //                          RobotM.getLinks()[j].getPosition()[2]
-                //                          << std::endl;
-
                 return false;
             }
         }
