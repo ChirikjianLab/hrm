@@ -1,15 +1,17 @@
 #include "include/HRM2D.h"
 #include "geometry/include/LineIntersection.h"
 
-#include <iostream>
-
 HRM2D::HRM2D(const MultiBodyTree2D& robot,
              const std::vector<SuperEllipse>& arena,
              const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
-          robot, arena, obs, req) {}
+          robot, arena, obs, req) {
+    freeSpacePtr_ = std::make_shared<FreeSpace2D>(&robot_, &arena_, &obs_);
+}
 
 HRM2D::~HRM2D() = default;
+
+BoundaryInfo HRM2D::boundaryGen() { return freeSpacePtr_->getCSpaceBoundary(); }
 
 void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
@@ -53,65 +55,13 @@ void HRM2D::sweepLineProcess() {
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
-    const IntersectionInterval intersect = computeIntersections(ty);
+    std::vector<std::vector<Coordinate>> tLine{ty};
+    const IntersectionInterval intersect =
+        freeSpacePtr_->getIntersectionInterval(tLine, param_.BOUND_LIMIT[0],
+                                               param_.BOUND_LIMIT[1]);
 
     // Compute collision-free intervals at each sweep line
     freeSegOneLayer_ = computeFreeSegment(ty, &intersect);
-}
-
-IntersectionInterval HRM2D::computeIntersections(
-    const std::vector<Coordinate>& ty) {
-    const auto numLine = static_cast<Eigen::Index>(ty.size());
-    const auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
-    const auto numObstacle =
-        static_cast<Eigen::Index>(layerBound_.obstacle.size());
-
-    IntersectionInterval intersect;
-    intersect.arenaLow =
-        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[0]);
-    intersect.arenaUpp =
-        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[1]);
-    intersect.obstacleLow =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
-    intersect.obstacleUpp =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
-
-    // Find intersecting points to C-obstacles for each raster scan line
-    std::vector<Coordinate> intersectPointArena;
-    std::vector<Coordinate> intersectPointObstacle;
-    for (auto i = 0; i < numLine; ++i) {
-        // x-coordinate of the intersection btw sweep line and arenas
-        for (auto j = 0; j < numArena; ++j) {
-            intersectPointArena = intersectHorizontalLinePolygon2D(
-                ty.at(i), layerBound_.arena.at(j));
-            if (intersectPointArena.empty()) {
-                continue;
-            }
-
-            intersect.arenaLow(i, j) = std::fmin(
-                param_.BOUND_LIMIT[0],
-                std::fmin(intersectPointArena[0], intersectPointArena[1]));
-            intersect.arenaUpp(i, j) = std::fmax(
-                param_.BOUND_LIMIT[1],
-                std::fmax(intersectPointArena[0], intersectPointArena[1]));
-        }
-
-        // x-coordinate of the intersection btw sweep line and obstacles
-        for (auto j = 0; j < numObstacle; ++j) {
-            intersectPointObstacle = intersectHorizontalLinePolygon2D(
-                ty.at(i), layerBound_.obstacle.at(j));
-            if (intersectPointObstacle.empty()) {
-                continue;
-            }
-
-            intersect.obstacleLow(i, j) =
-                std::fmin(intersectPointObstacle[0], intersectPointObstacle[1]);
-            intersect.obstacleUpp(i, j) =
-                std::fmax(intersectPointObstacle[0], intersectPointObstacle[1]);
-        }
-    }
-
-    return intersect;
 }
 
 void HRM2D::generateVertices(const Coordinate tx,

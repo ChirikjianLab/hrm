@@ -24,6 +24,9 @@ BoundaryInfo HRM2DKC::boundaryGen() {
         bd.obstacle.emplace_back(obstacle.getMinkSum2D(robot_infla, +1));
     }
 
+    // Set computed boundary into FreeSpace2D object
+    freeSpacePtr_->setCSpaceBoundary(bd);
+
     return bd;
 }
 

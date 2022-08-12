@@ -1,29 +1,11 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "datastructure/include/MultiBodyTree3D.h"
+#include "datastructure/include/FreeSpace3D.h"
 #include "geometry/include/LineIntersection.h"
 #include "geometry/include/MeshGenerator.h"
 #include "geometry/include/TightFitEllipsoid.h"
 #include "util/include/InterpolateSE3.h"
-
-/** \brief Collision-free line segments in 3D */
-struct FreeSegment3D {
-    /** \brief x-coordinates of the 3D line segments */
-    std::vector<Coordinate> tx;
-
-    /** \brief Vector of line segments in yz-plane as FreeSegment2D type */
-    std::vector<FreeSegment2D> freeSegYZ;
-};
-
-/** \brief Mesh representation of Minkowski operations */
-struct BoundaryMesh {
-    /** \brief Mesh of arena */
-    std::vector<MeshMatrix> arena;
-
-    /** \brief Mesh of obstacles */
-    std::vector<MeshMatrix> obstacle;
-};
 
 /** \class HRM3D
  * \brief Highway RoadMap planner for 3D rigid-body robot */
@@ -39,6 +21,8 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual ~HRM3D();
 
+    BoundaryInfo boundaryGen() override;
+
     /** \brief Get the resulting solved path and the interpolated one */
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
         const Index num);
@@ -48,7 +32,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \return Collision-free line segment as FreeSegment3D type */
     FreeSegment3D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
-        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
+        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh(&layerBound_);
         sweepLineProcess();
         return freeSegOneLayer_;
     }
@@ -85,12 +69,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     void connectExistLayer(const Index layerId) override;
 
   protected:
-    /** \brief Generate C-free boundary as mesh
-     * \param bound C-arena/C-obstacle boundary points
-     * \param boundMesh The generated mesh type */
-    void generateBoundaryMesh(const BoundaryInfo* bound,
-                              BoundaryMesh* boundMesh);
-
     void bridgeLayer() override;
 
     /** \brief Compute Tightly-Fitted Ellipsoid (TFE) to enclose robot parts
@@ -102,9 +80,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void computeTFE(const Eigen::Quaterniond& q1,
                             const Eigen::Quaterniond& q2,
                             std::vector<SuperQuadrics>* tfe);
-
-    IntersectionInterval computeIntersections(
-        const std::vector<Coordinate>& ty) override;
 
     bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;
@@ -140,4 +115,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     /** \param Minkowski boundaries mesh at bridge C-layer */
     std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
+
+    /** \param Pointer to class for constructing free space */
+    std::shared_ptr<FreeSpace3D> freeSpacePtr_;
 };

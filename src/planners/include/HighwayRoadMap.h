@@ -3,6 +3,7 @@
 #include "PlanningRequest.h"
 #include "PlanningResult.h"
 #include "datastructure/include/DataType.h"
+#include "datastructure/include/FreeSpace.h"
 
 #include "Eigen/Dense"
 
@@ -22,36 +23,6 @@ using Vertex = AdjGraph::vertex_descriptor;
 using edge_descriptor = AdjGraph::edge_descriptor;
 using vertex_iterator = AdjGraph::vertex_iterator;
 using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
-
-/** \brief Collision-free line segments in 2D */
-struct FreeSegment2D {
-    /** \brief Vector of y-coordinates defining the sweep lines */
-    std::vector<Coordinate> ty;
-
-    /** \brief Vector of lower bound of free segments within each sweep line */
-    std::vector<std::vector<Coordinate>> xL;
-
-    /** \brief Vector of upper bound of free segments within each sweep line */
-    std::vector<std::vector<Coordinate>> xU;
-
-    /** \brief Vector of middle point of free segments within each sweep line */
-    std::vector<std::vector<Coordinate>> xM;
-};
-
-/** \brief Intervals for intersection between sweep line and arenas/obstacles */
-struct IntersectionInterval {
-    /** \brief Lower bounds of line segment within arena */
-    Eigen::MatrixXd arenaLow;
-
-    /** \brief Upper bounds of line segment within arena */
-    Eigen::MatrixXd arenaUpp;
-
-    /** \brief Lower bounds of line segment within obstacle */
-    Eigen::MatrixXd obstacleLow;
-
-    /** \brief Upper bounds of line segment within obstacle */
-    Eigen::MatrixXd obstacleUpp;
-};
 
 /** \brief Vertex index at each C-slice, sweep line */
 struct VertexIdx {
@@ -141,7 +112,7 @@ class HighwayRoadMap {
 
     /** \brief Generating Minkowski sum boundary points
      * \return BoundaryInfo structure */
-    virtual BoundaryInfo boundaryGen();
+    virtual BoundaryInfo boundaryGen() = 0;
 
     /** \brief Sweep-line process for generating collision-free line segment */
     virtual void sweepLineProcess() = 0;
@@ -173,20 +144,6 @@ class HighwayRoadMap {
      * \param idx1, idx2 Indices of two vertices to be connected */
     void bridgeVertex(const Index idx1, const Index idx2);
 
-    /** \brief Compute intervals of intersections between sweep line and
-     * arenas/obstacles
-     * \param ty Vector of y-coordinates of the sweep line
-     * \return Intersecting points as IntersectionInterval type */
-    virtual IntersectionInterval computeIntersections(
-        const std::vector<Coordinate>& ty) = 0;
-
-    /** \brief Compute collision-free segment on each sweep line
-     * \param ty vector of y-coordinates of the sweep line
-     * \param intersect Pointer to intervals of sweep line intersections
-     * \return Collision-free line segment as FreeSegment2D type */
-    FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
-                                     const IntersectionInterval* intersect);
-
     /** \brief Check whether connection between v1 and v2 within one C-layer is
      * valid through line segment V1-V2 and C-obstacle mesh intersection
      * checking
@@ -209,12 +166,6 @@ class HighwayRoadMap {
     /** \brief Check whether one point is within C-free */
     virtual bool isPtInCFree(const Index bdIdx,
                              const std::vector<Coordinate>& v) = 0;
-
-    /** \brief Subroutine to enhance vertex generation
-     * \param current Pointer to the current free segment
-     * \return Enhanced free segment with more valid vertices as FreeSegment2D
-     * type */
-    FreeSegment2D enhanceDecomp(const FreeSegment2D* current);
 
     /** \brief Find the nearest neighbors of a pose on the graph
      * \param vertex the queried vertex
