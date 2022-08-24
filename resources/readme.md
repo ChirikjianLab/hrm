@@ -26,7 +26,7 @@ urdf/
 ```
 
 # Name conventions
-Important note: for 3D rotations in `2D/` and `3D/` folders, we use the __Axis-Angle__ parameterization to as the storage convention; while in `SO3_sequence/` folder, the storage convention is __Unit-Quaternion__.
+Important note: for 3D rotations in `2D/` and `3D/` folders, we use the __Axis-Angle__ parameterization to as the storage convention; while in `SO3_sequence/` folder, the storage convention is __Unit-Quaternion (order: [x,y,z,w])__.
 
 ## Robot shape
 Each line includes all parameters to define an ellipsoid (ellipse in 2D): semi axis lengths, exponents (= 1), center in Cartesian coordinates, orientation. The first line defines the base links, and the rests define other links (positions and orientations are __all relative to the base link__).

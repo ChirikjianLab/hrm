@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include "planners/include/HRM3D.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
@@ -19,7 +20,7 @@ void storeRoutines(Planner* hrm) {
 
     // write to .csv file
     std::ofstream file_ori_bd;
-    file_ori_bd.open("origin_bound_3D.csv");
+    file_ori_bd.open(SOLUTION_DETAILS_PATH "/origin_bound_3D.csv");
     for (size_t i = 0; i < bd_ori.obstacle.size(); i++) {
         file_ori_bd << bd_ori.obstacle[i] << "\n";
     }
@@ -33,7 +34,7 @@ void storeRoutines(Planner* hrm) {
 
     // write to .csv file
     std::ofstream file_bd;
-    file_bd.open("mink_bound_3D.csv");
+    file_bd.open(SOLUTION_DETAILS_PATH "/mink_bound_3D.csv");
     for (auto obs_pts : bd_mink.obstacle) {
         file_bd << obs_pts << "\n";
     }
@@ -46,7 +47,7 @@ void storeRoutines(Planner* hrm) {
     FreeSegment3D freeSeg = hrm->getFreeSegmentOneLayer(&bd_mink);
 
     std::ofstream file_cell;
-    file_cell.open("segment_3D.csv");
+    file_cell.open(SOLUTION_DETAILS_PATH "/segment_3D.csv");
     for (size_t i = 0; i < freeSeg.tx.size(); i++) {
         for (size_t j = 0; j < freeSeg.freeSegYZ[i].ty.size(); j++) {
             for (size_t k = 0; k < freeSeg.freeSegYZ[i].xM[j].size(); k++) {

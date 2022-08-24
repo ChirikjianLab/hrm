@@ -33,6 +33,7 @@
 *.app
 /.metadata/
 /bin/
+/result/
 
 # Intermediate configuration files
 /config/*.csv

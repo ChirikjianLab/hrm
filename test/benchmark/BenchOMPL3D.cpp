@@ -1,3 +1,4 @@
+#include "config.h"
 #include "planners/include/ompl_interface/OMPL3D.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -61,12 +62,12 @@ int main(int argc, char** argv) {
     std::vector<Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Save results
-    std::string filename_prefix = "ompl";
+    std::string filename_prefix = SOLUTION_DETAILS_PATH "/ompl";
 
     std::cout << "Start benchmark..." << std::endl;
 
     std::ofstream outfile;
-    outfile.open("time_ompl_3D.csv");
+    outfile.open(BENCHMARK_DATA_PATH "/time_ompl_3D.csv");
     outfile << "PLANNER" << ',' << "SAMPLER" << ',' << "SUCCESS" << ','
             << "TOTAL_TIME" << ',' << "GRAPH_NODES" << ',' << "GRAPH_EDGES"
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','

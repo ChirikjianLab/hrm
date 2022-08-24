@@ -5,7 +5,12 @@ cmake_minimum_required(VERSION 3.16...3.18)
 project(HighwayRoadMap VERSION 0.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
-set(default_build_type "Release")
+
+# set the default build type
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/static_analysis)
@@ -19,8 +24,18 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 find_package(static_analysis)
 find_package(sanitizers)
 
-# Dependency packages
+# Setup directory for storing result data files
+set(RESULT_PATH ${PROJECT_SOURCE_DIR}/result)
+set(BENCHMARK_DATA_PATH ${RESULT_PATH}/benchmark)
+set(SOLUTION_DETAILS_PATH ${RESULT_PATH}/details)
+file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
+                    ${SOLUTION_DETAILS_PATH})
 
+configure_file(${PROJECT_SOURCE_DIR}/test/config.h.in ${RESULT_PATH}/config.h)
+include_directories(${RESULT_PATH})
+message(STATUS "Results storage path created in: ${RESULT_PATH}")
+
+# Dependency packages
 find_package(OMPL REQUIRED)
 include_directories(${OMPL_INCLUDE_DIRS})
 link_libraries(${OMPL_LIBRARIES})

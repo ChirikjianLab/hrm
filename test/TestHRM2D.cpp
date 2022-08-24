@@ -1,3 +1,4 @@
+#include "config.h"
 #include "planners/include/HRM2D.h"
 #include "planners/include/HRM2DKC.h"
 #include "util/include/DisplayPlanningData.h"
@@ -74,7 +75,7 @@ algorithm planTest(const robotType& robot,
         }
 
         std::ofstream file_ori_bd;
-        file_ori_bd.open("origin_bound_2D.csv");
+        file_ori_bd.open(SOLUTION_DETAILS_PATH "/origin_bound_2D.csv");
         for (const auto& bd_ori_obs : bd_ori.obstacle) {
             file_ori_bd << bd_ori_obs << "\n";
         }
@@ -87,7 +88,7 @@ algorithm planTest(const robotType& robot,
         BoundaryInfo bd = hrm.boundaryGen();
 
         std::ofstream file_bd;
-        file_bd.open("mink_bound_2D.csv");
+        file_bd.open(SOLUTION_DETAILS_PATH "/mink_bound_2D.csv");
         for (const auto& bd_obs : bd.obstacle) {
             file_bd << bd_obs << "\n";
         }
@@ -100,7 +101,7 @@ algorithm planTest(const robotType& robot,
         FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
 
         std::ofstream file_cell;
-        file_cell.open("segment_2D.csv");
+        file_cell.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
         for (size_t i = 0; i < freeSeg.ty.size(); i++) {
             for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
                 file_cell << freeSeg.ty[i] << ' ' << freeSeg.xL[i][j] << ' '
