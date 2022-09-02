@@ -11,29 +11,6 @@ OMPL2D::OMPL2D(const std::vector<double> &lowBound,
 
 OMPL2D::~OMPL2D() = default;
 
-bool OMPL2D::plan(const std::vector<Coordinate> &start,
-                  const std::vector<Coordinate> &goal,
-                  const double maxTimeInSec) {
-    // Set start and goal states for planning
-    setStartAndGoalState(start, goal);
-
-    // Solve the planning problem
-    OMPL_INFORM("Planning...");
-
-    try {
-        isSolved_ = ss_->solve(maxTimeInSec);
-    } catch (ompl::Exception &ex) {
-        std::stringstream es;
-        es << ex.what() << std::endl;
-        OMPL_WARN(es.str().c_str());
-    }
-
-    getSolution();
-    ss_->clear();
-
-    return true;
-}
-
 void OMPL2D::getSolution() {
     if (isSolved_) {
         const unsigned int INTERPOLATION_NUMBER = 200;

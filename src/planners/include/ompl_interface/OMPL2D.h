@@ -1,7 +1,6 @@
 #pragma once
 
 #include "OMPLInterface.h"
-#include "datastructure/include/DataType.h"
 #include "datastructure/include/FreeSpace2D.h"
 #include "datastructure/include/MultiBodyTree2D.h"
 
@@ -19,10 +18,6 @@ class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
            const std::vector<SuperEllipse>& obstacle);
 
     ~OMPL2D();
-
-    bool plan(const std::vector<Coordinate>& start,
-              const std::vector<Coordinate>& goal,
-              const double maxTimeInSec) override;
 
   protected:
     void getSolution() override;

@@ -78,9 +78,8 @@ class OMPLInterface {
      * \param start Start configuration
      * \param goal Goal configuration
      * \param maxTimeInSec Maximum planning time in seconds */
-    virtual bool plan(const std::vector<Coordinate>& start,
-                      const std::vector<Coordinate>& goal,
-                      const double maxTimeInSec) = 0;
+    bool plan(const std::vector<Coordinate>& start,
+              const std::vector<Coordinate>& goal, const double maxTimeInSec);
 
   protected:
     /** \brief Get the solution */

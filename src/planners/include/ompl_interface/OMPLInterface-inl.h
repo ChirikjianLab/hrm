@@ -52,6 +52,45 @@ void OMPLInterface<RobotType, ObjectType>::setup(
 }
 
 template <typename RobotType, typename ObjectType>
+bool OMPLInterface<RobotType, ObjectType>::plan(
+    const std::vector<Coordinate> &start, const std::vector<Coordinate> &goal,
+    const double maxTimeInSec) {
+    isSolved_ = false;
+    if (!ss_) {
+        return isSolved_;
+    }
+
+    // Set start and goal states for planning
+    setStartAndGoalState(start, goal);
+
+    // Path planning
+    OMPL_INFORM("Planning...");
+
+    try {
+        ob::PlannerStatus solved = ss_->solve(maxTimeInSec);
+
+        // Get solution status
+        totalTime_ = ss_->getLastPlanComputationTime();
+
+        if (solved && totalTime_ < maxTimeInSec) {
+            // Number of nodes in solved path
+            lengthPath_ = ss_->getSolutionPath().getStates().size();
+            isSolved_ = true;
+        }
+
+    } catch (ompl::Exception &ex) {
+        std::stringstream es;
+        es << ex.what() << std::endl;
+        OMPL_WARN(es.str().c_str());
+    }
+
+    // Get planning results
+    getSolution();
+
+    return true;
+}
+
+template <typename RobotType, typename ObjectType>
 void OMPLInterface<RobotType, ObjectType>::setPlanner(const Index plannerId) {
     // Set the planner
     if (plannerId == 0) {

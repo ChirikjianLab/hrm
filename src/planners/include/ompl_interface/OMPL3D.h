@@ -8,8 +8,6 @@
 
 #include <ompl/base/spaces/SE3StateSpace.h>
 
-using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
-
 /** \class OMPL3D
  * \brief Class for 3D rigid-body robot planning using OMPL */
 class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
@@ -27,10 +25,6 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
            const std::vector<SuperQuadrics>& obs,
            const std::vector<Mesh>& obsMesh);
     virtual ~OMPL3D();
-
-    bool plan(const std::vector<Coordinate>& start,
-              const std::vector<Coordinate>& goal,
-              const double maxTimeInSec) override;
 
     /** \brief Save the graph information
      * \param filename_prefix Path prefix for the saved file */

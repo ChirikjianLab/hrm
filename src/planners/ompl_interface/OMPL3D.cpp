@@ -1,5 +1,7 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
+using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
+
 OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
                const std::vector<Coordinate> &highBound, MultiBodyTree3D robot,
                const std::vector<SuperQuadrics> &arena,
@@ -10,44 +12,6 @@ OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
       obsMesh_(obsMesh) {}
 
 OMPL3D::~OMPL3D() = default;
-
-bool OMPL3D::plan(const std::vector<Coordinate> &start,
-                  const std::vector<Coordinate> &goal,
-                  const double maxTimeInSec) {
-    isSolved_ = false;
-    if (!ss_) {
-        return isSolved_;
-    }
-
-    // Set start and goal states for planning
-    setStartAndGoalState(start, goal);
-
-    // Path planning
-    OMPL_INFORM("Planning...");
-
-    try {
-        ob::PlannerStatus solved = ss_->solve(maxTimeInSec);
-
-        // Get solution status
-        totalTime_ = ss_->getLastPlanComputationTime();
-
-        if (solved && totalTime_ < maxTimeInSec) {
-            // Number of nodes in solved path
-            lengthPath_ = ss_->getSolutionPath().getStates().size();
-            isSolved_ = true;
-        }
-
-    } catch (ompl::Exception &ex) {
-        std::stringstream es;
-        es << ex.what() << std::endl;
-        OMPL_WARN(es.str().c_str());
-    }
-
-    // Get planning results
-    getSolution();
-
-    return true;
-}
 
 void OMPL3D::getSolution() {
     if (isSolved_) {
