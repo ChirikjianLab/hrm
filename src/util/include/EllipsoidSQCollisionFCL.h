@@ -8,10 +8,9 @@ bool isCollision(const SuperQuadrics& obj1,
                  const SuperQuadrics& obj2,
                  fcl::CollisionObject<double> colObj2);
 
-bool isCollision(const SuperEllipse& obj1,
-                 fcl::CollisionObject<double>* colObj1,
+bool isCollision(const SuperEllipse& obj1, fcl::CollisionObject<double> colObj1,
                  const SuperEllipse& obj2,
-                 fcl::CollisionObject<double>* colObj2);
+                 fcl::CollisionObject<double> colObj2);
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperQuadrics& object);

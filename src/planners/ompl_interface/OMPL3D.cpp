@@ -5,9 +5,8 @@ OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obs,
                const std::vector<Mesh> &obsMesh)
-    : robot_(std::move(robot)),
-      arena_(arena),
-      obstacles_(obs),
+    : OMPLInterface<MultiBodyTree3D, SuperQuadrics>::OMPLInterface(robot, arena,
+                                                                   obs),
       obsMesh_(obsMesh) {
     // Setup state space
     setStateSpace(lowBound, highBound);
@@ -134,78 +133,7 @@ void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL3D::setPlanner(const Index plannerId) {
-    // Set planner
-    if (plannerId == 0) {
-        ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 1) {
-        ss_->setPlanner(
-            std::make_shared<og::LazyPRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 2) {
-        ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation()));
-    } else if (plannerId == 3) {
-        ss_->setPlanner(
-            std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
-    } else if (plannerId == 4) {
-        ss_->setPlanner(std::make_shared<og::EST>(ss_->getSpaceInformation()));
-    } else if (plannerId == 5) {
-        ss_->setPlanner(std::make_shared<og::SBL>(ss_->getSpaceInformation()));
-    } else if (plannerId == 6) {
-        ss_->setPlanner(
-            std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
-    }
-}
-
 void OMPL3D::setStateSampler(const Index stateSamplerId) {}
-
-// Set the valid state sampler
-void OMPL3D::setValidStateSampler(const Index validSamplerId) {
-    if (validSamplerId == 0) {
-        // Uniform sampler
-        OMPL_INFORM("Using Uniform valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::UniformValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 1) {
-        // Gaussian sampler
-        OMPL_INFORM("Using Gaussian valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::GaussianValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 2) {
-        // Obstacle-based sampler
-        OMPL_INFORM("Using Obstacle-based valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 3) {
-        // Maximum-clearance sampler
-        OMPL_INFORM("Using Max-clearance valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto vss =
-                    std::make_shared<ob::MaximizeClearanceValidStateSampler>(
-                        si);
-                vss->setNrImproveAttempts(5);
-                return vss;
-            });
-    } else if (validSamplerId == 4) {
-        // Bridge-test sampler
-        OMPL_INFORM("Using Bridge-test valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::BridgeTestValidStateSampler>(si);
-            });
-    }
-}
 
 void OMPL3D::setStartAndGoalState(const std::vector<Coordinate> &start,
                                   const std::vector<Coordinate> &goal) {
@@ -236,7 +164,7 @@ void OMPL3D::setCollisionObject() {
     }
 
     // Setup collision object for superquadric obstacles
-    for (const auto &obstacle : obstacles_) {
+    for (const auto &obstacle : obstacle_) {
         if (std::fabs(obstacle.getEpsilon().at(0) - 1.0) < 1e-6 &&
             std::fabs(obstacle.getEpsilon().at(1) - 1.0) < 1e-6) {
             GeometryPtr_t ellip(new fcl::Ellipsoidd(
@@ -273,16 +201,16 @@ MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
 
 // Checking collision with obstacles
 bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
-    for (size_t i = 0; i < obstacles_.size(); ++i) {
+    for (size_t i = 0; i < obstacle_.size(); ++i) {
         // For an ellipsoid and superquadrics, use FCL
-        if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacles_.at(i),
+        if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacle_.at(i),
                         objObs_.at(i))) {
             return false;
         }
 
         for (size_t j = 0; j < robotAux.getNumLinks(); ++j) {
             if (isCollision(robotAux.getLinks().at(j), objRobot_.at(j + 1),
-                            obstacles_.at(i), objObs_.at(i))) {
+                            obstacle_.at(i), objObs_.at(i))) {
                 return false;
             }
         }

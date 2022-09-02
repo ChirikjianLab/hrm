@@ -1,31 +1,21 @@
 #include "planners/include/ompl_interface/OMPL2D.h"
 
-#include "ompl/base/PrecomputedStateSampler.h"
-#include "ompl/base/spaces/DubinsStateSpace.h"
-#include "ompl/base/spaces/ReedsSheppStateSpace.h"
-#include "ompl/base/spaces/SE2StateSpace.h"
+#include <ompl/base/spaces/SE2StateSpace.h>
 
-OMPL2D::OMPL2D(MultiBodyTree2D robot, std::vector<SuperEllipse> arena,
-               std::vector<SuperEllipse> obstacle)
-    : robot_(std::move(robot)),
-      arena_(std::move(arena)),
-      obstacle_(std::move(obstacle)) {}
+OMPL2D::OMPL2D(MultiBodyTree2D robot, const std::vector<SuperEllipse> &arena,
+               const std::vector<SuperEllipse> &obstacle)
+    : OMPLInterface<MultiBodyTree2D, SuperEllipse>::OMPLInterface(robot, arena,
+                                                                  obstacle) {}
 
 OMPL2D::~OMPL2D() = default;
 
-void OMPL2D::setup(const Index spaceId, const Index plannerId,
-                   const Index validStateSamplerId) {
+void OMPL2D::setup(const Index plannerId, const Index validStateSamplerId) {
     const double STATE_VALIDITY_RESOLUTION = 0.01;
 
     // Setup space bound
     setEnvBound();
 
     ob::StateSpacePtr space(std::make_shared<ob::SE2StateSpace>());
-    if (spaceId == 1) {
-        space = std::make_shared<ob::DubinsStateSpace>();
-    } else if (spaceId == 2) {
-        space = std::make_shared<ob::ReedsSheppStateSpace>();
-    }
 
     ob::RealVectorBounds bounds(2);
     bounds.setLow(0, param_.xLim.first);
@@ -103,8 +93,8 @@ void OMPL2D::getSolution() {
     ss_->getPlannerData(pd);
 
     // Number of vertices, edges
-    numValidStates_ = pd.numVertices();
-    numValidEdges_ = pd.numEdges();
+    numGraphVertex_ = pd.numVertices();
+    numGraphEdges_ = pd.numEdges();
 
     // Save vertices and edges
     const ob::State *state;
@@ -125,6 +115,14 @@ void OMPL2D::getSolution() {
             edge_.emplace_back(std::make_pair(i, edgeI));
         }
     }
+
+    // Total number of checked and valid motions
+    numCollisionChecks_ =
+        pd.getSpaceInformation()->getMotionValidator()->getCheckedMotionCount();
+    numValidStates_ =
+        pd.getSpaceInformation()->getMotionValidator()->getValidMotionCount();
+
+    validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
 void OMPL2D::setEnvBound() {
@@ -143,83 +141,20 @@ void OMPL2D::setEnvBound() {
                    arena_.at(0).getPosition().at(1) + bound.at(1)};
 }
 
-void OMPL2D::setPlanner(const Index plannerId) {
-    // Set the planner
-    if (plannerId == 0) {
-        ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 1) {
-        ss_->setPlanner(
-            std::make_shared<og::LazyPRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 2) {
-        ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation()));
-    } else if (plannerId == 3) {
-        ss_->setPlanner(
-            std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
-    } else if (plannerId == 4) {
-        ss_->setPlanner(std::make_shared<og::EST>(ss_->getSpaceInformation()));
-    } else if (plannerId == 5) {
-        ss_->setPlanner(std::make_shared<og::SBL>(ss_->getSpaceInformation()));
-    } else if (plannerId == 6) {
-        ss_->setPlanner(
-            std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
-    }
-}
-
-void OMPL2D::setValidStateSampler(const Index validSamplerId) {
-    // Set the valid state sampler
-    if (validSamplerId == 2) {
-        // Uniform sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::UniformValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 3) {
-        // Gaussian sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::GaussianValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 4) {
-        // Obstacle-based sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 5) {
-        // Maximum-clearance sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto vss =
-                    std::make_shared<ob::MaximizeClearanceValidStateSampler>(
-                        si);
-                vss->setNrImproveAttempts(5);
-                return vss;
-            });
-    } else if (validSamplerId == 6) {
-        // Bridge-test sampler
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::BridgeTestValidStateSampler>(si);
-            });
-    }
-
-    ss_->setup();
-}
-
 void OMPL2D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
-    robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
+    objRobot_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
-        robotGeom_.push_back(setCollisionObjectFromSQ(robot_.getLinks().at(i)));
+        objRobot_.push_back(setCollisionObjectFromSQ(robot_.getLinks().at(i)));
     }
 
     // Setup collision object for superquadric obstacles
     for (const auto &obs : obstacle_) {
-        obsGeom_.push_back(setCollisionObjectFromSQ(obs));
+        objObs_.push_back(setCollisionObjectFromSQ(obs));
     }
 }
 
-bool OMPL2D::isStateValid(const ob::State *state) {
+bool OMPL2D::isStateValid(const ob::State *state) const {
     // Get pose info the transform the robot
     const Coordinate x = state->as<ob::SE2StateSpace::StateType>()->getX();
     const Coordinate y = state->as<ob::SE2StateSpace::StateType>()->getY();
@@ -229,38 +164,38 @@ bool OMPL2D::isStateValid(const ob::State *state) {
     tf.topLeftCorner(2, 2) = Eigen::Rotation2Dd(th).toRotationMatrix();
     tf.topRightCorner(2, 1) = Eigen::Array2d({x, y});
 
-    robot_.robotTF(tf);
+    MultiBodyTree2D robotAux = robot_;
+    robotAux.robotTF(tf);
 
     // Checking collision with obstacles
     for (size_t i = 0; i < obstacle_.size(); ++i) {
         if (std::fabs(obstacle_.at(i).getEpsilon() - 1.0) < 1e-6) {
             // For two ellipses, use ASC algorithm
-            if (!isEllipseSeparated(robot_.getBase(), obstacle_.at(i))) {
+            if (!isEllipseSeparated(robotAux.getBase(), obstacle_.at(i))) {
                 return false;
             }
 
-            for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-                if (!isEllipseSeparated(robot_.getLinks().at(j),
+            for (size_t j = 0; j < robotAux.getNumLinks(); ++j) {
+                if (!isEllipseSeparated(robotAux.getLinks().at(j),
                                         obstacle_.at(i))) {
                     return false;
                 }
             }
         } else {
             // For an ellipse and superellipse, use FCL
-            if (isCollision(robot_.getBase(), &robotGeom_.at(0),
-                            obstacle_.at(i), &obsGeom_.at(i))) {
+            if (isCollision(robotAux.getBase(), objRobot_.at(0),
+                            obstacle_.at(i), objObs_.at(i))) {
                 return false;
             }
 
-            for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
-                if (isCollision(robot_.getLinks().at(j), &robotGeom_.at(j + 1),
-                                obstacle_.at(i), &obsGeom_.at(i))) {
+            for (size_t j = 0; j < robotAux.getNumLinks(); ++j) {
+                if (isCollision(robotAux.getLinks().at(j), objRobot_.at(j + 1),
+                                obstacle_.at(i), objObs_.at(i))) {
                     return false;
                 }
             }
         }
     }
-    numCollisionChecks_++;
 
     return true;
 }

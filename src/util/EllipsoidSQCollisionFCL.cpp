@@ -22,17 +22,16 @@ bool isCollision(const SuperQuadrics& obj1,
     return result.isCollision();
 }
 
-bool isCollision(const SuperEllipse& obj1,
-                 fcl::CollisionObject<double>* colObj1,
+bool isCollision(const SuperEllipse& obj1, fcl::CollisionObject<double> colObj1,
                  const SuperEllipse& obj2,
-                 fcl::CollisionObject<double>* colObj2) {
-    colObj1->setTransform(
+                 fcl::CollisionObject<double> colObj2) {
+    colObj1.setTransform(
         Eigen::Quaterniond(Eigen::AngleAxis<double>(
                                obj1.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
         fcl::Vector3d(obj1.getPosition().at(0), obj1.getPosition().at(1), 0.1));
 
-    colObj2->setTransform(
+    colObj2.setTransform(
         Eigen::Quaterniond(Eigen::AngleAxis<double>(
                                obj2.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
@@ -40,7 +39,7 @@ bool isCollision(const SuperEllipse& obj1,
 
     fcl::CollisionRequest<double> request;
     fcl::CollisionResult<double> result;
-    fcl::collide(colObj1, colObj2, request, result);
+    fcl::collide(&colObj1, &colObj2, request, result);
 
     return result.isCollision();
 }

@@ -1,0 +1,149 @@
+#pragma once
+
+#include "datastructure/include/DataType.h"
+#include "util/include/EllipsoidSQCollisionFCL.h"
+#include "util/include/EllipsoidSeparation.h"
+
+#include <ompl/base/StateSpace.h>
+#include <ompl/geometric/SimpleSetup.h>
+
+namespace ob = ompl::base;
+namespace og = ompl::geometric;
+
+/** \class OMPLInterface
+ * \brief Class for planning using OMPL */
+template <typename RobotType, typename ObjectType>
+class OMPLInterface {
+  public:
+    /** \brief Constructor
+     * \param robot Class for robot model
+     * \param arena Class for arena model
+     * \param obstacle Class for obstacles */
+    OMPLInterface(RobotType robot, const std::vector<ObjectType>& arena,
+                  const std::vector<ObjectType>& obstacle);
+
+    ~OMPLInterface();
+
+    /** \brief Getter function for solved path */
+    std::vector<std::vector<Coordinate>> getSolutionPath() const {
+        return path_;
+    }
+
+    /** \brief Indicator of solution */
+    bool isSolved() const { return isSolved_; }
+
+    /** \brief Getter function of total planning time */
+    double getPlanningTime() const { return totalTime_; }
+
+    /** \brief Get the number of total collision checks, including both
+     * sampling and connecting processes */
+    Index getNumCollisionChecks() const { return numCollisionChecks_; }
+
+    /** \brief Get the number of valid states */
+    Index getNumValidStates() const { return numValidStates_; }
+
+    /** \brief Get the percentage of valid states */
+    double getValidStatePercent() const { return validSpace_; }
+
+    /** \brief Get the number of valid vertices in graph */
+    Index getNumVertex() const { return numGraphVertex_; }
+
+    /** \brief Get the number of valid edges connecting two milestones */
+    Index getNumEdges() const { return numGraphEdges_; }
+
+    /** \brief Get the length of the solved path */
+    Index getPathLength() const { return lengthPath_; }
+
+    /** \brief Get all the milestones */
+    std::vector<std::vector<Coordinate>> getVertices() const { return vertex_; }
+
+    /** \brief Get all the valid connection pairs */
+    std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
+
+    /** \brief Set up the planning problem
+     * \param plannerId ID of the planner
+     * \param validStateSamplerId ID of the ValidStateSampler
+     *  0: uniform valid state sampler
+     *  1: Gaussian valid state sampler
+     *  2: obstacle-based valid state sampler
+     *  3: maximum-clearance valid state sampler
+     *  4: bridge-test valid state sampler */
+    virtual void setup(const Index plannerId,
+                       const Index validStateSamplerId) = 0;
+
+    /** \brief Main routine for planning
+     * \param endPts Start/goal states */
+    void plan(const std::vector<std::vector<Coordinate>>& endPts);
+
+  protected:
+    /** \brief Get the solution */
+    virtual void getSolution() = 0;
+
+    /** \brief Set the planner
+     * \param plannerId Planner ID */
+    void setPlanner(const Index plannerId);
+
+    /** \brief Set the valid state sampler
+     * \param validSamplerId Valid state sampler ID */
+    void setValidStateSampler(const Index validSamplerId);
+
+    /** \brief Set the FCL collision object */
+    virtual void setCollisionObject() = 0;
+
+    /** \brief Check collision
+     * \param state ompl::base::State pointer */
+    virtual bool isStateValid(const ob::State* state) const = 0;
+
+    /** \brief Pointer to ompl::geometric::SimpleSetup */
+    og::SimpleSetupPtr ss_;
+
+    /** \brief Robot model */
+    RobotType robot_;
+
+    /** \brief Arena model */
+    std::vector<ObjectType> arena_;
+
+    /** \brief Obstacles model */
+    std::vector<ObjectType> obstacle_;
+
+    /** \brief FCL collision object for robot bodies */
+    std::vector<fcl::CollisionObject<double>> objRobot_;
+
+    /** \brief FCL collision object for obstacles */
+    std::vector<fcl::CollisionObject<double>> objObs_;
+
+    /** \brief Planning results */
+    bool isSolved_ = false;
+
+    /** \brief Total planning time */
+    double totalTime_ = 0.0;
+
+    /** \brief Number of collision checking calls */
+    Index numCollisionChecks_ = 0;
+
+    /** \brief Number of valid state */
+    Index numValidStates_ = 0;
+
+    /** \brief Range of valid space */
+    double validSpace_ = 0.0;
+
+    /** \brief Number of vertices in graph/tree */
+    Index numGraphVertex_ = 0;
+
+    /** \brief Number of edges in graph/tree */
+    Index numGraphEdges_ = 0;
+
+    /** \brief Number of vertices in the solved path */
+    Index lengthPath_ = 0;
+
+    /** \brief Vertex list */
+    std::vector<std::vector<Coordinate>> vertex_;
+
+    /** \brief Edge list */
+    std::vector<std::pair<Index, Index>> edge_;
+
+    /** \brief States in solved path */
+    std::vector<std::vector<Coordinate>> path_;
+};
+
+#include "OMPLInterface-inl.h"

@@ -1,47 +1,18 @@
 #pragma once
 
+#include "OMPLInterface.h"
 #include "datastructure/include/FreeSpace3D.h"
 #include "datastructure/include/MultiBodyTree3D.h"
 #include "planners/include/PlanningRequest.h"
-#include "util/include/EllipsoidSQCollisionFCL.h"
-#include "util/include/EllipsoidSeparation.h"
 #include "util/include/Parse2dCsvFile.h"
 
-#include "ompl/base/SpaceInformation.h"
-#include "ompl/base/samplers/BridgeTestValidStateSampler.h"
-#include "ompl/base/samplers/GaussianValidStateSampler.h"
-#include "ompl/base/samplers/MaximizeClearanceValidStateSampler.h"
-#include "ompl/base/samplers/ObstacleBasedValidStateSampler.h"
-#include "ompl/base/samplers/UniformValidStateSampler.h"
-#include "ompl/base/spaces/SE3StateSpace.h"
-#include "ompl/config.h"
-#include "ompl/geometric/SimpleSetup.h"
-#include "ompl/geometric/planners/est/EST.h"
-#include "ompl/geometric/planners/kpiece/KPIECE1.h"
-#include "ompl/geometric/planners/prm/LazyPRM.h"
-#include "ompl/geometric/planners/prm/PRM.h"
-#include "ompl/geometric/planners/rrt/RRT.h"
-#include "ompl/geometric/planners/rrt/RRTConnect.h"
-#include "ompl/geometric/planners/sbl/SBL.h"
-#include "ompl/util/PPM.h"
-
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Geometry"
-
-#include <math.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
-namespace ob = ompl::base;
-namespace og = ompl::geometric;
+#include <ompl/base/spaces/SE3StateSpace.h>
 
 using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 /** \class OMPL3D
  * \brief Class for 3D rigid-body robot planning using OMPL */
-class OMPL3D {
+class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
   public:
     /** \brief Constructor
      * \param lowBound Lower bound of planning arena
@@ -57,51 +28,7 @@ class OMPL3D {
            const std::vector<Mesh>& obsMesh);
     virtual ~OMPL3D();
 
-    /** \brief Getter function for solved and interpolated path */
-    std::vector<std::vector<Coordinate>> getSolutionPath() const {
-        return path_;
-    }
-
-    /** \brief Indicator of solution */
-    bool isSolved() const { return isSolved_; }
-
-    /** \brief Getter function of total planning time */
-    double getPlanningTime() const { return totalTime_; }
-
-    /** \brief Get the number of total collision checks, including both
-     * sampling and connecting processes */
-    Index getNumCollisionChecks() const { return numCollisionChecks_; }
-
-    /** \brief Get the number of valid states */
-    Index getNumValidStates() const { return numValidStates_; }
-
-    /** \brief Get the percentage of valid states */
-    double getValidStatePercent() const { return validSpace_; }
-
-    /** \brief Get the number of valid vertices in graph */
-    Index getNumVertex() const { return numGraphVertex_; }
-
-    /** \brief Get the number of valid edges connecting two milestones */
-    Index getNumEdges() const { return numGraphEdges_; }
-
-    /** \brief Get the length of the solved path */
-    Index getPathLength() const { return lengthPath_; }
-
-    /** \brief Get all the milestones */
-    std::vector<std::vector<Coordinate>> getVertices() const { return vertex_; }
-
-    /** \brief Get all the valid connection pairs */
-    std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
-
-    /** \brief Set up the planning problem
-     * \param plannerId ID of the planner
-     * \param validStateSamplerId ID of the ValidStateSampler
-     *  0: uniform valid state sampler
-     *  1: Gaussian valid state sampler
-     *  2: obstacle-based valid state sampler
-     *  3: maximum-clearance valid state sampler
-     *  4: bridge-test valid state sampler */
-    void setup(const Index plannerId, const Index validStateSamplerId);
+    void setup(const Index plannerId, const Index validStateSamplerId) override;
 
     /** \brief Start to plan
      * \param start Start configuration
@@ -119,8 +46,7 @@ class OMPL3D {
     void savePathInfo(const std::string& filename_prefix);
 
   protected:
-    /** \brief Get the solution */
-    void getSolution();
+    void getSolution() override;
 
     /** \brief Set the state space
      * \param lowBound Lower bound of the planning arena
@@ -128,17 +54,9 @@ class OMPL3D {
     virtual void setStateSpace(const std::vector<Coordinate>& lowBound,
                                const std::vector<Coordinate>& highBound);
 
-    /** \brief Set the planner
-     * \param plannerId Planner ID */
-    void setPlanner(const Index plannerId);
-
     /** \brief Set the state sampler
      * \param stateSamplerId State sampler ID */
     virtual void setStateSampler(const Index stateSamplerId);
-
-    /** \brief Set the valid state sampler
-     * \param validSamplerId Valid state sampler ID */
-    void setValidStateSampler(const Index validSamplerId);
 
     /** \brief Set the start and goal states
      * \param start Start state
@@ -152,12 +70,9 @@ class OMPL3D {
     static bool compareStates(const std::vector<Coordinate>& goalConfig,
                               const std::vector<Coordinate>& lastConfig);
 
-    /** \brief Set the FCL collision object */
-    void setCollisionObject();
+    void setCollisionObject() override;
 
-    /** \brief Check collision
-     * \param state ompl::base::State pointer */
-    bool isStateValid(const ob::State* state) const;
+    bool isStateValid(const ob::State* state) const override;
 
     /** \brief Transform the robot
      * \param state ompl::base::State pointer
@@ -182,57 +97,6 @@ class OMPL3D {
     virtual std::vector<Coordinate> setVectorFromState(
         const ob::State* state) const;
 
-    /** \brief Pointer to ompl::geometric::SimpleSetup */
-    og::SimpleSetupPtr ss_;
-
-    /** \brief Robot model */
-    MultiBodyTree3D robot_;
-
-    /** \brief Arena model */
-    const std::vector<SuperQuadrics>& arena_;
-
-    /** \brief Obstacles model */
-    const std::vector<SuperQuadrics>& obstacles_;
-
     /** \brief Mesh type for obstacles */
     const std::vector<Mesh>& obsMesh_;
-
-    /** \brief FCL collision object for robot bodies */
-    std::vector<fcl::CollisionObject<double>> objRobot_;
-
-    /** \brief FCL collision object for obstacles */
-    std::vector<fcl::CollisionObject<double>> objObs_;
-
-    /** \brief Planning results */
-    bool isSolved_ = false;
-
-    /** \brief Total planning time */
-    double totalTime_ = 0.0;
-
-    /** \brief Number of collision checking calls */
-    Index numCollisionChecks_ = 0;
-
-    /** \brief Number of valid state */
-    Index numValidStates_ = 0;
-
-    /** \brief Range of valid space */
-    double validSpace_ = 0.0;
-
-    /** \brief Number of vertices in graph/tree */
-    Index numGraphVertex_ = 0;
-
-    /** \brief Number of edges in graph/tree */
-    Index numGraphEdges_ = 0;
-
-    /** \brief Number of vertices in the solved path */
-    Index lengthPath_ = 0;
-
-    /** \brief Vertex list */
-    std::vector<std::vector<Coordinate>> vertex_;
-
-    /** \brief Edge list */
-    std::vector<std::pair<Index, Index>> edge_;
-
-    /** \brief States in solved path */
-    std::vector<std::vector<Coordinate>> path_;
 };
