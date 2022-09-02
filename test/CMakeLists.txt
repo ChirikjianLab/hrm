@@ -51,3 +51,10 @@ target_link_libraries(TestOMPL3D
                       TEST_UTIL
                       ${GTEST_LIBRARIES})
 add_test(TestOMPL3D ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3D)
+
+add_executable(TestOMPL3DArticulated TestOMPL3DArticulated.cpp)
+target_link_libraries(TestOMPL3DArticulated
+                      OMPL_PLANNER
+                      TEST_UTIL
+                      ${GTEST_LIBRARIES})
+add_test(TestOMPL3DArticulated ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3DArticulated)
