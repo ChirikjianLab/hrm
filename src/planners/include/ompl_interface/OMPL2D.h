@@ -9,6 +9,8 @@
 class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
   public:
     /** \brief Constructor
+     * \param lowBound Lower bound of planning arena
+     * \param highBound Uppder bound of planning arena
      * \param robot MultiBodyTree2D class for robot model
      * \param arena SuperEllipse class for arena model
      * \param obstacle SuperEllipse class for obstacles */

@@ -66,12 +66,10 @@ class OMPLInterface {
 
     /** \brief Set up the planning problem
      * \param plannerId ID of the planner
+     *  (0: PRM; 1: LazyPRM; 2: RRT; 3: RRT-Connect; 4: EST; 5: SBL; 6: KPIECE)
      * \param validStateSamplerId ID of the ValidStateSampler
-     *  0: uniform valid state sampler
-     *  1: Gaussian valid state sampler
-     *  2: obstacle-based valid state sampler
-     *  3: maximum-clearance valid state sampler
-     *  4: bridge-test valid state sampler */
+     *  (0: uniform; 1: Gaussian; 2: obstacle-based, OB; 3: maximum-clearance,
+     * MC; 4: bridge-test, Bridge) */
     void setup(const Index plannerId, const Index validStateSamplerId);
 
     /** \brief Start to plan

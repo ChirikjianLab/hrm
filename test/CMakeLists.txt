@@ -43,3 +43,11 @@ add_test(TestHRM3DAblation ${EXECUTABLE_OUTPUT_PATH}/TestHRM3DAblation)
 
 add_subdirectory(benchmark)
 add_subdirectory(util)
+
+# OMPL
+add_executable(TestOMPL3D TestOMPL3D.cpp)
+target_link_libraries(TestOMPL3D
+                      OMPL_PLANNER
+                      TEST_UTIL
+                      ${GTEST_LIBRARIES})
+add_test(TestOMPL3D ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3D)

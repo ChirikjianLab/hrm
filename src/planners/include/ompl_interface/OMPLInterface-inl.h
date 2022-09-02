@@ -117,25 +117,25 @@ template <typename RobotType, typename ObjectType>
 void OMPLInterface<RobotType, ObjectType>::setValidStateSampler(
     const Index validSamplerId) {
     // Set the valid state sampler
-    if (validSamplerId == 2) {
+    if (validSamplerId == 0) {
         // Uniform sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::UniformValidStateSampler>(si);
             });
-    } else if (validSamplerId == 3) {
+    } else if (validSamplerId == 1) {
         // Gaussian sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::GaussianValidStateSampler>(si);
             });
-    } else if (validSamplerId == 4) {
+    } else if (validSamplerId == 2) {
         // Obstacle-based sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
                 return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
             });
-    } else if (validSamplerId == 5) {
+    } else if (validSamplerId == 3) {
         // Maximum-clearance sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
@@ -145,7 +145,7 @@ void OMPLInterface<RobotType, ObjectType>::setValidStateSampler(
                 vss->setNrImproveAttempts(5);
                 return vss;
             });
-    } else if (validSamplerId == 6) {
+    } else if (validSamplerId == 4) {
         // Bridge-test sampler
         ss_->getSpaceInformation()->setValidStateSamplerAllocator(
             [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
