@@ -2,69 +2,36 @@
 
 #include <ompl/base/spaces/SE2StateSpace.h>
 
-OMPL2D::OMPL2D(MultiBodyTree2D robot, const std::vector<SuperEllipse> &arena,
+OMPL2D::OMPL2D(const std::vector<double> &lowBound,
+               const std::vector<double> &highBound, MultiBodyTree2D robot,
+               const std::vector<SuperEllipse> &arena,
                const std::vector<SuperEllipse> &obstacle)
-    : OMPLInterface<MultiBodyTree2D, SuperEllipse>::OMPLInterface(robot, arena,
-                                                                  obstacle) {}
+    : OMPLInterface<MultiBodyTree2D, SuperEllipse>::OMPLInterface(
+          lowBound, highBound, robot, arena, obstacle) {}
 
 OMPL2D::~OMPL2D() = default;
 
-void OMPL2D::setup(const Index plannerId, const Index validStateSamplerId) {
-    const double STATE_VALIDITY_RESOLUTION = 0.01;
-
-    // Setup space bound
-    setEnvBound();
-
-    ob::StateSpacePtr space(std::make_shared<ob::SE2StateSpace>());
-
-    ob::RealVectorBounds bounds(2);
-    bounds.setLow(0, param_.xLim.first);
-    bounds.setLow(1, param_.yLim.first);
-    bounds.setHigh(0, param_.xLim.second);
-    bounds.setHigh(1, param_.yLim.second);
-    space->as<ob::SE2StateSpace>()->setBounds(bounds);
-
-    // Setup planner
-    ss_ = std::make_shared<og::SimpleSetup>(space);
-
-    // Set collision checker
-    ss_->setStateValidityChecker(
-        [this](const ob::State *state) { return isStateValid(state); });
-    ss_->getSpaceInformation()->setStateValidityCheckingResolution(
-        STATE_VALIDITY_RESOLUTION);
-    setCollisionObject();
-
-    setPlanner(plannerId);
-    setValidStateSampler(validStateSamplerId);
-}
-
-void OMPL2D::plan(const std::vector<std::vector<Coordinate>> &endPts) {
-    const double DEFAULT_PLAN_TIME = 60.0;
-    numCollisionChecks_ = 0;
-
-    // Set start and goal poses
-    ob::ScopedState<ob::SE2StateSpace> start(ss_->getSpaceInformation());
-    start->setX(endPts[0][0]);
-    start->setY(endPts[0][1]);
-    start->setYaw(endPts[0][2]);
-    start.enforceBounds();
-
-    ob::ScopedState<ob::SE2StateSpace> goal(ss_->getSpaceInformation());
-    goal->setX(endPts[1][0]);
-    goal->setY(endPts[1][1]);
-    goal->setYaw(endPts[1][2]);
-    goal.enforceBounds();
-
-    ss_->setStartAndGoalStates(start, goal);
+bool OMPL2D::plan(const std::vector<Coordinate> &start,
+                  const std::vector<Coordinate> &goal,
+                  const double maxTimeInSec) {
+    // Set start and goal states for planning
+    setStartAndGoalState(start, goal);
 
     // Solve the planning problem
+    OMPL_INFORM("Planning...");
+
     try {
-        isSolved_ = ss_->solve(DEFAULT_PLAN_TIME);
+        isSolved_ = ss_->solve(maxTimeInSec);
     } catch (ompl::Exception &ex) {
+        std::stringstream es;
+        es << ex.what() << std::endl;
+        OMPL_WARN(es.str().c_str());
     }
 
     getSolution();
     ss_->clear();
+
+    return true;
 }
 
 void OMPL2D::getSolution() {
@@ -125,20 +92,19 @@ void OMPL2D::getSolution() {
     validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-void OMPL2D::setEnvBound() {
-    // Setup parameters
-    param_.numY = 50;
+void OMPL2D::setStateSpace(const std::vector<Coordinate> &lowBound,
+                           const std::vector<Coordinate> &highBound) {
+    auto space(std::make_shared<ob::SE2StateSpace>());
 
-    double f = 1;
-    std::vector<Coordinate> bound = {
-        arena_.at(0).getSemiAxis().at(0) -
-            f * robot_.getBase().getSemiAxis().at(0),
-        arena_.at(0).getSemiAxis().at(1) -
-            f * robot_.getBase().getSemiAxis().at(0)};
-    param_.xLim = {arena_.at(0).getPosition().at(0) - bound.at(0),
-                   arena_.at(0).getPosition().at(0) + bound.at(0)};
-    param_.yLim = {arena_.at(0).getPosition().at(1) - bound.at(1),
-                   arena_.at(0).getPosition().at(1) + bound.at(1)};
+    ob::RealVectorBounds bounds(2);
+    bounds.setLow(0, lowBound[0]);
+    bounds.setLow(1, lowBound[1]);
+    bounds.setHigh(0, highBound[0]);
+    bounds.setHigh(1, highBound[1]);
+    space->setBounds(bounds);
+
+    // Use SimpleSetup
+    ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
 void OMPL2D::setCollisionObject() {
@@ -154,7 +120,7 @@ void OMPL2D::setCollisionObject() {
     }
 }
 
-bool OMPL2D::isStateValid(const ob::State *state) const {
+MultiBodyTree2D OMPL2D::transformRobot(const ompl::base::State *state) const {
     // Get pose info the transform the robot
     const Coordinate x = state->as<ob::SE2StateSpace::StateType>()->getX();
     const Coordinate y = state->as<ob::SE2StateSpace::StateType>()->getY();
@@ -167,6 +133,10 @@ bool OMPL2D::isStateValid(const ob::State *state) const {
     MultiBodyTree2D robotAux = robot_;
     robotAux.robotTF(tf);
 
+    return robotAux;
+}
+
+bool OMPL2D::isSeparated(const MultiBodyTree2D &robotAux) const {
     // Checking collision with obstacles
     for (size_t i = 0; i < obstacle_.size(); ++i) {
         if (std::fabs(obstacle_.at(i).getEpsilon() - 1.0) < 1e-6) {
@@ -198,4 +168,29 @@ bool OMPL2D::isStateValid(const ob::State *state) const {
     }
 
     return true;
+}
+
+void OMPL2D::setStateFromVector(
+    const std::vector<Coordinate> *stateVariables,
+    ob::ScopedState<ob::CompoundStateSpace> *state) const {
+    ob::ScopedState<ob::SE2StateSpace> stateTemp(ss_->getStateSpace());
+
+    stateTemp->setX(stateVariables->at(0));
+    stateTemp->setY(stateVariables->at(1));
+    stateTemp->setYaw(stateVariables->at(2));
+    stateTemp.enforceBounds();
+
+    stateTemp >> *state;
+}
+
+std::vector<Coordinate> OMPL2D::setVectorFromState(
+    const ob::State *state) const {
+    std::vector<Coordinate> stateVariables(3, 0.0);
+
+    // Store state in a vector
+    stateVariables[0] = state->as<ob::SE2StateSpace::StateType>()->getX();
+    stateVariables[1] = state->as<ob::SE2StateSpace::StateType>()->getY();
+    stateVariables[2] = state->as<ob::SE2StateSpace::StateType>()->getYaw();
+
+    return stateVariables;
 }

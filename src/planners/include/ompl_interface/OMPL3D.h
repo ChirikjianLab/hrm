@@ -28,14 +28,9 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
            const std::vector<Mesh>& obsMesh);
     virtual ~OMPL3D();
 
-    void setup(const Index plannerId, const Index validStateSamplerId) override;
-
-    /** \brief Start to plan
-     * \param start Start configuration
-     * \param goal Goal configuration
-     * \param maxTimeInSec Maximum planning time in seconds */
     bool plan(const std::vector<Coordinate>& start,
-              const std::vector<Coordinate>& goal, const double maxTimeInSec);
+              const std::vector<Coordinate>& goal,
+              const double maxTimeInSec) override;
 
     /** \brief Save the graph information
      * \param filename_prefix Path prefix for the saved file */
@@ -48,54 +43,23 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
   protected:
     void getSolution() override;
 
-    /** \brief Set the state space
-     * \param lowBound Lower bound of the planning arena
-     * \param highBound Upper bound of the planning arena */
-    virtual void setStateSpace(const std::vector<Coordinate>& lowBound,
-                               const std::vector<Coordinate>& highBound);
-
-    /** \brief Set the state sampler
-     * \param stateSamplerId State sampler ID */
-    virtual void setStateSampler(const Index stateSamplerId);
-
-    /** \brief Set the start and goal states
-     * \param start Start state
-     * \param goal Goal state */
-    void setStartAndGoalState(const std::vector<Coordinate>& start,
-                              const std::vector<Coordinate>& goal);
-
-    /** \brief Compare two states
-     * \param goalConfig Goal state
-     * \param lastConfig The most recently reached state */
-    static bool compareStates(const std::vector<Coordinate>& goalConfig,
-                              const std::vector<Coordinate>& lastConfig);
+    virtual void setStateSpace(
+        const std::vector<Coordinate>& lowBound,
+        const std::vector<Coordinate>& highBound) override;
 
     void setCollisionObject() override;
 
-    bool isStateValid(const ob::State* state) const override;
+    virtual MultiBodyTree3D transformRobot(
+        const ob::State* state) const override;
 
-    /** \brief Transform the robot
-     * \param state ompl::base::State pointer
-     * \return MultiBodyTree3D Robot model after transformation */
-    virtual MultiBodyTree3D transformRobot(const ob::State* state) const;
+    bool isSeparated(const MultiBodyTree3D& robotAux) const override;
 
-    /** \brief Indication of separation between robot and obstacles
-     * \param robotAux Copied robot model
-     * \return Indicator, true for separated, false for collision */
-    bool isSeparated(const MultiBodyTree3D& robotAux) const;
-
-    /** \brief Set state from std::vector type
-     * \param stateVariables State in vector format
-     * \param state State compatible with OMPL */
     virtual void setStateFromVector(
         const std::vector<Coordinate>* stateVariables,
-        ob::ScopedState<ob::CompoundStateSpace>* state) const;
+        ob::ScopedState<ob::CompoundStateSpace>* state) const override;
 
-    /** \brief Set state from OMPL type
-     * \param state ompl::base::State type
-     * \return std::vector type */
     virtual std::vector<Coordinate> setVectorFromState(
-        const ob::State* state) const;
+        const ob::State* state) const override;
 
     /** \brief Mesh type for obstacles */
     const std::vector<Mesh>& obsMesh_;

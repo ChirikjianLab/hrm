@@ -15,14 +15,41 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/sbl/SBL.h>
 
+const double STATE_VALIDITY_RESOLUTION = 0.01;
+
 template <typename RobotType, typename ObjectType>
 OMPLInterface<RobotType, ObjectType>::OMPLInterface(
+    const std::vector<double> &lowBound, const std::vector<double> &highBound,
     RobotType robot, const std::vector<ObjectType> &arena,
     const std::vector<ObjectType> &obstacle)
-    : robot_(std::move(robot)), arena_(arena), obstacle_(obstacle) {}
+    : robot_(std::move(robot)),
+      arena_(arena),
+      lowBound_(lowBound),
+      highBound_(highBound),
+      obstacle_(obstacle) {}
 
 template <typename RobotType, typename ObjectType>
 OMPLInterface<RobotType, ObjectType>::~OMPLInterface() = default;
+
+template <typename RobotType, typename ObjectType>
+void OMPLInterface<RobotType, ObjectType>::setup(
+    const Index plannerId, const Index validStateSamplerId) {
+    // Setup state space
+    setStateSpace(lowBound_, highBound_);
+
+    // Set collision checker
+    ss_->setStateValidityChecker(
+        [this](const ob::State *state) { return isStateValid(state); });
+    ss_->getSpaceInformation()->setStateValidityCheckingResolution(
+        STATE_VALIDITY_RESOLUTION);
+    setCollisionObject();
+
+    // Set planner and sampler
+    setPlanner(plannerId);
+    setValidStateSampler(validStateSamplerId);
+
+    ss_->setup();
+}
 
 template <typename RobotType, typename ObjectType>
 void OMPLInterface<RobotType, ObjectType>::setPlanner(const Index plannerId) {
@@ -88,4 +115,24 @@ void OMPLInterface<RobotType, ObjectType>::setValidStateSampler(
     }
 
     ss_->setup();
+}
+
+template <typename RobotType, typename ObjectType>
+bool OMPLInterface<RobotType, ObjectType>::isStateValid(
+    const ob::State *state) const {
+    return isSeparated(transformRobot(state));
+}
+
+template <typename RobotType, typename ObjectType>
+void OMPLInterface<RobotType, ObjectType>::setStartAndGoalState(
+    const std::vector<Coordinate> &start, const std::vector<Coordinate> &goal) {
+    ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
+    setStateFromVector(&start, &startState);
+    startState.enforceBounds();
+
+    ob::ScopedState<ob::CompoundStateSpace> goalState(ss_->getStateSpace());
+    setStateFromVector(&goal, &goalState);
+    goalState.enforceBounds();
+
+    ss_->setStartAndGoalStates(startState, goalState);
 }

@@ -5,27 +5,11 @@ OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
                const std::vector<SuperQuadrics> &arena,
                const std::vector<SuperQuadrics> &obs,
                const std::vector<Mesh> &obsMesh)
-    : OMPLInterface<MultiBodyTree3D, SuperQuadrics>::OMPLInterface(robot, arena,
-                                                                   obs),
-      obsMesh_(obsMesh) {
-    // Setup state space
-    setStateSpace(lowBound, highBound);
-}
+    : OMPLInterface<MultiBodyTree3D, SuperQuadrics>::OMPLInterface(
+          lowBound, highBound, robot, arena, obs),
+      obsMesh_(obsMesh) {}
 
 OMPL3D::~OMPL3D() = default;
-
-void OMPL3D::setup(const Index plannerId, const Index validStateSamplerId) {
-    // Set collision checker
-    ss_->setStateValidityChecker(
-        [this](const ob::State *state) { return isStateValid(state); });
-    setCollisionObject();
-
-    // Set planner and sampler
-    setPlanner(plannerId);
-    setValidStateSampler(validStateSamplerId);
-
-    ss_->setup();
-}
 
 bool OMPL3D::plan(const std::vector<Coordinate> &start,
                   const std::vector<Coordinate> &goal,
@@ -130,22 +114,8 @@ void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
     bounds.setHigh(2, highBound[2]);
     space->setBounds(bounds);
 
+    // Use SimpleSetup
     ss_ = std::make_shared<og::SimpleSetup>(space);
-}
-
-void OMPL3D::setStateSampler(const Index stateSamplerId) {}
-
-void OMPL3D::setStartAndGoalState(const std::vector<Coordinate> &start,
-                                  const std::vector<Coordinate> &goal) {
-    ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
-    setStateFromVector(&start, &startState);
-    startState.enforceBounds();
-
-    ob::ScopedState<ob::CompoundStateSpace> goalState(ss_->getStateSpace());
-    setStateFromVector(&goal, &goalState);
-    goalState.enforceBounds();
-
-    ss_->setStartAndGoalStates(startState, goalState);
 }
 
 void OMPL3D::setCollisionObject() {
@@ -175,10 +145,6 @@ void OMPL3D::setCollisionObject() {
             objObs_.emplace_back(setCollisionObjectFromSQ(obstacle));
         }
     }
-}
-
-bool OMPL3D::isStateValid(const ob::State *state) const {
-    return isSeparated(transformRobot(state));
 }
 
 // Get pose info and transform the robot
@@ -217,17 +183,6 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     }
 
     return true;
-}
-
-bool OMPL3D::compareStates(const std::vector<Coordinate> &goalConfig,
-                           const std::vector<Coordinate> &lastConfig) {
-    bool res = true;
-    for (size_t i = 0; i < 7; i++) {
-        if (std::fabs(lastConfig[i] - goalConfig[i]) > 0.1) {
-            res = false;
-        }
-    }
-    return res;
 }
 
 void OMPL3D::saveVertexEdgeInfo(const std::string &filename_prefix) {

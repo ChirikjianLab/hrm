@@ -16,10 +16,14 @@ template <typename RobotType, typename ObjectType>
 class OMPLInterface {
   public:
     /** \brief Constructor
+     * \param lowBound Lower bound of planning arena
+     * \param highBound Uppder bound of planning arena
      * \param robot Class for robot model
      * \param arena Class for arena model
      * \param obstacle Class for obstacles */
-    OMPLInterface(RobotType robot, const std::vector<ObjectType>& arena,
+    OMPLInterface(const std::vector<double>& lowBound,
+                  const std::vector<double>& highBound, RobotType robot,
+                  const std::vector<ObjectType>& arena,
                   const std::vector<ObjectType>& obstacle);
 
     ~OMPLInterface();
@@ -68,12 +72,15 @@ class OMPLInterface {
      *  2: obstacle-based valid state sampler
      *  3: maximum-clearance valid state sampler
      *  4: bridge-test valid state sampler */
-    virtual void setup(const Index plannerId,
-                       const Index validStateSamplerId) = 0;
+    void setup(const Index plannerId, const Index validStateSamplerId);
 
-    /** \brief Main routine for planning
-     * \param endPts Start/goal states */
-    void plan(const std::vector<std::vector<Coordinate>>& endPts);
+    /** \brief Start to plan
+     * \param start Start configuration
+     * \param goal Goal configuration
+     * \param maxTimeInSec Maximum planning time in seconds */
+    virtual bool plan(const std::vector<Coordinate>& start,
+                      const std::vector<Coordinate>& goal,
+                      const double maxTimeInSec) = 0;
 
   protected:
     /** \brief Get the solution */
@@ -82,6 +89,18 @@ class OMPLInterface {
     /** \brief Set the planner
      * \param plannerId Planner ID */
     void setPlanner(const Index plannerId);
+
+    /** \brief Set the state space
+     * \param lowBound Lower bound of the planning arena
+     * \param highBound Upper bound of the planning arena */
+    virtual void setStateSpace(const std::vector<Coordinate>& lowBound,
+                               const std::vector<Coordinate>& highBound) = 0;
+
+    /** \brief Set the start and goal states
+     * \param start Start state
+     * \param goal Goal state */
+    void setStartAndGoalState(const std::vector<Coordinate>& start,
+                              const std::vector<Coordinate>& goal);
 
     /** \brief Set the valid state sampler
      * \param validSamplerId Valid state sampler ID */
@@ -92,7 +111,30 @@ class OMPLInterface {
 
     /** \brief Check collision
      * \param state ompl::base::State pointer */
-    virtual bool isStateValid(const ob::State* state) const = 0;
+    bool isStateValid(const ob::State* state) const;
+
+    /** \brief Transform the robot
+     * \param state ompl::base::State pointer
+     * \return Robot model after transformation */
+    virtual RobotType transformRobot(const ob::State* state) const = 0;
+
+    /** \brief Indication of separation between robot and obstacles
+     * \param robotAux Copied robot model
+     * \return Indicator, true for separated, false for collision */
+    virtual bool isSeparated(const RobotType& robotAux) const = 0;
+
+    /** \brief Set state from std::vector type
+     * \param stateVariables State in vector format
+     * \param state State compatible with OMPL */
+    virtual void setStateFromVector(
+        const std::vector<Coordinate>* stateVariables,
+        ob::ScopedState<ob::CompoundStateSpace>* state) const = 0;
+
+    /** \brief Set state from OMPL type
+     * \param state ompl::base::State type
+     * \return std::vector type */
+    virtual std::vector<Coordinate> setVectorFromState(
+        const ob::State* state) const = 0;
 
     /** \brief Pointer to ompl::geometric::SimpleSetup */
     og::SimpleSetupPtr ss_;
@@ -102,6 +144,12 @@ class OMPLInterface {
 
     /** \brief Arena model */
     std::vector<ObjectType> arena_;
+
+    /** \brief Lower bound of the arena */
+    const std::vector<double>& lowBound_;
+
+    /** \brief Upper bound of the arena */
+    const std::vector<double>& highBound_;
 
     /** \brief Obstacles model */
     std::vector<ObjectType> obstacle_;
