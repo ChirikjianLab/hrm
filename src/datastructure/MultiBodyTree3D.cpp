@@ -1,6 +1,9 @@
 #include "include/MultiBodyTree3D.h"
 
-MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(std::move(base)) {}
+MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base)
+    : MultiBodyTree<SuperQuadrics, SE3Transform>::MultiBodyTree(base) {}
+
+MultiBodyTree3D::~MultiBodyTree3D() {}
 
 std::vector<SuperQuadrics> MultiBodyTree3D::getBodyShapes() {
     std::vector<SuperQuadrics> body;
