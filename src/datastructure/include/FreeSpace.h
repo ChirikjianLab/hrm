@@ -6,15 +6,6 @@
 #include <limits>
 #include <vector>
 
-/** \brief Interections between each sweep line and C-space object boundaries */
-struct IntersectSweepLine {
-    /** \brief Intersections with arena */
-    std::vector<Interval> arenaLineCoords;
-
-    /** \brief Intersections with obstacles */
-    std::vector<Interval> obsLineCords;
-};
-
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
