@@ -45,8 +45,8 @@ class FreeSpace {
      * \param robot MultiBodyTree2D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace(RobotType* robotPtr, const std::vector<ObjectType>* arenaPtr,
-              const std::vector<ObjectType>* obstaclePtr);
+    FreeSpace(const RobotType& robot, const std::vector<ObjectType>& arena,
+              const std::vector<ObjectType>& obstacle);
     ~FreeSpace() {}
 
     /** \brief Get C-space obstacles boundary
@@ -87,14 +87,14 @@ class FreeSpace {
     /** \brief Compute C-space boundary */
     void computeCSpaceBoundary();
 
-    /** \param Pointer to robot description */
-    RobotType* robotPtr_;
+    /** \param Reference to robot description */
+    const RobotType& robot_;
 
-    /** \param Pointer to description of arena */
-    const std::vector<ObjectType>* arenaPtr_;
+    /** \param Reference to description of arena */
+    const std::vector<ObjectType>& arena_;
 
-    /** \param Pointer to description of obstacles */
-    const std::vector<ObjectType>* obstaclePtr_;
+    /** \param Reference to description of obstacles */
+    const std::vector<ObjectType>& obstacle_;
 
     /** \brief C-space boundary */
     BoundaryInfo cSpaceBoundary_;

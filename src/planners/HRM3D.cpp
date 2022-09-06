@@ -10,7 +10,7 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
              const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {
-    freeSpacePtr_ = std::make_shared<FreeSpace3D>(&robot_, &arena_, &obs_);
+    freeSpacePtr_ = std::make_shared<FreeSpace3D>(robot_, arena_, obs_);
 }
 
 HRM3D::~HRM3D() = default;

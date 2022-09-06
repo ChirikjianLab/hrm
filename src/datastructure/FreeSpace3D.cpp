@@ -1,9 +1,9 @@
 #include "include/FreeSpace3D.h"
 #include "geometry/include/LineIntersection.h"
 
-FreeSpace3D::FreeSpace3D(MultiBodyTree3D* robot,
-                         const std::vector<SuperQuadrics>* arena,
-                         const std::vector<SuperQuadrics>* obstacle)
+FreeSpace3D::FreeSpace3D(const MultiBodyTree3D& robot,
+                         const std::vector<SuperQuadrics>& arena,
+                         const std::vector<SuperQuadrics>& obstacle)
     : FreeSpace<MultiBodyTree3D, SuperQuadrics>::FreeSpace(robot, arena,
                                                            obstacle) {}
 
@@ -14,11 +14,11 @@ void FreeSpace3D::computeCSpaceBoundaryMesh(const BoundaryInfo* bound) {
 
     for (size_t i = 0; i < bound->arena.size(); ++i) {
         cSpaceBoundaryMesh_.arena.at(i) = getMeshFromParamSurface(
-            bound->arena.at(i), arenaPtr_->at(0).getNumParam());
+            bound->arena.at(i), arena_.at(0).getNumParam());
     }
     for (size_t i = 0; i < bound->obstacle.size(); ++i) {
         cSpaceBoundaryMesh_.obstacle.at(i) = getMeshFromParamSurface(
-            bound->obstacle.at(i), obstaclePtr_->at(0).getNumParam());
+            bound->obstacle.at(i), obstacle_.at(0).getNumParam());
     }
 }
 

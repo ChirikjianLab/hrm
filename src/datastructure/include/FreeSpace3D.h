@@ -30,8 +30,9 @@ class FreeSpace3D : public FreeSpace<MultiBodyTree3D, SuperQuadrics> {
      * \param robot MultiBodyTree3D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace3D(MultiBodyTree3D* robot, const std::vector<SuperQuadrics>* arena,
-                const std::vector<SuperQuadrics>* obstacle);
+    FreeSpace3D(const MultiBodyTree3D& robot,
+                const std::vector<SuperQuadrics>& arena,
+                const std::vector<SuperQuadrics>& obstacle);
     ~FreeSpace3D() {}
 
     /** \brief Get C-free boundary as mesh

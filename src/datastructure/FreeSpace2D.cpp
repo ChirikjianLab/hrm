@@ -1,11 +1,11 @@
 #include "include/FreeSpace2D.h"
 #include "geometry/include/LineIntersection.h"
 
-FreeSpace2D::FreeSpace2D(MultiBodyTree2D* robotPtr,
-                         const std::vector<SuperEllipse>* arenaPtr,
-                         const std::vector<SuperEllipse>* obstaclePtr)
-    : FreeSpace<MultiBodyTree2D, SuperEllipse>::FreeSpace(robotPtr, arenaPtr,
-                                                          obstaclePtr) {}
+FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
+                         const std::vector<SuperEllipse>& arena,
+                         const std::vector<SuperEllipse>& obstacle)
+    : FreeSpace<MultiBodyTree2D, SuperEllipse>::FreeSpace(robot, arena,
+                                                          obstacle) {}
 
 void FreeSpace2D::computeLineIntersect(
     IntersectionInterval& intersect,

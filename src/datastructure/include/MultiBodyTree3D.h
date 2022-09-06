@@ -60,8 +60,8 @@ class MultiBodyTree3D {
      * \param s1 Object to be summed
      * \param k +1/-1 indicating sum/difference
      * \return A union of sampled points on the Minkowski sums boundary */
-    std::vector<BoundaryPoints> minkSum(const SuperQuadrics* s1,
-                                        const Indicator k);
+    std::vector<BoundaryPoints> minkSum(const SuperQuadrics& s1,
+                                        const Indicator k) const;
 
   private:
     /** \brief Base superquadric model */

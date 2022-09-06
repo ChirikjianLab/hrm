@@ -6,7 +6,7 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
              const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {
-    freeSpacePtr_ = std::make_shared<FreeSpace2D>(&robot_, &arena_, &obs_);
+    freeSpacePtr_ = std::make_shared<FreeSpace2D>(robot_, arena_, obs_);
 }
 
 HRM2D::~HRM2D() = default;

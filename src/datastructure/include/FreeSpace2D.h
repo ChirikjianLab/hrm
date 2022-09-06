@@ -12,8 +12,9 @@ class FreeSpace2D : public FreeSpace<MultiBodyTree2D, SuperEllipse> {
      * \param robot MultiBodyTree2D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace2D(MultiBodyTree2D* robot, const std::vector<SuperEllipse>* arena,
-                const std::vector<SuperEllipse>* obstacle);
+    FreeSpace2D(const MultiBodyTree2D& robot,
+                const std::vector<SuperEllipse>& arena,
+                const std::vector<SuperEllipse>& obstacle);
     ~FreeSpace2D() {}
 
   private:
