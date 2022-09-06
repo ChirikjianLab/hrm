@@ -24,7 +24,7 @@ struct BoundaryMesh {
 
 /** \class FreeSpace3D
  * \brief Compute free space in SE(3) */
-class FreeSpace3D : public FreeSpace<MultiBodyTree3D, SuperQuadrics> {
+class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
   public:
     /** \brief Constructor
      * \param robot MultiBodyTree3D object defining the robot

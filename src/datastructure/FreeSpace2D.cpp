@@ -4,8 +4,8 @@
 FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
                          const std::vector<SuperEllipse>& arena,
                          const std::vector<SuperEllipse>& obstacle)
-    : FreeSpace<MultiBodyTree2D, SuperEllipse>::FreeSpace(robot, arena,
-                                                          obstacle) {}
+    : FreeSpaceComputator<MultiBodyTree2D, SuperEllipse>::FreeSpaceComputator(
+          robot, arena, obstacle) {}
 
 void FreeSpace2D::computeLineIntersect(
     IntersectionInterval& intersect,

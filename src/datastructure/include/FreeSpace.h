@@ -39,15 +39,16 @@ struct FreeSegment2D {
 /** \class FreeSpace
  * \brief Class for constructing free space */
 template <typename RobotType, typename ObjectType>
-class FreeSpace {
+class FreeSpaceComputator {
   public:
     /** \brief Constructor
      * \param robot MultiBodyTree2D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace(const RobotType& robot, const std::vector<ObjectType>& arena,
-              const std::vector<ObjectType>& obstacle);
-    ~FreeSpace() {}
+    FreeSpaceComputator(const RobotType& robot,
+                        const std::vector<ObjectType>& arena,
+                        const std::vector<ObjectType>& obstacle);
+    ~FreeSpaceComputator() {}
 
     /** \brief Get C-space obstacles boundary
      * \return BoundaryInfo */

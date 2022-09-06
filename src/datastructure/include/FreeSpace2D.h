@@ -6,7 +6,7 @@
 
 /** \class FreeSpace2D
  * \brief Compute free space in SE(2) */
-class FreeSpace2D : public FreeSpace<MultiBodyTree2D, SuperEllipse> {
+class FreeSpace2D : public FreeSpaceComputator<MultiBodyTree2D, SuperEllipse> {
   public:
     /** \brief Constructor
      * \param robot MultiBodyTree2D object defining the robot

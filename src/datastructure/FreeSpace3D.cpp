@@ -4,8 +4,8 @@
 FreeSpace3D::FreeSpace3D(const MultiBodyTree3D& robot,
                          const std::vector<SuperQuadrics>& arena,
                          const std::vector<SuperQuadrics>& obstacle)
-    : FreeSpace<MultiBodyTree3D, SuperQuadrics>::FreeSpace(robot, arena,
-                                                           obstacle) {}
+    : FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics>::FreeSpaceComputator(
+          robot, arena, obstacle) {}
 
 void FreeSpace3D::computeCSpaceBoundaryMesh(const BoundaryInfo* bound) {
     // Generate mesh for the boundaries

@@ -2,13 +2,13 @@
 #include "geometry/include/LineIntersection.h"
 
 template <typename RobotType, typename ObjectType>
-FreeSpace<RobotType, ObjectType>::FreeSpace(
+FreeSpaceComputator<RobotType, ObjectType>::FreeSpaceComputator(
     const RobotType& robot, const std::vector<ObjectType>& arena,
     const std::vector<ObjectType>& obstacle)
     : robot_(robot), arena_(arena), obstacle_(obstacle) {}
 
 template <typename RobotType, typename ObjectType>
-void FreeSpace<RobotType, ObjectType>::computeCSpaceBoundary() {
+void FreeSpaceComputator<RobotType, ObjectType>::computeCSpaceBoundary() {
     cSpaceBoundary_.arena.clear();
     cSpaceBoundary_.obstacle.clear();
 
@@ -29,7 +29,8 @@ void FreeSpace<RobotType, ObjectType>::computeCSpaceBoundary() {
 }
 
 template <typename RobotType, typename ObjectType>
-IntersectionInterval FreeSpace<RobotType, ObjectType>::getIntersectionInterval(
+IntersectionInterval
+FreeSpaceComputator<RobotType, ObjectType>::getIntersectionInterval(
     const std::vector<std::vector<Coordinate>>& tLine, const double lowBound,
     const double upBound) {
     const auto numLine = static_cast<Eigen::Index>(tLine.back().size());
