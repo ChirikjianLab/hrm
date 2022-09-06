@@ -1,7 +1,7 @@
 #include "include/FreeSpace.h"
 
 FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
-                                 const IntersectionInterval* intersect) {
+                                 const IntersectionInterval& intersect) {
     FreeSegment2D freeLineSegment;
     std::vector<Interval> interval[ty.size()];
 
@@ -31,28 +31,28 @@ FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
 
     // Enhanced process to generate more valid vertices within free line
     // segement
-    return enhanceFreeSegment(&freeLineSegment);
+    return enhanceFreeSegment(freeLineSegment);
 }
 
 std::vector<Interval> computeSweepLineFreeSegment(
-    const IntersectionInterval* intersect, const Eigen::Index& lineIdx) {
+    const IntersectionInterval& intersect, const Eigen::Index& lineIdx) {
     // Construct intervals of the current sweep line
     std::vector<Interval> obsSegment;
     std::vector<Interval> arenaSegment;
 
     // Remove NaN terms
-    for (auto j = 0; j < intersect->arenaLow.cols(); ++j) {
-        if (!std::isnan(intersect->arenaLow(lineIdx, j)) &&
-            !std::isnan(intersect->arenaUpp(lineIdx, j))) {
-            arenaSegment.push_back({intersect->arenaLow(lineIdx, j),
-                                    intersect->arenaUpp(lineIdx, j)});
+    for (auto j = 0; j < intersect.arenaLow.cols(); ++j) {
+        if (!std::isnan(intersect.arenaLow(lineIdx, j)) &&
+            !std::isnan(intersect.arenaUpp(lineIdx, j))) {
+            arenaSegment.push_back({intersect.arenaLow(lineIdx, j),
+                                    intersect.arenaUpp(lineIdx, j)});
         }
     }
-    for (auto j = 0; j < intersect->obstacleLow.cols(); ++j) {
-        if (!std::isnan(intersect->obstacleLow(lineIdx, j)) &&
-            !std::isnan(intersect->obstacleUpp(lineIdx, j))) {
-            obsSegment.push_back({intersect->obstacleLow(lineIdx, j),
-                                  intersect->obstacleUpp(lineIdx, j)});
+    for (auto j = 0; j < intersect.obstacleLow.cols(); ++j) {
+        if (!std::isnan(intersect.obstacleLow(lineIdx, j)) &&
+            !std::isnan(intersect.obstacleUpp(lineIdx, j))) {
+            obsSegment.push_back({intersect.obstacleLow(lineIdx, j),
+                                  intersect.obstacleUpp(lineIdx, j)});
         }
     }
 
@@ -64,13 +64,13 @@ std::vector<Interval> computeSweepLineFreeSegment(
     return collisionFreeSegment;
 }
 
-FreeSegment2D enhanceFreeSegment(const FreeSegment2D* current) {
-    FreeSegment2D enhanced = *current;
+FreeSegment2D enhanceFreeSegment(const FreeSegment2D& current) {
+    FreeSegment2D enhanced = current;
 
     // Add new vertices within on sweep line
-    for (size_t i = 0; i < current->ty.size() - 1; ++i) {
-        for (size_t j1 = 0; j1 < current->xM[i].size(); ++j1) {
-            for (size_t j2 = 0; j2 < current->xM[i + 1].size(); ++j2) {
+    for (size_t i = 0; i < current.ty.size() - 1; ++i) {
+        for (size_t j1 = 0; j1 < current.xM[i].size(); ++j1) {
+            for (size_t j2 = 0; j2 < current.xM[i + 1].size(); ++j2) {
                 if (enhanced.xM[i][j1] < enhanced.xL[i + 1][j2] &&
                     enhanced.xU[i][j1] >= enhanced.xL[i + 1][j2]) {
                     enhanced.xU[i].push_back(enhanced.xL[i + 1][j2]);

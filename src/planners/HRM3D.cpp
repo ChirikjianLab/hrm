@@ -80,8 +80,7 @@ void HRM3D::sweepLineProcess() {
                                                    param_.BOUND_LIMIT[5]);
 
         // Store freeSeg info
-        freeSegOneLayer_.freeSegYZ.push_back(
-            computeFreeSegment(ty, &intersect));
+        freeSegOneLayer_.freeSegYZ.push_back(computeFreeSegment(ty, intersect));
     }
 }
 

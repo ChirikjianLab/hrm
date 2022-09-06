@@ -61,7 +61,7 @@ void HRM2D::sweepLineProcess() {
                                                param_.BOUND_LIMIT[1]);
 
     // Compute collision-free intervals at each sweep line
-    freeSegOneLayer_ = computeFreeSegment(ty, &intersect);
+    freeSegOneLayer_ = computeFreeSegment(ty, intersect);
 }
 
 void HRM2D::generateVertices(const Coordinate tx,

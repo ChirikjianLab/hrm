@@ -102,22 +102,22 @@ class FreeSpace {
 
 /** \brief Compute collision-free segment on each sweep line
  * \param ty vector of y-coordinates of the sweep line
- * \param intersect Pointer to intervals of sweep line intersections
+ * \param intersect Intervals of sweep line intersections
  * \return Collision-free line segment as FreeSegment2D type */
 FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
-                                 const IntersectionInterval* intersect);
+                                 const IntersectionInterval& intersect);
 
 /** \brief Compute free segment in each sweep line
  * \param intersect Upper and lower bounds of each sweep line
  * \param lineIdx Index of the sweep line
  * \return Vector of Interval object */
 std::vector<Interval> computeSweepLineFreeSegment(
-    const IntersectionInterval* intersect, const Eigen::Index& lineIdx);
+    const IntersectionInterval& intersect, const Eigen::Index& lineIdx);
 
 /** \brief Subroutine to enhance free segment generation for more vertices
- * \param current Pointer to the current free segment
+ * \param current Current free segment
  * \return Enhanced free segment with more valid vertices as FreeSegment2D
  * type */
-FreeSegment2D enhanceFreeSegment(const FreeSegment2D* current);
+FreeSegment2D enhanceFreeSegment(const FreeSegment2D& current);
 
 #include "FreeSpace-inl.h"
