@@ -17,9 +17,6 @@ class FreeSpace2D : public FreeSpaceComputator<MultiBodyTree2D, SuperEllipse> {
                 const std::vector<SuperEllipse>& obstacle);
     ~FreeSpace2D() {}
 
-  private:
-    void computeLineIntersect(IntersectionInterval& intersect,
-                              const std::vector<std::vector<Coordinate>>& tLine,
-                              const double lowBound,
-                              const double upBound) override;
+    void computeIntersectionInterval(
+        const std::vector<std::vector<Coordinate>>& tLine) override;
 };

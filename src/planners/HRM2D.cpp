@@ -8,6 +8,8 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
           robot, arena, obs, req) {
     // Setup free space computator
     freeSpacePtr_ = std::make_shared<FreeSpace2D>(robot_, arena_, obs_);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[0],
+                         param_.BOUND_LIMIT[1]);
 }
 
 HRM2D::~HRM2D() = default;
@@ -55,12 +57,11 @@ void HRM2D::sweepLineProcess() {
 
     // Find intersecting points to C-obstacles for each raster scan line
     std::vector<std::vector<Coordinate>> tLine{ty};
-    const IntersectionInterval intersect =
-        freeSpacePtr_->getIntersectionInterval(tLine, param_.BOUND_LIMIT[0],
-                                               param_.BOUND_LIMIT[1]);
+    freeSpacePtr_->computeIntersectionInterval(tLine);
 
     // Compute collision-free intervals at each sweep line
-    freeSegOneLayer_ = computeFreeSegment(ty, intersect);
+    freeSpacePtr_->computeFreeSegment(ty);
+    freeSegOneLayer_ = freeSpacePtr_->getFreeSegment();
 }
 
 void HRM2D::generateVertices(const Coordinate tx,

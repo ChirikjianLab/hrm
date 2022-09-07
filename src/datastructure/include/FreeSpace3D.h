@@ -43,11 +43,8 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
         return cSpaceBoundaryMesh_;
     }
 
-  protected:
-    void computeLineIntersect(IntersectionInterval& intersect,
-                              const std::vector<std::vector<Coordinate>>& tLine,
-                              const double lowBound,
-                              const double upBound) override;
+    void computeIntersectionInterval(
+        const std::vector<std::vector<Coordinate>>& tLine) override;
 
   private:
     /** \brief Compute C-free boundary as mesh

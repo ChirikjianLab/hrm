@@ -13,6 +13,8 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
 
     // Update robot in the free space computator
     freeSpacePtr_->setRobot(robot_infla);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[0],
+                         param_.BOUND_LIMIT[1]);
 }
 
 HRM2DKC::~HRM2DKC() = default;

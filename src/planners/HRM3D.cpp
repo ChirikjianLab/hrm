@@ -12,6 +12,8 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
           robot, arena, obs, req) {
     // Setup free space computator
     freeSpacePtr_ = std::make_shared<FreeSpace3D>(robot_, arena_, obs_);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[4],
+                         param_.BOUND_LIMIT[5]);
 }
 
 HRM3D::~HRM3D() = default;
@@ -74,12 +76,11 @@ void HRM3D::sweepLineProcess() {
                                       static_cast<double>(i) * dx);
 
         std::vector<std::vector<Coordinate>> tLine{freeSegOneLayer_.tx, ty};
-        const IntersectionInterval intersect =
-            freeSpacePtr_->getIntersectionInterval(tLine, param_.BOUND_LIMIT[4],
-                                                   param_.BOUND_LIMIT[5]);
+        freeSpacePtr_->computeIntersectionInterval(tLine);
 
         // Store freeSeg info
-        freeSegOneLayer_.freeSegYZ.push_back(computeFreeSegment(ty, intersect));
+        freeSpacePtr_->computeFreeSegment(ty);
+        freeSegOneLayer_.freeSegYZ.push_back(freeSpacePtr_->getFreeSegment());
     }
 }
 
