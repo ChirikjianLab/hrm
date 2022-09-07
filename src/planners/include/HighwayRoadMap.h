@@ -79,6 +79,12 @@ class HighwayRoadMap {
      * \return Vector of geometric types */
     std::vector<ObjectType> getObstacle() const { return obs_; }
 
+    /** \brief Retrieve C-space boundary information
+     * \return Vector of BoundaryInfo */
+    std::vector<BoundaryInfo> getCSpaceBoundary() const {
+        return layerBoundAll_;
+    }
+
     /** \brief Retrieve start configuration
      * \return Coordinate of the start configuration */
     std::vector<Coordinate> getStart() const { return start_; }
@@ -109,10 +115,6 @@ class HighwayRoadMap {
 
     /** \brief Generate orientation samples */
     virtual void sampleOrientations() = 0;
-
-    /** \brief Generating Minkowski sum boundary points
-     * \return BoundaryInfo structure */
-    virtual BoundaryInfo boundaryGen() = 0;
 
     /** \brief Sweep-line process for generating collision-free line segment */
     virtual void sweepLineProcess() = 0;

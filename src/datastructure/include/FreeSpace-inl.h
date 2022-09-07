@@ -5,14 +5,14 @@ template <typename RobotType, typename ObjectType>
 FreeSpaceComputator<RobotType, ObjectType>::FreeSpaceComputator(
     const RobotType& robot, const std::vector<ObjectType>& arena,
     const std::vector<ObjectType>& obstacle)
-    : robot_(robot), arena_(arena), obstacle_(obstacle) {}
+    : robot_(std::move(robot)), arena_(arena), obstacle_(obstacle) {}
 
 template <typename RobotType, typename ObjectType>
 void FreeSpaceComputator<RobotType, ObjectType>::computeCSpaceBoundary() {
     cSpaceBoundary_.arena.clear();
     cSpaceBoundary_.obstacle.clear();
 
-    // calculate Minkowski boundary points
+    // Calculate Minkowski boundary points
     std::vector<BoundaryPoints> auxBoundary;
     for (const auto& arenaPart : arena_) {
         auxBoundary = robot_.minkSum(arenaPart, -1);

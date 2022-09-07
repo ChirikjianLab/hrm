@@ -19,7 +19,6 @@ class HRM2DKC : public HRM2D {
 
     ~HRM2DKC();
 
-    BoundaryInfo boundaryGen() override;
     void connectMultiLayer() override;
 
   private:
@@ -34,5 +33,5 @@ class HRM2DKC : public HRM2D {
     PolyCSpace polyVtx;
 
     /** \param Inflation factor for the robot */
-    double infla;
+    double infla_ = 0.1;
 };

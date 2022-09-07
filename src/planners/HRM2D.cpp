@@ -6,12 +6,11 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
              const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {
+    // Setup free space computator
     freeSpacePtr_ = std::make_shared<FreeSpace2D>(robot_, arena_, obs_);
 }
 
 HRM2D::~HRM2D() = default;
-
-BoundaryInfo HRM2D::boundaryGen() { return freeSpacePtr_->getCSpaceBoundary(); }
 
 void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
@@ -20,7 +19,7 @@ void HRM2D::constructOneLayer(const Index layerIdx) {
     // Generate new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
     } else {
         layerBound_ = layerBoundAll_.at(layerIdx);

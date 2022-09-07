@@ -21,8 +21,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual ~HRM3D();
 
-    BoundaryInfo boundaryGen() override;
-
     /** \brief Get the resulting solved path and the interpolated one */
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
         const Index num);

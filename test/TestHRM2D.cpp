@@ -85,20 +85,20 @@ algorithm planTest(const robotType& robot,
         file_ori_bd.close();
 
         // TEST: Minkowski sums boundary
-        BoundaryInfo bd = hrm.boundaryGen();
+        std::vector<BoundaryInfo> bd = hrm.getCSpaceBoundary();
 
         std::ofstream file_bd;
         file_bd.open(SOLUTION_DETAILS_PATH "/mink_bound_2D.csv");
-        for (const auto& bd_obs : bd.obstacle) {
+        for (const auto& bd_obs : bd.at(0).obstacle) {
             file_bd << bd_obs << "\n";
         }
-        for (const auto& bd_arena : bd.arena) {
+        for (const auto& bd_arena : bd.at(0).arena) {
             file_bd << bd_arena << "\n";
         }
         file_bd.close();
 
         // TEST: Sweep line process
-        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd);
+        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd.at(0));
 
         std::ofstream file_cell;
         file_cell.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");

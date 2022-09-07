@@ -10,12 +10,11 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
              const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {
+    // Setup free space computator
     freeSpacePtr_ = std::make_shared<FreeSpace3D>(robot_, arena_, obs_);
 }
 
 HRM3D::~HRM3D() = default;
-
-BoundaryInfo HRM3D::boundaryGen() { return freeSpacePtr_->getCSpaceBoundary(); }
 
 void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
@@ -29,7 +28,7 @@ void HRM3D::constructOneLayer(const Index layerIdx) {
     // Add new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
 
         // Generate mesh for the boundaries

@@ -57,11 +57,9 @@ class FreeSpaceComputator {
         return cSpaceBoundary_;
     }
 
-    /** \brief Set C-space obstacles boundary
-     * \param boundary Previously computed C-space boundary */
-    void setCSpaceBoundary(const BoundaryInfo& boundary) {
-        cSpaceBoundary_ = boundary;
-    }
+    /** \brief Set new robot in the same planning scene
+     * \param robot A new robot */
+    void setRobot(const RobotType& robot) { robot_ = robot; }
 
     /** \brief Compute intervals of intersections between sweep line and
      * arenas/obstacles
@@ -88,8 +86,8 @@ class FreeSpaceComputator {
     /** \brief Compute C-space boundary */
     void computeCSpaceBoundary();
 
-    /** \param Reference to robot description */
-    const RobotType& robot_;
+    /** \param Robot description */
+    RobotType robot_;
 
     /** \param Reference to description of arena */
     const std::vector<ObjectType>& arena_;
