@@ -101,6 +101,7 @@ class HighwayRoadMap {
     /** \brief Main routine for HRM-based planners */
     virtual void plan(const double timeLim);
 
+  protected:
     /** \brief Subroutine for building roadmap */
     void buildRoadmap();
 
@@ -137,7 +138,6 @@ class HighwayRoadMap {
      * layers */
     virtual void connectExistLayer(const Index layerId) = 0;
 
-  protected:
     /** \brief Generate bridge C-slice to connect adjacent C-slices */
     virtual void bridgeLayer() = 0;
 

@@ -67,9 +67,6 @@ void HRM2DKC::connectMultiLayer() {
     }
 }
 
-/*************************************************/
-/**************** Private Functions **************/
-/*************************************************/
 std::vector<Coordinate> HRM2DKC::addMiddleVertex(std::vector<Coordinate> vtx1,
                                                  std::vector<Coordinate> vtx2) {
     // Connect vertexes among different layers, and add a bridge vertex to the

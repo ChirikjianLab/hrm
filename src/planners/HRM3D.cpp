@@ -283,9 +283,6 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     return path_interp;
 }
 
-/***************************************************************/
-/**************** Protected and private Functions **************/
-/***************************************************************/
 void HRM3D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {

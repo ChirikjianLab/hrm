@@ -19,9 +19,9 @@ class HRM2DKC : public HRM2D {
 
     ~HRM2DKC();
 
+  private:
     void connectMultiLayer() override;
 
-  private:
     /** \brief Add a middle vertex between two vertices for edge connection
      * \param vtx1 Start vertex
      * \param vtx2 Goal vertex

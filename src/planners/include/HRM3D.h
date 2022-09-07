@@ -49,6 +49,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
         return layerBoundAll_.at(idx);
     }
 
+  protected:
     void constructOneLayer(const Index layerIdx) override;
 
     virtual void sampleOrientations() override;
@@ -66,7 +67,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     void connectExistLayer(const Index layerId) override;
 
-  protected:
     void bridgeLayer() override;
 
     /** \brief Compute Tightly-Fitted Ellipsoid (TFE) to enclose robot parts
@@ -98,7 +98,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
 
     virtual void setTransform(const std::vector<Coordinate>& v) override;
 
-  protected:
     /** \param Sampled orientations (Quaternion) of the robot */
     std::vector<Eigen::Quaterniond> q_;
 

@@ -190,9 +190,6 @@ void HRM2D::connectExistLayer(const Index layerId) {
     }
 }
 
-/***************************************************************/
-/**************** Protected and private Functions **************/
-/***************************************************************/
 void HRM2D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {

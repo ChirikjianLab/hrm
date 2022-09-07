@@ -27,6 +27,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
         return freeSegOneLayer_;
     }
 
+  protected:
     void constructOneLayer(const Index layerIdx) override;
 
     virtual void sampleOrientations() override;
@@ -40,7 +41,6 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     void connectExistLayer(const Index layerId) override;
 
-  protected:
     void bridgeLayer() override;
 
     bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
