@@ -1,4 +1,5 @@
 #include "include/DisplayPlanningData.h"
+#include "config.h"
 
 #include <fstream>
 #include <iostream>
@@ -21,7 +22,7 @@ void displayGraphInfo(const Graph* graph, const std::string& dim) {
     // Write the output to .csv files
 
     std::ofstream fileVtx;
-    fileVtx.open("vertex_" + dim + ".csv");
+    fileVtx.open(SOLUTION_DETAILS_PATH "/vertex_" + dim + ".csv");
     std::vector<std::vector<double>> vertexList = graph->vertex;
     for (const auto& vertex : vertexList) {
         for (const auto& vtx : vertex) {
@@ -32,7 +33,7 @@ void displayGraphInfo(const Graph* graph, const std::string& dim) {
     fileVtx.close();
 
     std::ofstream fileEdge;
-    fileEdge.open("edge_" + dim + ".csv");
+    fileEdge.open(SOLUTION_DETAILS_PATH "/edge_" + dim + ".csv");
     for (auto edge : graph->edge) {
         fileEdge << edge.first << ',' << edge.second << "\n";
     }
@@ -49,7 +50,7 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
 
     // Write the output to .csv files
     std::ofstream filePathId;
-    filePathId.open("path_id_" + dim + ".csv");
+    filePathId.open(SOLUTION_DETAILS_PATH "/path_id_" + dim + ".csv");
     if (!path->PathId.empty()) {
         for (auto pathId : path->PathId) {
             filePathId << pathId << ',';
@@ -59,7 +60,7 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
 
     // Retrieve solution path
     std::ofstream filePath;
-    filePath.open("solution_path_" + dim + ".csv");
+    filePath.open(SOLUTION_DETAILS_PATH "/solution_path_" + dim + ".csv");
     for (const auto& solvedPath : path->solvedPath) {
         for (const auto& solvedPathVal : solvedPath) {
             filePath << solvedPathVal << ',';
@@ -69,7 +70,8 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     filePath.close();
 
     std::ofstream fileInterpPath;
-    fileInterpPath.open("interpolated_path_" + dim + ".csv");
+    fileInterpPath.open(SOLUTION_DETAILS_PATH "/interpolated_path_" + dim +
+                        ".csv");
     for (const auto& interpPath : path->interpolatedPath) {
         for (const auto& interpPathVal : interpPath) {
             fileInterpPath << interpPathVal << ',';

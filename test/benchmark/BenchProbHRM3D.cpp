@@ -1,3 +1,4 @@
+#include "config.h"
 #include "planners/include/ProbHRM3D.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
 
     // Store results
     std::ofstream file_time;
-    file_time.open("time_prob_high_3D.csv");
+    file_time.open(BENCHMARK_DATA_PATH "/time_prob_high_3D.csv");
     file_time << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS" << ','
               << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE" << ','
               << "GRAPH_EDGE" << ',' << "PATH_NODE"

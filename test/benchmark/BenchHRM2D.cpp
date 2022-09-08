@@ -1,3 +1,4 @@
+#include "config.h"
 #include "planners/include/HRM2D.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -107,7 +108,7 @@ int main(int argc, char** argv) {
 
     // Store results
     std::ofstream file_time;
-    file_time.open("time_hrm_2D.csv");
+    file_time.open(BENCHMARK_DATA_PATH "/time_hrm_2D.csv");
     file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
               << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
               << "PATH_NODE"

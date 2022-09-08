@@ -19,10 +19,9 @@ class HRM2DKC : public HRM2D {
 
     ~HRM2DKC();
 
-    BoundaryInfo boundaryGen() override;
+  private:
     void connectMultiLayer() override;
 
-  private:
     /** \brief Add a middle vertex between two vertices for edge connection
      * \param vtx1 Start vertex
      * \param vtx2 Goal vertex
@@ -34,5 +33,5 @@ class HRM2DKC : public HRM2D {
     PolyCSpace polyVtx;
 
     /** \param Inflation factor for the robot */
-    double infla;
+    double infla_ = 0.1;
 };

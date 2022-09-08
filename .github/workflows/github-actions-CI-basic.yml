@@ -1,5 +1,10 @@
 name: C++ CI Basic
-on: [push]
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 jobs:
   Build-and-Test-Basic:
     runs-on: ubuntu-20.04

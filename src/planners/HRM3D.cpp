@@ -9,7 +9,12 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
              const std::vector<SuperQuadrics>& arena,
              const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
-          robot, arena, obs, req) {}
+          robot, arena, obs, req) {
+    // Setup free space computator
+    freeSpacePtr_ = std::make_shared<FreeSpace3D>(robot_, arena_, obs_);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[4],
+                         param_.BOUND_LIMIT[5]);
+}
 
 HRM3D::~HRM3D() = default;
 
@@ -25,11 +30,11 @@ void HRM3D::constructOneLayer(const Index layerIdx) {
     // Add new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
 
         // Generate mesh for the boundaries
-        generateBoundaryMesh(&layerBound_, &layerBoundMesh_);
+        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh(&layerBound_);
         layerBoundMeshAll_.push_back(layerBoundMesh_);
     } else {
         layerBound_ = layerBoundAll_.at(layerIdx);
@@ -70,71 +75,13 @@ void HRM3D::sweepLineProcess() {
         freeSegOneLayer_.tx.push_back(param_.BOUND_LIMIT[0] +
                                       static_cast<double>(i) * dx);
 
-        const IntersectionInterval intersect = computeIntersections(ty);
+        std::vector<std::vector<Coordinate>> tLine{freeSegOneLayer_.tx, ty};
+        freeSpacePtr_->computeIntersectionInterval(tLine);
 
         // Store freeSeg info
-        freeSegOneLayer_.freeSegYZ.push_back(
-            computeFreeSegment(ty, &intersect));
+        freeSpacePtr_->computeFreeSegment(ty);
+        freeSegOneLayer_.freeSegYZ.push_back(freeSpacePtr_->getFreeSegment());
     }
-}
-
-IntersectionInterval HRM3D::computeIntersections(
-    const std::vector<Coordinate>& ty) {
-    const auto numLine = static_cast<Eigen::Index>(ty.size());
-    const auto numArena = static_cast<Eigen::Index>(layerBound_.arena.size());
-    const auto numObstacle =
-        static_cast<Eigen::Index>(layerBound_.obstacle.size());
-
-    // Initialize sweep lines
-    IntersectionInterval intersect;
-    intersect.arenaLow =
-        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[4]);
-    intersect.arenaUpp =
-        Eigen::MatrixXd::Constant(numLine, numArena, param_.BOUND_LIMIT[5]);
-    intersect.obstacleLow =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
-    intersect.obstacleUpp =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
-
-    // Find intersections along each sweep line
-    std::vector<Point3D> intersectPointArena;
-    std::vector<Point3D> intersectPointObstacle;
-    for (auto i = 0; i < numLine; ++i) {
-        Line3D lineZ(6);
-        lineZ << freeSegOneLayer_.tx.back(), ty.at(i), 0, 0, 0, 1;
-
-        for (auto j = 0; j < numArena; ++j) {
-            intersectPointArena =
-                intersectVerticalLineMesh3D(lineZ, layerBoundMesh_.arena.at(j));
-
-            if (intersectPointArena.empty()) {
-                continue;
-            }
-
-            intersect.arenaLow(i, j) = std::fmin(
-                param_.BOUND_LIMIT[4], std::fmin(intersectPointArena[0](2),
-                                                 intersectPointArena[1](2)));
-            intersect.arenaUpp(i, j) = std::fmax(
-                param_.BOUND_LIMIT[5], std::fmax(intersectPointArena[0](2),
-                                                 intersectPointArena[1](2)));
-        }
-
-        for (auto j = 0; j < numObstacle; ++j) {
-            intersectPointObstacle = intersectVerticalLineMesh3D(
-                lineZ, layerBoundMesh_.obstacle.at(j));
-
-            if (intersectPointObstacle.empty()) {
-                continue;
-            }
-
-            intersect.obstacleLow(i, j) = std::fmin(
-                intersectPointObstacle[0](2), intersectPointObstacle[1](2));
-            intersect.obstacleUpp(i, j) = std::fmax(
-                intersectPointObstacle[0](2), intersectPointObstacle[1](2));
-        }
-    }
-
-    return intersect;
 }
 
 void HRM3D::generateVertices(const Coordinate tx,
@@ -335,25 +282,6 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     }
 
     return path_interp;
-}
-
-/***************************************************************/
-/**************** Protected and private Functions **************/
-/***************************************************************/
-void HRM3D::generateBoundaryMesh(const BoundaryInfo* bound,
-                                 BoundaryMesh* boundMesh) {
-    // Generate mesh for the boundaries
-    boundMesh->arena.resize(bound->arena.size());
-    boundMesh->obstacle.resize(bound->obstacle.size());
-
-    for (size_t i = 0; i < bound->arena.size(); ++i) {
-        boundMesh->arena.at(i) = getMeshFromParamSurface(
-            bound->arena.at(i), arena_.at(0).getNumParam());
-    }
-    for (size_t i = 0; i < bound->obstacle.size(); ++i) {
-        boundMesh->obstacle.at(i) = getMeshFromParamSurface(
-            bound->obstacle.at(i), obs_.at(0).getNumParam());
-    }
 }
 
 void HRM3D::bridgeLayer() {

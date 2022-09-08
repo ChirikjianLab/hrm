@@ -26,6 +26,24 @@ namespace ob = ompl::base;
 
 const double pi = 3.1415926535;
 
+/** \brief Parameters for free space parameterization */
+struct Parameters2D {
+    /** \brief Number of rotation angles, default = 50 */
+    Index numAngle = 50;
+
+    /** \brief Number of sweep lines */
+    Index numY;
+
+    /** \brief Number of sampled points on free segment, default = 20 */
+    Index numPointOnFreeSegment = 20;
+
+    /** \brief Bound limits in x-direction */
+    std::pair<Coordinate, Coordinate> xLim;
+
+    /** \brief Bound limits in y-direction */
+    std::pair<Coordinate, Coordinate> yLim;
+};
+
 /** \class OMPL2D
  * \brief Class for 2D rigid-body robot planning using OMPL */
 class OMPL2D {

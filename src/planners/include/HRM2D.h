@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "datastructure/include/MultiBodyTree2D.h"
+#include "datastructure/include/FreeSpace2D.h"
 #include "geometry/include/TightFitEllipsoid.h"
 
 /** \class HRM2D
@@ -27,6 +27,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
         return freeSegOneLayer_;
     }
 
+  protected:
     void constructOneLayer(const Index layerIdx) override;
 
     virtual void sampleOrientations() override;
@@ -40,11 +41,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     void connectExistLayer(const Index layerId) override;
 
-  protected:
     void bridgeLayer() override;
-
-    IntersectionInterval computeIntersections(
-        const std::vector<double>& ty) override;
 
     bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;
@@ -78,4 +75,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     /** \param Minkowski boundaries at bridge C-layer */
     std::vector<BoundaryInfo> bridgeLayerBound_;
+
+    /** \param Pointer to class for constructing free space */
+    std::shared_ptr<FreeSpace2D> freeSpacePtr_;
 };

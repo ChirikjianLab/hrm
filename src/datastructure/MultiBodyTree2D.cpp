@@ -35,23 +35,25 @@ void MultiBodyTree2D::robotTF(const Eigen::Matrix3d& g) {
     }
 }
 
-std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse* s1,
-                                                      const Indicator k) {
+std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse& s1,
+                                                      const Indicator k) const {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base
-    mink.push_back(s1->getMinkSum2D(base_, k));
+    mink.push_back(s1.getMinkSum2D(base_, k));
     Eigen::Rotation2Dd rotBase(base_.getAngle());
     Eigen::Rotation2Dd rotLink;
 
     // Minkowski sums for Links
     Point2D linkTc;
     for (size_t i = 0; i < numLinks_; i++) {
+        auto linkAux = link_.at(i);
+
         rotLink = rotBase * tf_.at(i).topLeftCorner(2, 2);
-        link_.at(i).setAngle(rotLink.angle());
+        linkAux.setAngle(rotLink.angle());
         linkTc = rotBase.toRotationMatrix() * tf_.at(i).topRightCorner(2, 1);
 
-        mink.emplace_back(s1->getMinkSum2D(link_.at(i), k).colwise() - linkTc);
+        mink.emplace_back(s1.getMinkSum2D(linkAux, k).colwise() - linkTc);
     }
 
     return mink;

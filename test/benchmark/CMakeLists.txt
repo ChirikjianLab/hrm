@@ -8,15 +8,6 @@ target_link_libraries(BenchOMPL3DArticulated
                       OMPL_PLANNER
                       TEST_UTIL)
 
-#add_executable(BenchOMPL3DEllipsoid BenchOMPL3DEllipsoid.cpp)
-#target_link_libraries(BenchOMPL3DEllipsoid
-#                      UTIL
-#                      HRM_3D
-#                      OMPL_PLANNER
-#                      GEOM
-#                      TESTUTIL
-#                      ${OMPL})
-
 add_executable(BenchHRM2D BenchHRM2D.cpp)
 target_link_libraries(BenchHRM2D
                       HRM2D
