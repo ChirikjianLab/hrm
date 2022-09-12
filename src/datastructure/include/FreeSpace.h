@@ -6,15 +6,6 @@
 #include <limits>
 #include <vector>
 
-/** \brief Interections between each sweep line and C-space object boundaries */
-struct IntersectSweepLine {
-    /** \brief Intersections with arena */
-    std::vector<Interval> arenaLineCoords;
-
-    /** \brief Intersections with obstacles */
-    std::vector<Interval> obsLineCords;
-};
-
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
@@ -48,85 +39,85 @@ struct FreeSegment2D {
 /** \class FreeSpace
  * \brief Class for constructing free space */
 template <typename RobotType, typename ObjectType>
-class FreeSpace {
+class FreeSpaceComputator {
   public:
     /** \brief Constructor
      * \param robot MultiBodyTree2D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace(RobotType* robotPtr, const std::vector<ObjectType>* arenaPtr,
-              const std::vector<ObjectType>* obstaclePtr);
-    ~FreeSpace() {}
+    FreeSpaceComputator(const RobotType& robot,
+                        const std::vector<ObjectType>& arena,
+                        const std::vector<ObjectType>& obstacle);
+    ~FreeSpaceComputator() {}
+
+    /** \brief Setup C-free segment structure
+     * \param numLine Number of sweep lines
+     * \param lowBound Lower bound of the sweep line segment
+     * \param upBound Upper bound of the sweep line segment */
+    void setup(const int numLine, const double lowBound, const double upBound);
+
+    /** \brief Set new robot in the same planning scene
+     * \param robot A new robot */
+    void setRobot(const RobotType& robot) { robot_ = robot; }
 
     /** \brief Get C-space obstacles boundary
      * \return BoundaryInfo */
-    BoundaryInfo getCSpaceBoundary() {
-        computeCSpaceBoundary();
-        return cSpaceBoundary_;
-    }
+    BoundaryInfo getCSpaceBoundary() const { return cSpaceBoundary_; }
 
-    /** \brief Set C-space obstacles boundary
-     * \param boundary Previously computed C-space boundary */
-    void setCSpaceBoundary(const BoundaryInfo& boundary) {
-        cSpaceBoundary_ = boundary;
-    }
+    /** \brief Get intervals for line-obstacle/arena intersections
+     * \return IntersectionInterval */
+    IntersectionInterval getIntersectionInterval() const { return intersect_; }
 
-    /** \brief Compute intervals of intersections between sweep line and
-     * arenas/obstacles
-     * \param tLine Vector of coordinates of the sweep line
-     * \param lowBound Lower bound of the sweep line segment
-     * \param upBound Upper bound of the sweep line segment
-     * \return Intersecting points as IntersectionInterval type */
-    IntersectionInterval getIntersectionInterval(
-        const std::vector<std::vector<Coordinate>>& tLine,
-        const double lowBound, const double upBound);
-
-  protected:
-    /** \brief Compute intervals of intersections between sweep line and
-     * arenas/obstacles
-     * \param intersect IntersectInterval object to store free segments
-     * \param tLine Vector of coordinates of the sweep line
-     * \param lowBound Lower bound of the sweep line segment
-     * \param upBound Upper bound of the sweep line segment */
-    virtual void computeLineIntersect(
-        IntersectionInterval& intersect,
-        const std::vector<std::vector<Coordinate>>& tLine,
-        const double lowBound, const double upBound) = 0;
+    /** \brief Get C-free line segments
+     * \return Collision-free line segment as FreeSegment2D type */
+    FreeSegment2D getFreeSegment() const { return segment_; }
 
     /** \brief Compute C-space boundary */
     void computeCSpaceBoundary();
 
-    /** \param Pointer to robot description */
-    RobotType* robotPtr_;
+    /** \brief Compute intervals of intersections between sweep line and
+     * arenas/obstacles
+     * \param tLine Vector of coordinates of the sweep line */
+    virtual void computeIntersectionInterval(
+        const std::vector<std::vector<Coordinate>>& tLine) = 0;
 
-    /** \param Pointer to description of arena */
-    const std::vector<ObjectType>* arenaPtr_;
+    /** \brief Compute collision-free segment on each sweep line
+     * \param ty vector of y-coordinates of the sweep line */
+    void computeFreeSegment(const std::vector<Coordinate>& ty);
 
-    /** \param Pointer to description of obstacles */
-    const std::vector<ObjectType>* obstaclePtr_;
+  protected:
+    /** \brief Compute free segment in each sweep line
+     * \param lineIdx Index of the sweep line
+     * \return Vector of Interval object */
+    std::vector<Interval> computeSweepLineFreeSegment(
+        const Eigen::Index& lineIdx);
+
+    /** \brief Enhance free segment generation for more vertices */
+    virtual void enhanceFreeSegment();
+
+    /** \param Robot description */
+    RobotType robot_;
+
+    /** \param Reference to description of arena */
+    const std::vector<ObjectType>& arena_;
+
+    /** \param Reference to description of obstacles */
+    const std::vector<ObjectType>& obstacle_;
 
     /** \brief C-space boundary */
     BoundaryInfo cSpaceBoundary_;
+
+    /** \brief Structure to store interval of line intersections */
+    IntersectionInterval intersect_;
+
+    /** \brief Structure to store C-free segments */
+    FreeSegment2D segment_;
+
+    /** \brief Lower bound of arena */
+    double lowBound_;
+
+    /** \brief Upper bound of arena */
+    double upBound_;
 };
-
-/** \brief Compute collision-free segment on each sweep line
- * \param ty vector of y-coordinates of the sweep line
- * \param intersect Pointer to intervals of sweep line intersections
- * \return Collision-free line segment as FreeSegment2D type */
-FreeSegment2D computeFreeSegment(const std::vector<Coordinate>& ty,
-                                 const IntersectionInterval* intersect);
-
-/** \brief Compute free segment in each sweep line
- * \param intersect Upper and lower bounds of each sweep line
- * \param lineIdx Index of the sweep line
- * \return Vector of Interval object */
-std::vector<Interval> computeSweepLineFreeSegment(
-    const IntersectionInterval* intersect, const Eigen::Index& lineIdx);
-
-/** \brief Subroutine to enhance free segment generation for more vertices
- * \param current Pointer to the current free segment
- * \return Enhanced free segment with more valid vertices as FreeSegment2D
- * type */
-FreeSegment2D enhanceFreeSegment(const FreeSegment2D* current);
 
 #include "FreeSpace-inl.h"

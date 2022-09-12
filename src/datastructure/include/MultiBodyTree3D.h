@@ -20,12 +20,8 @@ class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
      * \return List of SuperQuadric model */
     std::vector<SuperQuadrics> getBodyShapes();
 
-    /** \brief Add a new body to the tree
-     * \param link Link as SuperQuadrics type */
     void addBody(const SuperQuadrics& link) override;
 
-    /** \brief Tranform the rigid-body robot
-     * \param g The transformation */
     void robotTF(const SE3Transform& g) override;
 
     /** \brief Transform the articulated-body robot
@@ -42,10 +38,6 @@ class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
     void robotTF(ParseURDF kdl, const SE3Transform* gBase,
                  const Eigen::VectorXd* jointConfig);
 
-    /** \brief Closed-form Minkowski sums operation
-     * \param s1 Object to be summed
-     * \param k +1/-1 indicating sum/difference
-     * \return A union of sampled points on the Minkowski sums boundary */
-    std::vector<BoundaryPoints> minkSum(const SuperQuadrics* s1,
-                                        const Indicator k) override;
+    std::vector<BoundaryPoints> minkSum(const SuperQuadrics& s1,
+                                        const Indicator k) const override;
 };

@@ -41,8 +41,8 @@ class MultiBodyTree {
      * \param s1 Object to be summed
      * \param k +1/-1 indicating sum/difference
      * \return A union of sampled points on the Minkowski sums boundary */
-    virtual std::vector<BoundaryPoints> minkSum(const GeomType* s1,
-                                                const Indicator k) = 0;
+    virtual std::vector<BoundaryPoints> minkSum(const GeomType& s1,
+                                                const Indicator k) const = 0;
 
   protected:
     /** \brief Base link */

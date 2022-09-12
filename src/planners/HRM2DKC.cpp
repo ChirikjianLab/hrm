@@ -4,31 +4,20 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                  const std::vector<SuperEllipse>& arena,
                  const std::vector<SuperEllipse>& obs,
                  const PlanningRequest& req)
-    : HRM2D(robot, arena, obs, req) {}
+    : HRM2D(robot, arena, obs, req) {
+    // Enlarge the robot
+    SuperEllipse base_infla = robot_.getBase();
+    base_infla.setSemiAxis({base_infla.getSemiAxis().at(0) * (1 + infla_),
+                            base_infla.getSemiAxis().at(1) * (1 + infla_)});
+    MultiBodyTree2D robot_infla(base_infla);
+
+    // Update robot in the free space computator
+    freeSpacePtr_->setRobot(robot_infla);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[0],
+                         param_.BOUND_LIMIT[1]);
+}
 
 HRM2DKC::~HRM2DKC() = default;
-
-BoundaryInfo HRM2DKC::boundaryGen() {
-    SuperEllipse robot_infla = robot_.getBase();
-    BoundaryInfo bd;
-
-    // Enlarge the robot
-    robot_infla.setSemiAxis({robot_infla.getSemiAxis().at(0) * (1 + infla),
-                             robot_infla.getSemiAxis().at(1) * (1 + infla)});
-
-    // calculate Minkowski boundary points
-    for (const auto& arena : arena_) {
-        bd.arena.emplace_back(arena.getMinkSum2D(robot_infla, -1));
-    }
-    for (const auto& obstacle : obs_) {
-        bd.obstacle.emplace_back(obstacle.getMinkSum2D(robot_infla, +1));
-    }
-
-    // Set computed boundary into FreeSpace2D object
-    freeSpacePtr_->setCSpaceBoundary(bd);
-
-    return bd;
-}
 
 void HRM2DKC::connectMultiLayer() {
     Index n = res_.graph_structure.vertex.size();
@@ -80,9 +69,6 @@ void HRM2DKC::connectMultiLayer() {
     }
 }
 
-/*************************************************/
-/**************** Private Functions **************/
-/*************************************************/
 std::vector<Coordinate> HRM2DKC::addMiddleVertex(std::vector<Coordinate> vtx1,
                                                  std::vector<Coordinate> vtx2) {
     // Connect vertexes among different layers, and add a bridge vertex to the

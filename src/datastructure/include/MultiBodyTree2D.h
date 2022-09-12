@@ -15,18 +15,10 @@ class MultiBodyTree2D : public MultiBodyTree<SuperEllipse, SE2Transform> {
 
     ~MultiBodyTree2D();
 
-    /** \brief Add a new body to the tree
-     * \param link Link as SuperEllipse type */
     void addBody(const SuperEllipse& link) override;
 
-    /** \brief Tranform robot
-     * \param g The transformation */
     void robotTF(const SE2Transform& g) override;
 
-    /** \brief Closed-form Minkowski sums operation
-     * \param s1 Object to be summed
-     * \param k +1/-1 indicating sum/difference
-     * \return A union of sampled points on the Minkowski sums boundary */
-    std::vector<BoundaryPoints> minkSum(const SuperEllipse* s1,
-                                        const Indicator k) override;
+    std::vector<BoundaryPoints> minkSum(const SuperEllipse& s1,
+                                        const Indicator k) const override;
 };

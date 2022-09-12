@@ -6,12 +6,13 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
              const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {
-    freeSpacePtr_ = std::make_shared<FreeSpace2D>(&robot_, &arena_, &obs_);
+    // Setup free space computator
+    freeSpacePtr_ = std::make_shared<FreeSpace2D>(robot_, arena_, obs_);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[0],
+                         param_.BOUND_LIMIT[1]);
 }
 
 HRM2D::~HRM2D() = default;
-
-BoundaryInfo HRM2D::boundaryGen() { return freeSpacePtr_->getCSpaceBoundary(); }
 
 void HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
@@ -20,7 +21,7 @@ void HRM2D::constructOneLayer(const Index layerIdx) {
     // Generate new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
     } else {
         layerBound_ = layerBoundAll_.at(layerIdx);
@@ -56,12 +57,11 @@ void HRM2D::sweepLineProcess() {
 
     // Find intersecting points to C-obstacles for each raster scan line
     std::vector<std::vector<Coordinate>> tLine{ty};
-    const IntersectionInterval intersect =
-        freeSpacePtr_->getIntersectionInterval(tLine, param_.BOUND_LIMIT[0],
-                                               param_.BOUND_LIMIT[1]);
+    freeSpacePtr_->computeIntersectionInterval(tLine);
 
     // Compute collision-free intervals at each sweep line
-    freeSegOneLayer_ = computeFreeSegment(ty, &intersect);
+    freeSpacePtr_->computeFreeSegment(ty);
+    freeSegOneLayer_ = freeSpacePtr_->getFreeSegment();
 }
 
 void HRM2D::generateVertices(const Coordinate tx,
@@ -191,9 +191,6 @@ void HRM2D::connectExistLayer(const Index layerId) {
     }
 }
 
-/***************************************************************/
-/**************** Protected and private Functions **************/
-/***************************************************************/
 void HRM2D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {

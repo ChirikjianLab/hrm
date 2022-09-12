@@ -10,12 +10,13 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
              const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {
-    freeSpacePtr_ = std::make_shared<FreeSpace3D>(&robot_, &arena_, &obs_);
+    // Setup free space computator
+    freeSpacePtr_ = std::make_shared<FreeSpace3D>(robot_, arena_, obs_);
+    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[4],
+                         param_.BOUND_LIMIT[5]);
 }
 
 HRM3D::~HRM3D() = default;
-
-BoundaryInfo HRM3D::boundaryGen() { return freeSpacePtr_->getCSpaceBoundary(); }
 
 void HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
@@ -29,7 +30,7 @@ void HRM3D::constructOneLayer(const Index layerIdx) {
     // Add new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        layerBound_ = boundaryGen();
+        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
 
         // Generate mesh for the boundaries
@@ -75,13 +76,11 @@ void HRM3D::sweepLineProcess() {
                                       static_cast<double>(i) * dx);
 
         std::vector<std::vector<Coordinate>> tLine{freeSegOneLayer_.tx, ty};
-        const IntersectionInterval intersect =
-            freeSpacePtr_->getIntersectionInterval(tLine, param_.BOUND_LIMIT[4],
-                                                   param_.BOUND_LIMIT[5]);
+        freeSpacePtr_->computeIntersectionInterval(tLine);
 
         // Store freeSeg info
-        freeSegOneLayer_.freeSegYZ.push_back(
-            computeFreeSegment(ty, &intersect));
+        freeSpacePtr_->computeFreeSegment(ty);
+        freeSegOneLayer_.freeSegYZ.push_back(freeSpacePtr_->getFreeSegment());
     }
 }
 
@@ -285,9 +284,6 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     return path_interp;
 }
 
-/***************************************************************/
-/**************** Protected and private Functions **************/
-/***************************************************************/
 void HRM3D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {

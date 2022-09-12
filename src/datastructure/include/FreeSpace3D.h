@@ -24,14 +24,15 @@ struct BoundaryMesh {
 
 /** \class FreeSpace3D
  * \brief Compute free space in SE(3) */
-class FreeSpace3D : public FreeSpace<MultiBodyTree3D, SuperQuadrics> {
+class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
   public:
     /** \brief Constructor
      * \param robot MultiBodyTree3D object defining the robot
      * \param arena Geometric object of arena
      * \param obstacle Geometric object of obstacles */
-    FreeSpace3D(MultiBodyTree3D* robot, const std::vector<SuperQuadrics>* arena,
-                const std::vector<SuperQuadrics>* obstacle);
+    FreeSpace3D(const MultiBodyTree3D& robot,
+                const std::vector<SuperQuadrics>& arena,
+                const std::vector<SuperQuadrics>& obstacle);
     ~FreeSpace3D() {}
 
     /** \brief Get C-free boundary as mesh
@@ -42,11 +43,8 @@ class FreeSpace3D : public FreeSpace<MultiBodyTree3D, SuperQuadrics> {
         return cSpaceBoundaryMesh_;
     }
 
-  protected:
-    void computeLineIntersect(IntersectionInterval& intersect,
-                              const std::vector<std::vector<Coordinate>>& tLine,
-                              const double lowBound,
-                              const double upBound) override;
+    void computeIntersectionInterval(
+        const std::vector<std::vector<Coordinate>>& tLine) override;
 
   private:
     /** \brief Compute C-free boundary as mesh

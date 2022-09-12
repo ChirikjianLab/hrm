@@ -23,6 +23,7 @@ class ProbHRM3D : public HRM3D {
 
     void plan(const double timeLim) override;
 
+  protected:
     void sampleOrientations() override;
 
     void connectMultiLayer() override;
@@ -30,7 +31,6 @@ class ProbHRM3D : public HRM3D {
     void generateVertices(const Coordinate tx,
                           const FreeSegment2D* freeSeg) override;
 
-  protected:
     void setTransform(const std::vector<Coordinate>& v) override;
 
     /** \brief Compute Tightly-Fitted Ellipsoid (TFE) to enclose robot parts
