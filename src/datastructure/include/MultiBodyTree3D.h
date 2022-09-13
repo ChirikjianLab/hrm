@@ -12,7 +12,7 @@ class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
   public:
     /** \brief Constructor
      * \param base Base as the class of SuperQuadrics */
-    MultiBodyTree3D(SuperQuadrics base);
+    MultiBodyTree3D(const SuperQuadrics& base);
 
     ~MultiBodyTree3D();
 

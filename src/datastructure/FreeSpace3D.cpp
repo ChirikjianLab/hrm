@@ -7,6 +7,8 @@ FreeSpace3D::FreeSpace3D(const MultiBodyTree3D& robot,
     : FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics>::FreeSpaceComputator(
           robot, arena, obstacle) {}
 
+FreeSpace3D::~FreeSpace3D() = default;
+
 void FreeSpace3D::computeCSpaceBoundaryMesh(const BoundaryInfo* bound) {
     // Generate mesh for the boundaries
     cSpaceBoundaryMesh_.arena.resize(bound->arena.size());

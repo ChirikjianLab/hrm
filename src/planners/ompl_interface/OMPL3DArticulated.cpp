@@ -8,7 +8,7 @@ OMPL3DArticulated::OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
                                      const std::vector<SuperQuadrics>& obs,
                                      const std::vector<Mesh>& obsMesh)
     : OMPL3D(lowBound, highBound, robot, arena, obs, obsMesh),
-      urdfFile_(urdfFile) {
+      urdfFile_(std::move(urdfFile)) {
     // Parse URDF file and construct KDL tree
     kdl_ = new ParseURDF(urdfFile_);
     numJoint_ = kdl_->getKDLTree().getNrOfJoints();

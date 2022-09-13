@@ -11,7 +11,7 @@ class MultiBodyTree2D : public MultiBodyTree<SuperEllipse, SE2Transform> {
   public:
     /** \brief Constructor
      * \param base Base as the class of SuperEllipse */
-    MultiBodyTree2D(SuperEllipse base);
+    MultiBodyTree2D(const SuperEllipse& base);
 
     ~MultiBodyTree2D();
 

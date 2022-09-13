@@ -8,9 +8,8 @@ FreeSpaceComputator<RobotType, ObjectType>::FreeSpaceComputator(
     : robot_(std::move(robot)), arena_(arena), obstacle_(obstacle) {}
 
 template <typename RobotType, typename ObjectType>
-void FreeSpaceComputator<RobotType, ObjectType>::setup(const int numLine,
-                                                       const double lowBound,
-                                                       const double upBound) {
+void FreeSpaceComputator<RobotType, ObjectType>::setup(
+    const unsigned int numLine, const double lowBound, const double upBound) {
     lowBound_ = lowBound;
     upBound_ = upBound;
 

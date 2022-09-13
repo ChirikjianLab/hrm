@@ -1,9 +1,9 @@
 #include "include/MultiBodyTree2D.h"
 
-MultiBodyTree2D::MultiBodyTree2D(SuperEllipse base)
+MultiBodyTree2D::MultiBodyTree2D(const SuperEllipse& base)
     : MultiBodyTree<SuperEllipse, SE2Transform>::MultiBodyTree(base) {}
 
-MultiBodyTree2D::~MultiBodyTree2D() {}
+MultiBodyTree2D::~MultiBodyTree2D() = default;
 
 void MultiBodyTree2D::addBody(const SuperEllipse& link) {
     // Add link

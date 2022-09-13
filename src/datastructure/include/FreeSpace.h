@@ -54,7 +54,8 @@ class FreeSpaceComputator {
      * \param numLine Number of sweep lines
      * \param lowBound Lower bound of the sweep line segment
      * \param upBound Upper bound of the sweep line segment */
-    void setup(const int numLine, const double lowBound, const double upBound);
+    void setup(const unsigned int numLine, const double lowBound,
+               const double upBound);
 
     /** \brief Set new robot in the same planning scene
      * \param robot A new robot */

@@ -9,13 +9,13 @@ class MultiBodyTree {
   public:
     /** \brief Constructor
      * \param base Base as the class of a geometric type */
-    MultiBodyTree(GeomType base) : base_(std::move(base)) {}
+    MultiBodyTree(const GeomType& base) : base_(std::move(base)) {}
 
     ~MultiBodyTree() {}
 
     /** \brief Get base
      * \return Geometric model class defining the base */
-    GeomType getBase() const { return base_; }
+    const GeomType& getBase() const { return base_; }
 
     /** \brief Get other links
      * \return A list of geometric model */

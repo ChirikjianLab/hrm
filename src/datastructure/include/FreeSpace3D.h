@@ -33,7 +33,7 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
     FreeSpace3D(const MultiBodyTree3D& robot,
                 const std::vector<SuperQuadrics>& arena,
                 const std::vector<SuperQuadrics>& obstacle);
-    ~FreeSpace3D() {}
+    ~FreeSpace3D();
 
     /** \brief Get C-free boundary as mesh
      * \return The generated mesh as BoundMesh type */

@@ -7,6 +7,8 @@ FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
     : FreeSpaceComputator<MultiBodyTree2D, SuperEllipse>::FreeSpaceComputator(
           robot, arena, obstacle) {}
 
+FreeSpace2D::~FreeSpace2D() = default;
+
 void FreeSpace2D::computeIntersectionInterval(
     const std::vector<std::vector<Coordinate> >& tLine) {
     // Intersections btw sweep line and arenas
