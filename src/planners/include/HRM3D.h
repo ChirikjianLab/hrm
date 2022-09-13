@@ -28,9 +28,10 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Get free line segment at one specific C-layer
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment3D type */
-    FreeSegment3D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
+    const FreeSegment3D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
-        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh(&layerBound_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(&layerBound_);
+        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         sweepLineProcess();
         return freeSegOneLayer_;
     }
@@ -38,14 +39,14 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Get Minkowski sums boundary mesh
      * \param idx Index of C-layer
      * \return Boundary mesh */
-    BoundaryMesh getLayerBoundaryMesh(const Index idx) {
+    const BoundaryMesh& getLayerBoundaryMesh(const Index idx) {
         return layerBoundMeshAll_.at(idx);
     }
 
     /** \brief Get Minkowski sums boundary
      * \param idx Index of C-layer
      * \return Boundary */
-    BoundaryInfo getLayerBoundary(const Index idx) {
+    const BoundaryInfo& getLayerBoundary(const Index idx) {
         return layerBoundAll_.at(idx);
     }
 

@@ -57,21 +57,21 @@ void TestOMPLPlanner(const int id_planner, const int id_sampler) {
     showResult(&res, true);
 }
 
-TEST(OMPLPlanning, PRM_UNIFORM) { TestOMPLPlanner(0, 0); }
+TEST(OMPLPlanning, PRMUniform) { TestOMPLPlanner(0, 0); }
 
-TEST(OMPLPlanning, PRM_GAUSSIAN) { TestOMPLPlanner(0, 1); }
+TEST(OMPLPlanning, PRMGaussian) { TestOMPLPlanner(0, 1); }
 
-TEST(OMPLPlanning, PRM_OB) { TestOMPLPlanner(0, 2); }
+TEST(OMPLPlanning, PRMObstacleBased) { TestOMPLPlanner(0, 2); }
 
-TEST(OMPLPlanning, PRM_MC) { TestOMPLPlanner(0, 3); }
+TEST(OMPLPlanning, PRMMaxClearance) { TestOMPLPlanner(0, 3); }
 
-TEST(OMPLPlanning, PRM_BRIDGE) { TestOMPLPlanner(0, 4); }
+TEST(OMPLPlanning, PRMBridgeTest) { TestOMPLPlanner(0, 4); }
 
-TEST(OMPLPlanning, LAZYPRM) { TestOMPLPlanner(1, 0); }
+TEST(OMPLPlanning, LazyPRM) { TestOMPLPlanner(1, 0); }
 
 TEST(OMPLPlanning, RRT) { TestOMPLPlanner(2, 0); }
 
-TEST(OMPLPlanning, RRTCONNECT) { TestOMPLPlanner(3, 0); }
+TEST(OMPLPlanning, RRTConnect) { TestOMPLPlanner(3, 0); }
 
 TEST(OMPLPlanning, EST) { TestOMPLPlanner(4, 0); }
 

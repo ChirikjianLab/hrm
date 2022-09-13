@@ -21,7 +21,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief Get free line segment at one specific C-slice
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment2D type */
-    FreeSegment2D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
+    const FreeSegment2D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
         sweepLineProcess();
         return freeSegOneLayer_;

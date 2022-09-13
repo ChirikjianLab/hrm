@@ -19,15 +19,15 @@ class MultiBodyTree {
 
     /** \brief Get other links
      * \return A list of geometric model */
-    std::vector<GeomType> getLinks() const { return link_; }
+    const std::vector<GeomType>& getLinks() const { return link_; }
 
     /** \brief Get the number of links
      * \return Number of links */
-    Index getNumLinks() const { return numLinks_; }
+    const Index getNumLinks() const { return numLinks_; }
 
     /** \brief Get transformation of the links in global frame
      * \return List of transformations */
-    std::vector<Transformation> getTF() const { return tf_; }
+    const std::vector<Transformation>& getTF() const { return tf_; }
 
     /** \brief Add a new body to the tree
      * \param link Link as geometric type */

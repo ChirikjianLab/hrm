@@ -9,7 +9,7 @@ static const double pi = 3.1415926;
 static const double epsilon = 1e-5;
 
 // Tests for SuperEllipse
-TEST(TestSuperEllipse, boundarySampling) {
+TEST(TestSuperEllipse, BoundarySampling) {
     const SuperEllipse S({5.0, 3.0}, 1.25, {-2.6, 3.2}, 0.0, 50);
     const BoundaryPoints boundary = S.getOriginShape();
 
@@ -20,7 +20,7 @@ TEST(TestSuperEllipse, boundarySampling) {
     ASSERT_DOUBLE_EQ(boundary(1, 0), BOUNDARY_Y);
 }
 
-TEST(TestSuperEllipse, minkowskiBoundarySampling) {
+TEST(TestSuperEllipse, MinkowskiBoundarySampling) {
     const SuperEllipse S({5.0, 3.0}, 1.25, {3.2, -2.5}, 0.0, 50);
     const SuperEllipse E({2.5, 1.5}, 1.0, {0.0, 0.0}, 0.0, 50);
     const BoundaryPoints minkBound = S.getMinkSum2D(E, +1);
@@ -33,7 +33,7 @@ TEST(TestSuperEllipse, minkowskiBoundarySampling) {
 }
 
 // Tests for SuperQuadrics
-TEST(TestSuperQuadrics, boundarySampling) {
+TEST(TestSuperQuadrics, BoundarySampling) {
     const SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {2.32, -1.5, 4.0},
                           Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
     const BoundaryPoints boundary = S.getOriginShape();
@@ -50,7 +50,7 @@ TEST(TestSuperQuadrics, boundarySampling) {
     }
 }
 
-TEST(TestSuperQuadrics, minkowskiBoundarySampling) {
+TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
     const SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {-3.2, 3.24, -2.13},
                           Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
     const SuperQuadrics E({2.5, 1.5, 1.0}, {1.0, 1.0}, {0.0, 0.0, 0.0},
@@ -70,7 +70,7 @@ TEST(TestSuperQuadrics, minkowskiBoundarySampling) {
 }
 
 // Test for TightFittedEllipsoid
-TEST(TestTightFittedEllipsoid, mvce2D) {
+TEST(TestTightFittedEllipsoid, MVCE2D) {
     const SuperEllipse mvce =
         getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, pi / 2, 50);
 
@@ -80,7 +80,7 @@ TEST(TestTightFittedEllipsoid, mvce2D) {
     EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < epsilon);
 }
 
-TEST(TestTightFittedEllipsoid, mvce3D) {
+TEST(TestTightFittedEllipsoid, MVCE3D) {
     const SuperQuadrics mvce =
         getMVCE3D({5.0, 3.0, 2.0}, {2.0, 3.0, 5.0},
                   Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0),

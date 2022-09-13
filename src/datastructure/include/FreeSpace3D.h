@@ -36,20 +36,16 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
     ~FreeSpace3D() {}
 
     /** \brief Get C-free boundary as mesh
-     * \param bound C-arena/C-obstacle boundary points
      * \return The generated mesh as BoundMesh type */
-    BoundaryMesh getCSpaceBoundaryMesh(const BoundaryInfo* bound) {
-        computeCSpaceBoundaryMesh(bound);
-        return cSpaceBoundaryMesh_;
-    }
+    const BoundaryMesh& getCSpaceBoundaryMesh() { return cSpaceBoundaryMesh_; }
 
     void computeIntersectionInterval(
         const std::vector<std::vector<Coordinate>>& tLine) override;
 
-  private:
     /** \brief Compute C-free boundary as mesh
      * \param bound C-arena/C-obstacle boundary points*/
     void computeCSpaceBoundaryMesh(const BoundaryInfo* bound);
 
+  private:
     BoundaryMesh cSpaceBoundaryMesh_;
 };

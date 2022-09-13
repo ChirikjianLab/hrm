@@ -21,16 +21,16 @@ class SuperQuadrics {
                   const Index num);
 
     /** \brief Get semi-axes lengths of the superquadrics */
-    std::vector<double> getSemiAxis() const { return semiAxis_; }
+    const std::vector<double> &getSemiAxis() const { return semiAxis_; }
 
     /** \brief Get exponent of power function of superquadrics */
-    std::vector<double> getEpsilon() const { return epsilon_; }
+    const std::vector<double> &getEpsilon() const { return epsilon_; }
 
     /** \brief Get position of the superquadrics */
-    std::vector<double> getPosition() const { return position_; }
+    const std::vector<double> &getPosition() const { return position_; }
 
     /** \brief Get the current quaternion of the superquadrics */
-    Eigen::Quaterniond getQuaternion() const { return quat_; }
+    const Eigen::Quaterniond &getQuaternion() const { return quat_; }
 
     /** \brief Get number of points to be sampled on the surface boundary */
     Index getNum() const { return Num_; }
@@ -39,7 +39,9 @@ class SuperQuadrics {
     Index getNumParam() const { return num_; }
 
     /** \brief Get sampled quaternions for orientation */
-    std::vector<Eigen::Quaterniond> getQuatSamples() const { return qSample_; }
+    const std::vector<Eigen::Quaterniond> &getQuatSamples() const {
+        return qSample_;
+    }
 
     /** \brief Set semi-axes lengths of the superquadrics */
     void setSemiAxis(const std::vector<double> &newSemiAxis);

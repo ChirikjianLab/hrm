@@ -34,7 +34,8 @@ void HRM3D::constructOneLayer(const Index layerIdx) {
         layerBoundAll_.push_back(layerBound_);
 
         // Generate mesh for the boundaries
-        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh(&layerBound_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(&layerBound_);
+        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         layerBoundMeshAll_.push_back(layerBoundMesh_);
     } else {
         layerBound_ = layerBoundAll_.at(layerIdx);

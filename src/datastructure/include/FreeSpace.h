@@ -62,15 +62,17 @@ class FreeSpaceComputator {
 
     /** \brief Get C-space obstacles boundary
      * \return BoundaryInfo */
-    BoundaryInfo getCSpaceBoundary() const { return cSpaceBoundary_; }
+    const BoundaryInfo& getCSpaceBoundary() const { return cSpaceBoundary_; }
 
     /** \brief Get intervals for line-obstacle/arena intersections
      * \return IntersectionInterval */
-    IntersectionInterval getIntersectionInterval() const { return intersect_; }
+    const IntersectionInterval& getIntersectionInterval() const {
+        return intersect_;
+    }
 
     /** \brief Get C-free line segments
      * \return Collision-free line segment as FreeSegment2D type */
-    FreeSegment2D getFreeSegment() const { return segment_; }
+    const FreeSegment2D& getFreeSegment() const { return segment_; }
 
     /** \brief Compute C-space boundary */
     void computeCSpaceBoundary();

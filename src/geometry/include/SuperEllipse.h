@@ -21,13 +21,13 @@ class SuperEllipse {
                  const Index num);
 
     /** \brief Get semi-axes lengths of the superellipse */
-    std::vector<double> getSemiAxis() const { return semiAxis_; }
+    const std::vector<double> &getSemiAxis() const { return semiAxis_; }
 
     /** \brief Get exponent of power function of superellipse */
     double getEpsilon() const { return epsilon_; }
 
     /** \brief Get position of the superellipse */
-    std::vector<double> getPosition() const { return position_; }
+    const std::vector<double> &getPosition() const { return position_; }
 
     /** \brief Get heading angle of the superellipse */
     double getAngle() const { return angle_; }

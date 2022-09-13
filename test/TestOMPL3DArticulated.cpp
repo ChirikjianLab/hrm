@@ -66,23 +66,23 @@ void TestOMPLPlanner(const int id_planner, const int id_sampler) {
     showResult(&res, true);
 }
 
-TEST(OMPLPlanning, PRM_UNIFORM) { TestOMPLPlanner(0, 0); }
+TEST(OMPLPlanningArticulated, PRMUniform) { TestOMPLPlanner(0, 0); }
 
-TEST(OMPLPlanning, PRM_GAUSSIAN) { TestOMPLPlanner(0, 1); }
+TEST(OMPLPlanningArticulated, PRMGaussian) { TestOMPLPlanner(0, 1); }
 
-TEST(OMPLPlanning, PRM_OB) { TestOMPLPlanner(0, 2); }
+TEST(OMPLPlanningArticulated, PRMObstacleBased) { TestOMPLPlanner(0, 2); }
 
-TEST(OMPLPlanning, PRM_MC) { TestOMPLPlanner(0, 3); }
+TEST(OMPLPlanningArticulated, PRMMaxClearance) { TestOMPLPlanner(0, 3); }
 
-TEST(OMPLPlanning, PRM_BRIDGE) { TestOMPLPlanner(0, 4); }
+TEST(OMPLPlanningArticulated, PRMBridgeTest) { TestOMPLPlanner(0, 4); }
 
-TEST(OMPLPlanning, LAZYPRM) { TestOMPLPlanner(1, 0); }
+TEST(OMPLPlanningArticulated, LazyPRM) { TestOMPLPlanner(1, 0); }
 
-TEST(OMPLPlanning, RRT) { TestOMPLPlanner(2, 0); }
+TEST(OMPLPlanningArticulated, RRT) { TestOMPLPlanner(2, 0); }
 
-TEST(OMPLPlanning, RRTCONNECT) { TestOMPLPlanner(3, 0); }
+TEST(OMPLPlanningArticulated, RRTConnect) { TestOMPLPlanner(3, 0); }
 
-TEST(OMPLPlanning, EST) { TestOMPLPlanner(4, 0); }
+TEST(OMPLPlanningArticulated, EST) { TestOMPLPlanner(4, 0); }
 
 int main(int ac, char* av[]) {
     testing::InitGoogleTest(&ac, av);

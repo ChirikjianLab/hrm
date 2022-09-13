@@ -57,11 +57,11 @@ class HighwayRoadMap {
 
     /** \brief Retrieve planning results
      * \return PlanningResult struture */
-    PlanningResult getPlanningResult() const { return res_; }
+    const PlanningResult& getPlanningResult() const { return res_; }
 
     /** \brief Retrieve parameters
      * \return PlannerParameter */
-    PlannerParameter getPlannerParameters() const { return param_; }
+    const PlannerParameter& getPlannerParameters() const { return param_; }
 
     /** \brief Retrieve solved path
      * \return 2D vector for representing solved path */
@@ -69,29 +69,29 @@ class HighwayRoadMap {
 
     /** \brief Retrieve robot information
      * \return MultibodyTree structure */
-    RobotType getRobot() const { return robot_; }
+    const RobotType& getRobot() const { return robot_; }
 
     /** \brief Retrieve arena information
      * \return Vector of geometric types */
-    std::vector<ObjectType> getArena() const { return arena_; }
+    const std::vector<ObjectType>& getArena() const { return arena_; }
 
     /** \brief Retrieve obstacles information
      * \return Vector of geometric types */
-    std::vector<ObjectType> getObstacle() const { return obs_; }
+    const std::vector<ObjectType>& getObstacle() const { return obs_; }
 
     /** \brief Retrieve C-space boundary information
      * \return Vector of BoundaryInfo */
-    std::vector<BoundaryInfo> getCSpaceBoundary() const {
+    const std::vector<BoundaryInfo>& getCSpaceBoundary() const {
         return layerBoundAll_;
     }
 
     /** \brief Retrieve start configuration
      * \return Coordinate of the start configuration */
-    std::vector<Coordinate> getStart() const { return start_; }
+    const std::vector<Coordinate>& getStart() const { return start_; }
 
     /** \brief Retrieve goal configuration
      * \return Coordinate of the goal configuration */
-    std::vector<Coordinate> getGoal() const { return goal_; }
+    const std::vector<Coordinate>& getGoal() const { return goal_; }
 
     /** \brief Interpolate solved path
      * \return 2D vector for representing interpolated path */

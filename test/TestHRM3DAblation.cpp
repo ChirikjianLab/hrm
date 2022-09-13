@@ -3,7 +3,7 @@
 
 using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
-TEST(TestHRMPlanning3D, HRM) {
+TEST(TestHRMPlanning3D, HRMAblation) {
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
