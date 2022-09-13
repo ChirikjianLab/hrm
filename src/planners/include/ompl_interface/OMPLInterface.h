@@ -22,7 +22,7 @@ class OMPLInterface {
      * \param arena Class for arena model
      * \param obstacle Class for obstacles */
     OMPLInterface(const std::vector<double>& lowBound,
-                  const std::vector<double>& highBound, RobotType robot,
+                  const std::vector<double>& highBound, const RobotType& robot,
                   const std::vector<ObjectType>& arena,
                   const std::vector<ObjectType>& obstacle);
 

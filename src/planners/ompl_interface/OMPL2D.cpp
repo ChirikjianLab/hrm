@@ -3,7 +3,8 @@
 #include <ompl/base/spaces/SE2StateSpace.h>
 
 OMPL2D::OMPL2D(const std::vector<double> &lowBound,
-               const std::vector<double> &highBound, MultiBodyTree2D robot,
+               const std::vector<double> &highBound,
+               const MultiBodyTree2D &robot,
                const std::vector<SuperEllipse> &arena,
                const std::vector<SuperEllipse> &obstacle)
     : OMPLInterface<MultiBodyTree2D, SuperEllipse>::OMPLInterface(

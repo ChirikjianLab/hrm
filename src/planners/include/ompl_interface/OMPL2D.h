@@ -15,7 +15,7 @@ class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
      * \param arena SuperEllipse class for arena model
      * \param obstacle SuperEllipse class for obstacles */
     OMPL2D(const std::vector<double>& lowBound,
-           const std::vector<double>& highBound, MultiBodyTree2D robot,
+           const std::vector<double>& highBound, const MultiBodyTree2D& robot,
            const std::vector<SuperEllipse>& arena,
            const std::vector<SuperEllipse>& obstacle);
 

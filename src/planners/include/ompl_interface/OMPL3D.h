@@ -20,7 +20,7 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
      * \param obs SuperQuadrics class for obstacles
      * \param obsMesh Mesh model for obstacles */
     OMPL3D(const std::vector<double>& lowBound,
-           const std::vector<double>& highBound, MultiBodyTree3D robot,
+           const std::vector<double>& highBound, const MultiBodyTree3D& robot,
            const std::vector<SuperQuadrics>& arena,
            const std::vector<SuperQuadrics>& obs,
            const std::vector<Mesh>& obsMesh);

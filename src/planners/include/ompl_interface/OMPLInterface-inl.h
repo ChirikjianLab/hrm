@@ -20,9 +20,9 @@ const double STATE_VALIDITY_RESOLUTION = 0.01;
 template <typename RobotType, typename ObjectType>
 OMPLInterface<RobotType, ObjectType>::OMPLInterface(
     const std::vector<double> &lowBound, const std::vector<double> &highBound,
-    RobotType robot, const std::vector<ObjectType> &arena,
+    const RobotType &robot, const std::vector<ObjectType> &arena,
     const std::vector<ObjectType> &obstacle)
-    : robot_(std::move(robot)),
+    : robot_(robot),
       arena_(arena),
       lowBound_(lowBound),
       highBound_(highBound),
