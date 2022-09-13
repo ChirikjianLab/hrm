@@ -206,7 +206,7 @@ void ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
         jointConfig(i) = V[7 + i];
     }
 
-    robot_.robotTF(urdfFile_, &g, &jointConfig);
+    robot_.robotTF(urdfFile_, g, jointConfig);
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body

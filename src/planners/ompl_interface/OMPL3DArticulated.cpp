@@ -72,7 +72,7 @@ MultiBodyTree3D OMPL3DArticulated::transformRobot(
     }
 
     MultiBodyTree3D robotAux = robot_;
-    robotAux.robotTF(urdfFile_, &gBase, &jointConfig);
+    robotAux.robotTF(urdfFile_, gBase, jointConfig);
 
     return robotAux;
 }

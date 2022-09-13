@@ -28,15 +28,15 @@ class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
      * \param urdfFile Path for the URDF file
      * \param gBase Transformation of the base
      * \param jointConfig Configuration of the joints */
-    void robotTF(const std::string& urdfFile, const SE3Transform* gBase,
-                 const Eigen::VectorXd* jointConfig);
+    void robotTF(const std::string& urdfFile, const SE3Transform& gBase,
+                 const Eigen::VectorXd& jointConfig);
 
     /** \brief Transform the articulated-body robot
      * \param kdl KDL model
      * \param gBase Transformation of the base
      * \param jointConfig Configuration of the joints */
-    void robotTF(ParseURDF kdl, const SE3Transform* gBase,
-                 const Eigen::VectorXd* jointConfig);
+    void robotTF(ParseURDF kdl, const SE3Transform& gBase,
+                 const Eigen::VectorXd& jointConfig);
 
     std::vector<BoundaryPoints> minkSum(const SuperQuadrics& s1,
                                         const Indicator k) const override;
