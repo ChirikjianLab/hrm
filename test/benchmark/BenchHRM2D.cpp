@@ -41,20 +41,19 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.NUM_LAYER = static_cast<size_t>(N_l);
-    param.NUM_LINE_Y = static_cast<size_t>(N_y);
-    param.NUM_POINT = 5;
+    param.numLayer = static_cast<size_t>(N_l);
+    param.numLineY = static_cast<size_t>(N_y);
+    param.numPoint = 5;
     hrm::defineParameters(robot, env2D, param);
 
-    std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
-    std::cout << "Initial number of sweep lines: " << param.NUM_LINE_Y
+    std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Initial number of sweep lines: " << param.numLineY
               << std::endl;
     std::cout << "----------" << std::endl;
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = true;
-    req.planner_parameters = param;
+    req.parameters = param;
     req.start = env2D.getEndPoints().at(0);
     req.goal = env2D.getEndPoints().at(1);
 
@@ -71,27 +70,27 @@ int main(int argc, char** argv) {
 
         // Store statistics
         time_stat.push_back(
-            {res.planning_time.buildTime, res.planning_time.searchTime,
-             res.planning_time.totalTime,
-             static_cast<double>(res.graph_structure.vertex.size()),
-             static_cast<double>(res.graph_structure.edge.size()),
-             static_cast<double>(res.solution_path.PathId.size())});
+            {res.planningTime.buildTime, res.planningTime.searchTime,
+             res.planningTime.totalTime,
+             static_cast<double>(res.graphStructure.vertex.size()),
+             static_cast<double>(res.graphStructure.edge.size()),
+             static_cast<double>(res.solutionPath.PathId.size())});
 
         // Planning Time and Path Cost
-        std::cout << "Roadmap build time: " << res.planning_time.buildTime
-                  << "s" << std::endl;
-        std::cout << "Path search time: " << res.planning_time.searchTime << "s"
+        std::cout << "Roadmap build time: " << res.planningTime.buildTime << "s"
                   << std::endl;
-        std::cout << "Total Planning Time: " << res.planning_time.totalTime
+        std::cout << "Path search time: " << res.planningTime.searchTime << "s"
+                  << std::endl;
+        std::cout << "Total Planning Time: " << res.planningTime.totalTime
                   << 's' << std::endl;
 
         std::cout << "Number of valid configurations: "
-                  << res.graph_structure.vertex.size() << std::endl;
-        std::cout << "Number of valid edges: "
-                  << res.graph_structure.edge.size() << std::endl;
+                  << res.graphStructure.vertex.size() << std::endl;
+        std::cout << "Number of valid edges: " << res.graphStructure.edge.size()
+                  << std::endl;
         std::cout << "Number of configurations in Path: "
-                  << res.solution_path.PathId.size() << std::endl;
-        std::cout << "Cost: " << res.solution_path.cost << std::endl;
+                  << res.solutionPath.PathId.size() << std::endl;
+        std::cout << "Cost: " << res.solutionPath.cost << std::endl;
     }
 
     // Store results

@@ -25,17 +25,17 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = false;
+    req.isRobotRigid = false;
     req.start = env3D.getEndPoints().at(0);
     req.goal = env3D.getEndPoints().at(1);
-    hrm::defineParameters(robot, env3D, req.planner_parameters);
+    hrm::defineParameters(robot, env3D, req.parameters);
 
     // Main Algorithm
     std::cout << "Prob-HRM for 3D articulated-body planning" << std::endl;
     std::cout << "----------" << std::endl;
     std::cout << "Input number of sweep lines {X,Y}: {"
-              << req.planner_parameters.NUM_LINE_X << ','
-              << req.planner_parameters.NUM_LINE_Y << '}' << std::endl;
+              << req.parameters.numLineX << ','
+              << req.parameters.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
     std::cout << "Start planning..." << std::endl;
@@ -50,9 +50,9 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
-    std::cout << "Number of C-layers: " << param.NUM_LAYER << std::endl;
-    std::cout << "Final number of sweep lines {X,Y}: {" << param.NUM_LINE_X
-              << ',' << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "Number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Final number of sweep lines {X,Y}: {" << param.numLineX
+              << ',' << param.numLineY << '}' << std::endl;
 
     hrm::showResult(res, true, "3D");
 }

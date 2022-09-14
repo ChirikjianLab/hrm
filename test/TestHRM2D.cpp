@@ -13,10 +13,10 @@ algorithm planTest(const robotType& robot,
                    const std::vector<hrm::SuperEllipse>& obs,
                    const hrm::PlanningRequest& req, const bool isStore) {
     // Main algorithm
-    std::cout << "Input number of C-layers: "
-              << req.planner_parameters.NUM_LAYER << std::endl;
-    std::cout << "Input number of sweep lines: "
-              << req.planner_parameters.NUM_LINE_Y << std::endl;
+    std::cout << "Input number of C-layers: " << req.parameters.numLayer
+              << std::endl;
+    std::cout << "Input number of sweep lines: " << req.parameters.numLineY
+              << std::endl;
     std::cout << "----------" << std::endl;
 
     std::cout << "Start planning..." << std::endl;
@@ -27,9 +27,9 @@ algorithm planTest(const robotType& robot,
     std::cout << "Finished planning!" << std::endl;
 
     std::cout << "Final number of C-layers: "
-              << hrm.getPlannerParameters().NUM_LAYER << std::endl;
+              << hrm.getPlannerParameters().numLayer << std::endl;
     std::cout << "Final number of sweep lines: "
-              << hrm.getPlannerParameters().NUM_LINE_Y << std::endl;
+              << hrm.getPlannerParameters().numLineY << std::endl;
 
     if (isStore) {
         std::cout << "Saving results to file..." << std::endl;
@@ -101,13 +101,12 @@ TEST(TestHRMPlanning2D, MultiBody) {
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = true;
     req.start = env2D.getEndPoints().at(0);
     req.goal = env2D.getEndPoints().at(1);
 
-    req.planner_parameters.NUM_LAYER = 10;
-    req.planner_parameters.NUM_POINT = 5;
-    hrm::defineParameters(robot, env2D, req.planner_parameters);
+    req.parameters.numLayer = 10;
+    req.parameters.numPoint = 5;
+    hrm::defineParameters(robot, env2D, req.parameters);
 
     bool isStoreRes = true;
 
@@ -139,14 +138,13 @@ TEST(TestHRMPlanning2D, KinematicsOfContainment) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.NUM_LAYER = 10;
-    param.NUM_POINT = 5;
+    param.numLayer = 10;
+    param.numPoint = 5;
     hrm::defineParameters(robot, env2D, param);
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = true;
-    req.planner_parameters = param;
+    req.parameters = param;
     req.start = env2D.getEndPoints().at(0);
     req.goal = env2D.getEndPoints().at(1);
 

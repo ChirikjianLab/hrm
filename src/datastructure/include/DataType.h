@@ -24,7 +24,8 @@ struct BoundaryInfo {
     std::vector<BoundaryPoints> obstacle;
 };
 
-static const double pi = 3.1415926;
-static const double inf = std::numeric_limits<double>::infinity();
+static const double PI = 3.1415926;
+static const double HALF_PI = PI / 2.0;
+static const double EPSILON = 1e-6;
 
 }  // namespace hrm

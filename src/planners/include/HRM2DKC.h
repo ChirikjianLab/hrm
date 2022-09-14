@@ -33,10 +33,10 @@ class HRM2DKC : public HRM2D {
                                         std::vector<Coordinate> vtx2);
 
     /** \param Descriptions of polyhedral local C-space */
-    PolyCSpace polyVtx;
+    PolyCSpace polyhedronVertex_;
 
     /** \param Inflation factor for the robot */
-    double infla_ = 0.1;
+    const double inflationFactor_ = 0.1;
 };
 
 }  // namespace planners

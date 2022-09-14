@@ -23,9 +23,6 @@ using AdjGraph =
     boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
                           boost::no_property, Weight>;
 using Vertex = AdjGraph::vertex_descriptor;
-using edge_descriptor = AdjGraph::edge_descriptor;
-using vertex_iterator = AdjGraph::vertex_iterator;
-using WeightMap = boost::property_map<AdjGraph, boost::edge_weight_t>::type;
 
 /** \brief Vertex index at each C-slice, sweep line */
 struct VertexIdx {
@@ -212,29 +209,23 @@ class HighwayRoadMap {
     /** \param Indicator of C-slice refinement */
     bool isRefine_ = false;
 
-    /** \param Number of obstacles */
-    Index N_o;
-
-    /** \param Number of arenas */
-    Index N_s;
-
     /** \param Boundary info for each C-slice */
     BoundaryInfo layerBound_;
 
     /** \param Record boundary info for all C-slices */
     std::vector<BoundaryInfo> layerBoundAll_;
 
-    /** \param store configuration for each robot shape (at each C-slice) */
+    /** \param Store configuration for each robot shape (at each C-slice) */
     std::vector<std::vector<double>> v_;
 
     /** \param Vertex index info on the current C-slice */
-    VertexIdx N_v;
+    VertexIdx numVertex_;
 
     /** \param Storage of vertex index info in the roadmap */
-    std::vector<VertexIdx> vtxId_;
+    std::vector<VertexIdx> vertexIdx_;
 
     /** \param Storage of all vertex index info after refinement */
-    std::vector<std::vector<VertexIdx>> vtxIdAll_;
+    std::vector<std::vector<VertexIdx>> vertexIdxAll_;
 
     /** \param Tightly-fitted ellipsoids at bridge C-slice */
     std::vector<ObjectType> tfe_;

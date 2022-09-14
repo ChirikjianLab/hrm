@@ -15,50 +15,50 @@ hrm::planners::ProbHRM3D::~ProbHRM3D() = default;
 
 void hrm::planners::ProbHRM3D::plan(const double timeLim) {
     auto start = Clock::now();
-    param_.NUM_LAYER = 0;
+    param_.numLayer = 0;
 
     do {
         // Randomly generate rotations and joint angles
         sampleOrientations();
 
         // Construct one C-layer
-        constructOneLayer(param_.NUM_LAYER);
+        constructOneLayer(param_.numLayer);
 
         // Update number of C-layers and vertex index
         if (!isRefine_) {
-            param_.NUM_LAYER++;
+            param_.numLayer++;
         }
 
-        N_v.layer = res_.graph_structure.vertex.size();
-        vtxId_.push_back(N_v);
+        numVertex_.layer = res_.graphStructure.vertex.size();
+        vertexIdx_.push_back(numVertex_);
 
         // Connect among adjacent C-layers
-        if (param_.NUM_LAYER >= 2) {
+        if (param_.numLayer >= 2) {
             connectMultiLayer();
         }
 
-        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+        res_.planningTime.buildTime += Durationd(Clock::now() - start).count();
 
         // Graph search
         start = Clock::now();
         search();
-        res_.planning_time.searchTime +=
-            Durationd(Clock::now() - start).count();
+        res_.planningTime.searchTime += Durationd(Clock::now() - start).count();
 
-        res_.planning_time.totalTime =
-            res_.planning_time.buildTime + res_.planning_time.searchTime;
+        res_.planningTime.totalTime =
+            res_.planningTime.buildTime + res_.planningTime.searchTime;
 
         // Double the number of sweep lines for every 10 iterations
-        if (param_.NUM_LAYER % 60 == 0 && vtxIdAll_.size() < param_.NUM_POINT) {
+        if (param_.numLayer % 60 == 0 &&
+            vertexIdxAll_.size() < param_.numPoint) {
             refineExistRoadmap(timeLim);
         }
-    } while (!res_.solved && res_.planning_time.totalTime < timeLim);
+    } while (!res_.solved && res_.planningTime.totalTime < timeLim);
 
     // Retrieve coordinates of solved path
     if (res_.solved) {
-        res_.solution_path.solvedPath = getSolutionPath();
-        res_.solution_path.interpolatedPath =
-            getInterpolatedSolutionPath(param_.NUM_POINT);
+        res_.solutionPath.solvedPath = getSolutionPath();
+        res_.solutionPath.interpolatedPath =
+            getInterpolatedSolutionPath(param_.numPoint);
     }
 }
 
@@ -68,10 +68,10 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
     ompl::RNG rng;
 
     // Randomly sample rotation of base
-    if (param_.NUM_LAYER == 0) {
+    if (param_.numLayer == 0) {
         q_.emplace_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
                                            start_.at(5), start_.at(6)));
-    } else if (param_.NUM_LAYER == 1) {
+    } else if (param_.numLayer == 1) {
         q_.emplace_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
                                            goal_.at(5), goal_.at(6)));
     } else {
@@ -83,11 +83,11 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
                                q_.back().z()};
 
     // Randomly sample joint angles
-    if (param_.NUM_LAYER == 0) {
+    if (param_.numLayer == 0) {
         for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
             config.push_back(start_.at(7 + i));
         }
-    } else if (param_.NUM_LAYER == 1) {
+    } else if (param_.numLayer == 1) {
         for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
             config.push_back(goal_.at(7 + i));
         }
@@ -103,14 +103,14 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
 
 // Connect adjacent C-layers
 void hrm::planners::ProbHRM3D::connectMultiLayer() {
-    if (param_.NUM_LAYER == 1) {
+    if (param_.numLayer == 1) {
         return;
     }
 
     // Find the nearest C-layers
-    double minDist = inf;
+    double minDist = INFINITY;
     Index minIdx = 0;
-    for (size_t i = 0; i < param_.NUM_LAYER - 1; ++i) {
+    for (size_t i = 0; i < param_.numLayer - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
         if (dist < minDist) {
             minDist = dist;
@@ -120,12 +120,12 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    Index n_12 = vtxId_.at(param_.NUM_LAYER - 1).startId;
-    Index n_2 = vtxId_.at(param_.NUM_LAYER - 1).layer;
+    Index n_12 = vertexIdx_.at(param_.numLayer - 1).startId;
+    Index n_2 = vertexIdx_.at(param_.numLayer - 1).layer;
 
     // Start and end vertics in the nearest layer
-    Index start = vtxId_.at(minIdx).startId;
-    Index n_1 = vtxId_.at(minIdx).layer;
+    Index start = vertexIdx_.at(minIdx).startId;
+    Index n_1 = vertexIdx_.at(minIdx).layer;
 
     // Construct bridge C-layer
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);
@@ -133,24 +133,26 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
 
     // Nearest vertex btw layers
     for (size_t m0 = start; m0 < n_1; ++m0) {
-        auto v1 = res_.graph_structure.vertex.at(m0);
+        auto v1 = res_.graphStructure.vertex.at(m0);
         for (size_t m1 = n_12; m1 < n_2; ++m1) {
-            auto v2 = res_.graph_structure.vertex.at(m1);
+            auto v2 = res_.graphStructure.vertex.at(m1);
 
             // Locate the nearest vertices in the adjacent sweep lines
             if (std::fabs(v1.at(0) - v2.at(0)) >
-                    2.0 * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                        static_cast<double>(param_.NUM_LINE_X) ||
+                    2.0 *
+                        (param_.boundaryLimits[1] - param_.boundaryLimits[0]) /
+                        static_cast<double>(param_.numLineX) ||
                 std::fabs(v1.at(1) - v2.at(1)) >
-                    2.0 * (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                        static_cast<double>(param_.NUM_LINE_Y)) {
+                    2.0 *
+                        (param_.boundaryLimits[3] - param_.boundaryLimits[2]) /
+                        static_cast<double>(param_.numLineY)) {
                 continue;
             }
 
             if (isMultiLayerTransitionFree(v1, v2)) {
                 // Add new connections
-                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+                res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
+                res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));
 
                 n_12 = m1;
                 break;
@@ -162,11 +164,11 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
 // Generate collision-free vertices
 void hrm::planners::ProbHRM3D::generateVertices(const Coordinate tx,
                                                 const FreeSegment2D* freeSeg) {
-    N_v.plane.clear();
+    numVertex_.plane.clear();
     std::vector<Coordinate> vertex(v_.back().size());
 
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        N_v.plane.push_back(res_.graph_structure.vertex.size());
+        numVertex_.plane.push_back(res_.graphStructure.vertex.size());
 
         for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
             // Configuration of the base
@@ -184,12 +186,12 @@ void hrm::planners::ProbHRM3D::generateVertices(const Coordinate tx,
             }
 
             // Construct a std::vector of vertex
-            res_.graph_structure.vertex.push_back(vertex);
+            res_.graphStructure.vertex.push_back(vertex);
         }
     }
 
     // Record index info
-    N_v.line.push_back(N_v.plane);
+    numVertex_.line.push_back(numVertex_.plane);
 }
 
 // Transform the robot
@@ -218,7 +220,7 @@ void hrm::planners::ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
 
     // Interpolated robot motion from V1 to V2
     const std::vector<std::vector<Coordinate>> vInterp =
-        interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
+        interpolateCompoundSE3Rn(v1, v2, param_.numPoint);
 
     setTransform(v1);
     std::vector<SuperQuadrics> robotAux = robot_.getBodyShapes();

@@ -68,10 +68,6 @@ Mesh getMesh(const ParametricPoints& points);
 /** \brief Get 3D point cloud from SuperQuadric class */
 ParametricPoints getBoundary3D(const SuperQuadrics& obj);
 
-/** \brief Generate SuperQuadrics class from configuration .csv file */
-std::vector<SuperQuadrics> getSQFromCsv(const std::string& file_name,
-                                        const Index num);
-
 ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat);
 
 MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,

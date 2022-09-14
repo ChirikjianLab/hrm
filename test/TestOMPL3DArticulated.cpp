@@ -58,11 +58,11 @@ void TestOMPLPlanner(const int id_planner, const int id_sampler) {
     // Planning results
     hrm::PlanningResult res;
     res.solved = omplPlanner.isSolved();
-    res.graph_structure.edge = omplPlanner.getEdges();
-    res.graph_structure.vertex = omplPlanner.getVertices();
-    res.solution_path.cost = omplPlanner.getPathLength();
-    res.solution_path.solvedPath = omplPlanner.getSolutionPath();
-    res.planning_time.totalTime = omplPlanner.getPlanningTime();
+    res.graphStructure.edge = omplPlanner.getEdges();
+    res.graphStructure.vertex = omplPlanner.getVertices();
+    res.solutionPath.cost = omplPlanner.getPathLength();
+    res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
+    res.planningTime.totalTime = omplPlanner.getPlanningTime();
 
     hrm::showResult(res, true, "3D");
 }

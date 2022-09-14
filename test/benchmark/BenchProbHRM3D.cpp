@@ -46,18 +46,18 @@ int main(int argc, char** argv) {
 
     // Options
     hrm::PlannerParameter param;
-    param.NUM_LAYER = 0;
-    param.NUM_LINE_X = size_t(N_x);
-    param.NUM_LINE_Y = size_t(N_y);
+    param.numLayer = 0;
+    param.numLineX = size_t(N_x);
+    param.numLineY = size_t(N_y);
     hrm::defineParameters(robot, env3D, param);
 
-    std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
-              << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "Initial number of sweep lines: {" << param.numLineX << ", "
+              << param.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
     hrm::PlanningRequest req;
-    req.is_robot_rigid = false;
-    req.planner_parameters = param;
+    req.isRobotRigid = false;
+    req.parameters = param;
     req.start = env3D.getEndPoints().at(0);
     req.goal = env3D.getEndPoints().at(1);
 
@@ -83,24 +83,24 @@ int main(int argc, char** argv) {
         const auto param = probHRM.getPlannerParameters();
 
         // Store results
-        hrm::displayPlanningTimeInfo(res.planning_time);
-        hrm::displayGraphInfo(res.graph_structure);
-        hrm::displayPathInfo(res.solution_path);
+        hrm::displayPlanningTimeInfo(res.planningTime);
+        hrm::displayGraphInfo(res.graphStructure);
+        hrm::displayPathInfo(res.solutionPath);
 
         std::cout << "Final number of C-layers: "
-                  << probHRM.getPlannerParameters().NUM_LAYER << std::endl;
+                  << probHRM.getPlannerParameters().numLayer << std::endl;
         std::cout << "Final number of sweep lines: {"
-                  << probHRM.getPlannerParameters().NUM_LINE_X << ", "
-                  << probHRM.getPlannerParameters().NUM_LINE_Y << '}'
+                  << probHRM.getPlannerParameters().numLineX << ", "
+                  << probHRM.getPlannerParameters().numLineY << '}'
                   << std::endl;
         std::cout << "==========" << std::endl;
 
         file_time << static_cast<int>(res.solved) << ','
-                  << res.planning_time.totalTime << ',' << param.NUM_LAYER
-                  << ',' << param.NUM_LINE_X << ',' << param.NUM_LINE_Y << ','
-                  << res.graph_structure.vertex.size() << ','
-                  << res.graph_structure.edge.size() << ','
-                  << res.solution_path.PathId.size() << "\n";
+                  << res.planningTime.totalTime << ',' << param.numLayer
+                  << ',' << param.numLineX << ',' << param.numLineY << ','
+                  << res.graphStructure.vertex.size() << ','
+                  << res.graphStructure.edge.size() << ','
+                  << res.solutionPath.PathId.size() << "\n";
     }
     file_time.close();
 

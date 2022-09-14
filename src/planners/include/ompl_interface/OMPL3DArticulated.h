@@ -52,7 +52,7 @@ class OMPL3DArticulated : public OMPL3D {
     Index numJoint_;
 
     /** \brief Maximum of joint angle */
-    const double maxJointAngle_ = pi / 2;
+    const double maxJointAngle_ = HALF_PI;
 };
 
 }  // namespace ompl_interface

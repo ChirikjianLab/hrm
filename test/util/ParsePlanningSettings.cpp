@@ -112,17 +112,17 @@ void hrm::defineParameters(const MultiBodyTree2D& robot,
             f * robot.getBase().getSemiAxis().at(0),
         env2D.getArena().at(0).getSemiAxis().at(1) -
             f * robot.getBase().getSemiAxis().at(0)};
-    param.BOUND_LIMIT = {
+    param.boundaryLimits = {
         env2D.getArena().at(0).getPosition().at(0) - bound.at(0),
         env2D.getArena().at(0).getPosition().at(0) + bound.at(0),
         env2D.getArena().at(0).getPosition().at(1) - bound.at(1),
         env2D.getArena().at(0).getPosition().at(1) + bound.at(1)};
 
     // Determine the base number of sweep lines at each C-layer
-    if (param.NUM_LINE_Y == 0) {
+    if (param.numLineY == 0) {
         const double min_size_obs =
             computeObstacleMinSize<SuperEllipse>(env2D.getObstacle());
-        param.NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
+        param.numLineY = static_cast<int>(bound.at(1) / min_size_obs);
     }
 }
 
@@ -137,7 +137,7 @@ void hrm::defineParameters(const MultiBodyTree3D& robot,
                                      f * robot.getBase().getSemiAxis().at(0),
                                  env3D.getArena().at(0).getSemiAxis().at(2) -
                                      f * robot.getBase().getSemiAxis().at(0)};
-    param.BOUND_LIMIT = {
+    param.boundaryLimits = {
         env3D.getArena().at(0).getPosition().at(0) - bound.at(0),
         env3D.getArena().at(0).getPosition().at(0) + bound.at(0),
         env3D.getArena().at(0).getPosition().at(1) - bound.at(1),
@@ -145,14 +145,14 @@ void hrm::defineParameters(const MultiBodyTree3D& robot,
         env3D.getArena().at(0).getPosition().at(2) - bound.at(2),
         env3D.getArena().at(0).getPosition().at(2) + bound.at(2)};
 
-    param.NUM_LAYER = robot.getBase().getQuatSamples().size();
+    param.numLayer = robot.getBase().getQuatSamples().size();
 
     // Determine the base number of sweep lines at each C-layer
-    if (param.NUM_LINE_X == 0 || param.NUM_LINE_Y == 0) {
+    if (param.numLineX == 0 || param.numLineY == 0) {
         const double min_size_obs =
             computeObstacleMinSize<SuperQuadrics>(env3D.getObstacle());
 
-        param.NUM_LINE_X = floor(bound.at(0) / min_size_obs);
-        param.NUM_LINE_Y = floor(bound.at(1) / min_size_obs);
+        param.numLineX = floor(bound.at(0) / min_size_obs);
+        param.numLineY = floor(bound.at(1) / min_size_obs);
     }
 }

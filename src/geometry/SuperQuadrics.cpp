@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#define pi 3.1415926
-
 hrm::SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
                                   std::vector<double> epsilon,
                                   std::vector<double> position,
@@ -16,12 +14,11 @@ hrm::SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
       quat_(quat),
       num_(num) {
     const auto numVtx = static_cast<Eigen::Index>(num_);
-    const double HALF_PI = pi / 2.0;
-    const double EPS = 1e-6;
 
-    eta_ = Eigen::RowVectorXd::LinSpaced(numVtx, -HALF_PI - EPS, HALF_PI + EPS)
+    eta_ = Eigen::RowVectorXd::LinSpaced(numVtx, -HALF_PI - EPSILON,
+                                         HALF_PI + EPSILON)
                .replicate(numVtx, 1);
-    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -pi - EPS, pi + EPS)
+    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -PI - EPSILON, PI + EPSILON)
                  .replicate(1, numVtx);
     Num_ = num_ * num_;
 }

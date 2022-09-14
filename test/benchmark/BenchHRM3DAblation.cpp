@@ -47,20 +47,19 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.NUM_LAYER = size_t(N_l);
-    param.NUM_LINE_X = size_t(N_x);
-    param.NUM_LINE_Y = size_t(N_y);
+    param.numLayer = size_t(N_l);
+    param.numLineX = size_t(N_x);
+    param.numLineY = size_t(N_y);
     hrm::defineParameters(robot, env3D, param);
 
-    std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
-    std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
-              << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Initial number of sweep lines: {" << param.numLineX << ", "
+              << param.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = true;
-    req.planner_parameters = param;
+    req.parameters = param;
     req.start = env3D.getEndPoints().at(0);
     req.goal = env3D.getEndPoints().at(1);
 
@@ -86,27 +85,27 @@ int main(int argc, char** argv) {
         const auto res = hrm_ablation.getPlanningResult();
 
         // Display and store results
-        hrm::displayPlanningTimeInfo(res.planning_time);
-        hrm::displayGraphInfo(res.graph_structure);
-        hrm::displayPathInfo(res.solution_path);
+        hrm::displayPlanningTimeInfo(res.planningTime);
+        hrm::displayGraphInfo(res.graphStructure);
+        hrm::displayPathInfo(res.solutionPath);
 
         std::cout << "Final number of C-layers: "
-                  << hrm_ablation.getPlannerParameters().NUM_LAYER << std::endl;
+                  << hrm_ablation.getPlannerParameters().numLayer << std::endl;
         std::cout << "Final number of sweep lines: {"
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ", "
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << '}'
+                  << hrm_ablation.getPlannerParameters().numLineX << ", "
+                  << hrm_ablation.getPlannerParameters().numLineY << '}'
                   << std::endl;
         std::cout << "==========" << std::endl;
 
-        file_time << res.solved << ',' << res.planning_time.buildTime << ','
-                  << res.planning_time.searchTime << ','
-                  << res.planning_time.totalTime << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LAYER << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << ','
-                  << res.graph_structure.vertex.size() << ','
-                  << res.graph_structure.edge.size() << ','
-                  << res.solution_path.PathId.size() << "\n";
+        file_time << res.solved << ',' << res.planningTime.buildTime << ','
+                  << res.planningTime.searchTime << ','
+                  << res.planningTime.totalTime << ','
+                  << hrm_ablation.getPlannerParameters().numLayer << ','
+                  << hrm_ablation.getPlannerParameters().numLineX << ','
+                  << hrm_ablation.getPlannerParameters().numLineY << ','
+                  << res.graphStructure.vertex.size() << ','
+                  << res.graphStructure.edge.size() << ','
+                  << res.solutionPath.PathId.size() << "\n";
     }
     file_time.close();
 

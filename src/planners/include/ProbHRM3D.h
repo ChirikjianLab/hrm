@@ -56,7 +56,7 @@ class ProbHRM3D : public HRM3D {
     std::string urdfFile_;
 
     /** \brief Limit of joint angles */
-    const double maxJointAngle_ = pi / 2;
+    const double maxJointAngle_ = HALF_PI;
 };
 
 }  // namespace planners

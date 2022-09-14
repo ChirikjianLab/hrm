@@ -5,8 +5,6 @@
 
 #include "gtest/gtest.h"
 
-static const double epsilon = 1e-5;
-
 // Tests for SuperEllipse
 TEST(TestSuperEllipse, BoundarySampling) {
     const hrm::SuperEllipse S({5.0, 3.0}, 1.25, {-2.6, 3.2}, 0.0, 50);
@@ -41,10 +39,10 @@ TEST(TestSuperQuadrics, BoundarySampling) {
     const double BOUNDARY_X = 2.32;
     const double BOUNDARY_Y = -1.5;
     for (auto i = 0; i < boundary.cols(); ++i) {
-        if (std::fabs(boundary(0, i) - BOUNDARY_X) < epsilon &&
-            std::fabs(boundary(1, i) - BOUNDARY_Y) < epsilon) {
-            EXPECT_TRUE(std::fabs(boundary(2, i) - 6.0) < epsilon ||
-                        std::fabs(boundary(2, i) - 2.0) < epsilon);
+        if (std::fabs(boundary(0, i) - BOUNDARY_X) < hrm::EPSILON &&
+            std::fabs(boundary(1, i) - BOUNDARY_Y) < hrm::EPSILON) {
+            EXPECT_TRUE(std::fabs(boundary(2, i) - 6.0) < hrm::EPSILON ||
+                        std::fabs(boundary(2, i) - 2.0) < hrm::EPSILON);
         }
     }
 }
@@ -61,10 +59,11 @@ TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
     const double BOUNDARY_X = -3.2;
     const double BOUNDARY_Y = 3.24;
     for (auto i = 0; i < minkBound.cols(); ++i) {
-        if (std::fabs(minkBound(0, i) - BOUNDARY_X) < epsilon &&
-            std::fabs(minkBound(1, i) - BOUNDARY_Y) < epsilon) {
-            EXPECT_TRUE(std::fabs(minkBound(2, i) - (3.0 - 2.13)) < epsilon ||
-                        std::fabs(minkBound(2, i) - (-3.0 - 2.13)) < epsilon);
+        if (std::fabs(minkBound(0, i) - BOUNDARY_X) < hrm::EPSILON &&
+            std::fabs(minkBound(1, i) - BOUNDARY_Y) < hrm::EPSILON) {
+            EXPECT_TRUE(
+                std::fabs(minkBound(2, i) - (3.0 - 2.13)) < hrm::EPSILON ||
+                std::fabs(minkBound(2, i) - (-3.0 - 2.13)) < hrm::EPSILON);
         }
     }
 }
@@ -72,12 +71,12 @@ TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
 // Test for TightFittedEllipsoid
 TEST(TestTightFittedEllipsoid, MVCE2D) {
     const hrm::SuperEllipse mvce =
-        hrm::getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, hrm::pi / 2, 50);
+        hrm::getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, hrm::HALF_PI, 50);
 
     const double SEMI_1 = 5.0;
     const double SEMI_2 = 5.0;
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < epsilon);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < epsilon);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < hrm::EPSILON);
 }
 
 TEST(TestTightFittedEllipsoid, MVCE3D) {
@@ -89,9 +88,9 @@ TEST(TestTightFittedEllipsoid, MVCE3D) {
     const double SEMI_1 = 3.0;
     const double SEMI_2 = 5.0;
     const double SEMI_3 = 5.0;
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < epsilon);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < epsilon);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(2) - SEMI_3) < epsilon);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(2) - SEMI_3) < hrm::EPSILON);
 }
 
 int main(int ac, char* av[]) {

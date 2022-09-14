@@ -35,7 +35,7 @@ bool HRM3DAblation<Planner>::isMultiLayerTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
     std::vector<std::vector<Coordinate>> vInterp =
-        interpolateCompoundSE3Rn(v1, v2, Planner::param_.NUM_POINT);
+        interpolateCompoundSE3Rn(v1, v2, Planner::param_.numPoint);
 
     for (auto vStep : vInterp) {
         // Transform the robot

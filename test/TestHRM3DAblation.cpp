@@ -19,19 +19,18 @@ TEST(TestHRMPlanning3D, HRMAblation) {
 
     // Planning requests
     hrm::PlanningRequest req;
-    req.is_robot_rigid = true;
     req.start = env3D.getEndPoints().at(0);
     req.goal = env3D.getEndPoints().at(1);
-    hrm::defineParameters(robot, env3D, req.planner_parameters);
+    hrm::defineParameters(robot, env3D, req.parameters);
 
     // Main algorithm
     std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
     std::cout << "----------" << std::endl;
-    std::cout << "Input number of C-layers: "
-              << req.planner_parameters.NUM_LAYER << std::endl;
+    std::cout << "Input number of C-layers: " << req.parameters.numLayer
+              << std::endl;
     std::cout << "Input number of sweep lines {X,Y}: {"
-              << req.planner_parameters.NUM_LINE_X << ','
-              << req.planner_parameters.NUM_LINE_Y << '}' << std::endl;
+              << req.parameters.numLineX << ',' << req.parameters.numLineY
+              << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
     std::cout << "Start planning..." << std::endl;
@@ -46,9 +45,8 @@ TEST(TestHRMPlanning3D, HRMAblation) {
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
     std::cout << "Final number of sweep lines {X,Y}: {"
-              << hrmAblated.getPlannerParameters().NUM_LINE_X << ','
-              << hrmAblated.getPlannerParameters().NUM_LINE_Y << '}'
-              << std::endl;
+              << hrmAblated.getPlannerParameters().numLineX << ','
+              << hrmAblated.getPlannerParameters().numLineY << '}' << std::endl;
 
     hrm::showResult(res, true, "3D");
 }
