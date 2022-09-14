@@ -1,12 +1,12 @@
 #include "include/MeshGenerator.h"
 
-hrm::Mesh hrm::getMeshFromSQ(SuperQuadrics sq) {
-    Eigen::Quaterniond quat;
-    sq.setQuaternion(quat.setIdentity());
-    sq.setPosition({0.0, 0.0, 0.0});
+hrm::Mesh hrm::getMeshFromSQ(const SuperQuadrics& sq) {
+    const SuperQuadrics sqAux(sq.getSemiAxis(), sq.getEpsilon(),
+                              {0.0, 0.0, 0.0}, Eigen::Quaterniond::Identity(),
+                              sq.getNumParam());
 
     Mesh M;
-    ParametricPoints pts = getBoundary3D(sq);
+    ParametricPoints pts = getBoundary3D(sqAux);
     M = getMesh(pts);
     return M;
 }

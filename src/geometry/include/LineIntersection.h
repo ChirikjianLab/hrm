@@ -16,9 +16,9 @@ std::vector<Point3D> intersectLineMesh3D(const Line3D& line,
 std::vector<Point3D> intersectVerticalLineMesh3D(const Line3D& line,
                                                  const MeshMatrix& shape);
 
-bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
-                             const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Point3D* pt);
+bool intersectLineTriangle3D(const Line3D& line, const Eigen::Vector3d& t0,
+                             const Eigen::Vector3d& u, const Eigen::Vector3d& v,
+                             Point3D& pt);
 
 bool isIntersectSegPolygon2D(
     const std::pair<std::vector<double>, std::vector<double>>& seg,

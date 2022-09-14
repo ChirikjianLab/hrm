@@ -33,7 +33,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * \return Collision-free line segment as FreeSegment3D type */
     const FreeSegment3D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
-        freeSpacePtr_->computeCSpaceBoundaryMesh(&layerBound_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(layerBound_);
         layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         sweepLineProcess();
         return freeSegOneLayer_;

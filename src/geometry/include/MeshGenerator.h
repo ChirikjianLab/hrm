@@ -60,7 +60,7 @@ struct ParametricPoints {
 };
 
 /** \brief Get mesh info from SuperQuadrics class */
-Mesh getMeshFromSQ(SuperQuadrics sq);
+Mesh getMeshFromSQ(const SuperQuadrics& sq);
 
 /** \brief Get mesh info from 3D point cloud */
 Mesh getMesh(const ParametricPoints& points);

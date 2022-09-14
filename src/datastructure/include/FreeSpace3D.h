@@ -46,7 +46,7 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
 
     /** \brief Compute C-free boundary as mesh
      * \param bound C-arena/C-obstacle boundary points*/
-    void computeCSpaceBoundaryMesh(const BoundaryInfo* bound);
+    void computeCSpaceBoundaryMesh(const BoundaryInfo& bound);
 
   private:
     BoundaryMesh cSpaceBoundaryMesh_;

@@ -10,6 +10,9 @@ FreeSpaceComputator<RobotType, ObjectType>::FreeSpaceComputator(
     : robot_(std::move(robot)), arena_(arena), obstacle_(obstacle) {}
 
 template <typename RobotType, typename ObjectType>
+FreeSpaceComputator<RobotType, ObjectType>::~FreeSpaceComputator() = default;
+
+template <typename RobotType, typename ObjectType>
 void FreeSpaceComputator<RobotType, ObjectType>::setup(
     const unsigned int numLine, const double lowBound, const double upBound) {
     lowBound_ = lowBound;

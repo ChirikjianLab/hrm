@@ -35,7 +35,7 @@ void hrm::planners::HRM3D::constructOneLayer(const Index layerIdx) {
         layerBoundAll_.push_back(layerBound_);
 
         // Generate mesh for the boundaries
-        freeSpacePtr_->computeCSpaceBoundaryMesh(&layerBound_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(layerBound_);
         layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         layerBoundMeshAll_.push_back(layerBoundMesh_);
     } else {
