@@ -3,7 +3,7 @@
 
 namespace ho = hrm::planners::ompl_interface;
 
-void TestOMPLPlanner(const int id_planner, const int id_sampler) {
+void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     // Read and setup environment config
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
@@ -16,9 +16,9 @@ void TestOMPLPlanner(const int id_planner, const int id_sampler) {
     const auto& obs = env3D.getObstacle();
 
     // Obstacle mesh
-    std::vector<hrm::Mesh> obs_mesh(obs.size());
+    std::vector<hrm::Mesh> obsMesh(obs.size());
     for (const auto& obstacle : obs) {
-        obs_mesh.emplace_back(getMeshFromSQ(obstacle));
+        obsMesh.emplace_back(getMeshFromSQ(obstacle));
     }
 
     // Setup robot config
@@ -40,8 +40,8 @@ void TestOMPLPlanner(const int id_planner, const int id_sampler) {
     std::cout << "OMPL planner for 3D rigid-body planning" << std::endl;
     std::cout << "----------" << std::endl;
 
-    ho::OMPL3D omplPlanner(b1, b2, robot, arena, obs, obs_mesh);
-    omplPlanner.setup(id_planner, id_sampler);
+    ho::OMPL3D omplPlanner(b1, b2, robot, arena, obs, obsMesh);
+    omplPlanner.setup(plannerIdx, samplerIdx);
 
     omplPlanner.plan(env3D.getEndPoints().at(0), env3D.getEndPoints().at(1),
                      MAX_PLAN_TIME);

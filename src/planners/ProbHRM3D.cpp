@@ -69,11 +69,9 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
 
     // Randomly sample rotation of base
     if (param_.numLayer == 0) {
-        q_.emplace_back(Eigen::Quaterniond(start_.at(3), start_.at(4),
-                                           start_.at(5), start_.at(6)));
+        q_.emplace_back(start_.at(3), start_.at(4), start_.at(5), start_.at(6));
     } else if (param_.numLayer == 1) {
-        q_.emplace_back(Eigen::Quaterniond(goal_.at(3), goal_.at(4),
-                                           goal_.at(5), goal_.at(6)));
+        q_.emplace_back(goal_.at(3), goal_.at(4), goal_.at(5), goal_.at(6));
     } else {
         q_.emplace_back(Eigen::Quaterniond::UnitRandom());
     }
@@ -120,21 +118,21 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
 
     // Find vertex only in adjacent layers
     // Start and end vertics in the recent added layer
-    Index n_12 = vertexIdx_.at(param_.numLayer - 1).startId;
-    Index n_2 = vertexIdx_.at(param_.numLayer - 1).layer;
+    Index n12 = vertexIdx_.at(param_.numLayer - 1).startId;
+    const Index n2 = vertexIdx_.at(param_.numLayer - 1).layer;
 
     // Start and end vertics in the nearest layer
     Index start = vertexIdx_.at(minIdx).startId;
-    Index n_1 = vertexIdx_.at(minIdx).layer;
+    const Index n1 = vertexIdx_.at(minIdx).layer;
 
     // Construct bridge C-layer
     computeTFE(v_.back(), v_.at(minIdx), &tfe_);
     bridgeLayer();
 
     // Nearest vertex btw layers
-    for (size_t m0 = start; m0 < n_1; ++m0) {
+    for (size_t m0 = start; m0 < n1; ++m0) {
         auto v1 = res_.graphStructure.vertex.at(m0);
-        for (size_t m1 = n_12; m1 < n_2; ++m1) {
+        for (size_t m1 = n12; m1 < n2; ++m1) {
             auto v2 = res_.graphStructure.vertex.at(m1);
 
             // Locate the nearest vertices in the adjacent sweep lines
@@ -154,7 +152,7 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
                 res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                 res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));
 
-                n_12 = m1;
+                n12 = m1;
                 break;
             }
         }

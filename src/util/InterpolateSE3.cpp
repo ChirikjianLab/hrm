@@ -72,13 +72,13 @@ std::vector<Eigen::Quaterniond> hrm::interpolateAngleAxis(
 
     // relative angle-axis representation, interpolate angles around the axis
     const Eigen::AngleAxisd axang(Ra.transpose() * Rb);
-    Eigen::AngleAxisd d_axang = axang;
+    Eigen::AngleAxisd dAxisAngle = axang;
     const double dt = 1.0 / static_cast<double>(numStep);
 
     for (size_t i = 0; i <= numStep; ++i) {
-        d_axang.angle() = static_cast<double>(i) * dt * axang.angle();
+        dAxisAngle.angle() = static_cast<double>(i) * dt * axang.angle();
         interpolatedQuat.emplace_back(
-            Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()));
+            Eigen::Quaterniond(Ra * dAxisAngle.toRotationMatrix()));
     }
 
     return interpolatedQuat;

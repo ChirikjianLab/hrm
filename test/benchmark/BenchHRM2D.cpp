@@ -24,10 +24,10 @@ int main(int argc, char** argv) {
     }
 
     // Record planning time for N trials
-    int N = atoi(argv[1]);
-    int N_l = atoi(argv[2]);
-    int N_y = atoi(argv[3]);
-    std::vector<std::vector<double>> time_stat;
+    const int numTrial = atoi(argv[1]);
+    const int numLayer = atoi(argv[2]);
+    const int numLineY = atoi(argv[3]);
+    std::vector<std::vector<double>> timeStatistics;
 
     // Load Robot and Environment settings
     const std::string CONFIG_FILE_PREFIX = argv[4];
@@ -41,8 +41,8 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.numLayer = static_cast<size_t>(N_l);
-    param.numLineY = static_cast<size_t>(N_y);
+    param.numLayer = static_cast<size_t>(numLayer);
+    param.numLineY = static_cast<size_t>(numLineY);
     param.numPoint = 5;
     hrm::defineParameters(robot, env2D, param);
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
     // Multiple planning trials
     std::cout << "Start benchmark..." << std::endl;
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
         hrm::planners::HRM2D hrm(robot, env2D.getArena(), env2D.getObstacle(),
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         const auto res = hrm.getPlanningResult();
 
         // Store statistics
-        time_stat.push_back(
+        timeStatistics.push_back(
             {res.planningTime.buildTime, res.planningTime.searchTime,
              res.planningTime.totalTime,
              static_cast<double>(res.graphStructure.vertex.size()),
@@ -94,18 +94,21 @@ int main(int argc, char** argv) {
     }
 
     // Store results
-    std::ofstream file_time;
-    file_time.open(BENCHMARK_DATA_PATH "/time_hrm_2D.csv");
-    file_time << "BUILD_TIME" << ',' << "SEARCH_TIME" << ',' << "PLAN_TIME"
-              << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
-              << "\n";
-    for (size_t i = 0; i < static_cast<size_t>(N); i++) {
-        file_time << time_stat[i][0] << ',' << time_stat[i][1] << ','
-                  << time_stat[i][2] << ',' << time_stat[i][3] << ','
-                  << time_stat[i][4] << ',' << time_stat[i][5] << "\n";
+    std::ofstream fileTimeStatistics;
+    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_hrm_2D.csv");
+    fileTimeStatistics << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
+                       << "PLAN_TIME" << ',' << "GRAPH_NODE" << ','
+                       << "GRAPH_EDGE" << ',' << "PATH_NODE"
+                       << "\n";
+    for (size_t i = 0; i < static_cast<size_t>(numTrial); i++) {
+        fileTimeStatistics << timeStatistics[i][0] << ','
+                           << timeStatistics[i][1] << ','
+                           << timeStatistics[i][2] << ','
+                           << timeStatistics[i][3] << ','
+                           << timeStatistics[i][4] << ','
+                           << timeStatistics[i][5] << "\n";
     }
-    file_time.close();
+    fileTimeStatistics.close();
 
     return 0;
 }

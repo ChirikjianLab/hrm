@@ -31,7 +31,8 @@ hrm::BoundaryPoints hrm::SuperEllipse::getOriginShape() const {
     double th;
     Point2D x;
     Eigen::MatrixXd C(2, num_);
-    BoundaryPoints X(2, num_);
+    BoundaryPoints xCanonical(2, num_);
+    BoundaryPoints xTransformed(2, num_);
 
     for (auto i = 0; i < int(num_); i++) {
         th = 2 * i * PI / (static_cast<double>(num_) - 1);
@@ -41,21 +42,21 @@ hrm::BoundaryPoints hrm::SuperEllipse::getOriginShape() const {
 
         C(0, i) = position_.at(0);
         C(1, i) = position_.at(1);
-        X(0, i) = x(0, 0);
-        X(1, i) = x(1, 0);
-    }
-    X = Eigen::Rotation2Dd(angle_).matrix() * X + C;
 
-    return X;
+        xCanonical(0, i) = x(0, 0);
+        xCanonical(1, i) = x(1, 0);
+    }
+
+    xTransformed = Eigen::Rotation2Dd(angle_).matrix() * xCanonical + C;
+
+    return xTransformed;
 }
 
 // Get the points on Minkowski boundary
 hrm::BoundaryPoints hrm::SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
                                                     const Indicator K) const {
-    BoundaryPoints X_eb(2, num_);
+    BoundaryPoints xMinkowski(2, num_);
     Eigen::MatrixXd gradPhi(2, num_);
-    Eigen::MatrixXd normal(2, num_);
-    Eigen::MatrixXd C(2, num_);
     Eigen::MatrixXd the(1, num_);
     Eigen::Matrix<double, 2, 1> ones;
     ones << 1, 1;
@@ -89,9 +90,10 @@ hrm::BoundaryPoints hrm::SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
         gradPhi(1, i) =
             2 / eps1 * exponentialFunction(the(0, i), 2 - eps1, true);
     }
-    X_eb = getOriginShape() +
-           (K * r * Tinv * Tinv * R1 * gradPhi)
-               .cwiseQuotient(ones * (Tinv * R1 * gradPhi).colwise().norm());
+    xMinkowski =
+        getOriginShape() +
+        (K * r * Tinv * Tinv * R1 * gradPhi)
+            .cwiseQuotient(ones * (Tinv * R1 * gradPhi).colwise().norm());
 
-    return X_eb;
+    return xMinkowski;
 }

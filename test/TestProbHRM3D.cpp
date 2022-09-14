@@ -12,11 +12,11 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     const std::string quaternionFilename = "0";
 
     // Setup URDF file for the robot
-    std::string urdf_file;
+    std::string urdfFile;
     if (env3D.getEndPoints().at(0).size() == 10) {
-        urdf_file = "config/snake.urdf";
+        urdfFile = "config/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdf_file = "config/tri-snake.urdf";
+        urdfFile = "config/tri-snake.urdf";
     }
 
     // Setup robot
@@ -34,13 +34,13 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     std::cout << "Prob-HRM for 3D articulated-body planning" << std::endl;
     std::cout << "----------" << std::endl;
     std::cout << "Input number of sweep lines {X,Y}: {"
-              << req.parameters.numLineX << ','
-              << req.parameters.numLineY << '}' << std::endl;
+              << req.parameters.numLineX << ',' << req.parameters.numLineY
+              << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
     std::cout << "Start planning..." << std::endl;
 
-    hrm::planners::ProbHRM3D probHRM(robot, urdf_file, env3D.getArena(),
+    hrm::planners::ProbHRM3D probHRM(robot, urdfFile, env3D.getArena(),
                                      env3D.getObstacle(), req);
     probHRM.plan(MAX_PLAN_TIME);
     hrm::PlanningResult res = probHRM.getPlanningResult();
@@ -51,8 +51,8 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
     std::cout << "Number of C-layers: " << param.numLayer << std::endl;
-    std::cout << "Final number of sweep lines {X,Y}: {" << param.numLineX
-              << ',' << param.numLineY << '}' << std::endl;
+    std::cout << "Final number of sweep lines {X,Y}: {" << param.numLineX << ','
+              << param.numLineY << '}' << std::endl;
 
     hrm::showResult(res, true, "3D");
 }

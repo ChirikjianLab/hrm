@@ -25,9 +25,9 @@ int main(int argc, char** argv) {
 
     // Record planning time for N trials
     const auto N = size_t(atoi(argv[1]));
-    const int N_l = atoi(argv[2]);
-    const int N_x = atoi(argv[3]);
-    const int N_y = atoi(argv[4]);
+    const int numLayer = atoi(argv[2]);
+    const int numLineX = atoi(argv[3]);
+    const int numLineY = atoi(argv[4]);
     const auto MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.numLayer = size_t(N_l);
-    param.numLineX = size_t(N_x);
-    param.numLineY = size_t(N_y);
+    param.numLayer = size_t(numLayer);
+    param.numLineX = size_t(numLineX);
+    param.numLineY = size_t(numLineY);
     hrm::defineParameters(robot, env3D, param);
 
     std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
@@ -65,13 +65,14 @@ int main(int argc, char** argv) {
     req.goal = env3D.getEndPoints().at(1);
 
     // Store results
-    std::ofstream file_time;
-    file_time.open(BENCHMARK_DATA_PATH "/time_high_3D_ablation.csv");
-    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
-              << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
-              << "N_Y" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
-              << "\n";
+    std::ofstream fileTimeStatistics;
+    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_high_3D_ablation.csv");
+    fileTimeStatistics << "SUCCESS" << ',' << "BUILD_TIME" << ','
+                       << "SEARCH_TIME" << ',' << "PLAN_TIME" << ','
+                       << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ','
+                       << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
+                       << "PATH_NODE"
+                       << "\n";
 
     // Benchmark
     std::cout << "Start benchmark..." << std::endl;
@@ -98,17 +99,19 @@ int main(int argc, char** argv) {
                   << std::endl;
         std::cout << "==========" << std::endl;
 
-        file_time << res.solved << ',' << res.planningTime.buildTime << ','
-                  << res.planningTime.searchTime << ','
-                  << res.planningTime.totalTime << ','
-                  << hrm_ablation.getPlannerParameters().numLayer << ','
-                  << hrm_ablation.getPlannerParameters().numLineX << ','
-                  << hrm_ablation.getPlannerParameters().numLineY << ','
-                  << res.graphStructure.vertex.size() << ','
-                  << res.graphStructure.edge.size() << ','
-                  << res.solutionPath.PathId.size() << "\n";
+        fileTimeStatistics << res.solved << ',' << res.planningTime.buildTime
+                           << ',' << res.planningTime.searchTime << ','
+                           << res.planningTime.totalTime << ','
+                           << hrm_ablation.getPlannerParameters().numLayer
+                           << ','
+                           << hrm_ablation.getPlannerParameters().numLineX
+                           << ','
+                           << hrm_ablation.getPlannerParameters().numLineY
+                           << ',' << res.graphStructure.vertex.size() << ','
+                           << res.graphStructure.edge.size() << ','
+                           << res.solutionPath.PathId.size() << "\n";
     }
-    file_time.close();
+    fileTimeStatistics.close();
 
     return 0;
 }

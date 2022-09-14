@@ -19,16 +19,16 @@ int main(int argc, char** argv) {
     }
 
     // Record planning time for N trials
-    int N = atoi(argv[1]);
+    int numTrial = atoi(argv[1]);
 
     /** \brief Planner and sampler inputs
      *   Planner ID: PRM:0, LazyPRM:1, RRT:2, RRTconnect:3, EST:4, KPIECE:5
      *   Sampler ID: Uniform:0, OB:1, Gaussian:2, MaxClearance:3, Bridge:4
      */
-    const int id_plan_start = atoi(argv[2]);
-    const int id_plan_end = atoi(argv[3]);
-    const int id_sample_start = atoi(argv[4]);
-    const int id_sample_end = atoi(argv[5]);
+    const int idxPlannerStart = atoi(argv[2]);
+    const int idxPlannerEnd = atoi(argv[3]);
+    const int idxSamplerStart = atoi(argv[4]);
+    const int idxSamplerEnd = atoi(argv[5]);
     const double MAX_PLAN_TIME = atoi(argv[6]);
 
     // Read and setup environment config
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     std::vector<hrm::Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Save results
-    std::string filename_prefix = SOLUTION_DETAILS_PATH "/ompl";
+    std::string filenamePrefix = SOLUTION_DETAILS_PATH "/ompl";
 
     std::cout << "Start benchmark..." << std::endl;
 
@@ -74,36 +74,37 @@ int main(int argc, char** argv) {
             << ',' << "PATH_CONFIG" << ',' << "VALID_SPACE" << ','
             << "CHECKED_NODES" << ',' << "VALID_NODES" << std::endl;
 
-    for (int m = id_plan_start; m <= id_plan_end; m++) {
-        for (int n = id_sample_start; n <= id_sample_end; n++) {
+    for (int m = idxPlannerStart; m <= idxPlannerEnd; m++) {
+        for (int n = idxSamplerStart; n <= idxSamplerEnd; n++) {
             // Only PRM use different samplers
             if (m != 0 && n > 0) {
                 continue;
             }
 
-            for (int i = 0; i < N; i++) {
+            for (int i = 0; i < numTrial; i++) {
                 std::cout << "Planner: " << m << std::endl;
                 std::cout << "Sampler: " << n << std::endl;
                 std::cout << "Num of trials: " << i + 1 << std::endl;
 
-                ho::OMPL3D tester(b1, b2, robot, arena, obs, obs_mesh);
-                tester.setup(m, n);
+                ho::OMPL3D omplPlanner(b1, b2, robot, arena, obs, obs_mesh);
+                omplPlanner.setup(m, n);
 
-                tester.plan(env3D->getEndPoints().at(0),
-                            env3D->getEndPoints().at(1), MAX_PLAN_TIME);
+                omplPlanner.plan(env3D->getEndPoints().at(0),
+                                 env3D->getEndPoints().at(1), MAX_PLAN_TIME);
 
                 outfile << m << ',' << n << ','
-                        << static_cast<int>(tester.isSolved()) << ','
-                        << tester.getPlanningTime() << ','
-                        << tester.getNumVertex() << "," << tester.getNumEdges()
-                        << "," << tester.getPathLength() << ","
-                        << tester.getValidStatePercent() << ','
-                        << tester.getNumCollisionChecks() << ','
-                        << tester.getNumValidStates() << std::endl;
+                        << static_cast<int>(omplPlanner.isSolved()) << ','
+                        << omplPlanner.getPlanningTime() << ','
+                        << omplPlanner.getNumVertex() << ","
+                        << omplPlanner.getNumEdges() << ","
+                        << omplPlanner.getPathLength() << ","
+                        << omplPlanner.getValidStatePercent() << ','
+                        << omplPlanner.getNumCollisionChecks() << ','
+                        << omplPlanner.getNumValidStates() << std::endl;
 
-                if (tester.isSolved()) {
-                    tester.saveVertexEdgeInfo(filename_prefix);
-                    tester.savePathInfo(filename_prefix);
+                if (omplPlanner.isSolved()) {
+                    omplPlanner.saveVertexEdgeInfo(filenamePrefix);
+                    omplPlanner.savePathInfo(filenamePrefix);
                 }
             }
         }

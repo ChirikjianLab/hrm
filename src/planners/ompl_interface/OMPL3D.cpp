@@ -153,81 +153,81 @@ bool hrm::planners::ompl_interface::OMPL3D::isSeparated(
 }
 
 void hrm::planners::ompl_interface::OMPL3D::saveVertexEdgeInfo(
-    const std::string &filename_prefix) {
+    const std::string &filenamePrefix) {
     ob::PlannerData pd(ss_->getSpaceInformation());
 
     // Write the output to .csv files
-    std::ofstream file_state;
+    std::ofstream fileState;
     std::vector<Coordinate> state;
 
-    file_state.open(filename_prefix + "_state_3D.csv");
+    fileState.open(filenamePrefix + "_state_3D.csv");
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         state = setVectorFromState(pd.getVertex(i).getState()->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_state << state[j];
+            fileState << state[j];
             if (j == state.size() - 1) {
-                file_state << '\n';
+                fileState << '\n';
             } else {
-                file_state << ',';
+                fileState << ',';
             }
         }
     }
-    file_state.close();
+    fileState.close();
 
-    std::ofstream file_edge;
-    file_edge.open(filename_prefix + "_edge_3D.csv");
+    std::ofstream fileEdge;
+    fileEdge.open(filenamePrefix + "_edge_3D.csv");
     std::vector<std::vector<unsigned int>> edge(pd.numVertices());
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         pd.getEdges(i, edge[i]);
         for (unsigned int j = 0; j < edge[i].size(); j++) {
-            file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+            fileEdge << int(i) << " " << int(edge[i][j]) << "\n";
         }
     }
-    file_edge.close();
+    fileEdge.close();
 }
 
 void hrm::planners::ompl_interface::OMPL3D::savePathInfo(
-    const std::string &filename_prefix) {
+    const std::string &filenamePrefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
     std::vector<Coordinate> state;
 
-    std::ofstream file_traj;
-    file_traj.open(filename_prefix + "_path_3D.csv");
+    std::ofstream fileTrajectory;
+    fileTrajectory.open(filenamePrefix + "_path_3D.csv");
     for (auto *omplState : states) {
         state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_traj << state[j];
+            fileTrajectory << state[j];
             if (j == state.size() - 1) {
-                file_traj << '\n';
+                fileTrajectory << '\n';
             } else {
-                file_traj << ',';
+                fileTrajectory << ',';
             }
         }
     }
-    file_traj.close();
+    fileTrajectory.close();
 
     // Smooth path
     ss_->getSolutionPath().interpolate(50);
     const std::vector<ob::State *> &solutionStates =
         ss_->getSolutionPath().getStates();
 
-    std::ofstream file_smooth_traj;
-    file_smooth_traj.open(filename_prefix + "_smooth_path_3D.csv");
+    std::ofstream fileSmoothTrajectory;
+    fileSmoothTrajectory.open(filenamePrefix + "_smooth_path_3D.csv");
     for (auto *omplState : solutionStates) {
         state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_smooth_traj << state[j];
+            fileSmoothTrajectory << state[j];
             if (j == state.size() - 1) {
-                file_smooth_traj << '\n';
+                fileSmoothTrajectory << '\n';
             } else {
-                file_smooth_traj << ',';
+                fileSmoothTrajectory << ',';
             }
         }
     }
-    file_smooth_traj.close();
+    fileSmoothTrajectory.close();
 }
 
 void hrm::planners::ompl_interface::OMPL3D::setStateFromVector(

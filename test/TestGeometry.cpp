@@ -11,10 +11,10 @@ TEST(TestSuperEllipse, BoundarySampling) {
     const hrm::BoundaryPoints boundary = S.getOriginShape();
 
     // Point on major semi axis
-    const double BOUNDARY_X = 2.4;
-    const double BOUNDARY_Y = 3.2;
-    ASSERT_DOUBLE_EQ(boundary(0, 0), BOUNDARY_X);
-    ASSERT_DOUBLE_EQ(boundary(1, 0), BOUNDARY_Y);
+    const double boundaryX = 2.4;
+    const double boundaryY = 3.2;
+    ASSERT_DOUBLE_EQ(boundary(0, 0), boundaryX);
+    ASSERT_DOUBLE_EQ(boundary(1, 0), boundaryY);
 }
 
 TEST(TestSuperEllipse, MinkowskiBoundarySampling) {
@@ -23,10 +23,10 @@ TEST(TestSuperEllipse, MinkowskiBoundarySampling) {
     const hrm::BoundaryPoints minkBound = S.getMinkSum2D(E, +1);
 
     // Point on major semi axis
-    const double BOUNDARY_X = 10.7;
-    const double BOUNDARY_Y = -2.5;
-    ASSERT_DOUBLE_EQ(minkBound(0, 0), BOUNDARY_X);
-    ASSERT_DOUBLE_EQ(minkBound(1, 0), BOUNDARY_Y);
+    const double boundaryX = 10.7;
+    const double boundaryY = -2.5;
+    ASSERT_DOUBLE_EQ(minkBound(0, 0), boundaryX);
+    ASSERT_DOUBLE_EQ(minkBound(1, 0), boundaryY);
 }
 
 // Tests for SuperQuadrics
@@ -36,11 +36,11 @@ TEST(TestSuperQuadrics, BoundarySampling) {
     const hrm::BoundaryPoints boundary = S.getOriginShape();
 
     // Point on semi axis
-    const double BOUNDARY_X = 2.32;
-    const double BOUNDARY_Y = -1.5;
+    const double boundaryX = 2.32;
+    const double boundaryY = -1.5;
     for (auto i = 0; i < boundary.cols(); ++i) {
-        if (std::fabs(boundary(0, i) - BOUNDARY_X) < hrm::EPSILON &&
-            std::fabs(boundary(1, i) - BOUNDARY_Y) < hrm::EPSILON) {
+        if (std::fabs(boundary(0, i) - boundaryX) < hrm::EPSILON &&
+            std::fabs(boundary(1, i) - boundaryY) < hrm::EPSILON) {
             EXPECT_TRUE(std::fabs(boundary(2, i) - 6.0) < hrm::EPSILON ||
                         std::fabs(boundary(2, i) - 2.0) < hrm::EPSILON);
         }
@@ -56,11 +56,11 @@ TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
     const hrm::BoundaryPoints minkBound = S.getMinkSum3D(E, +1);
 
     // Point on semi axis
-    const double BOUNDARY_X = -3.2;
-    const double BOUNDARY_Y = 3.24;
+    const double boundaryX = -3.2;
+    const double boundaryY = 3.24;
     for (auto i = 0; i < minkBound.cols(); ++i) {
-        if (std::fabs(minkBound(0, i) - BOUNDARY_X) < hrm::EPSILON &&
-            std::fabs(minkBound(1, i) - BOUNDARY_Y) < hrm::EPSILON) {
+        if (std::fabs(minkBound(0, i) - boundaryX) < hrm::EPSILON &&
+            std::fabs(minkBound(1, i) - boundaryY) < hrm::EPSILON) {
             EXPECT_TRUE(
                 std::fabs(minkBound(2, i) - (3.0 - 2.13)) < hrm::EPSILON ||
                 std::fabs(minkBound(2, i) - (-3.0 - 2.13)) < hrm::EPSILON);
@@ -73,10 +73,10 @@ TEST(TestTightFittedEllipsoid, MVCE2D) {
     const hrm::SuperEllipse mvce =
         hrm::getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, hrm::HALF_PI, 50);
 
-    const double SEMI_1 = 5.0;
-    const double SEMI_2 = 5.0;
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < hrm::EPSILON);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < hrm::EPSILON);
+    const double semiAxis1 = 5.0;
+    const double semiAxis2 = 5.0;
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - semiAxis1) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - semiAxis2) < hrm::EPSILON);
 }
 
 TEST(TestTightFittedEllipsoid, MVCE3D) {
@@ -85,12 +85,12 @@ TEST(TestTightFittedEllipsoid, MVCE3D) {
                        Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0),
                        Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
 
-    const double SEMI_1 = 3.0;
-    const double SEMI_2 = 5.0;
-    const double SEMI_3 = 5.0;
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - SEMI_1) < hrm::EPSILON);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - SEMI_2) < hrm::EPSILON);
-    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(2) - SEMI_3) < hrm::EPSILON);
+    const double semiAxis1 = 3.0;
+    const double semiAxis2 = 5.0;
+    const double semiAxis3 = 5.0;
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(0) - semiAxis1) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(1) - semiAxis2) < hrm::EPSILON);
+    EXPECT_TRUE(std::fabs(mvce.getSemiAxis().at(2) - semiAxis3) < hrm::EPSILON);
 }
 
 int main(int ac, char* av[]) {

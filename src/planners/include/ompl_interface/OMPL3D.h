@@ -31,12 +31,12 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
     virtual ~OMPL3D();
 
     /** \brief Save the graph information
-     * \param filename_prefix Path prefix for the saved file */
-    void saveVertexEdgeInfo(const std::string& filename_prefix);
+     * \param filenamePrefix Path prefix for the saved file */
+    void saveVertexEdgeInfo(const std::string& filenamePrefix);
 
     /** \brief Save the solution path information
-     * \param filename_prefix Path prefix for the saved file */
-    void savePathInfo(const std::string& filename_prefix);
+     * \param filenamePrefix Path prefix for the saved file */
+    void savePathInfo(const std::string& filenamePrefix);
 
   protected:
     void getSolution() override;

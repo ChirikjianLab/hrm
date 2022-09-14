@@ -45,8 +45,8 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getOriginShape() const {
     const auto numVtx = static_cast<Eigen::Index>(num_);
     const auto numSurfVtx = static_cast<Eigen::Index>(Num_);
 
-    BoundaryPoints X(3, numSurfVtx);
-    BoundaryPoints X_origin(3, numSurfVtx);
+    BoundaryPoints xCanonical(3, numSurfVtx);
+    BoundaryPoints xTransformed(3, numSurfVtx);
     Eigen::MatrixXd x;
     Eigen::MatrixXd y;
     Eigen::MatrixXd z;
@@ -68,14 +68,14 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getOriginShape() const {
         exponentialFunctionMatrixForm(eta_, epsilon_.at(0), true)
             .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0));
     z.resize(1, numSurfVtx);
-    X.row(0) = x;
-    X.row(1) = y;
-    X.row(2) = z;
+    xCanonical.row(0) = x;
+    xCanonical.row(1) = y;
+    xCanonical.row(2) = z;
 
     // Transform the canonical surface
-    X_origin = (quat_.toRotationMatrix() * X).colwise() + C;
+    xTransformed = (quat_.toRotationMatrix() * xCanonical).colwise() + C;
 
-    return X_origin;
+    return xTransformed;
 }
 
 // Get the points on Minkowski boundary
@@ -86,11 +86,14 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
         std::cerr << "Second object is not an ellipsoid" << std::endl;
     }
 
-    BoundaryPoints X_eb(3, Num_);
-    Eigen::MatrixXd gradPhi(3, Num_);
-    Eigen::MatrixXd gradPhix(num_, num_);
-    Eigen::MatrixXd gradPhiy(num_, num_);
-    Eigen::MatrixXd gradPhiz(num_, num_);
+    const auto numVtx = static_cast<Eigen::Index>(num_);
+    const auto numSurfVtx = static_cast<Eigen::Index>(Num_);
+
+    BoundaryPoints xMinkowski(3, numSurfVtx);
+    Eigen::MatrixXd gradPhi(3, numSurfVtx);
+    Eigen::MatrixXd gradPhix(numVtx, numVtx);
+    Eigen::MatrixXd gradPhiy(numVtx, numVtx);
+    Eigen::MatrixXd gradPhiz(numVtx, numVtx);
 
     const double a1 = semiAxis_.at(0);
     const double b1 = semiAxis_.at(1);
@@ -110,9 +113,6 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
     Eigen::Matrix3d Tinv = R2 * diag * R2.transpose();
 
     // Gradient
-    auto numVtx = static_cast<Eigen::Index>(num_);
-    auto numSurfVtx = static_cast<Eigen::Index>(Num_);
-
     gradPhix = exponentialFunctionMatrixForm(eta_, 2 - eps1, false)
                    .cwiseProduct(
                        exponentialFunctionMatrixForm(omega_, 2 - eps2, false)) /
@@ -132,10 +132,10 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
     gradPhi.row(1) = gradPhiy;
     gradPhi.row(2) = gradPhiz;
 
-    X_eb = getOriginShape() +
-           (K * Tinv * Tinv * R1 * gradPhi)
-               .cwiseQuotient(Eigen::MatrixXd::Constant(3, 1, 1) *
-                              (Tinv * R1 * gradPhi).colwise().norm());
+    xMinkowski = getOriginShape() +
+                 (K * Tinv * Tinv * R1 * gradPhi)
+                     .cwiseQuotient(Eigen::MatrixXd::Constant(3, 1, 1) *
+                                    (Tinv * R1 * gradPhi).colwise().norm());
 
-    return X_eb;
+    return xMinkowski;
 }

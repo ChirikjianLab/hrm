@@ -82,7 +82,8 @@ void hrm::planners::HRM3D::sweepLineProcess() {
 
         // Store freeSeg info
         freeSpacePtr_->computeFreeSegment(ty);
-        freeSegOneLayer_.freeSegmentYZ.push_back(freeSpacePtr_->getFreeSegment());
+        freeSegOneLayer_.freeSegmentYZ.push_back(
+            freeSpacePtr_->getFreeSegment());
     }
 }
 
@@ -267,31 +268,31 @@ void hrm::planners::HRM3D::connectExistLayer(const Index layerId) {
 
 std::vector<std::vector<hrm::Coordinate>>
 hrm::planners::HRM3D::getInterpolatedSolutionPath(const Index num) {
-    std::vector<std::vector<Coordinate>> path_interp;
+    std::vector<std::vector<Coordinate>> pathInterp;
 
     // Compute distance per step
-    const double distance_step =
+    const double distanceStep =
         res_.solutionPath.cost /
         (static_cast<double>(num) *
          (static_cast<double>(res_.solutionPath.solvedPath.size()) - 1.0));
 
     // Iteratively store interpolated poses along the solved path
     for (size_t i = 0; i < res_.solutionPath.solvedPath.size() - 1; ++i) {
-        const auto num_step = static_cast<int>(
+        const auto numStep = static_cast<int>(
             vectorEuclidean(res_.solutionPath.solvedPath.at(i),
                             res_.solutionPath.solvedPath.at(i + 1)) /
-            distance_step);
+            distanceStep);
 
-        std::vector<std::vector<Coordinate>> step_interp =
+        std::vector<std::vector<Coordinate>> stepInterp =
             interpolateCompoundSE3Rn(res_.solutionPath.solvedPath.at(i),
                                      res_.solutionPath.solvedPath.at(i + 1),
-                                     num_step);
+                                     numStep);
 
-        path_interp.insert(path_interp.end(), step_interp.begin(),
-                           step_interp.end());
+        pathInterp.insert(pathInterp.end(), stepInterp.begin(),
+                          stepInterp.end());
     }
 
-    return path_interp;
+    return pathInterp;
 }
 
 void hrm::planners::HRM3D::bridgeLayer() {

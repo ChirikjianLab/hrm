@@ -35,50 +35,54 @@ algorithm planTest(const robotType& robot,
         std::cout << "Saving results to file..." << std::endl;
 
         // TEST: calculate original boundary points
-        hrm::BoundaryInfo bd_ori;
+        hrm::BoundaryInfo boundaryOriginal;
         for (const auto& arena : hrm.getArena()) {
-            bd_ori.arena.push_back(arena.getOriginShape());
+            boundaryOriginal.arena.push_back(arena.getOriginShape());
         }
         for (const auto& obstacle : hrm.getObstacle()) {
-            bd_ori.obstacle.push_back(obstacle.getOriginShape());
+            boundaryOriginal.obstacle.push_back(obstacle.getOriginShape());
         }
 
-        std::ofstream file_ori_bd;
-        file_ori_bd.open(SOLUTION_DETAILS_PATH "/origin_bound_2D.csv");
-        for (const auto& bd_ori_obs : bd_ori.obstacle) {
-            file_ori_bd << bd_ori_obs << "\n";
+        std::ofstream fileBoundaryOriginal;
+        fileBoundaryOriginal.open(SOLUTION_DETAILS_PATH "/origin_bound_2D.csv");
+        for (const auto& boundaryOriginalObs : boundaryOriginal.obstacle) {
+            fileBoundaryOriginal << boundaryOriginalObs << "\n";
         }
-        for (const auto& bd_ori_arena : bd_ori.arena) {
-            file_ori_bd << bd_ori_arena << "\n";
+        for (const auto& boundaryOriginalArena : boundaryOriginal.arena) {
+            fileBoundaryOriginal << boundaryOriginalArena << "\n";
         }
-        file_ori_bd.close();
+        fileBoundaryOriginal.close();
 
         // TEST: Minkowski sums boundary
-        std::vector<hrm::BoundaryInfo> bd = hrm.getCSpaceBoundary();
+        const auto boundaryMinkowski = hrm.getCSpaceBoundary();
 
-        std::ofstream file_bd;
-        file_bd.open(SOLUTION_DETAILS_PATH "/mink_bound_2D.csv");
-        for (const auto& bd_obs : bd.at(0).obstacle) {
-            file_bd << bd_obs << "\n";
+        std::ofstream fileBoundaryMinkowski;
+        fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_2D.csv");
+        for (const auto& boundaryMinkowskiObs :
+             boundaryMinkowski.at(0).obstacle) {
+            fileBoundaryMinkowski << boundaryMinkowskiObs << "\n";
         }
-        for (const auto& bd_arena : bd.at(0).arena) {
-            file_bd << bd_arena << "\n";
+        for (const auto& boundaryMinkowskiArena :
+             boundaryMinkowski.at(0).arena) {
+            fileBoundaryMinkowski << boundaryMinkowskiArena << "\n";
         }
-        file_bd.close();
+        fileBoundaryMinkowski.close();
 
         // TEST: Sweep line process
-        hrm::FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd.at(0));
+        const auto freeSegment =
+            hrm.getFreeSegmentOneLayer(&boundaryMinkowski.at(0));
 
-        std::ofstream file_cell;
-        file_cell.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
-        for (size_t i = 0; i < freeSeg.ty.size(); i++) {
-            for (size_t j = 0; j < freeSeg.xL[i].size(); j++) {
-                file_cell << freeSeg.ty[i] << ' ' << freeSeg.xL[i][j] << ' '
-                          << freeSeg.xM[i][j] << ' ' << freeSeg.xU[i][j]
-                          << "\n";
+        std::ofstream fileFreeSegment;
+        fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
+        for (size_t i = 0; i < freeSegment.ty.size(); i++) {
+            for (size_t j = 0; j < freeSegment.xL[i].size(); j++) {
+                fileFreeSegment
+                    << freeSegment.ty[i] << ' ' << freeSegment.xL[i][j] << ' '
+                    << freeSegment.xM[i][j] << ' ' << freeSegment.xU[i][j]
+                    << "\n";
             }
         }
-        file_cell.close();
+        fileFreeSegment.close();
     }
 
     return hrm;

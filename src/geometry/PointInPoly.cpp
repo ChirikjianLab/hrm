@@ -6,7 +6,7 @@
 bool hrm::isPtInPoly(PolyCSpace polyhedronVertex,
                      const std::vector<double>& pt) {
     bool flag = false;
-    SE3Transform matrixInverse;
+    Eigen::Matrix4d matrixInverse;
     Eigen::Vector4d p;
     Eigen::Vector4d alpha;
 
@@ -15,7 +15,7 @@ bool hrm::isPtInPoly(PolyCSpace polyhedronVertex,
 
     size_t n = polyhedronVertex.matrixInverse.size();
     for (size_t i = 0; i < n; i++) {
-        matrixInverse = Eigen::Map<SE3Transform, Eigen::Unaligned>(
+        matrixInverse = Eigen::Map<Eigen::Matrix4d, Eigen::Unaligned>(
             polyhedronVertex.matrixInverse[i].data(), 4, 4);
         alpha = matrixInverse * p;
         if (alpha.minCoeff() >= 0 && alpha.maxCoeff() <= 1) {
