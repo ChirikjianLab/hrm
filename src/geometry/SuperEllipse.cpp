@@ -36,8 +36,8 @@ hrm::BoundaryPoints hrm::SuperEllipse::getOriginShape() const {
     for (auto i = 0; i < int(num_); i++) {
         th = 2 * i * pi / (static_cast<double>(num_) - 1);
 
-        x(0, 0) = semiAxis_.at(0) * expFun(th, epsilon_, false);
-        x(1, 0) = semiAxis_.at(1) * expFun(th, epsilon_, true);
+        x(0, 0) = semiAxis_.at(0) * exponentialFunction(th, epsilon_, false);
+        x(1, 0) = semiAxis_.at(1) * exponentialFunction(th, epsilon_, true);
 
         C(0, i) = position_.at(0);
         C(1, i) = position_.at(1);
@@ -84,8 +84,8 @@ hrm::BoundaryPoints hrm::SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
 
     for (auto i = 0; i < int(num_); i++) {
         the(0, i) = 2 * i * pi / (static_cast<double>(num_) - 1);
-        gradPhi(0, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, false);
-        gradPhi(1, i) = 2 / eps1 * expFun(the(0, i), 2 - eps1, true);
+        gradPhi(0, i) = 2 / eps1 * exponentialFunction(the(0, i), 2 - eps1, false);
+        gradPhi(1, i) = 2 / eps1 * exponentialFunction(the(0, i), 2 - eps1, true);
     }
     X_eb = getOriginShape() +
            (K * r * Tinv * Tinv * R1 * gradPhi)

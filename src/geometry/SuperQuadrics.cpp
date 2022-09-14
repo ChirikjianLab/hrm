@@ -58,15 +58,17 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getOriginShape() const {
 
     // Parameterized surface
     x = semiAxis_.at(0) *
-        expFun_mat(eta_, epsilon_.at(0), false)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), false));
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), false)
+            .cwiseProduct(
+                exponentialFunctionMatrixForm(omega_, epsilon_.at(1), false));
     x.resize(1, numSurfVtx);
     y = semiAxis_.at(1) *
-        expFun_mat(eta_, epsilon_.at(0), false)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), true));
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), false)
+            .cwiseProduct(
+                exponentialFunctionMatrixForm(omega_, epsilon_.at(1), true));
     y.resize(1, numSurfVtx);
     z = semiAxis_.at(2) *
-        expFun_mat(eta_, epsilon_.at(0), true)
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), true)
             .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0));
     z.resize(1, numSurfVtx);
     X.row(0) = x;
@@ -114,16 +116,18 @@ hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
     auto numVtx = static_cast<Eigen::Index>(num_);
     auto numSurfVtx = static_cast<Eigen::Index>(Num_);
 
-    gradPhix = expFun_mat(eta_, 2 - eps1, false)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, false)) /
+    gradPhix = exponentialFunctionMatrixForm(eta_, 2 - eps1, false)
+                   .cwiseProduct(
+                       exponentialFunctionMatrixForm(omega_, 2 - eps2, false)) /
                a1;
     gradPhix.resize(1, numSurfVtx);
-    gradPhiy = expFun_mat(eta_, 2 - eps1, false)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, true)) /
+    gradPhiy = exponentialFunctionMatrixForm(eta_, 2 - eps1, false)
+                   .cwiseProduct(
+                       exponentialFunctionMatrixForm(omega_, 2 - eps2, true)) /
                b1;
     gradPhiy.resize(1, numSurfVtx);
     gradPhiz =
-        expFun_mat(eta_, 2 - eps1, true)
+        exponentialFunctionMatrixForm(eta_, 2 - eps1, true)
             .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0)) /
         c1;
     gradPhiz.resize(1, numSurfVtx);

@@ -11,13 +11,13 @@ hrm::ParseURDF::ParseURDF(const std::string& urdfFile) {
     }
 }
 
-hrm::SE3Transform hrm::ParseURDF::getTransform(const KDL::JntArray* jointConfig,
+hrm::SE3Transform hrm::ParseURDF::getTransform(const KDL::JntArray& jointConfig,
                                                const std::string& bodyName) {
     hrm::SE3Transform transform = Eigen::Matrix4d::Identity();
     KDL::Frame frame;
 
     KDL::TreeFkSolverPos_recursive kinematics(kdlTree_);
-    if (kinematics.JntToCart(*jointConfig, frame, bodyName) < 0) {
+    if (kinematics.JntToCart(jointConfig, frame, bodyName) < 0) {
         std::cout << "Error in solving forward kinematics" << std::endl;
     }
 

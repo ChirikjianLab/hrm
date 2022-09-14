@@ -75,7 +75,7 @@ void hrm::MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d& gBase,
 
     for (size_t i = 0; i < numLinks_; i++) {
         gLink = gBase *
-                kdl.getTransform(&jointArray, "body" + std::to_string(i + 1)) *
+                kdl.getTransform(jointArray, "body" + std::to_string(i + 1)) *
                 tf_.at(i);
 
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});

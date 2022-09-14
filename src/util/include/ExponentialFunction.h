@@ -14,7 +14,7 @@ namespace hrm {
  * \param p exponential factor
  * \param func indicator of "cos" (0) and "sin" (1)
  */
-double expFun(const double th, const double p, const bool func);
+double exponentialFunction(const double th, const double p, const bool func);
 
 /**
  * \brief Exponent function for cosine and sine, matrix operations
@@ -22,7 +22,7 @@ double expFun(const double th, const double p, const bool func);
  * \param p exponential factor
  * \param func indicator of "cos" (0) and "sin" (1)
  */
-Eigen::MatrixXd expFun_mat(const Eigen::MatrixXd& thetaList, const double p,
-                           const bool func);
+Eigen::MatrixXd exponentialFunctionMatrixForm(const Eigen::MatrixXd& thetaList,
+                                              const double p, const bool func);
 
 }  // namespace hrm

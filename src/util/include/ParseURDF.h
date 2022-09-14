@@ -28,7 +28,7 @@ class ParseURDF {
      * \param jointConfig The configuration of joint angles
      * \param bodyName The name of body to be retrieved
      * \return hrm::SE3Tranform homogeneous transformation matrix */
-    hrm::SE3Transform getTransform(const KDL::JntArray* jointConfig,
+    hrm::SE3Transform getTransform(const KDL::JntArray& jointConfig,
                                    const std::string& bodyName);
 
   private:
