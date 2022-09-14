@@ -42,14 +42,14 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Get Minkowski sums boundary mesh
      * \param idx Index of C-layer
      * \return Boundary mesh */
-    const BoundaryMesh& getLayerBoundaryMesh(const Index idx) {
+    const BoundaryMesh& getLayerBoundaryMesh(const Index idx) const {
         return layerBoundMeshAll_.at(idx);
     }
 
     /** \brief Get Minkowski sums boundary
      * \param idx Index of C-layer
      * \return Boundary */
-    const BoundaryInfo& getLayerBoundary(const Index idx) {
+    const BoundaryInfo& getLayerBoundary(const Index idx) const {
         return layerBoundAll_.at(idx);
     }
 

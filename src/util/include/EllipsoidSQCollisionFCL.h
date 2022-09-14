@@ -5,14 +5,15 @@
 
 namespace hrm {
 
-bool isCollision(const SuperQuadrics& obj1,
-                 fcl::CollisionObject<double> colObj1,
-                 const SuperQuadrics& obj2,
-                 fcl::CollisionObject<double> colObj2);
+bool isCollision(const SuperQuadrics& object1,
+                 fcl::CollisionObject<double> collisionObject1,
+                 const SuperQuadrics& object2,
+                 fcl::CollisionObject<double> collisionObject2);
 
-bool isCollision(const SuperEllipse& obj1, fcl::CollisionObject<double> colObj1,
-                 const SuperEllipse& obj2,
-                 fcl::CollisionObject<double> colObj2);
+bool isCollision(const SuperEllipse& object1,
+                 fcl::CollisionObject<double> collisionObject1,
+                 const SuperEllipse& object2,
+                 fcl::CollisionObject<double> collisionObject2);
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperQuadrics& object);

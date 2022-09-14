@@ -1,12 +1,13 @@
 #include "util/include/GTestUtils.h"
+#include "util/include/DisplayPlanningData.h"
 
 void hrm::showResult(const PlanningResult& res, const bool isStore,
-                     const std::string& dim) {
+                     const std::string& dimension) {
     displayPlanningTimeInfo(res.planningTime);
 
     if (isStore) {
-        displayGraphInfo(res.graphStructure, dim);
-        displayPathInfo(res.solutionPath, dim);
+        displayGraphInfo(res.graphStructure, dimension);
+        displayPathInfo(res.solutionPath, dimension);
     } else {
         displayGraphInfo(res.graphStructure);
         displayPathInfo(res.solutionPath);

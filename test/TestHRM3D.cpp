@@ -11,11 +11,11 @@ TEST(TestHRMPlanning3D, HRM) {
     env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Using fixed orientations from Icosahedral symmetry group
-    const std::string quat_file = "config/q_icosahedron_60.csv";
+    const std::string quaternionFilename = "config/q_icosahedron_60.csv";
 
     // Setup robot
     hrm::MultiBodyTree3D robot = hrm::loadRobotMultiBody3D(
-        CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+        CONFIG_FILE_PREFIX, quaternionFilename, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;

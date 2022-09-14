@@ -1,104 +1,104 @@
 #include "include/ParsePlanningSettings.h"
 
 void hrm::loadVectorGeometry(
-    const std::vector<std::vector<double>>& object_config,
-    const int num_curve_param, std::vector<SuperEllipse>& object) {
+    const std::vector<std::vector<double>>& objectConfig,
+    const int numCurvePoint, std::vector<SuperEllipse>& object) {
     // Object as class of SuperEllipse
     object.clear();
-    for (auto config : object_config) {
+    for (auto config : objectConfig) {
         object.emplace_back(SuperEllipse({config[0], config[1]}, config[2],
                                          {config[3], config[4]}, config[5],
-                                         num_curve_param));
+                                         numCurvePoint));
     }
 }
 
-void hrm::loadVectorGeometry(const std::string& config_file,
-                             const int num_curve_param,
+void hrm::loadVectorGeometry(const std::string& configFilename,
+                             const int numCurvePoint,
                              std::vector<SuperEllipse>& object) {
-    std::vector<std::vector<double>> object_config =
-        parse2DCsvFile(config_file);
+    std::vector<std::vector<double>> objectConfig =
+        parse2DCsvFile(configFilename);
 
-    loadVectorGeometry(object_config, num_curve_param, object);
+    loadVectorGeometry(objectConfig, numCurvePoint, object);
 }
 
 void hrm::loadVectorGeometry(
-    const std::vector<std::vector<double>>& object_config,
-    const int num_surf_param, std::vector<SuperQuadrics>& object) {
+    const std::vector<std::vector<double>>& objectConfig,
+    const int numSurfPointParam, std::vector<SuperQuadrics>& object) {
     // Generate SQ object (orientation from Quaternion parameterization)
     object.clear();
-    for (auto config : object_config) {
+    for (auto config : objectConfig) {
         object.emplace_back(SuperQuadrics(
             {config[0], config[1], config[2]}, {config[3], config[4]},
             {config[5], config[6], config[7]},
             Eigen::Quaterniond(config[8], config[9], config[10], config[11]),
-            num_surf_param));
+            numSurfPointParam));
     }
 }
 
-void hrm::loadVectorGeometry(const std::string& config_file,
-                             const int num_surf_param,
+void hrm::loadVectorGeometry(const std::string& configFilename,
+                             const int numSurfPointParam,
                              std::vector<SuperQuadrics>& object) {
-    std::vector<std::vector<double>> object_config =
-        parse2DCsvFile(config_file);
+    std::vector<std::vector<double>> objectConfig =
+        parse2DCsvFile(configFilename);
 
-    loadVectorGeometry(object_config, num_surf_param, object);
+    loadVectorGeometry(objectConfig, numSurfPointParam, object);
 }
 
-hrm::MultiBodyTree2D hrm::loadRobotMultiBody2D(const std::string& path_prefix,
-                                               const int num_curve_param) {
+hrm::MultiBodyTree2D hrm::loadRobotMultiBody2D(const std::string& pathPrefix,
+                                               const int numCurvePoint) {
     // Read robot config file
-    std::vector<SuperEllipse> robot_parts;
-    loadVectorGeometry(path_prefix + "robot_config_2D.csv", num_curve_param,
-                       robot_parts);
+    std::vector<SuperEllipse> robotParts;
+    loadVectorGeometry(pathPrefix + "robot_config_2D.csv", numCurvePoint,
+                       robotParts);
 
     // Generate multibody tree for robot
-    MultiBodyTree2D robot(robot_parts[0]);
-    for (size_t i = 1; i < robot_parts.size(); ++i) {
-        robot.addBody(robot_parts[i]);
+    MultiBodyTree2D robot(robotParts[0]);
+    for (size_t i = 1; i < robotParts.size(); ++i) {
+        robot.addBody(robotParts[i]);
     }
 
     return robot;
 }
 
-hrm::MultiBodyTree3D hrm::loadRobotMultiBody3D(const std::string& path_prefix,
-                                               const std::string& quat_file,
-                                               const int num_surf_param) {
+hrm::MultiBodyTree3D hrm::loadRobotMultiBody3D(
+    const std::string& pathPrefix, const std::string& quaternionFilename,
+    const int numSurfPointParam) {
     // Read and setup robot info
-    std::vector<SuperQuadrics> robot_parts;
-    loadVectorGeometry(path_prefix + "robot_config_3D.csv", num_surf_param,
-                       robot_parts);
+    std::vector<SuperQuadrics> robotParts;
+    loadVectorGeometry(pathPrefix + "robot_config_3D.csv", numSurfPointParam,
+                       robotParts);
 
-    loadPreDefinedQuaternions(quat_file, robot_parts[0]);
+    loadPreDefinedQuaternions(quaternionFilename, robotParts[0]);
 
     // Generate multibody tree for robot
-    MultiBodyTree3D robot(robot_parts[0]);
-    for (size_t i = 1; i < robot_parts.size(); i++) {
-        robot.addBody(robot_parts[i]);
+    MultiBodyTree3D robot(robotParts[0]);
+    for (size_t i = 1; i < robotParts.size(); i++) {
+        robot.addBody(robotParts[i]);
     }
 
     return robot;
 }
 
-void hrm::loadPreDefinedQuaternions(const std::string& quat_file,
-                                    SuperQuadrics& robot_base) {
+void hrm::loadPreDefinedQuaternions(const std::string& quaternionFilename,
+                                    SuperQuadrics& robotBase) {
     // Read predefined quaternions
-    if (quat_file == "0") {
+    if (quaternionFilename == "0") {
         std::cout << "Will generate uniform random rotations from SO(3)"
                   << std::endl;
     } else {
-        std::vector<std::vector<double>> quat_sample =
-            parse2DCsvFile(quat_file);
+        std::vector<std::vector<double>> quatSampleList =
+            parse2DCsvFile(quaternionFilename);
 
-        std::vector<Eigen::Quaterniond> q_sample;
-        for (auto sample : quat_sample) {
+        std::vector<Eigen::Quaterniond> qSample;
+        for (auto sample : quatSampleList) {
             Eigen::Quaterniond q;
             q.w() = sample[3];
             q.x() = sample[0];
             q.y() = sample[1];
             q.z() = sample[2];
-            q_sample.emplace_back(q);
+            qSample.emplace_back(q);
         }
-        robot_base.setQuatSamples(q_sample);
+        robotBase.setQuatSamples(qSample);
     }
 }
 
@@ -120,9 +120,9 @@ void hrm::defineParameters(const MultiBodyTree2D& robot,
 
     // Determine the base number of sweep lines at each C-layer
     if (param.numLineY == 0) {
-        const double min_size_obs =
+        const double minSizeObstacle =
             computeObstacleMinSize<SuperEllipse>(env2D.getObstacle());
-        param.numLineY = static_cast<int>(bound.at(1) / min_size_obs);
+        param.numLineY = static_cast<int>(bound.at(1) / minSizeObstacle);
     }
 }
 
@@ -149,10 +149,10 @@ void hrm::defineParameters(const MultiBodyTree3D& robot,
 
     // Determine the base number of sweep lines at each C-layer
     if (param.numLineX == 0 || param.numLineY == 0) {
-        const double min_size_obs =
+        const double minSizeObstacle =
             computeObstacleMinSize<SuperQuadrics>(env3D.getObstacle());
 
-        param.numLineX = floor(bound.at(0) / min_size_obs);
-        param.numLineY = floor(bound.at(1) / min_size_obs);
+        param.numLineX = floor(bound.at(0) / minSizeObstacle);
+        param.numLineY = floor(bound.at(1) / minSizeObstacle);
     }
 }

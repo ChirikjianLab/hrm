@@ -10,19 +10,21 @@ namespace hrm {
 
 /**
  * \brief Exponent function for cosine and sine
- * \param th angular parameter
- * \param p exponential factor
- * \param func indicator of "cos" (0) and "sin" (1)
+ * \param theta Angular parameter
+ * \param power Exponential factor
+ * \param isSine Indicator of "cos" (0) and "sin" (1)
  */
-double exponentialFunction(const double th, const double p, const bool func);
+double exponentialFunction(const double theta, const double power,
+                           const bool isSine);
 
 /**
  * \brief Exponent function for cosine and sine, matrix operations
  * \param thetaList list of angular parameters
- * \param p exponential factor
- * \param func indicator of "cos" (0) and "sin" (1)
+ * \param power exponential factor
+ * \param isSine indicator of "cos" (0) and "sin" (1)
  */
 Eigen::MatrixXd exponentialFunctionMatrixForm(const Eigen::MatrixXd& thetaList,
-                                              const double p, const bool func);
+                                              const double power,
+                                              const bool isSine);
 
 }  // namespace hrm

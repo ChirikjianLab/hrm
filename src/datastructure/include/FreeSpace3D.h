@@ -12,7 +12,7 @@ struct FreeSegment3D {
     std::vector<Coordinate> tx;
 
     /** \brief Vector of line segments in yz-plane as FreeSegment2D type */
-    std::vector<FreeSegment2D> freeSegYZ;
+    std::vector<FreeSegment2D> freeSegmentYZ;
 };
 
 /** \brief Mesh representation of Minkowski operations */
@@ -39,7 +39,9 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
 
     /** \brief Get C-free boundary as mesh
      * \return The generated mesh as BoundMesh type */
-    const BoundaryMesh& getCSpaceBoundaryMesh() { return cSpaceBoundaryMesh_; }
+    const BoundaryMesh& getCSpaceBoundaryMesh() const {
+        return cSpaceBoundaryMesh_;
+    }
 
     void computeIntersectionInterval(
         const std::vector<std::vector<Coordinate>>& tLine) override;

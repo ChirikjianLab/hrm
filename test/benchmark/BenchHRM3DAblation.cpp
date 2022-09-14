@@ -38,12 +38,13 @@ int main(int argc, char** argv) {
     env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
-    std::string quat_file = "0";
+    std::string quaternionFilename = "0";
     if (argc == 8 && strcmp(argv[7], "0") != 0) {
-        quat_file = std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
+        quaternionFilename =
+            std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
     }
-    auto robot = hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file,
-                                           NUM_SURF_PARAM);
+    auto robot = hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX,
+                                           quaternionFilename, NUM_SURF_PARAM);
 
     // Planning parameters
     hrm::PlannerParameter param;

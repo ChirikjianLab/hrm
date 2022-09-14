@@ -9,7 +9,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
     env3D.loadEnvironment(CONFIG_FILE_PREFIX);
-    const std::string quat_file = "0";
+    const std::string quaternionFilename = "0";
 
     // Setup URDF file for the robot
     std::string urdf_file;
@@ -21,7 +21,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     // Setup robot
     hrm::MultiBodyTree3D robot = hrm::loadRobotMultiBody3D(
-        CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+        CONFIG_FILE_PREFIX, quaternionFilename, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;

@@ -71,7 +71,7 @@ void hrm::planners::HRM3D::sweepLineProcess() {
 
     // Find intersections along each sweep line
     freeSegOneLayer_.tx.clear();
-    freeSegOneLayer_.freeSegYZ.clear();
+    freeSegOneLayer_.freeSegmentYZ.clear();
     for (size_t i = 0; i < param_.numLineX; ++i) {
         // x-coordinates of sweep lines
         freeSegOneLayer_.tx.push_back(param_.boundaryLimits[0] +
@@ -82,7 +82,7 @@ void hrm::planners::HRM3D::sweepLineProcess() {
 
         // Store freeSeg info
         freeSpacePtr_->computeFreeSegment(ty);
-        freeSegOneLayer_.freeSegYZ.push_back(freeSpacePtr_->getFreeSegment());
+        freeSegOneLayer_.freeSegmentYZ.push_back(freeSpacePtr_->getFreeSegment());
     }
 }
 
@@ -117,23 +117,23 @@ void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     numVertex_.startId = res_.graphStructure.vertex.size();
     for (size_t i = 0; i < freeSeg->tx.size(); ++i) {
         // Generate collision-free vertices
-        generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegYZ.at(i));
+        generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegmentYZ.at(i));
 
         // Connect within one plane
-        connectOneLayer2D(&freeSeg->freeSegYZ.at(i));
+        connectOneLayer2D(&freeSeg->freeSegmentYZ.at(i));
     }
     numVertex_.layer = res_.graphStructure.vertex.size();
 
     for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
-        for (size_t j = 0; j < freeSeg->freeSegYZ.at(i).ty.size(); ++j) {
+        for (size_t j = 0; j < freeSeg->freeSegmentYZ.at(i).ty.size(); ++j) {
             n1 = numVertex_.line[i][j];
             n2 = numVertex_.line[i + 1][j];
 
             // Connect vertex btw adjacent planes, only connect with same ty
-            for (size_t k1 = 0; k1 < freeSeg->freeSegYZ.at(i).xM[j].size();
+            for (size_t k1 = 0; k1 < freeSeg->freeSegmentYZ.at(i).xM[j].size();
                  ++k1) {
                 for (size_t k2 = 0;
-                     k2 < freeSeg->freeSegYZ.at(i + 1).xM[j].size(); ++k2) {
+                     k2 < freeSeg->freeSegmentYZ.at(i + 1).xM[j].size(); ++k2) {
                     if (isSameLayerTransitionFree(
                             res_.graphStructure.vertex[n1 + k1],
                             res_.graphStructure.vertex[n2 + k2])) {

@@ -2,45 +2,45 @@
 
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-bool hrm::isCollision(const SuperQuadrics& obj1,
-                      fcl::CollisionObject<double> colObj1,
-                      const SuperQuadrics& obj2,
-                      fcl::CollisionObject<double> colObj2) {
-    colObj1.setTransform(
-        obj1.getQuaternion().toRotationMatrix(),
-        fcl::Vector3d(obj1.getPosition().at(0), obj1.getPosition().at(1),
-                      obj1.getPosition().at(2)));
-    colObj2.setTransform(
-        obj2.getQuaternion().toRotationMatrix(),
-        fcl::Vector3d(obj2.getPosition().at(0), obj2.getPosition().at(1),
-                      obj2.getPosition().at(2)));
+bool hrm::isCollision(const SuperQuadrics& object1,
+                      fcl::CollisionObject<double> collisionObject1,
+                      const SuperQuadrics& object2,
+                      fcl::CollisionObject<double> collisionObject2) {
+    collisionObject1.setTransform(
+        object1.getQuaternion().toRotationMatrix(),
+        fcl::Vector3d(object1.getPosition().at(0), object1.getPosition().at(1),
+                      object1.getPosition().at(2)));
+    collisionObject2.setTransform(
+        object2.getQuaternion().toRotationMatrix(),
+        fcl::Vector3d(object2.getPosition().at(0), object2.getPosition().at(1),
+                      object2.getPosition().at(2)));
 
     fcl::CollisionRequest<double> request;
     fcl::CollisionResult<double> result;
-    fcl::collide(&colObj1, &colObj2, request, result);
+    fcl::collide(&collisionObject1, &collisionObject2, request, result);
 
     return result.isCollision();
 }
 
-bool hrm::isCollision(const SuperEllipse& obj1,
-                      fcl::CollisionObject<double> colObj1,
-                      const SuperEllipse& obj2,
-                      fcl::CollisionObject<double> colObj2) {
-    colObj1.setTransform(
+bool hrm::isCollision(const SuperEllipse& object1,
+                      fcl::CollisionObject<double> collisionObject1,
+                      const SuperEllipse& object2,
+                      fcl::CollisionObject<double> collisionObject2) {
+    collisionObject1.setTransform(
         Eigen::Quaterniond(Eigen::AngleAxis<double>(
-                               obj1.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
+                               object1.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
-        fcl::Vector3d(obj1.getPosition().at(0), obj1.getPosition().at(1), 0.1));
+        fcl::Vector3d(object1.getPosition().at(0), object1.getPosition().at(1), 0.1));
 
-    colObj2.setTransform(
+    collisionObject2.setTransform(
         Eigen::Quaterniond(Eigen::AngleAxis<double>(
-                               obj2.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
+                               object2.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
-        fcl::Vector3d(obj2.getPosition().at(0), obj2.getPosition().at(1), 0.1));
+        fcl::Vector3d(object2.getPosition().at(0), object2.getPosition().at(1), 0.1));
 
     fcl::CollisionRequest<double> request;
     fcl::CollisionResult<double> result;
-    fcl::collide(&colObj1, &colObj2, request, result);
+    fcl::collide(&collisionObject1, &collisionObject2, request, result);
 
     return result.isCollision();
 }

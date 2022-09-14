@@ -1,20 +1,22 @@
 #include "include/ExponentialFunction.h"
 
-double hrm::exponentialFunction(const double th, const double p, const bool func) {
-    return func ? sgn(std::sin(th)) * pow(std::fabs(std::sin(th)), p)
-                : sgn(std::cos(th)) * pow(std::fabs(std::cos(th)), p);
+double hrm::exponentialFunction(const double theta, const double power,
+                                const bool isSine) {
+    return isSine
+               ? sgn(std::sin(theta)) * pow(std::fabs(std::sin(theta)), power)
+               : sgn(std::cos(theta)) * pow(std::fabs(std::cos(theta)), power);
 }
 
-Eigen::MatrixXd hrm::exponentialFunctionMatrixForm(const Eigen::MatrixXd& thetaList,
-                                const double p, const bool func) {
+Eigen::MatrixXd hrm::exponentialFunctionMatrixForm(
+    const Eigen::MatrixXd& thetaList, const double power, const bool isSine) {
     Eigen::MatrixXd exponentialFunction;
 
-    if (func) {
+    if (isSine) {
         exponentialFunction = thetaList.array().sin().sign().cwiseProduct(
-            thetaList.array().sin().abs().pow(p));
+            thetaList.array().sin().abs().pow(power));
     } else {
         exponentialFunction = thetaList.array().cos().sign().cwiseProduct(
-            thetaList.array().cos().abs().pow(p));
+            thetaList.array().cos().abs().pow(power));
     }
 
     return exponentialFunction;
