@@ -13,7 +13,7 @@ target_link_libraries(BenchHRM2D
                       HRM2D
                       TestUtil)
 
-add_executable(BenchHRM3D BenchHighway3D.cpp)
+add_executable(BenchHRM3D BenchHRM3D.cpp)
 target_link_libraries(BenchHRM3D
                       HRM3D
                       TestUtil)
