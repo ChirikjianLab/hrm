@@ -3,6 +3,8 @@
 #include "geometry/include/MeshGenerator.h"
 #include "geometry/include/SuperEllipse.h"
 
+namespace hrm {
+
 bool isCollision(const SuperQuadrics& obj1,
                  fcl::CollisionObject<double> colObj1,
                  const SuperQuadrics& obj2,
@@ -17,3 +19,5 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
 
 fcl::CollisionObject<double> setCollisionObjectFromSQ(
     const SuperEllipse& object);
+
+}  // namespace hrm

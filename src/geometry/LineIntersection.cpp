@@ -1,8 +1,8 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
-                                                 const MeshMatrix& shape) {
+std::vector<Eigen::Vector3d> hrm::intersectLineMesh3D(const Line3D& line,
+                                                      const MeshMatrix& shape) {
     std::vector<Point3D> points;
 
     /** \brief filter out-of-range case: line direction parallel to
@@ -50,7 +50,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
     return points;
 }
 
-std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
+std::vector<Eigen::Vector3d> hrm::intersectVerticalLineMesh3D(
     const Line3D& line, const MeshMatrix& shape) {
     std::vector<Point3D> points;
 
@@ -120,9 +120,9 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
     return points;
 }
 
-bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
-                             const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Point3D* pt) {
+bool hrm::intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
+                                  const Eigen::Vector3d* u,
+                                  const Eigen::Vector3d* v, Point3D* pt) {
     const double tol = 1e-12;
     Eigen::Vector3d n;
     double a;
@@ -177,7 +177,7 @@ bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
     return !((t < -tol) || (s + t > 1.0 + tol));
 }
 
-bool isIntersectSegPolygon2D(
+bool hrm::isIntersectSegPolygon2D(
     const std::pair<std::vector<double>, std::vector<double>>& seg,
     const Eigen::Matrix2Xd& shape) {
     double px1 = seg.first.at(0);
@@ -219,7 +219,7 @@ bool isIntersectSegPolygon2D(
     return false;
 }
 
-std::vector<double> intersectHorizontalLinePolygon2D(
+std::vector<double> hrm::intersectHorizontalLinePolygon2D(
     const double ty, const Eigen::Matrix2Xd& shape) {
     std::vector<double> points;
 

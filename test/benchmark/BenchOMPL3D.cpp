@@ -2,7 +2,7 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 #include "util/include/ParsePlanningSettings.h"
 
-using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
+namespace ho = hrm::planners::ompl_interface;
 
 int main(int argc, char** argv) {
     if (argc == 8) {
@@ -35,31 +35,32 @@ int main(int argc, char** argv) {
     const std::string CONFIG_FILE_PREFIX = argv[7];
     const int NUM_SURF_PARAM = 10;
 
-    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
+    auto* env3D = new hrm::PlannerSetting3D(NUM_SURF_PARAM);
     env3D->loadEnvironment(CONFIG_FILE_PREFIX);
 
-    const std::vector<SuperQuadrics>& arena = env3D->getArena();
-    const std::vector<SuperQuadrics>& obs = env3D->getObstacle();
+    const auto& arena = env3D->getArena();
+    const auto& obs = env3D->getObstacle();
 
     // Obstacle mesh
-    std::vector<Mesh> obs_mesh(obs.size());
+    std::vector<hrm::Mesh> obs_mesh(obs.size());
     for (const auto& obstacle : obs) {
         obs_mesh.emplace_back(getMeshFromSQ(obstacle));
     }
 
     // Setup robot config
-    MultiBodyTree3D robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+    hrm::MultiBodyTree3D robot =
+        hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
 
     // Boundary
     const double f = 1.2;
-    std::vector<Coordinate> b1 = {-arena.at(0).getSemiAxis().at(0) +
-                                      f * robot.getBase().getSemiAxis().at(0),
-                                  -arena.at(0).getSemiAxis().at(1) +
-                                      f * robot.getBase().getSemiAxis().at(0),
-                                  -arena.at(0).getSemiAxis().at(2) +
-                                      f * robot.getBase().getSemiAxis().at(0)};
-    std::vector<Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
+    std::vector<hrm::Coordinate> b1 = {
+        -arena.at(0).getSemiAxis().at(0) +
+            f * robot.getBase().getSemiAxis().at(0),
+        -arena.at(0).getSemiAxis().at(1) +
+            f * robot.getBase().getSemiAxis().at(0),
+        -arena.at(0).getSemiAxis().at(2) +
+            f * robot.getBase().getSemiAxis().at(0)};
+    std::vector<hrm::Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Save results
     std::string filename_prefix = SOLUTION_DETAILS_PATH "/ompl";
@@ -85,7 +86,7 @@ int main(int argc, char** argv) {
                 std::cout << "Sampler: " << n << std::endl;
                 std::cout << "Num of trials: " << i + 1 << std::endl;
 
-                OMPL3D tester(b1, b2, robot, arena, obs, obs_mesh);
+                ho::OMPL3D tester(b1, b2, robot, arena, obs, obs_mesh);
                 tester.setup(m, n);
 
                 tester.plan(env3D->getEndPoints().at(0),

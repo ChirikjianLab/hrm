@@ -11,8 +11,6 @@
 #include <iostream>
 #include <vector>
 
-using PlannerSetting2D = PlannerSetting<SuperEllipse>;
-
 int main(int argc, char** argv) {
     if (argc == 5) {
         std::cout << "Highway RoadMap for 2D rigid-body planning" << std::endl;
@@ -36,50 +34,40 @@ int main(int argc, char** argv) {
     const int NUM_CURVE_PARAM = 50;
     const double MAX_PLAN_TIME = 10.0;
 
-    MultiBodyTree2D robot =
-        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
-    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::MultiBodyTree2D robot =
+        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
+    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
 
-    // Parameters
-    PlannerParameter par;
-    par.NUM_LAYER = static_cast<size_t>(N_l);
-    par.NUM_LINE_Y = static_cast<size_t>(N_y);
-    par.NUM_POINT = 5;
+    // Planning parameters
+    hrm::PlannerParameter param;
+    param.NUM_LAYER = static_cast<size_t>(N_l);
+    param.NUM_LINE_Y = static_cast<size_t>(N_y);
+    param.NUM_POINT = 5;
+    hrm::defineParameters(robot, env2D, param);
 
-    const double f = 1.5;
-    std::vector<Coordinate> bound = {
-        env2D->getArena().at(0).getSemiAxis().at(0) -
-            f * robot.getBase().getSemiAxis().at(0),
-        env2D->getArena().at(0).getSemiAxis().at(1) -
-            f * robot.getBase().getSemiAxis().at(0)};
-    par.BOUND_LIMIT = {
-        env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-        env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-        env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-        env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
-
-    std::cout << "Initial number of C-layers: " << par.NUM_LAYER << std::endl;
-    std::cout << "Initial number of sweep lines: " << par.NUM_LINE_Y
+    std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
+    std::cout << "Initial number of sweep lines: " << param.NUM_LINE_Y
               << std::endl;
     std::cout << "----------" << std::endl;
 
-    std::cout << "Start benchmark..." << std::endl;
+    // Planning requests
+    hrm::PlanningRequest req;
+    req.is_robot_rigid = true;
+    req.planner_parameters = param;
+    req.start = env2D.getEndPoints().at(0);
+    req.goal = env2D.getEndPoints().at(1);
 
     // Multiple planning trials
-    PlanningRequest req;
-    req.is_robot_rigid = true;
-    req.planner_parameters = par;
-    req.start = env2D->getEndPoints().at(0);
-    req.goal = env2D->getEndPoints().at(1);
-
+    std::cout << "Start benchmark..." << std::endl;
     for (int i = 0; i < N; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
-        HRM2D hrm(robot, env2D->getArena(), env2D->getObstacle(), req);
+        hrm::planners::HRM2D hrm(robot, env2D.getArena(), env2D.getObstacle(),
+                                 req);
         hrm.plan(MAX_PLAN_TIME);
 
-        PlanningResult res = hrm.getPlanningResult();
+        const auto res = hrm.getPlanningResult();
 
         // Store statistics
         time_stat.push_back(

@@ -7,6 +7,8 @@
 
 #include "gtest/gtest.h"
 
+namespace hrm {
+
 template <class Planner>
 void storeRoutines(Planner* hrm) {
     // calculate original boundary points
@@ -61,4 +63,7 @@ void storeRoutines(Planner* hrm) {
     file_cell.close();
 }
 
-void showResult(const PlanningResult* res, const bool isStore);
+void showResult(const PlanningResult& res, const bool isStore,
+                const std::string& dimension);
+
+}  // namespace hrm

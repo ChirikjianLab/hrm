@@ -1,6 +1,6 @@
 #include "include/InterpolateSE3.h"
 
-std::vector<std::vector<Coordinate>> interpolateSE3(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateSE3(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
@@ -26,7 +26,7 @@ std::vector<std::vector<Coordinate>> interpolateSE3(
     return vInterp;
 }
 
-std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateCompoundSE3Rn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
@@ -62,7 +62,7 @@ std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
     return vInterp;
 }
 
-std::vector<Eigen::Quaterniond> interpolateAngleAxis(
+std::vector<Eigen::Quaterniond> hrm::interpolateAngleAxis(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
@@ -84,7 +84,7 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
     return interpolatedQuat;
 }
 
-std::vector<Eigen::Quaterniond> interpolateSlerp(
+std::vector<Eigen::Quaterniond> hrm::interpolateSlerp(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
@@ -99,7 +99,7 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
     return interpolatedQuat;
 }
 
-std::vector<std::vector<Coordinate>> interpolateRn(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateRn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;

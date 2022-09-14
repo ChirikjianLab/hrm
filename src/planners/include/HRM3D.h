@@ -7,6 +7,9 @@
 #include "geometry/include/TightFitEllipsoid.h"
 #include "util/include/InterpolateSE3.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM3D
  * \brief Highway RoadMap planner for 3D rigid-body robot */
 class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
@@ -117,3 +120,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \param Pointer to class for constructing free space */
     std::shared_ptr<FreeSpace3D> freeSpacePtr_;
 };
+
+}  // namespace planners
+}  // namespace hrm

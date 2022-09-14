@@ -4,6 +4,8 @@
 #include "MultiBodyTree3D.h"
 #include "geometry/include/SuperQuadrics.h"
 
+namespace hrm {
+
 /** \brief Collision-free line segments in 3D */
 struct FreeSegment3D {
     /** \brief x-coordinates of the 3D line segments */
@@ -49,3 +51,5 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
   private:
     BoundaryMesh cSpaceBoundaryMesh_;
 };
+
+}  // namespace hrm

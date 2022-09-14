@@ -3,6 +3,9 @@
 #include "HRM2D.h"
 #include "geometry/include/PointInPoly.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM2DKC
  * \brief Highway RoadMap planner for 2D single-body robot using Kinematics of
  * Containment (KC) for slice connections */
@@ -35,3 +38,6 @@ class HRM2DKC : public HRM2D {
     /** \param Inflation factor for the robot */
     double infla_ = 0.1;
 };
+
+}  // namespace planners
+}  // namespace hrm

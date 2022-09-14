@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+namespace hrm {
+
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Triangulation = CGAL::Triangulation_3<K>;
 
@@ -74,3 +76,5 @@ ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat);
 
 MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,
                                    const Index n);
+
+}  // namespace hrm

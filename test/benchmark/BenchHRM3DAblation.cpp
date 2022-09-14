@@ -6,8 +6,6 @@
 #include <cstdlib>
 #include <ctime>
 
-using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
-
 int main(int argc, char** argv) {
     if (argc >= 7) {
         std::cout
@@ -36,37 +34,35 @@ int main(int argc, char** argv) {
     const std::string CONFIG_FILE_PREFIX = argv[6];
     const int NUM_SURF_PARAM = 10;
 
-    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
+    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
     std::string quat_file = "0";
     if (argc == 8 && strcmp(argv[7], "0") != 0) {
         quat_file = std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
     }
-    auto robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+    auto robot = hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file,
+                                           NUM_SURF_PARAM);
 
     // Planning parameters
-    PlannerParameter param;
+    hrm::PlannerParameter param;
     param.NUM_LAYER = size_t(N_l);
     param.NUM_LINE_X = size_t(N_x);
     param.NUM_LINE_Y = size_t(N_y);
-
-    defineParameters(&robot, env3D, &param);
+    hrm::defineParameters(robot, env3D, param);
 
     std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
     std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
               << param.NUM_LINE_Y << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
-    std::cout << "Start benchmark..." << std::endl;
-
-    PlanningRequest req;
+    // Planning requests
+    hrm::PlanningRequest req;
     req.is_robot_rigid = true;
     req.planner_parameters = param;
-    req.start = env3D->getEndPoints().at(0);
-    req.goal = env3D->getEndPoints().at(1);
+    req.start = env3D.getEndPoints().at(0);
+    req.goal = env3D.getEndPoints().at(1);
 
     // Store results
     std::ofstream file_time;
@@ -77,20 +73,22 @@ int main(int argc, char** argv) {
               << "PATH_NODE"
               << "\n";
 
+    // Benchmark
+    std::cout << "Start benchmark..." << std::endl;
     for (size_t i = 0; i < N; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
         // Path planning using ablated HRM3D with no bridge C-layer
-        HRM3DAblation<HRM3D> hrm_ablation(robot, env3D->getArena(),
-                                          env3D->getObstacle(), req);
+        hrm::planners::HRM3DAblation<hrm::planners::HRM3D> hrm_ablation(
+            robot, env3D.getArena(), env3D.getObstacle(), req);
         hrm_ablation.plan(MAX_PLAN_TIME);
 
-        PlanningResult res = hrm_ablation.getPlanningResult();
+        const auto res = hrm_ablation.getPlanningResult();
 
         // Display and store results
-        displayPlanningTimeInfo(&res.planning_time);
-        displayGraphInfo(&res.graph_structure);
-        displayPathInfo(&res.solution_path);
+        hrm::displayPlanningTimeInfo(res.planning_time);
+        hrm::displayGraphInfo(res.graph_structure);
+        hrm::displayPathInfo(res.solution_path);
 
         std::cout << "Final number of C-layers: "
                   << hrm_ablation.getPlannerParameters().NUM_LAYER << std::endl;

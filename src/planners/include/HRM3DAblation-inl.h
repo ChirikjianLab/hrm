@@ -3,6 +3,9 @@
 #include "HRM3DAblation.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 
+namespace hrm {
+namespace planners {
+
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 template <class Planner>
@@ -99,3 +102,6 @@ void HRM3DAblation<Planner>::setCollisionObject() {
         }
     }
 }
+
+}  // namespace planners
+}  // namespace hrm

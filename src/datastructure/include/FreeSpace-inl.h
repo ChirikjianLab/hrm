@@ -1,6 +1,8 @@
 #include "FreeSpace.h"
 #include "geometry/include/LineIntersection.h"
 
+namespace hrm {
+
 template <typename RobotType, typename ObjectType>
 FreeSpaceComputator<RobotType, ObjectType>::FreeSpaceComputator(
     const RobotType& robot, const std::vector<ObjectType>& arena,
@@ -162,3 +164,5 @@ void FreeSpaceComputator<RobotType, ObjectType>::enhanceFreeSegment() {
 
     segment_ = enhanced;
 }
+
+}  // namespace hrm

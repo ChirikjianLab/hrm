@@ -7,6 +7,8 @@
 #include "planners/include/PlanningRequest.h"
 #include "util/include/Parse2dCsvFile.h"
 
+namespace hrm {
+
 /** \brief Load vector of 2D superellipses
  * \param object_config Configuration of the geometric object
  * \param num_curve_param Number of sampled points on the curve
@@ -165,10 +167,23 @@ class PlannerSetting {
     const int num_param_;
 };
 
-/** \brief Define planning parameters
- * \param robot MultiBodyTree3D object defining the robot
+using PlannerSetting2D = PlannerSetting<SuperEllipse>;
+using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
+
+/** \brief Define planning parameters for 2D
+ * \param robot MultiBodyTree2D object defining the 2D robot
+ * \param env2D Planning environment
+ * \param param Planning parameters */
+void defineParameters(const MultiBodyTree2D& robot,
+                      const PlannerSetting<SuperEllipse>& env2D,
+                      PlannerParameter& param);
+
+/** \brief Define planning parameters for 3D
+ * \param robot MultiBodyTree3D object defining the 3D robot
  * \param env3D Planning environment
  * \param param Planning parameters */
-void defineParameters(const MultiBodyTree3D* robot,
-                      const PlannerSetting<SuperQuadrics>* env3D,
-                      PlannerParameter* param);
+void defineParameters(const MultiBodyTree3D& robot,
+                      const PlannerSetting<SuperQuadrics>& env3D,
+                      PlannerParameter& param);
+
+}  // namespace hrm

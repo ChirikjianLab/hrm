@@ -6,6 +6,8 @@
 #include <Eigen/Geometry>
 #include <vector>
 
+namespace hrm {
+
 /** \class SuperQuadrics
  * \brief Class of 3D superquadrics geometric model */
 class SuperQuadrics {
@@ -98,3 +100,5 @@ class SuperQuadrics {
      * multiplication of num_) */
     Index Num_;
 };
+
+}  // namespace hrm

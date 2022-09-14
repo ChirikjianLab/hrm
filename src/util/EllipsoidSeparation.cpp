@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
+bool hrm::isEllipsoidSeparated(const SuperQuadrics& Ea,
+                               const SuperQuadrics& Eb) {
     // Semi-axis
     Eigen::DiagonalMatrix<double, 4> A;
     A.diagonal() = {std::pow(Ea.getSemiAxis().at(0), -2.0),
@@ -114,7 +115,7 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     return isSeparated;
 }
 
-bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
+bool hrm::isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
     if (Ea.getEpsilon() != 1.0 || Eb.getEpsilon() != 1.0) {
         std::cerr << "Object not an ellipse!" << std::endl;
     }
@@ -181,7 +182,7 @@ bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
     return isSeparated;
 }
 
-std::vector<std::complex<double>> getRootsPolynomial(
+std::vector<std::complex<double>> hrm::getRootsPolynomial(
     const std::vector<double>& coeffs) {
     const auto matsz = static_cast<Eigen::Index>(coeffs.size() - 1);
     std::vector<std::complex<double>> vret(matsz);

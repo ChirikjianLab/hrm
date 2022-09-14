@@ -1,20 +1,19 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
-using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
+using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
-               const std::vector<Coordinate> &highBound,
-               const MultiBodyTree3D &robot,
-               const std::vector<SuperQuadrics> &arena,
-               const std::vector<SuperQuadrics> &obs,
-               const std::vector<Mesh> &obsMesh)
+hrm::planners::ompl_interface::OMPL3D::OMPL3D(
+    const std::vector<Coordinate> &lowBound,
+    const std::vector<Coordinate> &highBound, const MultiBodyTree3D &robot,
+    const std::vector<SuperQuadrics> &arena,
+    const std::vector<SuperQuadrics> &obs, const std::vector<Mesh> &obsMesh)
     : OMPLInterface<MultiBodyTree3D, SuperQuadrics>::OMPLInterface(
           lowBound, highBound, robot, arena, obs),
       obsMesh_(obsMesh) {}
 
-OMPL3D::~OMPL3D() = default;
+hrm::planners::ompl_interface::OMPL3D::~OMPL3D() = default;
 
-void OMPL3D::getSolution() {
+void hrm::planners::ompl_interface::OMPL3D::getSolution() {
     if (isSolved_) {
         try {
             const unsigned int INTERPOLATION_NUMBER = 200;
@@ -66,8 +65,9 @@ void OMPL3D::getSolution() {
     validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
-                           const std::vector<Coordinate> &highBound) {
+void hrm::planners::ompl_interface::OMPL3D::setStateSpace(
+    const std::vector<Coordinate> &lowBound,
+    const std::vector<Coordinate> &highBound) {
     auto space(std::make_shared<ob::SE3StateSpace>());
 
     ob::RealVectorBounds bounds(3);
@@ -83,15 +83,15 @@ void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL3D::setCollisionObject() {
+void hrm::planners::ompl_interface::OMPL3D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
-    GeometryPtr_t ellip(
+    GeometryPtr ellip(
         new fcl::Ellipsoidd(robot_.getBase().getSemiAxis().at(0),
                             robot_.getBase().getSemiAxis().at(1),
                             robot_.getBase().getSemiAxis().at(2)));
     objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
-        GeometryPtr_t ellip(
+        GeometryPtr ellip(
             new fcl::Ellipsoidd(robot_.getLinks().at(i).getSemiAxis().at(0),
                                 robot_.getLinks().at(i).getSemiAxis().at(1),
                                 robot_.getLinks().at(i).getSemiAxis().at(2)));
@@ -102,7 +102,7 @@ void OMPL3D::setCollisionObject() {
     for (const auto &obstacle : obstacle_) {
         if (std::fabs(obstacle.getEpsilon().at(0) - 1.0) < 1e-6 &&
             std::fabs(obstacle.getEpsilon().at(1) - 1.0) < 1e-6) {
-            GeometryPtr_t ellip(new fcl::Ellipsoidd(
+            GeometryPtr ellip(new fcl::Ellipsoidd(
                 obstacle.getSemiAxis().at(0), obstacle.getSemiAxis().at(1),
                 obstacle.getSemiAxis().at(2)));
             objObs_.emplace_back(fcl::CollisionObjectd(ellip));
@@ -113,7 +113,8 @@ void OMPL3D::setCollisionObject() {
 }
 
 // Get pose info and transform the robot
-MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
+hrm::MultiBodyTree3D hrm::planners::ompl_interface::OMPL3D::transformRobot(
+    const ob::State *state) const {
     std::vector<Coordinate> stateVar = setVectorFromState(state);
 
     SE3Transform tf;
@@ -131,7 +132,8 @@ MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
 }
 
 // Checking collision with obstacles
-bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
+bool hrm::planners::ompl_interface::OMPL3D::isSeparated(
+    const MultiBodyTree3D &robotAux) const {
     for (size_t i = 0; i < obstacle_.size(); ++i) {
         // For an ellipsoid and superquadrics, use FCL
         if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacle_.at(i),
@@ -150,7 +152,8 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     return true;
 }
 
-void OMPL3D::saveVertexEdgeInfo(const std::string &filename_prefix) {
+void hrm::planners::ompl_interface::OMPL3D::saveVertexEdgeInfo(
+    const std::string &filename_prefix) {
     ob::PlannerData pd(ss_->getSpaceInformation());
 
     // Write the output to .csv files
@@ -184,7 +187,8 @@ void OMPL3D::saveVertexEdgeInfo(const std::string &filename_prefix) {
     file_edge.close();
 }
 
-void OMPL3D::savePathInfo(const std::string &filename_prefix) {
+void hrm::planners::ompl_interface::OMPL3D::savePathInfo(
+    const std::string &filename_prefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
     std::vector<Coordinate> state;
 
@@ -226,7 +230,7 @@ void OMPL3D::savePathInfo(const std::string &filename_prefix) {
     file_smooth_traj.close();
 }
 
-void OMPL3D::setStateFromVector(
+void hrm::planners::ompl_interface::OMPL3D::setStateFromVector(
     const std::vector<Coordinate> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) const {
     ob::ScopedState<ob::SE3StateSpace> stateTemp(ss_->getStateSpace());
@@ -242,7 +246,8 @@ void OMPL3D::setStateFromVector(
     stateTemp >> *state;
 }
 
-std::vector<Coordinate> OMPL3D::setVectorFromState(
+std::vector<hrm::Coordinate>
+hrm::planners::ompl_interface::OMPL3D::setVectorFromState(
     const ob::State *state) const {
     std::vector<Coordinate> stateVariables(7, 0.0);
 

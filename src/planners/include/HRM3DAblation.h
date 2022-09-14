@@ -3,6 +3,9 @@
 #include "HRM3D.h"
 #include "ProbHRM3D.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM3DAblation
  * \brief Ablated version of HRM3D. The "bridge C-slice" subroutine is
  * substituted by interpolation and collision detection */
@@ -61,5 +64,8 @@ class HRM3DAblation : public Planner {
     /** \param FCL collision object for obstacles */
     std::vector<fcl::CollisionObject<double>> objObs_;
 };
+
+}  // namespace planners
+}  // namespace hrm
 
 #include "HRM3DAblation-inl.h"

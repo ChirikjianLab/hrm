@@ -5,30 +5,29 @@
 #include <iostream>
 #include <vector>
 
-#define pi 3.1415926
-
-SuperEllipse::SuperEllipse(std::vector<double> semiAxis, const double epsilon,
-                           std::vector<double> position, const double angle,
-                           const Index num)
+hrm::SuperEllipse::SuperEllipse(std::vector<double> semiAxis,
+                                const double epsilon,
+                                std::vector<double> position,
+                                const double angle, const Index num)
     : semiAxis_(std::move(semiAxis)),
       epsilon_(epsilon),
       position_(std::move(position)),
       angle_(angle),
       num_(num) {}
 
-void SuperEllipse::setSemiAxis(const std::vector<double> &newSemiAxis) {
+void hrm::SuperEllipse::setSemiAxis(const std::vector<double> &newSemiAxis) {
     semiAxis_ = newSemiAxis;
 }
-void SuperEllipse::setEpsilon(const double newEpsilon) {
+void hrm::SuperEllipse::setEpsilon(const double newEpsilon) {
     epsilon_ = newEpsilon;
 }
-void SuperEllipse::setPosition(const std::vector<double> &newPosition) {
+void hrm::SuperEllipse::setPosition(const std::vector<double> &newPosition) {
     position_ = newPosition;
 }
-void SuperEllipse::setAngle(const double newAngle) { angle_ = newAngle; }
+void hrm::SuperEllipse::setAngle(const double newAngle) { angle_ = newAngle; }
 
 // Get the points on the boundary of original shape
-BoundaryPoints SuperEllipse::getOriginShape() const {
+hrm::BoundaryPoints hrm::SuperEllipse::getOriginShape() const {
     double th;
     Point2D x;
     Eigen::MatrixXd C(2, num_);
@@ -51,8 +50,8 @@ BoundaryPoints SuperEllipse::getOriginShape() const {
 }
 
 // Get the points on Minkowski boundary
-BoundaryPoints SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
-                                          const Indicator K) const {
+hrm::BoundaryPoints hrm::SuperEllipse::getMinkSum2D(const SuperEllipse &shapeB,
+                                                    const Indicator K) const {
     BoundaryPoints X_eb(2, num_);
     Eigen::MatrixXd gradPhi(2, num_);
     Eigen::MatrixXd normal(2, num_);

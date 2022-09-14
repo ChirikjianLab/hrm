@@ -6,6 +6,8 @@
 #include <limits>
 #include <vector>
 
+namespace hrm {
+
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
@@ -122,5 +124,7 @@ class FreeSpaceComputator {
     /** \brief Upper bound of arena */
     double upBound_;
 };
+
+}  // namespace hrm
 
 #include "FreeSpace-inl.h"

@@ -5,8 +5,7 @@
 #include <limits>
 #include <vector>
 
-static const double pi = 3.1415926;
-static const double inf = std::numeric_limits<double>::infinity();
+namespace hrm {
 
 /** \brief Parameters for planner */
 struct PlannerParameter {
@@ -47,3 +46,5 @@ struct PlanningRequest {
     /** \brief Goal configuration */
     std::vector<Coordinate> goal;
 };
+
+}  // namespace hrm

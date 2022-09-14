@@ -9,6 +9,9 @@
 #include <list>
 #include <random>
 
+namespace hrm {
+namespace planners {
+
 using Clock = std::chrono::high_resolution_clock;
 using Durationd = std::chrono::duration<double>;
 
@@ -322,3 +325,6 @@ void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
     res_.graph_structure.edge.push_back(std::make_pair(idxNew, idx2));
     res_.graph_structure.weight.push_back(vectorEuclidean(vNew, v2));
 }
+
+}  // namespace planners
+}  // namespace hrm

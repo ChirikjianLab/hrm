@@ -2,47 +2,16 @@
 #include "planners/include/HRM2D.h"
 #include "planners/include/HRM2DKC.h"
 #include "util/include/DisplayPlanningData.h"
+#include "util/include/GTestUtils.h"
 #include "util/include/ParsePlanningSettings.h"
 
 #include "gtest/gtest.h"
 
-using PlannerSetting2D = PlannerSetting<SuperEllipse>;
-
-PlannerParameter defineParam(const MultiBodyTree2D* robot,
-                             const PlannerSetting2D* env2D) {
-    PlannerParameter par;
-
-    // Planning arena boundary
-    const double f = 1.5;
-    std::vector<Coordinate> bound = {
-        env2D->getArena().at(0).getSemiAxis().at(0) -
-            f * robot->getBase().getSemiAxis().at(0),
-        env2D->getArena().at(0).getSemiAxis().at(1) -
-            f * robot->getBase().getSemiAxis().at(0)};
-    par.BOUND_LIMIT = {
-        env2D->getArena().at(0).getPosition().at(0) - bound.at(0),
-        env2D->getArena().at(0).getPosition().at(0) + bound.at(0),
-        env2D->getArena().at(0).getPosition().at(1) - bound.at(1),
-        env2D->getArena().at(0).getPosition().at(1) + bound.at(1)};
-
-    // User-defined parameters
-    par.NUM_LAYER = 10;
-    par.NUM_POINT = 5;
-
-    // Determine the base number of sweep lines at each C-layer
-    double min_size_obs =
-        computeObstacleMinSize<SuperEllipse>(env2D->getObstacle());
-
-    par.NUM_LINE_Y = static_cast<int>(bound.at(1) / min_size_obs);
-
-    return par;
-}
-
 template <class algorithm, class robotType>
 algorithm planTest(const robotType& robot,
-                   const std::vector<SuperEllipse>& arena,
-                   const std::vector<SuperEllipse>& obs,
-                   const PlanningRequest& req, const bool isStore) {
+                   const std::vector<hrm::SuperEllipse>& arena,
+                   const std::vector<hrm::SuperEllipse>& obs,
+                   const hrm::PlanningRequest& req, const bool isStore) {
     // Main algorithm
     std::cout << "Input number of C-layers: "
               << req.planner_parameters.NUM_LAYER << std::endl;
@@ -66,7 +35,7 @@ algorithm planTest(const robotType& robot,
         std::cout << "Saving results to file..." << std::endl;
 
         // TEST: calculate original boundary points
-        BoundaryInfo bd_ori;
+        hrm::BoundaryInfo bd_ori;
         for (const auto& arena : hrm.getArena()) {
             bd_ori.arena.push_back(arena.getOriginShape());
         }
@@ -85,7 +54,7 @@ algorithm planTest(const robotType& robot,
         file_ori_bd.close();
 
         // TEST: Minkowski sums boundary
-        std::vector<BoundaryInfo> bd = hrm.getCSpaceBoundary();
+        std::vector<hrm::BoundaryInfo> bd = hrm.getCSpaceBoundary();
 
         std::ofstream file_bd;
         file_bd.open(SOLUTION_DETAILS_PATH "/mink_bound_2D.csv");
@@ -98,7 +67,7 @@ algorithm planTest(const robotType& robot,
         file_bd.close();
 
         // TEST: Sweep line process
-        FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd.at(0));
+        hrm::FreeSegment2D freeSeg = hrm.getFreeSegmentOneLayer(&bd.at(0));
 
         std::ofstream file_cell;
         file_cell.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
@@ -115,29 +84,6 @@ algorithm planTest(const robotType& robot,
     return hrm;
 }
 
-void showResult(const PlanningResult* res, const bool isStore) {
-    std::cout << "----------" << std::endl;
-
-    displayPlanningTimeInfo(&res->planning_time);
-
-    if (isStore) {
-        displayGraphInfo(&res->graph_structure, "2D");
-        displayPathInfo(&res->solution_path, "2D");
-    } else {
-        displayGraphInfo(&res->graph_structure);
-        displayPathInfo(&res->solution_path);
-    }
-
-    // GTest planning result
-    EXPECT_TRUE(res->solved);
-
-    ASSERT_GE(res->graph_structure.vertex.size(), 0);
-    ASSERT_GE(res->graph_structure.edge.size(), 0);
-
-    ASSERT_GE(res->solution_path.PathId.size(), 0);
-    ASSERT_GE(res->solution_path.cost, 0.0);
-}
-
 TEST(TestHRMPlanning2D, MultiBody) {
     std::cout << "Highway RoadMap for 2D planning" << std::endl;
     std::cout << "Robot type: Multi-link rigid body" << std::endl;
@@ -148,30 +94,33 @@ TEST(TestHRMPlanning2D, MultiBody) {
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_CURVE_PARAM = 50;
 
-    MultiBodyTree2D robot =
-        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
-    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::MultiBodyTree2D robot =
+        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
+    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
 
-    // Parameters
-    PlannerParameter par = defineParam(&robot, env2D);
-
-    PlanningRequest req;
+    // Planning requests
+    hrm::PlanningRequest req;
     req.is_robot_rigid = true;
-    req.planner_parameters = par;
-    req.start = env2D->getEndPoints().at(0);
-    req.goal = env2D->getEndPoints().at(1);
+    req.start = env2D.getEndPoints().at(0);
+    req.goal = env2D.getEndPoints().at(1);
+
+    req.planner_parameters.NUM_LAYER = 10;
+    req.planner_parameters.NUM_POINT = 5;
+    hrm::defineParameters(robot, env2D, req.planner_parameters);
 
     bool isStoreRes = true;
-    auto hrm = planTest<HRM2D, MultiBodyTree2D>(
-        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
-    PlanningResult res = hrm.getPlanningResult();
+
+    // Plan
+    auto hrm = planTest<hrm::planners::HRM2D, hrm::MultiBodyTree2D>(
+        robot, env2D.getArena(), env2D.getObstacle(), req, isStoreRes);
+    hrm::PlanningResult res = hrm.getPlanningResult();
 
     // Planning Time and Path Cost
-    showResult(&res, isStoreRes);
+    hrm::showResult(res, isStoreRes, "2D");
 }
 
-TEST(TestHRMPlanning2D, KC) {
+TEST(TestHRMPlanning2D, KinematicsOfContainment) {
     std::cout << "Highway RoadMap for 2D planning" << std::endl;
     std::cout << "Robot type: Multi-link rigid body" << std::endl;
     std::cout << "Layer connection method: Local C-space using Kinematics of "
@@ -183,27 +132,32 @@ TEST(TestHRMPlanning2D, KC) {
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_CURVE_PARAM = 50;
 
-    MultiBodyTree2D robot =
-        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
-    auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
-    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::MultiBodyTree2D robot =
+        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
+    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
 
-    // Parameters
-    PlannerParameter par = defineParam(&robot, env2D);
+    // Planning parameters
+    hrm::PlannerParameter param;
+    param.NUM_LAYER = 10;
+    param.NUM_POINT = 5;
+    hrm::defineParameters(robot, env2D, param);
 
-    PlanningRequest req;
+    // Planning requests
+    hrm::PlanningRequest req;
     req.is_robot_rigid = true;
-    req.planner_parameters = par;
-    req.start = env2D->getEndPoints().at(0);
-    req.goal = env2D->getEndPoints().at(1);
+    req.planner_parameters = param;
+    req.start = env2D.getEndPoints().at(0);
+    req.goal = env2D.getEndPoints().at(1);
 
-    bool isStoreRes = false;
-    auto hrm = planTest<HRM2DKC, MultiBodyTree2D>(
-        robot, env2D->getArena(), env2D->getObstacle(), req, isStoreRes);
-    PlanningResult res = hrm.getPlanningResult();
+    // Plan
+    const bool isStoreRes = false;
+    auto hrm = planTest<hrm::planners::HRM2DKC, hrm::MultiBodyTree2D>(
+        robot, env2D.getArena(), env2D.getObstacle(), req, isStoreRes);
+    hrm::PlanningResult res = hrm.getPlanningResult();
 
     // Planning Time and Path Cost
-    showResult(&res, isStoreRes);
+    hrm::showResult(res, isStoreRes, "2D");
 }
 
 int main(int ac, char* av[]) {

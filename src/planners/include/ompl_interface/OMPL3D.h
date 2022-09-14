@@ -8,6 +8,10 @@
 
 #include <ompl/base/spaces/SE3StateSpace.h>
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 /** \class OMPL3D
  * \brief Class for 3D rigid-body robot planning using OMPL */
 class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
@@ -58,3 +62,7 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Mesh type for obstacles */
     const std::vector<Mesh>& obsMesh_;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm

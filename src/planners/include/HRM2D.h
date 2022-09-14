@@ -4,6 +4,9 @@
 #include "datastructure/include/FreeSpace2D.h"
 #include "geometry/include/TightFitEllipsoid.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM2D
  * \brief Highway RoadMap planner for 2D rigid-body robot */
 class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
@@ -79,3 +82,6 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \param Pointer to class for constructing free space */
     std::shared_ptr<FreeSpace2D> freeSpacePtr_;
 };
+
+}  // namespace planners
+}  // namespace hrm

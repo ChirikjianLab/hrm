@@ -1,11 +1,11 @@
 #include "include/EllipsoidSQCollisionFCL.h"
 
-using GeometryPtr_t = std::shared_ptr<fcl::CollisionGeometry<double>>;
+using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-bool isCollision(const SuperQuadrics& obj1,
-                 fcl::CollisionObject<double> colObj1,
-                 const SuperQuadrics& obj2,
-                 fcl::CollisionObject<double> colObj2) {
+bool hrm::isCollision(const SuperQuadrics& obj1,
+                      fcl::CollisionObject<double> colObj1,
+                      const SuperQuadrics& obj2,
+                      fcl::CollisionObject<double> colObj2) {
     colObj1.setTransform(
         obj1.getQuaternion().toRotationMatrix(),
         fcl::Vector3d(obj1.getPosition().at(0), obj1.getPosition().at(1),
@@ -22,9 +22,10 @@ bool isCollision(const SuperQuadrics& obj1,
     return result.isCollision();
 }
 
-bool isCollision(const SuperEllipse& obj1, fcl::CollisionObject<double> colObj1,
-                 const SuperEllipse& obj2,
-                 fcl::CollisionObject<double> colObj2) {
+bool hrm::isCollision(const SuperEllipse& obj1,
+                      fcl::CollisionObject<double> colObj1,
+                      const SuperEllipse& obj2,
+                      fcl::CollisionObject<double> colObj2) {
     colObj1.setTransform(
         Eigen::Quaterniond(Eigen::AngleAxis<double>(
                                obj1.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
@@ -44,12 +45,12 @@ bool isCollision(const SuperEllipse& obj1, fcl::CollisionObject<double> colObj1,
     return result.isCollision();
 }
 
-fcl::CollisionObject<double> setCollisionObjectFromSQ(
+fcl::CollisionObject<double> hrm::setCollisionObjectFromSQ(
     const SuperQuadrics& object) {
     if (std::fabs(object.getEpsilon().at(0) - 1.0) < 1e-6 &&
         std::fabs(object.getEpsilon().at(1) - 1.0) < 1e-6) {
         // Ellipsoid model
-        const GeometryPtr_t ellipsoid(new fcl::Ellipsoid<double>(
+        const GeometryPtr ellipsoid(new fcl::Ellipsoid<double>(
             object.getSemiAxis().at(0), object.getSemiAxis().at(1),
             object.getSemiAxis().at(2)));
 
@@ -63,14 +64,14 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
     modelPtr->addSubModel(objMesh.vertices, objMesh.triangles);
     modelPtr->endModel();
 
-    return fcl::CollisionObject<double>(GeometryPtr_t(modelPtr));
+    return fcl::CollisionObject<double>(GeometryPtr(modelPtr));
 }
 
-fcl::CollisionObject<double> setCollisionObjectFromSQ(
+fcl::CollisionObject<double> hrm::setCollisionObjectFromSQ(
     const SuperEllipse& object) {
     if (std::fabs(object.getEpsilon() - 1.0) < 1e-6) {
         // Ellipsoid model
-        const GeometryPtr_t ellipse(new fcl::Ellipsoid<double>(
+        const GeometryPtr ellipse(new fcl::Ellipsoid<double>(
             object.getSemiAxis().at(0), object.getSemiAxis().at(1), 0.1));
 
         return fcl::CollisionObject<double>(ellipse);
@@ -87,5 +88,5 @@ fcl::CollisionObject<double> setCollisionObjectFromSQ(
     modelPtr->addSubModel(objMesh.vertices, objMesh.triangles);
     modelPtr->endModel();
 
-    return fcl::CollisionObject<double>(GeometryPtr_t(modelPtr));
+    return fcl::CollisionObject<double>(GeometryPtr(modelPtr));
 }

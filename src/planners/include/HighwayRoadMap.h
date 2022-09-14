@@ -15,6 +15,9 @@
 #include <list>
 #include <random>
 
+namespace hrm {
+namespace planners {
+
 using Weight = boost::property<boost::edge_weight_t, double>;
 using AdjGraph =
     boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
@@ -236,5 +239,8 @@ class HighwayRoadMap {
     /** \param Tightly-fitted ellipsoids at bridge C-slice */
     std::vector<ObjectType> tfe_;
 };
+
+}  // namespace planners
+}  // namespace hrm
 
 #include "HighwayRoadMap-inl.h"

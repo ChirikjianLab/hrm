@@ -8,6 +8,8 @@
 
 #include <vector>
 
+namespace hrm {
+
 std::vector<Point3D> intersectLineMesh3D(const Line3D& line,
                                          const MeshMatrix& shape);
 
@@ -24,3 +26,5 @@ bool isIntersectSegPolygon2D(
 
 std::vector<double> intersectHorizontalLinePolygon2D(
     const double ty, const Eigen::Matrix2Xd& shape);
+
+}  // namespace hrm

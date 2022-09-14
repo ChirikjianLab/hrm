@@ -4,26 +4,26 @@
 #include <fstream>
 #include <iostream>
 
-void displayPlanningTimeInfo(const Time* time) {
-    std::cout << "Roadmap build time: " << time->buildTime << "s" << std::endl;
-    std::cout << "Path search time: " << time->searchTime << "s" << std::endl;
-    std::cout << "Total Planning Time: " << time->totalTime << 's' << std::endl;
+void hrm::displayPlanningTimeInfo(const Time& time) {
+    std::cout << "Roadmap build time: " << time.buildTime << "s" << std::endl;
+    std::cout << "Path search time: " << time.searchTime << "s" << std::endl;
+    std::cout << "Total Planning Time: " << time.totalTime << 's' << std::endl;
 }
 
-void displayGraphInfo(const Graph* graph) {
-    std::cout << "Number of valid configurations: " << graph->vertex.size()
+void hrm::displayGraphInfo(const Graph& graph) {
+    std::cout << "Number of valid configurations: " << graph.vertex.size()
               << std::endl;
-    std::cout << "Number of valid edges: " << graph->edge.size() << std::endl;
+    std::cout << "Number of valid edges: " << graph.edge.size() << std::endl;
 }
 
-void displayGraphInfo(const Graph* graph, const std::string& dim) {
+void hrm::displayGraphInfo(const Graph& graph, const std::string& dim) {
     displayGraphInfo(graph);
 
     // Write the output to .csv files
 
     std::ofstream fileVtx;
     fileVtx.open(SOLUTION_DETAILS_PATH "/vertex_" + dim + ".csv");
-    std::vector<std::vector<double>> vertexList = graph->vertex;
+    std::vector<std::vector<double>> vertexList = graph.vertex;
     for (const auto& vertex : vertexList) {
         for (const auto& vtx : vertex) {
             fileVtx << vtx << ',';
@@ -34,25 +34,26 @@ void displayGraphInfo(const Graph* graph, const std::string& dim) {
 
     std::ofstream fileEdge;
     fileEdge.open(SOLUTION_DETAILS_PATH "/edge_" + dim + ".csv");
-    for (auto edge : graph->edge) {
+    for (auto edge : graph.edge) {
         fileEdge << edge.first << ',' << edge.second << "\n";
     }
     fileEdge.close();
 }
 
-void displayPathInfo(const SolutionPathInfo* path) {
-    std::cout << "Path length: " << path->PathId.size() << std::endl;
-    std::cout << "Path cost: " << path->cost << std::endl;
+void hrm::displayPathInfo(const SolutionPathInfo& path) {
+    std::cout << "Path length: " << path.PathId.size() << std::endl;
+    std::cout << "Path cost: " << path.cost << std::endl;
 }
 
-void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
+void hrm::displayPathInfo(const SolutionPathInfo& path,
+                          const std::string& dim) {
     displayPathInfo(path);
 
     // Write the output to .csv files
     std::ofstream filePathId;
     filePathId.open(SOLUTION_DETAILS_PATH "/path_id_" + dim + ".csv");
-    if (!path->PathId.empty()) {
-        for (auto pathId : path->PathId) {
+    if (!path.PathId.empty()) {
+        for (auto pathId : path.PathId) {
             filePathId << pathId << ',';
         }
     }
@@ -61,7 +62,7 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     // Retrieve solution path
     std::ofstream filePath;
     filePath.open(SOLUTION_DETAILS_PATH "/solution_path_" + dim + ".csv");
-    for (const auto& solvedPath : path->solvedPath) {
+    for (const auto& solvedPath : path.solvedPath) {
         for (const auto& solvedPathVal : solvedPath) {
             filePath << solvedPathVal << ',';
         }
@@ -72,7 +73,7 @@ void displayPathInfo(const SolutionPathInfo* path, const std::string& dim) {
     std::ofstream fileInterpPath;
     fileInterpPath.open(SOLUTION_DETAILS_PATH "/interpolated_path_" + dim +
                         ".csv");
-    for (const auto& interpPath : path->interpolatedPath) {
+    for (const auto& interpPath : path.interpolatedPath) {
         for (const auto& interpPathVal : interpPath) {
             fileInterpPath << interpPathVal << ',';
         }

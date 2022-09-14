@@ -3,6 +3,9 @@
 #include "HRM3D.h"
 #include "util/include/ParseURDF.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class ProbHRM3D
  * \brief Probabilistic Highway RoadMap (Prob-HRM) planner for 3D articulated
  * robot */
@@ -55,3 +58,6 @@ class ProbHRM3D : public HRM3D {
     /** \brief Limit of joint angles */
     const double maxJointAngle_ = pi / 2;
 };
+
+}  // namespace planners
+}  // namespace hrm

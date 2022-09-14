@@ -1,9 +1,9 @@
 #include "include/HRM2DKC.h"
 
-HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
-                 const std::vector<SuperEllipse>& arena,
-                 const std::vector<SuperEllipse>& obs,
-                 const PlanningRequest& req)
+hrm::planners::HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
+                                const std::vector<SuperEllipse>& arena,
+                                const std::vector<SuperEllipse>& obs,
+                                const PlanningRequest& req)
     : HRM2D(robot, arena, obs, req) {
     // Enlarge the robot
     SuperEllipse base_infla = robot_.getBase();
@@ -17,9 +17,9 @@ HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                          param_.BOUND_LIMIT[1]);
 }
 
-HRM2DKC::~HRM2DKC() = default;
+hrm::planners::HRM2DKC::~HRM2DKC() = default;
 
-void HRM2DKC::connectMultiLayer() {
+void hrm::planners::HRM2DKC::connectMultiLayer() {
     Index n = res_.graph_structure.vertex.size();
     Index n_11;
     Index n_12;
@@ -69,8 +69,8 @@ void HRM2DKC::connectMultiLayer() {
     }
 }
 
-std::vector<Coordinate> HRM2DKC::addMiddleVertex(std::vector<Coordinate> vtx1,
-                                                 std::vector<Coordinate> vtx2) {
+std::vector<hrm::Coordinate> hrm::planners::HRM2DKC::addMiddleVertex(
+    std::vector<Coordinate> vtx1, std::vector<Coordinate> vtx2) {
     // Connect vertexes among different layers, and add a bridge vertex to the
     // roadmap
     std::vector<Coordinate> midVtx;

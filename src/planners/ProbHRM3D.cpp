@@ -2,17 +2,18 @@
 
 #include "ompl/util/RandomNumbers.h"
 
-ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot, std::string urdfFile,
-                     const std::vector<SuperQuadrics>& arena,
-                     const std::vector<SuperQuadrics>& obs,
-                     const PlanningRequest& req)
+hrm::planners::ProbHRM3D::ProbHRM3D(const MultiBodyTree3D& robot,
+                                    std::string urdfFile,
+                                    const std::vector<SuperQuadrics>& arena,
+                                    const std::vector<SuperQuadrics>& obs,
+                                    const PlanningRequest& req)
     : HRM3D::HRM3D(robot, arena, obs, req), urdfFile_(std::move(urdfFile)) {
     kdl_ = new ParseURDF(urdfFile_);
 }
 
-ProbHRM3D::~ProbHRM3D() = default;
+hrm::planners::ProbHRM3D::~ProbHRM3D() = default;
 
-void ProbHRM3D::plan(const double timeLim) {
+void hrm::planners::ProbHRM3D::plan(const double timeLim) {
     auto start = Clock::now();
     param_.NUM_LAYER = 0;
 
@@ -61,7 +62,7 @@ void ProbHRM3D::plan(const double timeLim) {
     }
 }
 
-void ProbHRM3D::sampleOrientations() {
+void hrm::planners::ProbHRM3D::sampleOrientations() {
     // Iteratively add layers with random orientations
     srand(unsigned(std::time(nullptr)));
     ompl::RNG rng;
@@ -101,7 +102,7 @@ void ProbHRM3D::sampleOrientations() {
 }
 
 // Connect adjacent C-layers
-void ProbHRM3D::connectMultiLayer() {
+void hrm::planners::ProbHRM3D::connectMultiLayer() {
     if (param_.NUM_LAYER == 1) {
         return;
     }
@@ -159,8 +160,8 @@ void ProbHRM3D::connectMultiLayer() {
 }
 
 // Generate collision-free vertices
-void ProbHRM3D::generateVertices(const Coordinate tx,
-                                 const FreeSegment2D* freeSeg) {
+void hrm::planners::ProbHRM3D::generateVertices(const Coordinate tx,
+                                                const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
     std::vector<Coordinate> vertex(v_.back().size());
 
@@ -192,7 +193,7 @@ void ProbHRM3D::generateVertices(const Coordinate tx,
 }
 
 // Transform the robot
-void ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
+void hrm::planners::ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
     // Transformation of base
     SE3Transform g;
     g.topLeftCorner(3, 3) =
@@ -210,9 +211,9 @@ void ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
 }
 
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
-void ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
-                           const std::vector<Coordinate>& v2,
-                           std::vector<SuperQuadrics>* tfe) {
+void hrm::planners::ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
+                                          const std::vector<Coordinate>& v2,
+                                          std::vector<SuperQuadrics>* tfe) {
     tfe->clear();
 
     // Interpolated robot motion from V1 to V2

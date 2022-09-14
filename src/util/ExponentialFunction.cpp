@@ -1,12 +1,12 @@
 #include "include/ExponentialFunction.h"
 
-double expFun(const double th, const double p, const bool func) {
+double hrm::expFun(const double th, const double p, const bool func) {
     return func ? sgn(std::sin(th)) * pow(std::fabs(std::sin(th)), p)
                 : sgn(std::cos(th)) * pow(std::fabs(std::cos(th)), p);
 }
 
-Eigen::MatrixXd expFun_mat(const Eigen::MatrixXd& thetaList, const double p,
-                           const bool func) {
+Eigen::MatrixXd hrm::expFun_mat(const Eigen::MatrixXd& thetaList,
+                                const double p, const bool func) {
     Eigen::MatrixXd exponentialFunction;
 
     if (func) {

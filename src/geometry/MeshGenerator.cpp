@@ -1,6 +1,6 @@
 #include "include/MeshGenerator.h"
 
-Mesh getMeshFromSQ(SuperQuadrics sq) {
+hrm::Mesh hrm::getMeshFromSQ(SuperQuadrics sq) {
     Eigen::Quaterniond quat;
     sq.setQuaternion(quat.setIdentity());
     sq.setPosition({0.0, 0.0, 0.0});
@@ -11,7 +11,7 @@ Mesh getMeshFromSQ(SuperQuadrics sq) {
     return M;
 }
 
-Mesh getMesh(const ParametricPoints& points) {
+hrm::Mesh hrm::getMesh(const ParametricPoints& points) {
     Mesh res;
 
     std::list<Point> L;
@@ -73,7 +73,7 @@ Mesh getMesh(const ParametricPoints& points) {
     return res;
 }
 
-ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
+hrm::ParametricPoints hrm::getBoundary3D(const SuperQuadrics& obj) {
     Eigen::MatrixXd sqMat = obj.getOriginShape();
     ParametricPoints X = getBoundaryFromMatrix(sqMat);
     return X;
@@ -99,7 +99,7 @@ ParametricPoints getBoundary3D(const SuperQuadrics& obj) {
 //    return obj;
 //}
 
-ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat) {
+hrm::ParametricPoints hrm::getBoundaryFromMatrix(const BoundaryPoints& ptsMat) {
     ParametricPoints X;
     for (int i = 0; i < ptsMat.cols(); i++) {
         X.x.push_back(ptsMat(0, i));
@@ -110,8 +110,8 @@ ParametricPoints getBoundaryFromMatrix(const BoundaryPoints& ptsMat) {
     return X;
 }
 
-MeshMatrix getMeshFromParamSurface(const BoundaryPoints& surfBound,
-                                   const Index n) {
+hrm::MeshMatrix hrm::getMeshFromParamSurface(const BoundaryPoints& surfBound,
+                                             const Index n) {
     const auto numVtx = static_cast<Eigen::Index>(n);
     const auto numSurfVtx = (numVtx - 1) * (numVtx - 1);
 

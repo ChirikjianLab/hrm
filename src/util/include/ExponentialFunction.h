@@ -4,6 +4,8 @@
 #include <Eigen/Geometry>
 #include <vector>
 
+namespace hrm {
+
 #define sgn(v) (((v) < 0) ? -1 : ((v) > 0))
 
 /**
@@ -22,3 +24,5 @@ double expFun(const double th, const double p, const bool func);
  */
 Eigen::MatrixXd expFun_mat(const Eigen::MatrixXd& thetaList, const double p,
                            const bool func);
+
+}  // namespace hrm

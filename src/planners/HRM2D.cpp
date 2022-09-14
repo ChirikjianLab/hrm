@@ -1,9 +1,10 @@
 #include "include/HRM2D.h"
 #include "geometry/include/LineIntersection.h"
 
-HRM2D::HRM2D(const MultiBodyTree2D& robot,
-             const std::vector<SuperEllipse>& arena,
-             const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
+hrm::planners::HRM2D::HRM2D(const MultiBodyTree2D& robot,
+                            const std::vector<SuperEllipse>& arena,
+                            const std::vector<SuperEllipse>& obs,
+                            const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {
     // Setup free space computator
@@ -12,9 +13,9 @@ HRM2D::HRM2D(const MultiBodyTree2D& robot,
                          param_.BOUND_LIMIT[1]);
 }
 
-HRM2D::~HRM2D() = default;
+hrm::planners::HRM2D::~HRM2D() = default;
 
-void HRM2D::constructOneLayer(const Index layerIdx) {
+void hrm::planners::HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
     setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
@@ -39,14 +40,14 @@ void HRM2D::constructOneLayer(const Index layerIdx) {
 
 /** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
  * exists, no addition and record the index */
-void HRM2D::sampleOrientations() {
+void hrm::planners::HRM2D::sampleOrientations() {
     const double dr = 2 * pi / (static_cast<double>(param_.NUM_LAYER) - 1);
     for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
         headings_.push_back(-pi + dr * static_cast<double>(i));
     }
 }
 
-void HRM2D::sweepLineProcess() {
+void hrm::planners::HRM2D::sweepLineProcess() {
     // Compute vector of y-coordinates
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
     const Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
@@ -64,8 +65,8 @@ void HRM2D::sweepLineProcess() {
     freeSegOneLayer_ = freeSpacePtr_->getFreeSegment();
 }
 
-void HRM2D::generateVertices(const Coordinate tx,
-                             const FreeSegment2D* freeSeg) {
+void hrm::planners::HRM2D::generateVertices(const Coordinate tx,
+                                            const FreeSegment2D* freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     N_v.plane.clear();
     N_v.line.clear();
@@ -84,7 +85,7 @@ void HRM2D::generateVertices(const Coordinate tx,
     N_v.line.push_back(N_v.plane);
 }
 
-void HRM2D::connectMultiLayer() {
+void hrm::planners::HRM2D::connectMultiLayer() {
     // No connection needed if robot only has one orientation
     if (vtxId_.size() == 1) {
         return;
@@ -151,7 +152,7 @@ void HRM2D::connectMultiLayer() {
     }
 }
 
-void HRM2D::connectExistLayer(const Index layerId) {
+void hrm::planners::HRM2D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
     Index startIdCur = vtxId_.at(layerId).startId;
@@ -191,7 +192,7 @@ void HRM2D::connectExistLayer(const Index layerId) {
     }
 }
 
-void HRM2D::bridgeLayer() {
+void hrm::planners::HRM2D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
         // Reference point to be the center of TFE
@@ -207,8 +208,8 @@ void HRM2D::bridgeLayer() {
     }
 }
 
-bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                      const std::vector<Coordinate>& v2) {
+bool hrm::planners::HRM2D::isSameLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
     struct intersect {
         intersect(std::vector<Coordinate> v1, std::vector<Coordinate> v2)
@@ -227,8 +228,8 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 }
 
 // Connect vertices among different layers
-bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                       const std::vector<Coordinate>& v2) {
+bool hrm::planners::HRM2D::isMultiLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     const double dt = 1.0 / (static_cast<double>(param_.NUM_POINT) - 1);
     for (size_t i = 0; i < param_.NUM_POINT; ++i) {
         // Interpolate robot motion linearly from v1 to v2
@@ -259,7 +260,8 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     return true;
 }
 
-bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
+bool hrm::planners::HRM2D::isPtInCFree(const Index bdIdx,
+                                       const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
     for (const auto& bound : bridgeLayerBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
@@ -275,7 +277,8 @@ bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
     return true;
 }
 
-std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
+std::vector<hrm::planners::Vertex>
+hrm::planners::HRM2D::getNearestNeighborsOnGraph(
     const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     // Find the closest roadmap vertex
     double minEuclideanDist = inf;
@@ -335,7 +338,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HRM2D::setTransform(const std::vector<Coordinate>& v) {
+void hrm::planners::HRM2D::setTransform(const std::vector<Coordinate>& v) {
     SE2Transform g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
     g.topRightCorner(2, 1) = Point2D(v[0], v[1]);
@@ -343,8 +346,8 @@ void HRM2D::setTransform(const std::vector<Coordinate>& v) {
     robot_.robotTF(g);
 }
 
-void HRM2D::computeTFE(const double thetaA, const double thetaB,
-                       std::vector<SuperEllipse>* tfe) {
+void hrm::planners::HRM2D::computeTFE(const double thetaA, const double thetaB,
+                                      std::vector<SuperEllipse>* tfe) {
     tfe->clear();
 
     // Compute a tightly-fitted ellipse that bounds rotational motions from

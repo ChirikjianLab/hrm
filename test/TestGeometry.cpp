@@ -5,13 +5,12 @@
 
 #include "gtest/gtest.h"
 
-static const double pi = 3.1415926;
 static const double epsilon = 1e-5;
 
 // Tests for SuperEllipse
 TEST(TestSuperEllipse, BoundarySampling) {
-    const SuperEllipse S({5.0, 3.0}, 1.25, {-2.6, 3.2}, 0.0, 50);
-    const BoundaryPoints boundary = S.getOriginShape();
+    const hrm::SuperEllipse S({5.0, 3.0}, 1.25, {-2.6, 3.2}, 0.0, 50);
+    const hrm::BoundaryPoints boundary = S.getOriginShape();
 
     // Point on major semi axis
     const double BOUNDARY_X = 2.4;
@@ -21,9 +20,9 @@ TEST(TestSuperEllipse, BoundarySampling) {
 }
 
 TEST(TestSuperEllipse, MinkowskiBoundarySampling) {
-    const SuperEllipse S({5.0, 3.0}, 1.25, {3.2, -2.5}, 0.0, 50);
-    const SuperEllipse E({2.5, 1.5}, 1.0, {0.0, 0.0}, 0.0, 50);
-    const BoundaryPoints minkBound = S.getMinkSum2D(E, +1);
+    const hrm::SuperEllipse S({5.0, 3.0}, 1.25, {3.2, -2.5}, 0.0, 50);
+    const hrm::SuperEllipse E({2.5, 1.5}, 1.0, {0.0, 0.0}, 0.0, 50);
+    const hrm::BoundaryPoints minkBound = S.getMinkSum2D(E, +1);
 
     // Point on major semi axis
     const double BOUNDARY_X = 10.7;
@@ -34,9 +33,9 @@ TEST(TestSuperEllipse, MinkowskiBoundarySampling) {
 
 // Tests for SuperQuadrics
 TEST(TestSuperQuadrics, BoundarySampling) {
-    const SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {2.32, -1.5, 4.0},
-                          Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
-    const BoundaryPoints boundary = S.getOriginShape();
+    const hrm::SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {2.32, -1.5, 4.0},
+                               Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
+    const hrm::BoundaryPoints boundary = S.getOriginShape();
 
     // Point on semi axis
     const double BOUNDARY_X = 2.32;
@@ -51,11 +50,12 @@ TEST(TestSuperQuadrics, BoundarySampling) {
 }
 
 TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
-    const SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3}, {-3.2, 3.24, -2.13},
-                          Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
-    const SuperQuadrics E({2.5, 1.5, 1.0}, {1.0, 1.0}, {0.0, 0.0, 0.0},
-                          Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
-    const BoundaryPoints minkBound = S.getMinkSum3D(E, +1);
+    const hrm::SuperQuadrics S({5.0, 3.0, 2.0}, {1.25, 0.3},
+                               {-3.2, 3.24, -2.13},
+                               Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
+    const hrm::SuperQuadrics E({2.5, 1.5, 1.0}, {1.0, 1.0}, {0.0, 0.0, 0.0},
+                               Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
+    const hrm::BoundaryPoints minkBound = S.getMinkSum3D(E, +1);
 
     // Point on semi axis
     const double BOUNDARY_X = -3.2;
@@ -71,8 +71,8 @@ TEST(TestSuperQuadrics, MinkowskiBoundarySampling) {
 
 // Test for TightFittedEllipsoid
 TEST(TestTightFittedEllipsoid, MVCE2D) {
-    const SuperEllipse mvce =
-        getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, pi / 2, 50);
+    const hrm::SuperEllipse mvce =
+        hrm::getMVCE2D({5.0, 3.0}, {5.0, 3.0}, 0.0, hrm::pi / 2, 50);
 
     const double SEMI_1 = 5.0;
     const double SEMI_2 = 5.0;
@@ -81,10 +81,10 @@ TEST(TestTightFittedEllipsoid, MVCE2D) {
 }
 
 TEST(TestTightFittedEllipsoid, MVCE3D) {
-    const SuperQuadrics mvce =
-        getMVCE3D({5.0, 3.0, 2.0}, {2.0, 3.0, 5.0},
-                  Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0),
-                  Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
+    const hrm::SuperQuadrics mvce =
+        hrm::getMVCE3D({5.0, 3.0, 2.0}, {2.0, 3.0, 5.0},
+                       Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0),
+                       Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0), 20);
 
     const double SEMI_1 = 3.0;
     const double SEMI_2 = 5.0;

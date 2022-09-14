@@ -1,33 +1,28 @@
 #include "planners/include/HRM3D.h"
 #include "util/include/GTestUtils.h"
 
-using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
-
 TEST(TestHRMPlanning3D, HRM) {
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = "config/";
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
-    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
+    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Using fixed orientations from Icosahedral symmetry group
     const std::string quat_file = "config/q_icosahedron_60.csv";
 
     // Setup robot
-    MultiBodyTree3D robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+    hrm::MultiBodyTree3D robot = hrm::loadRobotMultiBody3D(
+        CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
 
-    // Options
-    PlannerParameter param;
-    defineParameters(&robot, env3D, &param);
-
-    PlanningRequest req;
+    // Planning requests
+    hrm::PlanningRequest req;
     req.is_robot_rigid = true;
-    req.planner_parameters = param;
-    req.start = env3D->getEndPoints().at(0);
-    req.goal = env3D->getEndPoints().at(1);
+    req.start = env3D.getEndPoints().at(0);
+    req.goal = env3D.getEndPoints().at(1);
+    hrm::defineParameters(robot, env3D, req.planner_parameters);
 
     // Main algorithm
     std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
@@ -41,11 +36,11 @@ TEST(TestHRMPlanning3D, HRM) {
 
     std::cout << "Start planning..." << std::endl;
 
-    HRM3D hrm(robot, env3D->getArena(), env3D->getObstacle(), req);
+    hrm::planners::HRM3D hrm(robot, env3D.getArena(), env3D.getObstacle(), req);
     hrm.plan(MAX_PLAN_TIME);
-    PlanningResult res = hrm.getPlanningResult();
+    hrm::PlanningResult res = hrm.getPlanningResult();
 
-    storeRoutines<HRM3D>(&hrm);
+    hrm::storeRoutines<hrm::planners::HRM3D>(&hrm);
 
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
@@ -53,7 +48,7 @@ TEST(TestHRMPlanning3D, HRM) {
               << hrm.getPlannerParameters().NUM_LINE_X << ','
               << hrm.getPlannerParameters().NUM_LINE_Y << '}' << std::endl;
 
-    showResult(&res, true);
+    hrm::showResult(res, true, "3D");
 }
 
 int main(int ac, char* av[]) {

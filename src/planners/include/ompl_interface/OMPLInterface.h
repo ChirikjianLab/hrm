@@ -7,6 +7,10 @@
 #include <ompl/base/StateSpace.h>
 #include <ompl/geometric/SimpleSetup.h>
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -194,5 +198,9 @@ class OMPLInterface {
     /** \brief States in solved path */
     std::vector<std::vector<Coordinate>> path_;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm
 
 #include "OMPLInterface-inl.h"

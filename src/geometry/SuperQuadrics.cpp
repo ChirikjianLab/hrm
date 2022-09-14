@@ -5,10 +5,11 @@
 
 #define pi 3.1415926
 
-SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
-                             std::vector<double> epsilon,
-                             std::vector<double> position,
-                             const Eigen::Quaterniond &quat, const Index num)
+hrm::SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
+                                  std::vector<double> epsilon,
+                                  std::vector<double> position,
+                                  const Eigen::Quaterniond &quat,
+                                  const Index num)
     : semiAxis_(std::move(semiAxis)),
       epsilon_(std::move(epsilon)),
       position_(std::move(position)),
@@ -25,25 +26,25 @@ SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
     Num_ = num_ * num_;
 }
 
-void SuperQuadrics::setSemiAxis(const std::vector<double> &newSemiAxis) {
+void hrm::SuperQuadrics::setSemiAxis(const std::vector<double> &newSemiAxis) {
     semiAxis_ = newSemiAxis;
 }
-void SuperQuadrics::setEpsilon(const std::vector<double> &newEpsilon) {
+void hrm::SuperQuadrics::setEpsilon(const std::vector<double> &newEpsilon) {
     epsilon_ = newEpsilon;
 }
-void SuperQuadrics::setPosition(const std::vector<double> &newPosition) {
+void hrm::SuperQuadrics::setPosition(const std::vector<double> &newPosition) {
     position_ = newPosition;
 }
-void SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
+void hrm::SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
     quat_ = newQuat;
 }
-void SuperQuadrics::setQuatSamples(
+void hrm::SuperQuadrics::setQuatSamples(
     const std::vector<Eigen::Quaterniond> &qSample) {
     qSample_ = qSample;
 }
 
 // Get the points on the boundary of original shape
-BoundaryPoints SuperQuadrics::getOriginShape() const {
+hrm::BoundaryPoints hrm::SuperQuadrics::getOriginShape() const {
     const auto numVtx = static_cast<Eigen::Index>(num_);
     const auto numSurfVtx = static_cast<Eigen::Index>(Num_);
 
@@ -79,8 +80,8 @@ BoundaryPoints SuperQuadrics::getOriginShape() const {
 }
 
 // Get the points on Minkowski boundary
-BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
-                                           const Indicator K) const {
+hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
+    const SuperQuadrics &shapeB, const Indicator K) const {
     if ((shapeB.getEpsilon().at(0) != 1.0) ||
         (shapeB.getEpsilon().at(1) != 1.0)) {
         std::cerr << "Second object is not an ellipsoid" << std::endl;

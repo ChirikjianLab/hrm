@@ -5,9 +5,10 @@
 #include <list>
 #include <random>
 
-HRM3D::HRM3D(const MultiBodyTree3D& robot,
-             const std::vector<SuperQuadrics>& arena,
-             const std::vector<SuperQuadrics>& obs, const PlanningRequest& req)
+hrm::planners::HRM3D::HRM3D(const MultiBodyTree3D& robot,
+                            const std::vector<SuperQuadrics>& arena,
+                            const std::vector<SuperQuadrics>& obs,
+                            const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree3D, SuperQuadrics>::HighwayRoadMap(
           robot, arena, obs, req) {
     // Setup free space computator
@@ -16,9 +17,9 @@ HRM3D::HRM3D(const MultiBodyTree3D& robot,
                          param_.BOUND_LIMIT[5]);
 }
 
-HRM3D::~HRM3D() = default;
+hrm::planners::HRM3D::~HRM3D() = default;
 
-void HRM3D::constructOneLayer(const Index layerIdx) {
+void hrm::planners::HRM3D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot (rigid)
     if (isRobotRigid_) {
         setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
@@ -51,12 +52,12 @@ void HRM3D::constructOneLayer(const Index layerIdx) {
 
 /** \brief Sample from SO(3). If the orientation exists, no addition and record
  * the index */
-void HRM3D::sampleOrientations() {
+void hrm::planners::HRM3D::sampleOrientations() {
     // Generate samples from SO(3)
     sampleSO3();
 }
 
-void HRM3D::sweepLineProcess() {
+void hrm::planners::HRM3D::sweepLineProcess() {
     // x- and y-coordinates of sweep lines
     std::vector<Coordinate> ty(param_.NUM_LINE_Y);
     const double dx = (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
@@ -85,8 +86,8 @@ void HRM3D::sweepLineProcess() {
     }
 }
 
-void HRM3D::generateVertices(const Coordinate tx,
-                             const FreeSegment2D* freeSeg) {
+void hrm::planners::HRM3D::generateVertices(const Coordinate tx,
+                                            const FreeSegment2D* freeSeg) {
     N_v.plane.clear();
 
     for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
@@ -108,7 +109,7 @@ void HRM3D::generateVertices(const Coordinate tx,
 }
 
 // Connect vertices within one C-layer
-void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
+void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     Index n1 = 0;
     Index n2 = 0;
 
@@ -150,7 +151,7 @@ void HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
     }
 }
 
-void HRM3D::connectMultiLayer() {
+void hrm::planners::HRM3D::connectMultiLayer() {
     if (vtxId_.size() == 1) {
         return;
     }
@@ -214,7 +215,7 @@ void HRM3D::connectMultiLayer() {
     }
 }
 
-void HRM3D::connectExistLayer(const Index layerId) {
+void hrm::planners::HRM3D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
     Index startIdCur = vtxId_.at(layerId).startId;
@@ -256,8 +257,8 @@ void HRM3D::connectExistLayer(const Index layerId) {
     }
 }
 
-std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
-    const Index num) {
+std::vector<std::vector<hrm::Coordinate>>
+hrm::planners::HRM3D::getInterpolatedSolutionPath(const Index num) {
     std::vector<std::vector<Coordinate>> path_interp;
 
     // Compute distance per step
@@ -285,7 +286,7 @@ std::vector<std::vector<Coordinate>> HRM3D::getInterpolatedSolutionPath(
     return path_interp;
 }
 
-void HRM3D::bridgeLayer() {
+void hrm::planners::HRM3D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
         // Reference point to be the center of Ec
@@ -303,8 +304,8 @@ void HRM3D::bridgeLayer() {
     }
 }
 
-bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                      const std::vector<Coordinate>& v2) {
+bool hrm::planners::HRM3D::isSameLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Define the line connecting v1 and v2
     Point3D t1{v1[0], v1[1], v1[2]};
     Point3D t2{v2[0], v2[1], v2[2]};
@@ -351,8 +352,8 @@ bool HRM3D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                         intersect(line, t1, t2));
 }
 
-bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                       const std::vector<Coordinate>& v2) {
+bool hrm::planners::HRM3D::isMultiLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
     const std::vector<std::vector<Coordinate>> vInterp =
         interpolateCompoundSE3Rn(v1, v2, param_.NUM_POINT);
@@ -378,7 +379,8 @@ bool HRM3D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     return true;
 }
 
-bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
+bool hrm::planners::HRM3D::isPtInCFree(const Index bdIdx,
+                                       const std::vector<double>& v) {
     // Ray-casting to check point containment within all C-obstacles
     Line3D lineZ(6);
     lineZ << v[0], v[1], v[2], 0, 0, 1;
@@ -410,7 +412,7 @@ bool HRM3D::isPtInCFree(const Index bdIdx, const std::vector<double>& v) {
                         intersect(lineZ, v));
 }
 
-void HRM3D::sampleSO3() {
+void hrm::planners::HRM3D::sampleSO3() {
     srand(unsigned(std::time(nullptr)));
 
     q_.resize(param_.NUM_LAYER);
@@ -426,7 +428,8 @@ void HRM3D::sampleSO3() {
     }
 }
 
-std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
+std::vector<hrm::planners::Vertex>
+hrm::planners::HRM3D::getNearestNeighborsOnGraph(
     const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     double minEuclideanDist;
     double minQuatDist;
@@ -492,7 +495,7 @@ std::vector<Vertex> HRM3D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HRM3D::setTransform(const std::vector<Coordinate>& v) {
+void hrm::planners::HRM3D::setTransform(const std::vector<Coordinate>& v) {
     SE3Transform g;
     g.topLeftCorner(3, 3) =
         Eigen::Quaterniond(v[3], v[4], v[5], v[6]).toRotationMatrix();
@@ -503,9 +506,9 @@ void HRM3D::setTransform(const std::vector<Coordinate>& v) {
 }
 
 // Multi-body Tightly-Fitted Ellipsoid
-void HRM3D::computeTFE(const Eigen::Quaterniond& q1,
-                       const Eigen::Quaterniond& q2,
-                       std::vector<SuperQuadrics>* tfe) {
+void hrm::planners::HRM3D::computeTFE(const Eigen::Quaterniond& q1,
+                                      const Eigen::Quaterniond& q2,
+                                      std::vector<SuperQuadrics>* tfe) {
     tfe->clear();
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions

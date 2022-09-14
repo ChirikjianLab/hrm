@@ -4,6 +4,8 @@
 #include "MultiBodyTree2D.h"
 #include "geometry/include/SuperEllipse.h"
 
+namespace hrm {
+
 /** \class FreeSpace2D
  * \brief Compute free space in SE(2) */
 class FreeSpace2D : public FreeSpaceComputator<MultiBodyTree2D, SuperEllipse> {
@@ -20,3 +22,5 @@ class FreeSpace2D : public FreeSpaceComputator<MultiBodyTree2D, SuperEllipse> {
     void computeIntersectionInterval(
         const std::vector<std::vector<Coordinate>>& tLine) override;
 };
+
+}  // namespace hrm
