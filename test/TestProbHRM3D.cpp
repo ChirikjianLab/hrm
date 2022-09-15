@@ -5,25 +5,25 @@ using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 300.0;
 
     auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D->loadEnvironment(CONFIG_PATH "/");
     const std::string quat_file = "0";
 
     // Setup URDF file for the robot
     std::string urdf_file;
     if (env3D->getEndPoints().at(0).size() == 10) {
-        urdf_file = "config/snake.urdf";
+        urdf_file = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D->getEndPoints().at(0).size() == 16) {
-        urdf_file = "config/tri-snake.urdf";
+        urdf_file = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
     }
 
     // Setup robot
     MultiBodyTree3D robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+        loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
 
     // Options
     PlannerParameter param;

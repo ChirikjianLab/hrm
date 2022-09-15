@@ -24,7 +24,12 @@ include_directories(${PROJECT_SOURCE_DIR}/test)
 find_package(static_analysis)
 find_package(sanitizers)
 
-# Setup directory for storing result data files
+# Setup directory for loading resources and storing result data files
+set(RESOURCES_PATH ${PROJECT_SOURCE_DIR}/resources)
+set(CONFIG_PATH ${PROJECT_SOURCE_DIR}/config)
+file(MAKE_DIRECTORY ${CONFIG_PATH})
+message(STATUS "Configuration file path created in: ${CONFIG_PATH}")
+
 set(RESULT_PATH ${PROJECT_BINARY_DIR}/result)
 set(BENCHMARK_DATA_PATH ${RESULT_PATH}/benchmark)
 set(SOLUTION_DETAILS_PATH ${RESULT_PATH}/details)
@@ -83,12 +88,6 @@ link_libraries(${GTEST_LIBRARIES})
 
 # Subdirectories
 add_subdirectory(src)
-
-# Copy planning config files to build dir
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config/demo/
-          ${CMAKE_CURRENT_SOURCE_DIR}/resources/SO3_sequence/q_icosahedron_60.csv
-          ${CMAKE_CURRENT_SOURCE_DIR}/resources/3D/urdf/snake.urdf
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test/config/)
 
 set(BUILD_TESTING "" ON)
 enable_testing()

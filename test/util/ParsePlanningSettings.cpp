@@ -1,4 +1,5 @@
 #include "include/ParsePlanningSettings.h"
+#include "config.h"
 
 void loadVectorGeometry(const std::vector<std::vector<double>>& object_config,
                         const int num_curve_param,
@@ -130,4 +131,60 @@ void defineParameters(const MultiBodyTree3D* robot,
         param->NUM_LINE_X = floor(bound.at(0) / min_size_obs);
         param->NUM_LINE_Y = floor(bound.at(1) / min_size_obs);
     }
+}
+
+void parsePlanningConfig(const std::string& objectType,
+                         const std::string& envType,
+                         const std::string& robotType, const std::string& dim) {
+    const std::string arenaFilename = RESOURCES_PATH "/" + dim + "/env_" +
+                                      objectType + "_" + envType + "_" + dim +
+                                      "_arena.csv";
+    const std::string obstacleFilename = RESOURCES_PATH "/" + dim + "/env_" +
+                                         objectType + "_" + envType + "_" +
+                                         dim + "_obstacle.csv";
+    const std::string robotFilename =
+        RESOURCES_PATH "/" + dim + "/robot_" + robotType + "_" + dim + ".csv";
+    const std::string endPointsFilename = RESOURCES_PATH "/" + dim +
+                                          "/setting_" + objectType + "_" +
+                                          envType + "_" + dim + ".csv";
+
+    parsePlanningConfig(arenaFilename,
+                        CONFIG_PATH "/arena_config_" + dim + ".csv");
+    parsePlanningConfig(obstacleFilename,
+                        CONFIG_PATH "/obstacle_config_" + dim + ".csv");
+    parsePlanningConfig(robotFilename,
+                        CONFIG_PATH "/robot_config_" + dim + ".csv");
+    parsePlanningConfig(endPointsFilename,
+                        CONFIG_PATH "/end_points_" + dim + ".csv");
+}
+
+void parsePlanningConfig(const std::string& inputFilename,
+                         const std::string& outputFilename) {
+    const auto objects = parse2DCsvFile(inputFilename);
+
+    std::ofstream fileConfig;
+    fileConfig.open(outputFilename);
+    for (const auto& object : objects) {
+        // For 3D superquadric model
+        if (object.size() == 12) {
+            // Convert angle-axis to Quaternion representation
+            Eigen::Vector3d axis{object.at(8), object.at(9), object.at(10)};
+            axis.normalize();
+            Eigen::Quaterniond quat(Eigen::AngleAxisd(object.at(11), axis));
+
+            // Write into config .csv file in /config folder
+            fileConfig << object.at(0) << ',' << object.at(1) << ','
+                       << object.at(2) << ',' << object.at(3) << ','
+                       << object.at(4) << ',' << object.at(5) << ','
+                       << object.at(6) << ',' << object.at(7) << ',' << quat.w()
+                       << ',' << quat.x() << ',' << quat.y() << ',' << quat.z()
+                       << "\n";
+        } else {
+            for (size_t i = 0; i < object.size() - 1; ++i) {
+                fileConfig << object.at(i) << ',';
+            }
+            fileConfig << object.back() << "\n";
+        }
+    }
+    fileConfig.close();
 }

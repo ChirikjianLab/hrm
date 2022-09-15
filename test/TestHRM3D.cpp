@@ -5,19 +5,20 @@ using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 TEST(TestHRMPlanning3D, HRM) {
     // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
     auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D->loadEnvironment(CONFIG_PATH "/");
 
     // Using fixed orientations from Icosahedral symmetry group
-    const std::string quat_file = "config/q_icosahedron_60.csv";
+    const std::string quat_file =
+        RESOURCES_PATH "/SO3_sequence/q_icosahedron_60.csv";
 
     // Setup robot
     MultiBodyTree3D robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+        loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
 
     // Options
     PlannerParameter param;

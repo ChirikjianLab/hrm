@@ -172,3 +172,20 @@ class PlannerSetting {
 void defineParameters(const MultiBodyTree3D* robot,
                       const PlannerSetting<SuperQuadrics>* env3D,
                       PlannerParameter* param);
+
+/** \brief Parse planning configurations for arena, obstacles, robot and end
+ * points
+ * \param objectType String of object type
+ * \param envType String of environment type
+ * \param robotType String of robot type
+ * \param dim Dimension: 2D/3D **/
+void parsePlanningConfig(const std::string& objectType,
+                         const std::string& envType,
+                         const std::string& robotType, const std::string& dim);
+
+/** \brief Parse planning configurations, convert axis-angle representation to
+ * quaternion
+ * \param inputFilename File that stores configuration .csv file
+ * \param outputFilename File that defines the planning config **/
+void parsePlanningConfig(const std::string& inputFilename,
+                         const std::string& outputFilename);

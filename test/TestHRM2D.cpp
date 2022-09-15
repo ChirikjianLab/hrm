@@ -145,13 +145,13 @@ TEST(TestHRMPlanning2D, MultiBody) {
     std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    parsePlanningConfig("superellipse", "sparse", "rabbit", "2D");
     const int NUM_CURVE_PARAM = 50;
 
     MultiBodyTree2D robot =
-        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+        loadRobotMultiBody2D(CONFIG_PATH "/", NUM_CURVE_PARAM);
     auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
-    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
+    env2D->loadEnvironment(CONFIG_PATH "/");
 
     // Parameters
     PlannerParameter par = defineParam(&robot, env2D);
@@ -180,13 +180,13 @@ TEST(TestHRMPlanning2D, KC) {
     std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    parsePlanningConfig("superellipse", "sparse", "rabbit", "2D");
     const int NUM_CURVE_PARAM = 50;
 
     MultiBodyTree2D robot =
-        loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+        loadRobotMultiBody2D(CONFIG_PATH "/", NUM_CURVE_PARAM);
     auto* env2D = new PlannerSetting2D(NUM_CURVE_PARAM);
-    env2D->loadEnvironment(CONFIG_FILE_PREFIX);
+    env2D->loadEnvironment(CONFIG_PATH "/");
 
     // Parameters
     PlannerParameter par = defineParam(&robot, env2D);
