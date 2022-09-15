@@ -33,10 +33,10 @@
 *.app
 /.metadata/
 /bin/
-/test/config.h
 
 # Intermediate configuration files
-/config/*.csv
+/config
+/test/config.h
 
 ### Qt ignores ###
 # Qt-es
