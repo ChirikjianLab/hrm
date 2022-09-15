@@ -25,15 +25,14 @@ find_package(static_analysis)
 find_package(sanitizers)
 
 # Setup directory for storing result data files
-set(RESULT_PATH ${PROJECT_SOURCE_DIR}/result)
+set(RESULT_PATH ${PROJECT_BINARY_DIR}/result)
 set(BENCHMARK_DATA_PATH ${RESULT_PATH}/benchmark)
 set(SOLUTION_DETAILS_PATH ${RESULT_PATH}/details)
 file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
                     ${SOLUTION_DETAILS_PATH})
-
-configure_file(${PROJECT_SOURCE_DIR}/test/config.h.in ${RESULT_PATH}/config.h)
-include_directories(${RESULT_PATH})
 message(STATUS "Results storage path created in: ${RESULT_PATH}")
+
+configure_file(${PROJECT_SOURCE_DIR}/test/config.h.in ${PROJECT_SOURCE_DIR}/test/config.h)
 
 # Dependency packages
 find_package(OMPL REQUIRED)

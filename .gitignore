@@ -33,7 +33,7 @@
 *.app
 /.metadata/
 /bin/
-/result/
+/test/config.h
 
 # Intermediate configuration files
 /config/*.csv
