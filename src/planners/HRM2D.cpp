@@ -1,20 +1,21 @@
 #include "include/HRM2D.h"
 #include "geometry/include/LineIntersection.h"
 
-HRM2D::HRM2D(const MultiBodyTree2D& robot,
-             const std::vector<SuperEllipse>& arena,
-             const std::vector<SuperEllipse>& obs, const PlanningRequest& req)
+hrm::planners::HRM2D::HRM2D(const MultiBodyTree2D& robot,
+                            const std::vector<SuperEllipse>& arena,
+                            const std::vector<SuperEllipse>& obs,
+                            const PlanningRequest& req)
     : HighwayRoadMap<MultiBodyTree2D, SuperEllipse>::HighwayRoadMap(
           robot, arena, obs, req) {
     // Setup free space computator
     freeSpacePtr_ = std::make_shared<FreeSpace2D>(robot_, arena_, obs_);
-    freeSpacePtr_->setup(param_.NUM_LINE_Y, param_.BOUND_LIMIT[0],
-                         param_.BOUND_LIMIT[1]);
+    freeSpacePtr_->setup(param_.numLineY, param_.boundaryLimits[0],
+                         param_.boundaryLimits[1]);
 }
 
-HRM2D::~HRM2D() = default;
+hrm::planners::HRM2D::~HRM2D() = default;
 
-void HRM2D::constructOneLayer(const Index layerIdx) {
+void hrm::planners::HRM2D::constructOneLayer(const Index layerIdx) {
     // Set rotation matrix to robot
     setTransform({0.0, 0.0, headings_.at(layerIdx)});
 
@@ -31,28 +32,29 @@ void HRM2D::constructOneLayer(const Index layerIdx) {
     sweepLineProcess();
 
     // Generate collision-free vertices
-    generateVertices(0.0, &freeSegOneLayer_);
+    generateVertices(0.0, freeSegOneLayer_);
 
     // Connect vertices within one C-layer
-    connectOneLayer2D(&freeSegOneLayer_);
+    connectOneLayer2D(freeSegOneLayer_);
 }
 
-/** \brief Setup rotation angles: angle range [-pi,pi]. If the heading
+/** \brief Setup rotation angles: angle range [-PI, PI]. If the heading
  * exists, no addition and record the index */
-void HRM2D::sampleOrientations() {
-    const double dr = 2 * pi / (static_cast<double>(param_.NUM_LAYER) - 1);
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
-        headings_.push_back(-pi + dr * static_cast<double>(i));
+void hrm::planners::HRM2D::sampleOrientations() {
+    const double dr = 2 * PI / (static_cast<double>(param_.numLayer) - 1);
+    for (size_t i = 0; i < param_.numLayer; ++i) {
+        headings_.push_back(-PI + dr * static_cast<double>(i));
     }
 }
 
-void HRM2D::sweepLineProcess() {
+void hrm::planners::HRM2D::sweepLineProcess() {
     // Compute vector of y-coordinates
-    std::vector<Coordinate> ty(param_.NUM_LINE_Y);
-    const Coordinate dy = (param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                          (static_cast<double>(param_.NUM_LINE_Y) - 1);
-    for (size_t i = 0; i < param_.NUM_LINE_Y; ++i) {
-        ty[i] = param_.BOUND_LIMIT[2] + static_cast<double>(i) * dy;
+    std::vector<Coordinate> ty(param_.numLineY);
+    const Coordinate dy =
+        (param_.boundaryLimits[3] - param_.boundaryLimits[2]) /
+        (static_cast<double>(param_.numLineY) - 1);
+    for (size_t i = 0; i < param_.numLineY; ++i) {
+        ty[i] = param_.boundaryLimits[2] + static_cast<double>(i) * dy;
     }
 
     // Find intersecting points to C-obstacles for each raster scan line
@@ -64,29 +66,28 @@ void HRM2D::sweepLineProcess() {
     freeSegOneLayer_ = freeSpacePtr_->getFreeSegment();
 }
 
-void HRM2D::generateVertices(const Coordinate tx,
-                             const FreeSegment2D* freeSeg) {
+void hrm::planners::HRM2D::generateVertices(const Coordinate tx,
+                                            const FreeSegment2D& freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
-    N_v.plane.clear();
-    N_v.line.clear();
-    N_v.startId = res_.graph_structure.vertex.size();
+    numVertex_.plane.clear();
+    numVertex_.line.clear();
+    numVertex_.startId = res_.graphStructure.vertex.size();
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        N_v.plane.push_back(res_.graph_structure.vertex.size());
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
+        numVertex_.plane.push_back(res_.graphStructure.vertex.size());
 
-        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
             // Construct a vector of vertex
-            res_.graph_structure.vertex.push_back(
-                {freeSeg->xM[i][j], freeSeg->ty[i],
-                 robot_.getBase().getAngle()});
+            res_.graphStructure.vertex.push_back(
+                {freeSeg.xM[i][j], freeSeg.ty[i], robot_.getBase().getAngle()});
         }
     }
-    N_v.line.push_back(N_v.plane);
+    numVertex_.line.push_back(numVertex_.plane);
 }
 
-void HRM2D::connectMultiLayer() {
+void hrm::planners::HRM2D::connectMultiLayer() {
     // No connection needed if robot only has one orientation
-    if (vtxId_.size() == 1) {
+    if (vertexIdx_.size() == 1) {
         return;
     }
 
@@ -103,43 +104,43 @@ void HRM2D::connectMultiLayer() {
 
     const double distAdjacency = 2.0;
 
-    for (size_t i = 0; i < vtxId_.size(); ++i) {
-        startIdCur = vtxId_.at(i).startId;
-        endIdCur = vtxId_.at(i).layer;
+    for (size_t i = 0; i < vertexIdx_.size(); ++i) {
+        startIdCur = vertexIdx_.at(i).startId;
+        endIdCur = vertexIdx_.at(i).layer;
 
         // Find the nearest C-layer
-        if (i == param_.NUM_LAYER - 1 && param_.NUM_LAYER != 2) {
+        if (i == param_.numLayer - 1 && param_.numLayer != 2) {
             j = 0;
         } else {
             j = i + 1;
         }
 
-        startIdAdj = vtxId_.at(j).startId;
-        endIdAdj = vtxId_.at(j).layer;
+        startIdAdj = vertexIdx_.at(j).startId;
+        endIdAdj = vertexIdx_.at(j).layer;
 
         // Compute TFE and construct bridge C-layer
-        computeTFE(headings_[i], headings_[j], &tfe_);
+        computeTFE(headings_[i], headings_[j], tfe_);
         bridgeLayer();
 
         // Connect close vertices btw layers
         for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
-            v1 = res_.graph_structure.vertex[m0];
+            v1 = res_.graphStructure.vertex[m0];
             for (size_t m1 = startIdAdj; m1 < endIdAdj; ++m1) {
-                v2 = res_.graph_structure.vertex[m1];
+                v2 = res_.graphStructure.vertex[m1];
 
                 // Locate the neighbor vertices, check for validity
                 if (std::fabs(v1[1] - v2[1]) >
                     distAdjacency *
-                        std::fabs(param_.BOUND_LIMIT[3] -
-                                  param_.BOUND_LIMIT[2]) /
-                        static_cast<double>(param_.NUM_LINE_Y)) {
+                        std::fabs(param_.boundaryLimits[3] -
+                                  param_.boundaryLimits[2]) /
+                        static_cast<double>(param_.numLineY)) {
                     continue;
                 }
 
                 if (isMultiLayerTransitionFree(v1, v2)) {
                     // Add new connections
-                    res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                    res_.graph_structure.weight.push_back(
+                    res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
+                    res_.graphStructure.weight.push_back(
                         vectorEuclidean(v1, v2));
 
                     // Continue from where it pauses
@@ -151,37 +152,38 @@ void HRM2D::connectMultiLayer() {
     }
 }
 
-void HRM2D::connectExistLayer(const Index layerId) {
+void hrm::planners::HRM2D::connectExistLayer(const Index layerId) {
     // Attempt to connect the most recent subgraph to previous existing graph
     // Traverse C-layers through the current subgraph
-    Index startIdCur = vtxId_.at(layerId).startId;
-    Index endIdCur = vtxId_.at(layerId).layer;
+    Index startIdCur = vertexIdx_.at(layerId).startId;
+    Index endIdCur = vertexIdx_.at(layerId).layer;
 
     // Connect within same C-layer, same index with previous round of search
-    Index startIdExist = vtxIdAll_.back().at(layerId).startId;
-    Index endIdExist = vtxIdAll_.back().at(layerId).layer;
+    Index startIdExist = vertexIdxAll_.back().at(layerId).startId;
+    Index endIdExist = vertexIdxAll_.back().at(layerId).layer;
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
     const double distAdjacency = 2.0;
     for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
-        auto v1 = res_.graph_structure.vertex[m0];
+        auto v1 = res_.graphStructure.vertex[m0];
         for (size_t m1 = startIdExist; m1 < endIdExist; ++m1) {
-            auto v2 = res_.graph_structure.vertex[m1];
+            auto v2 = res_.graphStructure.vertex[m1];
 
             // Locate the neighbor vertices in the adjacent
             // sweep line, check for validity
             if (std::fabs(v1[1] - v2[1]) >
                 distAdjacency *
-                    std::fabs(param_.BOUND_LIMIT[3] - param_.BOUND_LIMIT[2]) /
-                    static_cast<double>(param_.NUM_LINE_Y)) {
+                    std::fabs(param_.boundaryLimits[3] -
+                              param_.boundaryLimits[2]) /
+                    static_cast<double>(param_.numLineY)) {
                 continue;
             }
 
             if (isSameLayerTransitionFree(v1, v2)) {
                 // Add new connections
-                res_.graph_structure.edge.push_back(std::make_pair(m0, m1));
-                res_.graph_structure.weight.push_back(vectorEuclidean(v1, v2));
+                res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
+                res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));
 
                 // Continue from where it pauses
                 startIdExist = m1;
@@ -191,7 +193,7 @@ void HRM2D::connectExistLayer(const Index layerId) {
     }
 }
 
-void HRM2D::bridgeLayer() {
+void hrm::planners::HRM2D::bridgeLayer() {
     bridgeLayerBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
         // Reference point to be the center of TFE
@@ -199,7 +201,7 @@ void HRM2D::bridgeLayer() {
 
         // calculate Minkowski boundary points
         BoundaryInfo bd;
-        for (size_t j = 0; j < size_t(N_o); ++j) {
+        for (size_t j = 0; j < size_t(obs_.size()); ++j) {
             bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
         }
 
@@ -207,8 +209,8 @@ void HRM2D::bridgeLayer() {
     }
 }
 
-bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                      const std::vector<Coordinate>& v2) {
+bool hrm::planners::HRM2D::isSameLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
     struct intersect {
         intersect(std::vector<Coordinate> v1, std::vector<Coordinate> v2)
@@ -227,10 +229,10 @@ bool HRM2D::isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
 }
 
 // Connect vertices among different layers
-bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
-                                       const std::vector<Coordinate>& v2) {
-    const double dt = 1.0 / (static_cast<double>(param_.NUM_POINT) - 1);
-    for (size_t i = 0; i < param_.NUM_POINT; ++i) {
+bool hrm::planners::HRM2D::isMultiLayerTransitionFree(
+    const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
+    const double dt = 1.0 / (static_cast<double>(param_.numPoint) - 1);
+    for (size_t i = 0; i < param_.numPoint; ++i) {
         // Interpolate robot motion linearly from v1 to v2
         std::vector<Coordinate> vStep;
         for (size_t j = 0; j < v1.size(); ++j) {
@@ -259,7 +261,8 @@ bool HRM2D::isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
     return true;
 }
 
-bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
+bool hrm::planners::HRM2D::isPtInCFree(const Index bdIdx,
+                                       const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
     for (const auto& bound : bridgeLayerBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
@@ -275,19 +278,20 @@ bool HRM2D::isPtInCFree(const Index bdIdx, const std::vector<Coordinate>& v) {
     return true;
 }
 
-std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
+std::vector<hrm::planners::Vertex>
+hrm::planners::HRM2D::getNearestNeighborsOnGraph(
     const std::vector<Coordinate>& vertex, const Index k, const double radius) {
     // Find the closest roadmap vertex
-    double minEuclideanDist = inf;
-    double minAngleDist = inf;
-    double minAngle = res_.graph_structure.vertex[0][2];
+    double minEuclideanDist = INFINITY;
+    double minAngleDist = INFINITY;
+    double minAngle = res_.graphStructure.vertex[0][2];
     double angleDist = 0.0;
     double euclideanDist = 0.0;
     std::vector<Vertex> idx;
 
     // Find the closest C-layer
     minAngleDist = std::fabs(vertex[2] - minAngle);
-    for (auto vtx : res_.graph_structure.vertex) {
+    for (auto vtx : res_.graphStructure.vertex) {
         angleDist = std::fabs(vertex[2] - vtx[2]);
         if (angleDist < minAngleDist) {
             minAngleDist = angleDist;
@@ -309,25 +313,24 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
 
     // Find the close vertex within a range (relative to the size of sweep
     // line gaps) at each C-layer
-    const double epsilon = 1e-6;
     for (double angCur : angList) {
         Vertex idxLayer = 0;
         minEuclideanDist =
-            vectorEuclidean(vertex, res_.graph_structure.vertex[0]);
-        for (size_t i = 0; i < res_.graph_structure.vertex.size(); ++i) {
+            vectorEuclidean(vertex, res_.graphStructure.vertex[0]);
+        for (size_t i = 0; i < res_.graphStructure.vertex.size(); ++i) {
             euclideanDist =
-                vectorEuclidean(vertex, res_.graph_structure.vertex[i]);
+                vectorEuclidean(vertex, res_.graphStructure.vertex[i]);
             if ((euclideanDist < minEuclideanDist) &&
-                std::fabs(res_.graph_structure.vertex[i][2] - angCur) <
-                    epsilon) {
+                std::fabs(res_.graphStructure.vertex[i][2] - angCur) <
+                    EPSILON) {
                 minEuclideanDist = euclideanDist;
                 idxLayer = i;
             }
         }
 
-        if (std::abs(vertex[1] - res_.graph_structure.vertex[idxLayer][1]) <
-            radius * (param_.BOUND_LIMIT[1] - param_.BOUND_LIMIT[0]) /
-                static_cast<double>(param_.NUM_LINE_Y)) {
+        if (std::abs(vertex[1] - res_.graphStructure.vertex[idxLayer][1]) <
+            radius * (param_.boundaryLimits[1] - param_.boundaryLimits[0]) /
+                static_cast<double>(param_.numLineY)) {
             idx.push_back(idxLayer);
         }
     }
@@ -335,7 +338,7 @@ std::vector<Vertex> HRM2D::getNearestNeighborsOnGraph(
     return idx;
 }
 
-void HRM2D::setTransform(const std::vector<Coordinate>& v) {
+void hrm::planners::HRM2D::setTransform(const std::vector<Coordinate>& v) {
     SE2Transform g;
     g.topLeftCorner(2, 2) = Eigen::Rotation2Dd(v[2]).toRotationMatrix();
     g.topRightCorner(2, 1) = Point2D(v[0], v[1]);
@@ -343,14 +346,14 @@ void HRM2D::setTransform(const std::vector<Coordinate>& v) {
     robot_.robotTF(g);
 }
 
-void HRM2D::computeTFE(const double thetaA, const double thetaB,
-                       std::vector<SuperEllipse>* tfe) {
-    tfe->clear();
+void hrm::planners::HRM2D::computeTFE(const double thetaA, const double thetaB,
+                                      std::vector<SuperEllipse>& tfe) {
+    tfe.clear();
 
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
-    tfe->push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
-                            param_.NUM_POINT, robot_.getBase().getNum()));
+    tfe.push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
+                           param_.numPoint, robot_.getBase().getNum()));
 
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         Eigen::Rotation2Dd rotLink(
@@ -360,8 +363,8 @@ void HRM2D::computeTFE(const double thetaA, const double thetaB,
         Eigen::Rotation2Dd rotB(Eigen::Rotation2Dd(thetaB).toRotationMatrix() *
                                 rotLink);
 
-        tfe->push_back(getTFE2D(
+        tfe.push_back(getTFE2D(
             robot_.getLinks().at(i).getSemiAxis(), rotA.angle(), rotB.angle(),
-            uint(param_.NUM_POINT), robot_.getLinks().at(i).getNum()));
+            uint(param_.numPoint), robot_.getLinks().at(i).getNum()));
     }
 }

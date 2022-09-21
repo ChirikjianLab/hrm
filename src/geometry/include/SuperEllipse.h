@@ -6,6 +6,8 @@
 #include <Eigen/Geometry>
 #include <vector>
 
+namespace hrm {
+
 /** \class SuperEllipse
  * \brief Class of 2D superellipse geometric model */
 class SuperEllipse {
@@ -76,3 +78,5 @@ class SuperEllipse {
     /** \param Number of points on boundary */
     Index num_;
 };
+
+}  // namespace hrm

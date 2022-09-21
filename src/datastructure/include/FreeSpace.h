@@ -6,6 +6,8 @@
 #include <limits>
 #include <vector>
 
+namespace hrm {
+
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
@@ -48,7 +50,7 @@ class FreeSpaceComputator {
     FreeSpaceComputator(const RobotType& robot,
                         const std::vector<ObjectType>& arena,
                         const std::vector<ObjectType>& obstacle);
-    ~FreeSpaceComputator() {}
+    ~FreeSpaceComputator();
 
     /** \brief Setup C-free segment structure
      * \param numLine Number of sweep lines
@@ -122,5 +124,7 @@ class FreeSpaceComputator {
     /** \brief Upper bound of arena */
     double upBound_;
 };
+
+}  // namespace hrm
 
 #include "FreeSpace-inl.h"

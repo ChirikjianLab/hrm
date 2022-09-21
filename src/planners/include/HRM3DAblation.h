@@ -3,6 +3,9 @@
 #include "HRM3D.h"
 #include "ProbHRM3D.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM3DAblation
  * \brief Ablated version of HRM3D. The "bridge C-slice" subroutine is
  * substituted by interpolation and collision detection */
@@ -49,7 +52,7 @@ class HRM3DAblation : public Planner {
      * \param v2 Goal orientation of the robot
      * \param tfe Resulting cleared vector of TFE */
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
-                    std::vector<SuperQuadrics>* tfe) override;
+                    std::vector<SuperQuadrics>& tfe) override;
 
     /** \brief Setup FCL collision objects for geometric models */
     void setCollisionObject();
@@ -61,5 +64,8 @@ class HRM3DAblation : public Planner {
     /** \param FCL collision object for obstacles */
     std::vector<fcl::CollisionObject<double>> objObs_;
 };
+
+}  // namespace planners
+}  // namespace hrm
 
 #include "HRM3DAblation-inl.h"

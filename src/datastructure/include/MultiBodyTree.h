@@ -2,6 +2,8 @@
 
 #include "DataType.h"
 
+namespace hrm {
+
 /** \class MultiBodyTree
  * \brief Data structure defining the multi-body tree. */
 template <typename GeomType, typename Transformation>
@@ -57,3 +59,5 @@ class MultiBodyTree {
     /** \brief Local transformation of each link with the base */
     std::vector<Transformation> tf_;
 };
+
+}  // namespace hrm

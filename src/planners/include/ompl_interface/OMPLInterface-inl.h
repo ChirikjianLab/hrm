@@ -15,6 +15,10 @@
 #include <ompl/geometric/planners/rrt/RRTConnect.h>
 #include <ompl/geometric/planners/sbl/SBL.h>
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 const double STATE_VALIDITY_RESOLUTION = 0.01;
 
 template <typename RobotType, typename ObjectType>
@@ -175,3 +179,7 @@ void OMPLInterface<RobotType, ObjectType>::setStartAndGoalState(
 
     ss_->setStartAndGoalStates(startState, goalState);
 }
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm

@@ -6,6 +6,8 @@
 
 #include <eigen3/Eigen/Geometry>
 
+namespace hrm {
+
 /** \class MultiBodyTree3D
  * \brief Data structure defining the multi-body tree in 3D */
 class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
@@ -41,3 +43,5 @@ class MultiBodyTree3D : public MultiBodyTree<SuperQuadrics, SE3Transform> {
     std::vector<BoundaryPoints> minkSum(const SuperQuadrics& s1,
                                         const Indicator k) const override;
 };
+
+}  // namespace hrm

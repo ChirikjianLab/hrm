@@ -3,6 +3,9 @@
 #include "HRM3D.h"
 #include "util/include/ParseURDF.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class ProbHRM3D
  * \brief Probabilistic Highway RoadMap (Prob-HRM) planner for 3D articulated
  * robot */
@@ -29,7 +32,7 @@ class ProbHRM3D : public HRM3D {
     void connectMultiLayer() override;
 
     void generateVertices(const Coordinate tx,
-                          const FreeSegment2D* freeSeg) override;
+                          const FreeSegment2D& freeSeg) override;
 
     void setTransform(const std::vector<Coordinate>& v) override;
 
@@ -43,7 +46,7 @@ class ProbHRM3D : public HRM3D {
      * rotational motions */
     void computeTFE(const std::vector<Coordinate>& v1,
                     const std::vector<Coordinate>& v2,
-                    std::vector<SuperQuadrics>* tfe);
+                    std::vector<SuperQuadrics>& tfe);
 
   private:
     /** \brief KDL parser for URDF file */
@@ -53,5 +56,8 @@ class ProbHRM3D : public HRM3D {
     std::string urdfFile_;
 
     /** \brief Limit of joint angles */
-    const double maxJointAngle_ = pi / 2;
+    const double maxJointAngle_ = HALF_PI;
 };
+
+}  // namespace planners
+}  // namespace hrm

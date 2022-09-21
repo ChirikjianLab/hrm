@@ -1,6 +1,6 @@
 #include "include/InterpolateSE3.h"
 
-std::vector<std::vector<Coordinate>> interpolateSE3(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateSE3(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
@@ -26,7 +26,7 @@ std::vector<std::vector<Coordinate>> interpolateSE3(
     return vInterp;
 }
 
-std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateCompoundSE3Rn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;
@@ -62,7 +62,7 @@ std::vector<std::vector<Coordinate>> interpolateCompoundSE3Rn(
     return vInterp;
 }
 
-std::vector<Eigen::Quaterniond> interpolateAngleAxis(
+std::vector<Eigen::Quaterniond> hrm::interpolateAngleAxis(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
@@ -72,19 +72,19 @@ std::vector<Eigen::Quaterniond> interpolateAngleAxis(
 
     // relative angle-axis representation, interpolate angles around the axis
     const Eigen::AngleAxisd axang(Ra.transpose() * Rb);
-    Eigen::AngleAxisd d_axang = axang;
+    Eigen::AngleAxisd dAxisAngle = axang;
     const double dt = 1.0 / static_cast<double>(numStep);
 
     for (size_t i = 0; i <= numStep; ++i) {
-        d_axang.angle() = static_cast<double>(i) * dt * axang.angle();
+        dAxisAngle.angle() = static_cast<double>(i) * dt * axang.angle();
         interpolatedQuat.emplace_back(
-            Eigen::Quaterniond(Ra * d_axang.toRotationMatrix()));
+            Eigen::Quaterniond(Ra * dAxisAngle.toRotationMatrix()));
     }
 
     return interpolatedQuat;
 }
 
-std::vector<Eigen::Quaterniond> interpolateSlerp(
+std::vector<Eigen::Quaterniond> hrm::interpolateSlerp(
     const Eigen::Quaterniond& quatA, const Eigen::Quaterniond& quatB,
     const Index numStep) {
     std::vector<Eigen::Quaterniond> interpolatedQuat;
@@ -99,7 +99,7 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
     return interpolatedQuat;
 }
 
-std::vector<std::vector<Coordinate>> interpolateRn(
+std::vector<std::vector<hrm::Coordinate>> hrm::interpolateRn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep) {
     std::vector<std::vector<Coordinate>> vInterp;

@@ -1,4 +1,4 @@
-add_library(UTIL
+add_library(Util
             EllipsoidSeparation.cpp
             EllipsoidSQCollisionFCL.cpp
             ExponentialFunction.cpp
@@ -7,10 +7,10 @@ add_library(UTIL
             Parse2dCsvFile.cpp
             ParseURDF.cpp)
 if(kdl_parser_FOUND)
-    target_link_libraries(UTIL
+    target_link_libraries(Util
                           ${kdl_parser_LIBRARIES})
 else()
-    target_link_libraries(UTIL
+    target_link_libraries(Util
                           KDL_Parser)
-    target_include_directories(UTIL PUBLIC external/kdl_parser/include)
+    target_include_directories(Util PUBLIC external/kdl_parser/include)
 endif()

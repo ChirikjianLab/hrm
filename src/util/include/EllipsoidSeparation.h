@@ -5,9 +5,15 @@
 
 #include <Eigen/Dense>
 
-bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb);
+namespace hrm {
 
-bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb);
+bool isEllipsoidSeparated(const SuperQuadrics& ellipsoidA,
+                          const SuperQuadrics& ellipsoidB);
+
+bool isEllipseSeparated(const SuperEllipse& ellipsoidA,
+                        const SuperEllipse& ellipsoidB);
 
 std::vector<std::complex<double>> getRootsPolynomial(
     const std::vector<double>& coeffs);
+
+}  // namespace hrm
