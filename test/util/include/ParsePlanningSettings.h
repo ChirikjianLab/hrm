@@ -192,8 +192,9 @@ void parseGeometricModel(const std::string& inputFilename,
 
 /** \brief Parse robot start/goal configurations, convert axis-angle
  * representation to quaternion
+ * \param dim Dimension: 2D/3D
  * \param inputFilename File that stores configuration .csv file
  * \param outputFilename File that defines the planning config **/
-void parseStartGoalConfig(const std::string& robotType,
+void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
                           const std::string& inputFilename,
                           const std::string& outputFilename);

@@ -154,7 +154,7 @@ void parsePlanningConfig(const std::string& objectType,
                         CONFIG_PATH "/obstacle_config_" + dim + ".csv");
     parseGeometricModel(robotFilename,
                         CONFIG_PATH "/robot_config_" + dim + ".csv");
-    parseStartGoalConfig(robotType, endPointsFilename,
+    parseStartGoalConfig(robotType, dim, endPointsFilename,
                          CONFIG_PATH "/end_points_" + dim + ".csv");
 }
 
@@ -189,7 +189,7 @@ void parseGeometricModel(const std::string& inputFilename,
     fileConfig.close();
 }
 
-void parseStartGoalConfig(const std::string& robotType,
+void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
                           const std::string& inputFilename,
                           const std::string& outputFilename) {
     const auto configs = parse2DCsvFile(inputFilename);
@@ -197,32 +197,36 @@ void parseStartGoalConfig(const std::string& robotType,
     std::ofstream fileConfig;
     fileConfig.open(outputFilename);
     for (auto config : configs) {
-        // For rigid-body robot
-        size_t numDOF = 6;
+        size_t numParam = 3;
 
-        // Convert angle-axis to Quaternion representation
-        Eigen::Vector3d axis{config.at(3), config.at(4), config.at(5)};
-        axis.normalize();
-        Eigen::Quaterniond quat(Eigen::AngleAxisd(config.at(6), axis));
+        // For 3D case
+        if (dim == "3D") {
+            // For rigid-body robot
+            numParam = 6;
 
-        config.at(3) = quat.w();
-        config.at(4) = quat.x();
-        config.at(5) = quat.y();
-        config.at(6) = quat.z();
+            // Convert angle-axis to Quaternion representation
+            Eigen::Vector3d axis{config.at(3), config.at(4), config.at(5)};
+            axis.normalize();
+            Eigen::Quaterniond quat(Eigen::AngleAxisd(config.at(6), axis));
 
-        // For different articulated robot types
-        if (robotType == "snake") {
-            numDOF = 9;
-        } else if (robotType == "tri-snake") {
-            numDOF = 12;
+            config.at(3) = quat.w();
+            config.at(4) = quat.x();
+            config.at(5) = quat.y();
+            config.at(6) = quat.z();
+
+            // For different articulated robot types
+            if (robotType == "snake") {
+                numParam = 10;
+            } else if (robotType == "tri-snake") {
+                numParam = 13;
+            }
         }
 
-        // Write converted configuration, size is numDOF + 1 because of the
-        // quaternion representation
-        for (size_t i = 0; i < numDOF; ++i) {
+        // Write converted configuration
+        for (size_t i = 0; i < numParam - 1; ++i) {
             fileConfig << config.at(i) << ',';
         }
-        fileConfig << config.at(numDOF) << "\n";
+        fileConfig << config.at(numParam - 1) << "\n";
     }
     fileConfig.close();
 }
