@@ -55,8 +55,8 @@ axis off
 %% Results from C++
 disp("Plotting results from HighwayRoadMap planner...")
 
-if ~isempty(path_highway)
-    plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
+if ~isempty(path)
+    plot3(path(:,1), path(:,2), path(:,3),...
         'm-', 'LineWidth', 2)
     
     for i = 1:ceil(size(path,1)/50):size(path,1)

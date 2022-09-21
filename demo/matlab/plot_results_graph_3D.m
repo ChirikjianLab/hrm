@@ -7,9 +7,6 @@ path_prefix = '../../resources/3D/';
 %% Results
 [X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, end_pts] = loadResults('3D');
 
-% shortest path
-path_highway = load([loadPath, 'interpolated_path_3D.csv']);
-
 %% Robot
 if size(end_pts, 2) == 7
     urdf_file = [];
@@ -22,8 +19,18 @@ end
 [robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file);
 
 %% Plot intermediate process results
-figure; hold on; axis equal; axis off;
+figure; hold on; axis equal;
 light('Position',[-1 0 1])
+
+disp('Environment Initialization...')
+
+% start and goal
+PlotRobotPose(robot, end_pts(1,:), robotURDF);
+PlotRobotPose(robot, end_pts(2,:), robotURDF);
+
+% Plot
+ob = load(['../../config/', 'obstacle_config_3D.csv']);
+ar = load(['../../config/', 'arena_config_3D.csv']);
 
 % plot the ARENA bound
 for i = 1:size(ar,1)
@@ -67,6 +74,7 @@ if ~isempty(X_mink)
     end
 end
 
+disp('Plotting HRM sweep lines...')
 % Sweep lines
 if ~isempty(cf_seg)
     for i = 1:size(cf_seg,1)
