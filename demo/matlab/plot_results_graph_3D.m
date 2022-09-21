@@ -1,7 +1,7 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../bin/';
+loadPath = '../../result/details/';
 path_prefix = '../../resources/3D/';
 
 %% Results

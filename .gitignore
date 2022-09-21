@@ -37,6 +37,7 @@
 # Intermediate configuration files
 /config
 /test/config.h
+/result
 
 ### Qt ignores ###
 # Qt-es
