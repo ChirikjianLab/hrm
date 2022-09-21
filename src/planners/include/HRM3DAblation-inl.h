@@ -70,8 +70,8 @@ void HRM3DAblation<Planner>::bridgeLayer() {
 template <class Planner>
 void HRM3DAblation<Planner>::computeTFE(const Eigen::Quaterniond& v1,
                                         const Eigen::Quaterniond& v2,
-                                        std::vector<SuperQuadrics>* tfe) {
-    tfe->clear();
+                                        std::vector<SuperQuadrics>& tfe) {
+    tfe.clear();
 }
 
 template <class Planner>

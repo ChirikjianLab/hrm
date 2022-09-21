@@ -32,10 +32,10 @@ void hrm::planners::HRM2D::constructOneLayer(const Index layerIdx) {
     sweepLineProcess();
 
     // Generate collision-free vertices
-    generateVertices(0.0, &freeSegOneLayer_);
+    generateVertices(0.0, freeSegOneLayer_);
 
     // Connect vertices within one C-layer
-    connectOneLayer2D(&freeSegOneLayer_);
+    connectOneLayer2D(freeSegOneLayer_);
 }
 
 /** \brief Setup rotation angles: angle range [-PI, PI]. If the heading
@@ -67,20 +67,19 @@ void hrm::planners::HRM2D::sweepLineProcess() {
 }
 
 void hrm::planners::HRM2D::generateVertices(const Coordinate tx,
-                                            const FreeSegment2D* freeSeg) {
+                                            const FreeSegment2D& freeSeg) {
     // Generate collision-free vertices: append new vertex to vertex list
     numVertex_.plane.clear();
     numVertex_.line.clear();
     numVertex_.startId = res_.graphStructure.vertex.size();
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
         numVertex_.plane.push_back(res_.graphStructure.vertex.size());
 
-        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
             // Construct a vector of vertex
-            res_.graphStructure.vertex.push_back({freeSeg->xM[i][j],
-                                                  freeSeg->ty[i],
-                                                  robot_.getBase().getAngle()});
+            res_.graphStructure.vertex.push_back(
+                {freeSeg.xM[i][j], freeSeg.ty[i], robot_.getBase().getAngle()});
         }
     }
     numVertex_.line.push_back(numVertex_.plane);
@@ -120,7 +119,7 @@ void hrm::planners::HRM2D::connectMultiLayer() {
         endIdAdj = vertexIdx_.at(j).layer;
 
         // Compute TFE and construct bridge C-layer
-        computeTFE(headings_[i], headings_[j], &tfe_);
+        computeTFE(headings_[i], headings_[j], tfe_);
         bridgeLayer();
 
         // Connect close vertices btw layers
@@ -348,13 +347,13 @@ void hrm::planners::HRM2D::setTransform(const std::vector<Coordinate>& v) {
 }
 
 void hrm::planners::HRM2D::computeTFE(const double thetaA, const double thetaB,
-                                      std::vector<SuperEllipse>* tfe) {
-    tfe->clear();
+                                      std::vector<SuperEllipse>& tfe) {
+    tfe.clear();
 
     // Compute a tightly-fitted ellipse that bounds rotational motions from
     // thetaA to thetaB
-    tfe->push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
-                            param_.numPoint, robot_.getBase().getNum()));
+    tfe.push_back(getTFE2D(robot_.getBase().getSemiAxis(), thetaA, thetaB,
+                           param_.numPoint, robot_.getBase().getNum()));
 
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         Eigen::Rotation2Dd rotLink(
@@ -364,7 +363,7 @@ void hrm::planners::HRM2D::computeTFE(const double thetaA, const double thetaB,
         Eigen::Rotation2Dd rotB(Eigen::Rotation2Dd(thetaB).toRotationMatrix() *
                                 rotLink);
 
-        tfe->push_back(getTFE2D(
+        tfe.push_back(getTFE2D(
             robot_.getLinks().at(i).getSemiAxis(), rotA.angle(), rotB.angle(),
             uint(param_.numPoint), robot_.getLinks().at(i).getNum()));
     }

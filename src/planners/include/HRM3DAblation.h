@@ -52,7 +52,7 @@ class HRM3DAblation : public Planner {
      * \param v2 Goal orientation of the robot
      * \param tfe Resulting cleared vector of TFE */
     void computeTFE(const Eigen::Quaterniond& v1, const Eigen::Quaterniond& v2,
-                    std::vector<SuperQuadrics>* tfe) override;
+                    std::vector<SuperQuadrics>& tfe) override;
 
     /** \brief Setup FCL collision objects for geometric models */
     void setCollisionObject();

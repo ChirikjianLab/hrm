@@ -125,11 +125,11 @@ class HighwayRoadMap {
      * 0.0)
      * \param freeSeg collision-free line segment as FreeSegment2D type */
     virtual void generateVertices(const Coordinate tx,
-                                  const FreeSegment2D* freeSeg) = 0;
+                                  const FreeSegment2D& freeSeg) = 0;
 
     /** \brief Subroutine for connecting vertices within one C-slice
      * \param freeSeg Pointer to the collision-free line segment */
-    void connectOneLayer2D(const FreeSegment2D* freeSeg);
+    void connectOneLayer2D(const FreeSegment2D& freeSeg);
 
     /** \brief Subroutine for connecting vertices among adjacent C-slices */
     virtual void connectMultiLayer() = 0;

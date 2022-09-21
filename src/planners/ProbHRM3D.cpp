@@ -126,7 +126,7 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
     const Index n1 = vertexIdx_.at(minIdx).layer;
 
     // Construct bridge C-layer
-    computeTFE(v_.back(), v_.at(minIdx), &tfe_);
+    computeTFE(v_.back(), v_.at(minIdx), tfe_);
     bridgeLayer();
 
     // Nearest vertex btw layers
@@ -161,18 +161,18 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
 
 // Generate collision-free vertices
 void hrm::planners::ProbHRM3D::generateVertices(const Coordinate tx,
-                                                const FreeSegment2D* freeSeg) {
+                                                const FreeSegment2D& freeSeg) {
     numVertex_.plane.clear();
     std::vector<Coordinate> vertex(v_.back().size());
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
         numVertex_.plane.push_back(res_.graphStructure.vertex.size());
 
-        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
             // Configuration of the base
             vertex.at(0) = tx;
-            vertex.at(1) = freeSeg->ty[i];
-            vertex.at(2) = freeSeg->xM[i][j];
+            vertex.at(1) = freeSeg.ty[i];
+            vertex.at(2) = freeSeg.xM[i][j];
             vertex.at(3) = robot_.getBase().getQuaternion().w();
             vertex.at(4) = robot_.getBase().getQuaternion().x();
             vertex.at(5) = robot_.getBase().getQuaternion().y();
@@ -213,8 +213,8 @@ void hrm::planners::ProbHRM3D::setTransform(const std::vector<Coordinate>& V) {
 // Construct Tight-Fitted Ellipsoid (TFE) for articulated body
 void hrm::planners::ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
                                           const std::vector<Coordinate>& v2,
-                                          std::vector<SuperQuadrics>* tfe) {
-    tfe->clear();
+                                          std::vector<SuperQuadrics>& tfe) {
+    tfe.clear();
 
     // Interpolated robot motion from V1 to V2
     const std::vector<std::vector<Coordinate>> vInterp =
@@ -239,6 +239,6 @@ void hrm::planners::ProbHRM3D::computeTFE(const std::vector<Coordinate>& v1,
     }
 
     for (size_t i = 0; i < robot_.getNumLinks() + 1; ++i) {
-        tfe->push_back(mvce.at(i));
+        tfe.push_back(mvce.at(i));
     }
 }

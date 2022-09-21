@@ -214,18 +214,18 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
-    const FreeSegment2D* freeSeg) {
+    const FreeSegment2D& freeSeg) {
     // Add connections to edge list
     Index n1 = 0;
     Index n2 = 0;
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
         n1 = numVertex_.plane.at(i);
 
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < freeSeg.xM[i].size(); ++j1) {
             // Connect vertex within the same sweep line
-            if (j1 != freeSeg->xM[i].size() - 1) {
-                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
+            if (j1 != freeSeg.xM[i].size() - 1) {
+                if (std::fabs(freeSeg.xU[i][j1] - freeSeg.xL[i][j1 + 1]) <
                     1e-6) {
                     res_.graphStructure.edge.push_back(
                         std::make_pair(n1 + j1, n1 + j1 + 1));
@@ -236,10 +236,10 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
             }
 
             // Connect vertex btw adjacent sweep lines
-            if (i != freeSeg->ty.size() - 1) {
+            if (i != freeSeg.ty.size() - 1) {
                 n2 = numVertex_.plane.at(i + 1);
 
-                for (Index j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                for (Index j2 = 0; j2 < freeSeg.xM[i + 1].size(); ++j2) {
                     if (isSameLayerTransitionFree(
                             res_.graphStructure.vertex[n1 + j1],
                             res_.graphStructure.vertex[n2 + j2])) {

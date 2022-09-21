@@ -47,7 +47,7 @@ void hrm::planners::HRM3D::constructOneLayer(const Index layerIdx) {
     sweepLineProcess();
 
     // Connect vertices within one C-layer
-    connectOneLayer3D(&freeSegOneLayer_);
+    connectOneLayer3D(freeSegOneLayer_);
 }
 
 /** \brief Sample from SO(3). If the orientation exists, no addition and record
@@ -88,16 +88,16 @@ void hrm::planners::HRM3D::sweepLineProcess() {
 }
 
 void hrm::planners::HRM3D::generateVertices(const Coordinate tx,
-                                            const FreeSegment2D* freeSeg) {
+                                            const FreeSegment2D& freeSeg) {
     numVertex_.plane.clear();
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
         numVertex_.plane.push_back(res_.graphStructure.vertex.size());
 
-        for (size_t j = 0; j < freeSeg->xM[i].size(); ++j) {
+        for (size_t j = 0; j < freeSeg.xM[i].size(); ++j) {
             // Construct a std::vector of vertex
             res_.graphStructure.vertex.push_back(
-                {tx, freeSeg->ty[i], freeSeg->xM[i][j],
+                {tx, freeSeg.ty[i], freeSeg.xM[i][j],
                  robot_.getBase().getQuaternion().w(),
                  robot_.getBase().getQuaternion().x(),
                  robot_.getBase().getQuaternion().y(),
@@ -110,31 +110,31 @@ void hrm::planners::HRM3D::generateVertices(const Coordinate tx,
 }
 
 // Connect vertices within one C-layer
-void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D* freeSeg) {
+void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D& freeSeg) {
     Index n1 = 0;
     Index n2 = 0;
 
     numVertex_.line.clear();
     numVertex_.startId = res_.graphStructure.vertex.size();
-    for (size_t i = 0; i < freeSeg->tx.size(); ++i) {
+    for (size_t i = 0; i < freeSeg.tx.size(); ++i) {
         // Generate collision-free vertices
-        generateVertices(freeSeg->tx.at(i), &freeSeg->freeSegmentYZ.at(i));
+        generateVertices(freeSeg.tx.at(i), freeSeg.freeSegmentYZ.at(i));
 
         // Connect within one plane
-        connectOneLayer2D(&freeSeg->freeSegmentYZ.at(i));
+        connectOneLayer2D(freeSeg.freeSegmentYZ.at(i));
     }
     numVertex_.layer = res_.graphStructure.vertex.size();
 
-    for (size_t i = 0; i < freeSeg->tx.size() - 1; ++i) {
-        for (size_t j = 0; j < freeSeg->freeSegmentYZ.at(i).ty.size(); ++j) {
+    for (size_t i = 0; i < freeSeg.tx.size() - 1; ++i) {
+        for (size_t j = 0; j < freeSeg.freeSegmentYZ.at(i).ty.size(); ++j) {
             n1 = numVertex_.line[i][j];
             n2 = numVertex_.line[i + 1][j];
 
             // Connect vertex btw adjacent planes, only connect with same ty
-            for (size_t k1 = 0; k1 < freeSeg->freeSegmentYZ.at(i).xM[j].size();
+            for (size_t k1 = 0; k1 < freeSeg.freeSegmentYZ.at(i).xM[j].size();
                  ++k1) {
                 for (size_t k2 = 0;
-                     k2 < freeSeg->freeSegmentYZ.at(i + 1).xM[j].size(); ++k2) {
+                     k2 < freeSeg.freeSegmentYZ.at(i + 1).xM[j].size(); ++k2) {
                     if (isSameLayerTransitionFree(
                             res_.graphStructure.vertex[n1 + k1],
                             res_.graphStructure.vertex[n2 + k2])) {
@@ -179,7 +179,7 @@ void hrm::planners::HRM3D::connectMultiLayer() {
         Index n2 = vertexIdx_.at(minIdx).layer;
 
         // Construct the middle layer
-        computeTFE(q_.at(i), q_.at(minIdx), &tfe_);
+        computeTFE(q_.at(i), q_.at(minIdx), tfe_);
         bridgeLayer();
 
         // Nearest vertex btw layers
@@ -517,17 +517,17 @@ void hrm::planners::HRM3D::setTransform(const std::vector<Coordinate>& v) {
 // Multi-body Tightly-Fitted Ellipsoid
 void hrm::planners::HRM3D::computeTFE(const Eigen::Quaterniond& q1,
                                       const Eigen::Quaterniond& q2,
-                                      std::vector<SuperQuadrics>* tfe) {
-    tfe->clear();
+                                      std::vector<SuperQuadrics>& tfe) {
+    tfe.clear();
 
     // Compute a tightly-fitted ellipsoid that bounds rotational motions
     // from q1 to q2
-    tfe->push_back(getTFE3D(robot_.getBase().getSemiAxis(), q1, q2,
-                            param_.numPoint, robot_.getBase().getNumParam()));
+    tfe.push_back(getTFE3D(robot_.getBase().getSemiAxis(), q1, q2,
+                           param_.numPoint, robot_.getBase().getNumParam()));
 
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
         Eigen::Matrix3d rotLink = robot_.getTF().at(i).topLeftCorner(3, 3);
-        tfe->push_back(
+        tfe.push_back(
             getTFE3D(robot_.getLinks().at(i).getSemiAxis(),
                      Eigen::Quaterniond(q1.toRotationMatrix() * rotLink),
                      Eigen::Quaterniond(q2.toRotationMatrix() * rotLink),

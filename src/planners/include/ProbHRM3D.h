@@ -32,7 +32,7 @@ class ProbHRM3D : public HRM3D {
     void connectMultiLayer() override;
 
     void generateVertices(const Coordinate tx,
-                          const FreeSegment2D* freeSeg) override;
+                          const FreeSegment2D& freeSeg) override;
 
     void setTransform(const std::vector<Coordinate>& v) override;
 
@@ -46,7 +46,7 @@ class ProbHRM3D : public HRM3D {
      * rotational motions */
     void computeTFE(const std::vector<Coordinate>& v1,
                     const std::vector<Coordinate>& v2,
-                    std::vector<SuperQuadrics>* tfe);
+                    std::vector<SuperQuadrics>& tfe);
 
   private:
     /** \brief KDL parser for URDF file */

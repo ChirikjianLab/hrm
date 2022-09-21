@@ -24,8 +24,8 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief Get free line segment at one specific C-slice
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment2D type */
-    const FreeSegment2D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
-        layerBound_ = *bd;
+    const FreeSegment2D& getFreeSegmentOneLayer(const BoundaryInfo& bd) {
+        layerBound_ = bd;
         sweepLineProcess();
         return freeSegOneLayer_;
     }
@@ -36,7 +36,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     virtual void sampleOrientations() override;
 
     virtual void generateVertices(const Coordinate tx,
-                                  const FreeSegment2D* freeSeg) override;
+                                  const FreeSegment2D& freeSeg) override;
 
     void sweepLineProcess() override;
 
@@ -68,7 +68,7 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
      * \param tfe Resulting TFE that fully encloses the robot while under pure
      * rotational motions */
     void computeTFE(const double thetaA, const double thetaB,
-                    std::vector<SuperEllipse>* tfe);
+                    std::vector<SuperEllipse>& tfe);
 
     /** \param Sampled heading angles of the robot */
     std::vector<double> headings_;

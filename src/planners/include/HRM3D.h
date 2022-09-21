@@ -61,11 +61,11 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     void sweepLineProcess() override;
 
     virtual void generateVertices(const Coordinate tx,
-                                  const FreeSegment2D* freeSeg) override;
+                                  const FreeSegment2D& freeSeg) override;
 
     /** \brief Connect within one C-layer
      * \param freeSeg 3D collision-free line segments */
-    void connectOneLayer3D(const FreeSegment3D* freeSeg);
+    void connectOneLayer3D(const FreeSegment3D& freeSeg);
 
     virtual void connectMultiLayer() override;
 
@@ -81,7 +81,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * rotational motions */
     virtual void computeTFE(const Eigen::Quaterniond& q1,
                             const Eigen::Quaterniond& q2,
-                            std::vector<SuperQuadrics>* tfe);
+                            std::vector<SuperQuadrics>& tfe);
 
     bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;

@@ -27,16 +27,20 @@ bool hrm::isCollision(const SuperEllipse& object1,
                       const SuperEllipse& object2,
                       fcl::CollisionObject<double> collisionObject2) {
     collisionObject1.setTransform(
-        Eigen::Quaterniond(Eigen::AngleAxis<double>(
-                               object1.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
+        Eigen::Quaterniond(
+            Eigen::AngleAxis<double>(object1.getAngle(),
+                                     Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
-        fcl::Vector3d(object1.getPosition().at(0), object1.getPosition().at(1), 0.1));
+        fcl::Vector3d(object1.getPosition().at(0), object1.getPosition().at(1),
+                      0.1));
 
     collisionObject2.setTransform(
-        Eigen::Quaterniond(Eigen::AngleAxis<double>(
-                               object2.getAngle(), Eigen::Vector3d(0.0, 0.0, 1.0)))
+        Eigen::Quaterniond(
+            Eigen::AngleAxis<double>(object2.getAngle(),
+                                     Eigen::Vector3d(0.0, 0.0, 1.0)))
             .toRotationMatrix(),
-        fcl::Vector3d(object2.getPosition().at(0), object2.getPosition().at(1), 0.1));
+        fcl::Vector3d(object2.getPosition().at(0), object2.getPosition().at(1),
+                      0.1));
 
     fcl::CollisionRequest<double> request;
     fcl::CollisionResult<double> result;

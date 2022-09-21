@@ -70,7 +70,7 @@ algorithm planTest(const robotType& robot,
 
         // TEST: Sweep line process
         const auto freeSegment =
-            hrm.getFreeSegmentOneLayer(&boundaryMinkowski.at(0));
+            hrm.getFreeSegmentOneLayer(boundaryMinkowski.at(0));
 
         std::ofstream fileFreeSegment;
         fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
