@@ -8,41 +8,39 @@ namespace hrm {
 
 template <class Planner>
 void storeRoutines(Planner* hrmPlannerPtr) {
-    // calculate original boundary points
+    // Original boundary points
     BoundaryInfo boundaryOriginal;
-    for (auto arena : hrmPlannerPtr->getArena()) {
+    for (const auto& arena : hrmPlannerPtr->getArena()) {
         boundaryOriginal.arena.push_back(arena.getOriginShape());
     }
-    for (auto obstacle : hrmPlannerPtr->getObstacle()) {
+    for (const auto& obstacle : hrmPlannerPtr->getObstacle()) {
         boundaryOriginal.obstacle.push_back(obstacle.getOriginShape());
     }
 
-    // write to .csv file
     std::ofstream fileBoundaryOriginal;
     fileBoundaryOriginal.open(SOLUTION_DETAILS_PATH "/origin_bound_3D.csv");
-    for (size_t i = 0; i < boundaryOriginal.obstacle.size(); i++) {
-        fileBoundaryOriginal << boundaryOriginal.obstacle[i] << "\n";
+    for (const auto& obstacleBoundary : boundaryOriginal.obstacle) {
+        fileBoundaryOriginal << obstacleBoundary << "\n";
     }
-    for (size_t i = 0; i < boundaryOriginal.arena.size(); i++) {
-        fileBoundaryOriginal << boundaryOriginal.arena[i] << "\n";
+    for (const auto& arenaBoundary : boundaryOriginal.arena) {
+        fileBoundaryOriginal << arenaBoundary << "\n";
     }
     fileBoundaryOriginal.close();
 
-    // TEST: Minkowski boundary
+    // Minkowski boundary
     const auto boundaryMinkowski = hrmPlannerPtr->getLayerBoundary(0);
 
-    // write to .csv file
     std::ofstream fileBoundaryMinkowski;
     fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_3D.csv");
-    for (auto obs_pts : boundaryMinkowski.obstacle) {
-        fileBoundaryMinkowski << obs_pts << "\n";
+    for (const auto& cObstacleBoundary : boundaryMinkowski.obstacle) {
+        fileBoundaryMinkowski << cObstacleBoundary << "\n";
     }
-    for (auto arena_pts : boundaryMinkowski.arena) {
-        fileBoundaryMinkowski << arena_pts << "\n";
+    for (const auto& cArenaBoundary : boundaryMinkowski.arena) {
+        fileBoundaryMinkowski << cArenaBoundary << "\n";
     }
     fileBoundaryMinkowski.close();
 
-    // TEST: Sweep line
+    // Sweep line
     const auto freeSegment =
         hrmPlannerPtr->getFreeSegmentOneLayer(&boundaryMinkowski);
 
