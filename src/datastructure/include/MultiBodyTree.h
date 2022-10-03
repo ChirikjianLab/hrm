@@ -2,6 +2,8 @@
 
 #include "DataType.h"
 
+namespace hrm {
+
 /** \class MultiBodyTree
  * \brief Data structure defining the multi-body tree. */
 template <typename GeomType, typename Transformation>
@@ -9,25 +11,25 @@ class MultiBodyTree {
   public:
     /** \brief Constructor
      * \param base Base as the class of a geometric type */
-    MultiBodyTree(GeomType base) : base_(std::move(base)) {}
+    MultiBodyTree(const GeomType& base) : base_(std::move(base)) {}
 
     ~MultiBodyTree() {}
 
     /** \brief Get base
      * \return Geometric model class defining the base */
-    GeomType getBase() const { return base_; }
+    const GeomType& getBase() const { return base_; }
 
     /** \brief Get other links
      * \return A list of geometric model */
-    std::vector<GeomType> getLinks() const { return link_; }
+    const std::vector<GeomType>& getLinks() const { return link_; }
 
     /** \brief Get the number of links
      * \return Number of links */
-    Index getNumLinks() const { return numLinks_; }
+    const Index getNumLinks() const { return numLinks_; }
 
     /** \brief Get transformation of the links in global frame
      * \return List of transformations */
-    std::vector<Transformation> getTF() const { return tf_; }
+    const std::vector<Transformation>& getTF() const { return tf_; }
 
     /** \brief Add a new body to the tree
      * \param link Link as geometric type */
@@ -57,3 +59,5 @@ class MultiBodyTree {
     /** \brief Local transformation of each link with the base */
     std::vector<Transformation> tf_;
 };
+
+}  // namespace hrm

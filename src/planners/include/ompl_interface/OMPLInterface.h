@@ -7,6 +7,10 @@
 #include <ompl/base/StateSpace.h>
 #include <ompl/geometric/SimpleSetup.h>
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
@@ -29,7 +33,7 @@ class OMPLInterface {
     ~OMPLInterface();
 
     /** \brief Getter function for solved path */
-    std::vector<std::vector<Coordinate>> getSolutionPath() const {
+    const std::vector<std::vector<Coordinate>>& getSolutionPath() const {
         return path_;
     }
 
@@ -59,10 +63,14 @@ class OMPLInterface {
     Index getPathLength() const { return lengthPath_; }
 
     /** \brief Get all the milestones */
-    std::vector<std::vector<Coordinate>> getVertices() const { return vertex_; }
+    const std::vector<std::vector<Coordinate>>& getVertices() const {
+        return vertex_;
+    }
 
     /** \brief Get all the valid connection pairs */
-    std::vector<std::pair<Index, Index>> getEdges() const { return edge_; }
+    const std::vector<std::pair<Index, Index>>& getEdges() const {
+        return edge_;
+    }
 
     /** \brief Set up the planning problem
      * \param plannerId ID of the planner
@@ -190,5 +198,9 @@ class OMPLInterface {
     /** \brief States in solved path */
     std::vector<std::vector<Coordinate>> path_;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm
 
 #include "OMPLInterface-inl.h"

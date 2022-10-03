@@ -3,21 +3,21 @@
 
 #include <iostream>
 
-ParseURDF::ParseURDF(const KDL::Tree& kdlTree) : kdlTree_(kdlTree) {}
+hrm::ParseURDF::ParseURDF(const KDL::Tree& kdlTree) : kdlTree_(kdlTree) {}
 
-ParseURDF::ParseURDF(const std::string& urdfFile) {
+hrm::ParseURDF::ParseURDF(const std::string& urdfFile) {
     if (!kdl_parser::treeFromFile(urdfFile, kdlTree_)) {
         std::cout << "Failed to parse and construct KDL tree..." << std::endl;
     }
 }
 
-Eigen::Matrix4d ParseURDF::getTransform(const KDL::JntArray* jointConfig,
-                                        const std::string& bodyName) {
-    Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
+hrm::SE3Transform hrm::ParseURDF::getTransform(const KDL::JntArray& jointConfig,
+                                               const std::string& bodyName) {
+    hrm::SE3Transform transform = Eigen::Matrix4d::Identity();
     KDL::Frame frame;
 
     KDL::TreeFkSolverPos_recursive kinematics(kdlTree_);
-    if (kinematics.JntToCart(*jointConfig, frame, bodyName) < 0) {
+    if (kinematics.JntToCart(jointConfig, frame, bodyName) < 0) {
         std::cout << "Error in solving forward kinematics" << std::endl;
     }
 

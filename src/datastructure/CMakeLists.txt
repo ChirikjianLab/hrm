@@ -1,4 +1,4 @@
-add_library(DATA_STRUCTURE
+add_library(DataStructure
             FreeSpace2D.cpp
             FreeSpace3D.cpp
             Interval.cpp

@@ -5,41 +5,40 @@
 #include <limits>
 #include <vector>
 
-static const double pi = 3.1415926;
-static const double inf = std::numeric_limits<double>::infinity();
+namespace hrm {
 
 /** \brief Parameters for planner */
 struct PlannerParameter {
     /** \brief Boundary limit of the planning arena, format {xLowBound,
      * xHighBound, yLowbound, yHighBound} */
-    std::vector<Coordinate> BOUND_LIMIT;
+    std::vector<Coordinate> boundaryLimits;
 
     /** \brief Number of C-slices */
-    Index NUM_LAYER = 0;
+    Index numLayer = 0;
 
     /** \brief Number of sweep lines in x-direction in each C-slice */
-    Index NUM_LINE_X = 0;
+    Index numLineX = 0;
 
     /** \brief Number of sweep lines in y-direction in each C-slice */
-    Index NUM_LINE_Y = 0;
+    Index numLineY = 0;
 
     /** \brief Number of interpolation for connections of two C-slices */
-    Index NUM_POINT = 5;
+    Index numPoint = 5;
 
     /** \brief Number of nearest neighbor search for edge connections */
-    Index NUM_SEARCH_NEIGHBOR = 10;
+    Index numSearchNeighbor = 10;
 
     /** \brief Radius of nearest neighbor search for edge connections */
-    double SEARCH_RADIUS = pi / 2;
+    double searchRadius = HALF_PI;
 };
 
 /** \brief PlanningRequest user-defined parameters for planning */
 struct PlanningRequest {
     /** \brief Indicator of rigid-body robot, otherwise articulated robot */
-    bool is_robot_rigid = true;
+    bool isRobotRigid = true;
 
     /** \brief PlannerParameter structure storing parameters of the planner */
-    PlannerParameter planner_parameters;
+    PlannerParameter parameters;
 
     /** \brief Start configuration */
     std::vector<Coordinate> start;
@@ -47,3 +46,5 @@ struct PlanningRequest {
     /** \brief Goal configuration */
     std::vector<Coordinate> goal;
 };
+
+}  // namespace hrm

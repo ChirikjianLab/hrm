@@ -4,6 +4,10 @@
 #include "datastructure/include/FreeSpace2D.h"
 #include "datastructure/include/MultiBodyTree2D.h"
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 /** \class OMPL2D
  * \brief Class for 2D rigid-body robot planning using OMPL */
 class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
@@ -41,3 +45,7 @@ class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
     virtual std::vector<Coordinate> setVectorFromState(
         const ob::State* state) const override;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm

@@ -1,12 +1,10 @@
 #include "planners/include/ompl_interface/OMPL3DArticulated.h"
 
-OMPL3DArticulated::OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
-                                     const std::vector<Coordinate>& highBound,
-                                     const MultiBodyTree3D& robot,
-                                     const std::string& urdfFile,
-                                     const std::vector<SuperQuadrics>& arena,
-                                     const std::vector<SuperQuadrics>& obs,
-                                     const std::vector<Mesh>& obsMesh)
+hrm::planners::ompl_interface::OMPL3DArticulated::OMPL3DArticulated(
+    const std::vector<Coordinate>& lowBound,
+    const std::vector<Coordinate>& highBound, const MultiBodyTree3D& robot,
+    const std::string& urdfFile, const std::vector<SuperQuadrics>& arena,
+    const std::vector<SuperQuadrics>& obs, const std::vector<Mesh>& obsMesh)
     : OMPL3D(lowBound, highBound, robot, arena, obs, obsMesh),
       urdfFile_(urdfFile) {
     // Parse URDF file and construct KDL tree
@@ -16,9 +14,10 @@ OMPL3DArticulated::OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
     setStateSpace(lowBound, highBound);
 }
 
-OMPL3DArticulated::~OMPL3DArticulated() = default;
+hrm::planners::ompl_interface::OMPL3DArticulated::~OMPL3DArticulated() =
+    default;
 
-void OMPL3DArticulated::setStateSpace(
+void hrm::planners::ompl_interface::OMPL3DArticulated::setStateSpace(
     const std::vector<Coordinate>& lowBound,
     const std::vector<Coordinate>& highBound) {
     // Create compound state space
@@ -53,7 +52,8 @@ void OMPL3DArticulated::setStateSpace(
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-MultiBodyTree3D OMPL3DArticulated::transformRobot(
+hrm::MultiBodyTree3D
+hrm::planners::ompl_interface::OMPL3DArticulated::transformRobot(
     const ob::State* state) const {
     const std::vector<Coordinate> stateVar = setVectorFromState(state);
 
@@ -77,7 +77,7 @@ MultiBodyTree3D OMPL3DArticulated::transformRobot(
     return robotAux;
 }
 
-void OMPL3DArticulated::setStateFromVector(
+void hrm::planners::ompl_interface::OMPL3DArticulated::setStateFromVector(
     const std::vector<Coordinate>* stateVariables,
     ob::ScopedState<ob::CompoundStateSpace>* state) const {
     ob::ScopedState<ob::SE3StateSpace> stateBase(
@@ -100,7 +100,8 @@ void OMPL3DArticulated::setStateFromVector(
     stateJoint >> *state;
 }
 
-std::vector<double> OMPL3DArticulated::setVectorFromState(
+std::vector<hrm::Coordinate>
+hrm::planners::ompl_interface::OMPL3DArticulated::setVectorFromState(
     const ob::State* state) const {
     std::vector<Coordinate> stateVariables(7 + numJoint_);
     ob::ScopedState<ob::CompoundStateSpace> compoundState(ss_->getStateSpace());

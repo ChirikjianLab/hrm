@@ -5,13 +5,15 @@
 
 #include "eigen3/Eigen/Geometry"
 
+namespace hrm {
+
 /** \class MultiBodyTree2D
  * \brief Data structure defining the multi-body tree in 2D */
 class MultiBodyTree2D : public MultiBodyTree<SuperEllipse, SE2Transform> {
   public:
     /** \brief Constructor
      * \param base Base as the class of SuperEllipse */
-    MultiBodyTree2D(SuperEllipse base);
+    MultiBodyTree2D(const SuperEllipse& base);
 
     ~MultiBodyTree2D();
 
@@ -22,3 +24,5 @@ class MultiBodyTree2D : public MultiBodyTree<SuperEllipse, SE2Transform> {
     std::vector<BoundaryPoints> minkSum(const SuperEllipse& s1,
                                         const Indicator k) const override;
 };
+
+}  // namespace hrm

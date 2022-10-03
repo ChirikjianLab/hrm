@@ -2,17 +2,16 @@
 
 #include <ompl/base/spaces/SE2StateSpace.h>
 
-OMPL2D::OMPL2D(const std::vector<double> &lowBound,
-               const std::vector<double> &highBound,
-               const MultiBodyTree2D &robot,
-               const std::vector<SuperEllipse> &arena,
-               const std::vector<SuperEllipse> &obstacle)
+hrm::planners::ompl_interface::OMPL2D::OMPL2D(
+    const std::vector<double> &lowBound, const std::vector<double> &highBound,
+    const MultiBodyTree2D &robot, const std::vector<SuperEllipse> &arena,
+    const std::vector<SuperEllipse> &obstacle)
     : OMPLInterface<MultiBodyTree2D, SuperEllipse>::OMPLInterface(
           lowBound, highBound, robot, arena, obstacle) {}
 
-OMPL2D::~OMPL2D() = default;
+hrm::planners::ompl_interface::OMPL2D::~OMPL2D() = default;
 
-void OMPL2D::getSolution() {
+void hrm::planners::ompl_interface::OMPL2D::getSolution() {
     if (isSolved_) {
         const unsigned int INTERPOLATION_NUMBER = 200;
 
@@ -70,8 +69,9 @@ void OMPL2D::getSolution() {
     validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-void OMPL2D::setStateSpace(const std::vector<Coordinate> &lowBound,
-                           const std::vector<Coordinate> &highBound) {
+void hrm::planners::ompl_interface::OMPL2D::setStateSpace(
+    const std::vector<Coordinate> &lowBound,
+    const std::vector<Coordinate> &highBound) {
     auto space(std::make_shared<ob::SE2StateSpace>());
 
     ob::RealVectorBounds bounds(2);
@@ -85,7 +85,7 @@ void OMPL2D::setStateSpace(const std::vector<Coordinate> &lowBound,
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL2D::setCollisionObject() {
+void hrm::planners::ompl_interface::OMPL2D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
     objRobot_.push_back(setCollisionObjectFromSQ(robot_.getBase()));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
@@ -98,7 +98,8 @@ void OMPL2D::setCollisionObject() {
     }
 }
 
-MultiBodyTree2D OMPL2D::transformRobot(const ompl::base::State *state) const {
+hrm::MultiBodyTree2D hrm::planners::ompl_interface::OMPL2D::transformRobot(
+    const ompl::base::State *state) const {
     // Get pose info the transform the robot
     const Coordinate x = state->as<ob::SE2StateSpace::StateType>()->getX();
     const Coordinate y = state->as<ob::SE2StateSpace::StateType>()->getY();
@@ -114,7 +115,8 @@ MultiBodyTree2D OMPL2D::transformRobot(const ompl::base::State *state) const {
     return robotAux;
 }
 
-bool OMPL2D::isSeparated(const MultiBodyTree2D &robotAux) const {
+bool hrm::planners::ompl_interface::OMPL2D::isSeparated(
+    const MultiBodyTree2D &robotAux) const {
     // Checking collision with obstacles
     for (size_t i = 0; i < obstacle_.size(); ++i) {
         if (std::fabs(obstacle_.at(i).getEpsilon() - 1.0) < 1e-6) {
@@ -148,7 +150,7 @@ bool OMPL2D::isSeparated(const MultiBodyTree2D &robotAux) const {
     return true;
 }
 
-void OMPL2D::setStateFromVector(
+void hrm::planners::ompl_interface::OMPL2D::setStateFromVector(
     const std::vector<Coordinate> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) const {
     ob::ScopedState<ob::SE2StateSpace> stateTemp(ss_->getStateSpace());
@@ -161,7 +163,8 @@ void OMPL2D::setStateFromVector(
     stateTemp >> *state;
 }
 
-std::vector<Coordinate> OMPL2D::setVectorFromState(
+std::vector<hrm::Coordinate>
+hrm::planners::ompl_interface::OMPL2D::setVectorFromState(
     const ob::State *state) const {
     std::vector<Coordinate> stateVariables(3, 0.0);
 

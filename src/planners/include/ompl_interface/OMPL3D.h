@@ -8,6 +8,10 @@
 
 #include <ompl/base/spaces/SE3StateSpace.h>
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 /** \class OMPL3D
  * \brief Class for 3D rigid-body robot planning using OMPL */
 class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
@@ -27,12 +31,12 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
     virtual ~OMPL3D();
 
     /** \brief Save the graph information
-     * \param filename_prefix Path prefix for the saved file */
-    void saveVertexEdgeInfo(const std::string& filename_prefix);
+     * \param filenamePrefix Path prefix for the saved file */
+    void saveVertexEdgeInfo(const std::string& filenamePrefix);
 
     /** \brief Save the solution path information
-     * \param filename_prefix Path prefix for the saved file */
-    void savePathInfo(const std::string& filename_prefix);
+     * \param filenamePrefix Path prefix for the saved file */
+    void savePathInfo(const std::string& filenamePrefix);
 
   protected:
     void getSolution() override;
@@ -58,3 +62,7 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Mesh type for obstacles */
     const std::vector<Mesh>& obsMesh_;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm

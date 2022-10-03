@@ -1,5 +1,5 @@
 #include "config.h"
-#include "planners/include/HRM3DAblation.h"
+#include "planners/include/HRM3D.h"
 #include "util/include/DisplayPlanningData.h"
 #include "util/include/ParsePlanningSettings.h"
 
@@ -8,9 +8,7 @@
 
 int main(int argc, char** argv) {
     if (argc >= 7) {
-        std::cout
-            << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
-            << std::endl;
+        std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
         std::cout << "----------" << std::endl;
     } else {
         std::cerr
@@ -24,7 +22,7 @@ int main(int argc, char** argv) {
     }
 
     // Record planning time for N trials
-    const auto N = size_t(atoi(argv[1]));
+    const auto numTrial = size_t(atoi(argv[1]));
     const int numLayer = atoi(argv[2]);
     const int numLineX = atoi(argv[3]);
     const int numLineY = atoi(argv[4]);
@@ -66,7 +64,7 @@ int main(int argc, char** argv) {
 
     // Store results
     std::ofstream fileTimeStatistics;
-    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_high_3D_ablation.csv");
+    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_high_3D.csv");
     fileTimeStatistics << "SUCCESS" << ',' << "BUILD_TIME" << ','
                        << "SEARCH_TIME" << ',' << "PLAN_TIME" << ','
                        << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ','
@@ -76,15 +74,15 @@ int main(int argc, char** argv) {
 
     // Benchmark
     std::cout << "Start benchmark..." << std::endl;
-    for (size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
-        // Path planning using ablated HRM3D with no bridge C-layer
-        hrm::planners::HRM3DAblation<hrm::planners::HRM3D> hrm_ablation(
-            robot, env3D.getArena(), env3D.getObstacle(), req);
-        hrm_ablation.plan(MAX_PLAN_TIME);
+        // Path planning using HRM3D
+        hrm::planners::HRM3D hrm(robot, env3D.getArena(), env3D.getObstacle(),
+                                 req);
+        hrm.plan(MAX_PLAN_TIME);
 
-        const auto res = hrm_ablation.getPlanningResult();
+        const auto res = hrm.getPlanningResult();
 
         // Display and store results
         hrm::displayPlanningTimeInfo(res.planningTime);
@@ -92,22 +90,20 @@ int main(int argc, char** argv) {
         hrm::displayPathInfo(res.solutionPath);
 
         std::cout << "Final number of C-layers: "
-                  << hrm_ablation.getPlannerParameters().numLayer << std::endl;
+                  << hrm.getPlannerParameters().numLayer << std::endl;
         std::cout << "Final number of sweep lines: {"
-                  << hrm_ablation.getPlannerParameters().numLineX << ", "
-                  << hrm_ablation.getPlannerParameters().numLineY << '}'
-                  << std::endl;
+                  << hrm.getPlannerParameters().numLineX << ", "
+                  << hrm.getPlannerParameters().numLineY << '}' << std::endl;
         std::cout << "==========" << std::endl;
 
-        fileTimeStatistics << res.solved << ',' << res.planningTime.buildTime
-                           << ',' << res.planningTime.searchTime << ','
+        fileTimeStatistics << static_cast<int>(res.solved) << ','
+                           << res.planningTime.buildTime << ','
+                           << res.planningTime.searchTime << ','
                            << res.planningTime.totalTime << ','
-                           << hrm_ablation.getPlannerParameters().numLayer
-                           << ','
-                           << hrm_ablation.getPlannerParameters().numLineX
-                           << ','
-                           << hrm_ablation.getPlannerParameters().numLineY
-                           << ',' << res.graphStructure.vertex.size() << ','
+                           << hrm.getPlannerParameters().numLayer << ','
+                           << hrm.getPlannerParameters().numLineX << ','
+                           << hrm.getPlannerParameters().numLineY << ','
+                           << res.graphStructure.vertex.size() << ','
                            << res.graphStructure.edge.size() << ','
                            << res.solutionPath.PathId.size() << "\n";
     }

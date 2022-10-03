@@ -1,22 +1,24 @@
 #include "util/include/GTestUtils.h"
+#include "util/include/DisplayPlanningData.h"
 
-void showResult(const PlanningResult* res, const bool isStore) {
-    displayPlanningTimeInfo(&res->planning_time);
+void hrm::showResult(const PlanningResult& res, const bool isStore,
+                     const std::string& dimension) {
+    displayPlanningTimeInfo(res.planningTime);
 
     if (isStore) {
-        displayGraphInfo(&res->graph_structure, "3D");
-        displayPathInfo(&res->solution_path, "3D");
+        displayGraphInfo(res.graphStructure, dimension);
+        displayPathInfo(res.solutionPath, dimension);
     } else {
-        displayGraphInfo(&res->graph_structure);
-        displayPathInfo(&res->solution_path);
+        displayGraphInfo(res.graphStructure);
+        displayPathInfo(res.solutionPath);
     }
 
     // GTest planning result
-    EXPECT_TRUE(res->solved);
+    EXPECT_TRUE(res.solved);
 
-    ASSERT_GE(res->graph_structure.vertex.size(), 0);
-    ASSERT_GE(res->graph_structure.edge.size(), 0);
+    ASSERT_GE(res.graphStructure.vertex.size(), 0);
+    ASSERT_GE(res.graphStructure.edge.size(), 0);
 
-    ASSERT_GE(res->solution_path.PathId.size(), 0);
-    ASSERT_GE(res->solution_path.cost, 0.0);
+    ASSERT_GE(res.solutionPath.PathId.size(), 0);
+    ASSERT_GE(res.solutionPath.cost, 0.0);
 }
