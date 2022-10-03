@@ -31,7 +31,6 @@ void hrm::planners::HRM3D::constructOneLayer(const Index layerIdx) {
     // Add new C-layer
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
-        freeSpacePtr_->computeCSpaceBoundary();
         layerBound_ = freeSpacePtr_->getCSpaceBoundary();
         layerBoundAll_.push_back(layerBound_);
 
