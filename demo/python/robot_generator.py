@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 from MultiBodyTree import MultiBodyTree
 from SuperQuadrics import SuperQuadrics
 import roboticstoolbox as rtb
@@ -12,16 +14,16 @@ def generate_robot(robot_config, urdf_file=None):
     size_robot_config = robot_config.shape
     num_link = size_robot_config[0] - 1
 
-    base = SuperQuadrics(robot_config[0, 0:3], robot_config[0, 3:5], robot_config[0, 5:8], robot_config[0, 8:], num)
+    base = SuperQuadrics(robot_config[0, 0:3], robot_config[0, 3:5], robot_config[0, 5:8], robot_config[0, 8:12], num)
     robot = MultiBodyTree(base, num_link)
 
     # Robot links
-    link = [None] * num_link
+    link = [SuperQuadrics()] * num_link
 
     # For rigid bodies
     for i in range(num_link):
         link[i] = SuperQuadrics(robot_config[i+1, 0:3], robot_config[i+1, 3:5],
-                                    robot_config[i+1, 5:8], robot_config[i+1, 8:], num)
+                                robot_config[i+1, 5:8], robot_config[i+1, 8:12], num)
         robot.add_body(link[i], i)
 
     # For articulated bodies
@@ -33,11 +35,17 @@ def generate_robot(robot_config, urdf_file=None):
     return robot, robot_urdf
 
 
-def plot_robot_pose(robot, pose_config, robot_urdf=None):
+def plot_robot_pose(robot, pose_config, robot_urdf=None, ax=None):
     rot = UnitQuaternion(pose_config[3:7])
     pose = rot.SE3() * SE3(pose_config[0:3])
 
+    # Transform the robot
     if robot_urdf is None:
-        robot.transform(pose.A)
+        robot.transform(pose)
     else:
-        robot.transform(pose.A, pose_config[7:], robot_urdf)
+        robot.transform(pose, pose_config[7:], robot_urdf)
+
+    # Display robot
+    if ax is None:
+        ax = plt.axes(projection="3d")
+    robot.plot(ax)

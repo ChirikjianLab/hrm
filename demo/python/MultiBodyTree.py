@@ -48,6 +48,6 @@ class MultiBodyTree:
                 self.set_link_transform(i, g_link)
 
     def plot(self, ax):
-        self.base.plot(ax)
+        self.base.plot(ax, 'g')
         for link in self.link:
-            link.plot(ax)
+            link.plot(ax, 'b')

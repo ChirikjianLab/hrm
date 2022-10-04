@@ -24,12 +24,12 @@ class SuperQuadrics:
         if tc is None:
             tc = [0.0, 0.0, 0.0]
         rot = UnitQuaternion(q)
-        self.pose = rot.SE3() * SE3(tc)
+        self.pose = SE3(tc) * rot.SE3()
 
         # Parameters for surface point samples
         self.num = num
-        self.omega, self.eta = np.meshgrid( np.linspace(-np.pi-1e-6, np.pi+1e-6, self.num),
-                                            np.linspace(-np.pi/2.0 - 1e-6, np.pi/2.0 + 1e-6, self.num) )
+        self.omega, self.eta = np.meshgrid(np.linspace(-np.pi-1e-6, np.pi+1e-6, self.num),
+                                           np.linspace(-np.pi/2.0 - 1e-6, np.pi/2.0 + 1e-6, self.num))
 
     def get_points(self):
         xx = self.a[0] * exp_func(np.cos(self.eta), self.eps[0]) * exp_func(np.cos(self.omega), self.eps[1])
@@ -42,7 +42,7 @@ class SuperQuadrics:
         pts[1, :] = np.reshape(yy, (1, num_pts))
         pts[2, :] = np.reshape(zz, (1, num_pts))
 
-        pts_transformed = np.matmul(self.pose.R, pts) + np.reshape(self.pose.t, (3,1))
+        pts_transformed = np.matmul(self.pose.R, pts) + np.reshape(self.pose.t, (3, 1))
 
         return pts_transformed
 
@@ -55,13 +55,17 @@ class SuperQuadrics:
 
         return xx, yy, zz
 
-    def plot(self, ax=None):
+    def plot(self, ax=None, color=None):
         xx, yy, zz = self.get_surf()
 
         if ax is None:
             ax = plt.axes(projection='3d')
 
-        surf = ax.plot_surface(xx, yy, zz)
+        try:
+            surf = ax.plot_surface(xx, yy, zz, color=color)
+        except:
+            surf = ax.plot_surface(xx, yy, zz)
+
         ax.set_aspect('equal')
 
         return surf
