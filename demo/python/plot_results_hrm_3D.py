@@ -2,6 +2,7 @@ from result_loader import load_results, load_planning_scene
 from robot_generator import generate_robot, plot_robot_pose
 from SuperQuadrics import SuperQuadrics
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 
 
 def main():
@@ -41,6 +42,21 @@ def main():
     # Robot start/goal configurations
     plot_robot_pose(robot, end_pts[0], robot_urdf, ax)
     plot_robot_pose(robot, end_pts[1], robot_urdf, ax)
+
+    ax.plot3D(end_pts[0, 0], end_pts[0, 1], end_pts[0, 2], 'ro', linewidth=2)
+    ax.plot3D(end_pts[1, 0], end_pts[1, 1], end_pts[1, 2], 'go', linewidth=2)
+
+    # Planned path
+    if len(path) > 0:
+        ax.plot3D([end_pts[0, 0], path[0, 0]], [end_pts[0, 1], path[0, 1]], [end_pts[0, 2], path[0, 2]],
+                  'gray', linewidth=2)
+        ax.plot3D(path[:, 0], path[:, 1], path[:, 2], 'gray', linewidth=2)
+        ax.plot3D([end_pts[1, 0], path[-1, 0]], [end_pts[1, 1], path[-1, 1]], [end_pts[1, 2], path[-1, 2]],
+                  'gray', linewidth=2)
+
+        # Robot following the path
+        for i in range(0, len(path), int(len(path)/5)):
+            plot_robot_pose(robot, path[i, 0:7], robot_urdf, ax)
 
     plt.show()
 

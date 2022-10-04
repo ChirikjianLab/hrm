@@ -37,7 +37,7 @@ def generate_robot(robot_config, urdf_file=None):
 
 def plot_robot_pose(robot, pose_config, robot_urdf=None, ax=None):
     rot = UnitQuaternion(pose_config[3:7])
-    pose = rot.SE3() * SE3(pose_config[0:3])
+    pose = SE3(pose_config[0:3]) * rot.SE3()
 
     # Transform the robot
     if robot_urdf is None:
