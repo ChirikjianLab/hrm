@@ -2,3 +2,4 @@ numpy
 matplotlib
 roboticstoolbox-python
 numpy-stl
+pandas
