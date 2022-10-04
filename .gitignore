@@ -73,13 +73,14 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
-### Eclipse ignores ###
+# Eclipse
 *.cproject
 *.project
 /.settings
 
-# Clion
-/.idea/*
-
 # Doxygen ignores
 /doc/doxygen/
+
+# Python
+*.idea/
+*.pyc
