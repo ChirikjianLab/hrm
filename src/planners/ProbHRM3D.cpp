@@ -1,4 +1,4 @@
-#include "include/ProbHRM3D.h"
+#include "planners/ProbHRM3D.h"
 
 #include "ompl/util/RandomNumbers.h"
 

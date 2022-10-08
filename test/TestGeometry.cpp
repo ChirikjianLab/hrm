@@ -1,7 +1,7 @@
-#include "geometry/include/SuperEllipse.h"
-#include "geometry/include/SuperQuadrics.h"
-#include "geometry/include/TightFitEllipsoid.h"
-#include "util/include/ExponentialFunction.h"
+#include "geometry/SuperEllipse.h"
+#include "geometry/SuperQuadrics.h"
+#include "geometry/TightFitEllipsoid.h"
+#include "util/ExponentialFunction.h"
 
 #include "gtest/gtest.h"
 

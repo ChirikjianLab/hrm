@@ -18,8 +18,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/sanitizers)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/include/hrm)
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/test)
 
 find_package(static_analysis)
 find_package(sanitizers)
@@ -37,7 +37,7 @@ file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
                     ${SOLUTION_DETAILS_PATH})
 message(STATUS "Results storage path created in: ${RESULT_PATH}")
 
-configure_file(${PROJECT_SOURCE_DIR}/test/config.h.in ${PROJECT_SOURCE_DIR}/test/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/include/hrm/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
 
 # Dependency packages
 find_package(OMPL REQUIRED)

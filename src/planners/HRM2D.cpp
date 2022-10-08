@@ -1,5 +1,5 @@
-#include "include/HRM2D.h"
-#include "geometry/include/LineIntersection.h"
+#include "planners/HRM2D.h"
+#include "geometry/LineIntersection.h"
 
 hrm::planners::HRM2D::HRM2D(const MultiBodyTree2D& robot,
                             const std::vector<SuperEllipse>& arena,

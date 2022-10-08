@@ -1,9 +1,9 @@
 #include "config.h"
-#include "planners/include/HRM2D.h"
-#include "planners/include/HRM2DKC.h"
-#include "util/include/DisplayPlanningData.h"
-#include "util/include/GTestUtils.h"
-#include "util/include/ParsePlanningSettings.h"
+#include "planners/HRM2D.h"
+#include "planners/HRM2DKC.h"
+#include "test/util/DisplayPlanningData.h"
+#include "test/util/GTestUtils.h"
+#include "test/util/ParsePlanningSettings.h"
 
 #include "gtest/gtest.h"
 

@@ -1,5 +1,5 @@
-#include "planners/include/ompl_interface/OMPL3D.h"
-#include "util/include/GTestUtils.h"
+#include "planners/ompl_interface/OMPL3D.h"
+#include "test/util/GTestUtils.h"
 
 namespace ho = hrm::planners::ompl_interface;
 

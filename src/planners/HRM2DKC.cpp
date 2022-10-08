@@ -1,4 +1,4 @@
-#include "include/HRM2DKC.h"
+#include "planners/HRM2DKC.h"
 
 hrm::planners::HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
                                 const std::vector<SuperEllipse>& arena,

@@ -1,4 +1,4 @@
-#include "include/DistanceMetric.h"
+#include "util/DistanceMetric.h"
 
 hrm::Distance hrm::vectorEuclidean(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) {

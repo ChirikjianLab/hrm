@@ -1,4 +1,4 @@
-#include "include/EllipsoidSQCollisionFCL.h"
+#include "util/EllipsoidSQCollisionFCL.h"
 
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 

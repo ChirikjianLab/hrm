@@ -1,5 +1,5 @@
-#include "planners/include/HRM3DAblation.h"
-#include "util/include/GTestUtils.h"
+#include "planners/HRM3DAblation.h"
+#include "test/util/GTestUtils.h"
 
 TEST(TestHRMPlanning3D, HRMAblation) {
     // Setup environment config

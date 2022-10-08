@@ -1,5 +1,5 @@
-#include "planners/include/ProbHRM3D.h"
-#include "util/include/GTestUtils.h"
+#include "planners/ProbHRM3D.h"
+#include "test/util/GTestUtils.h"
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
