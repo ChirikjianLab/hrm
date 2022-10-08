@@ -1,13 +1,15 @@
-#include "include/FreeSpace2D.h"
-#include "geometry/include/LineIntersection.h"
+#include "datastructure/FreeSpace2D.h"
+#include "geometry/LineIntersection.h"
 
-FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
-                         const std::vector<SuperEllipse>& arena,
-                         const std::vector<SuperEllipse>& obstacle)
+hrm::FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
+                              const std::vector<SuperEllipse>& arena,
+                              const std::vector<SuperEllipse>& obstacle)
     : FreeSpaceComputator<MultiBodyTree2D, SuperEllipse>::FreeSpaceComputator(
           robot, arena, obstacle) {}
 
-void FreeSpace2D::computeIntersectionInterval(
+hrm::FreeSpace2D::~FreeSpace2D() = default;
+
+void hrm::FreeSpace2D::computeIntersectionInterval(
     const std::vector<std::vector<Coordinate> >& tLine) {
     // Intersections btw sweep line and arenas
     for (auto i = 0; i < tLine.at(0).size(); ++i) {

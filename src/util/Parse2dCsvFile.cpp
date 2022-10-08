@@ -1,6 +1,7 @@
-#include "include/Parse2dCsvFile.h"
+#include "util/Parse2dCsvFile.h"
 
-std::vector<std::vector<double>> parse2DCsvFile(const std::string& filename) {
+std::vector<std::vector<double>> hrm::parse2DCsvFile(
+    const std::string& filename) {
     std::vector<std::vector<double>> data;
     std::ifstream inputFile(filename);
     int l = 0;

@@ -1,11 +1,12 @@
-#include "include/Interval.h"
+#include "datastructure/Interval.h"
 
-Interval::Interval() = default;
-
-Interval::Interval(const Coordinate start, const Coordinate end)
+hrm::Interval::Interval(const Coordinate start, const Coordinate end)
     : start_(start), end_(end) {}
 
-std::vector<Interval> Interval::unions(const std::vector<Interval> &ins) {
+hrm::Interval::Interval() = default;
+
+std::vector<hrm::Interval> hrm::Interval::unions(
+    const std::vector<Interval> &ins) {
     // Union of several intervals
     if (ins.empty()) {
         return std::vector<Interval>{};
@@ -28,7 +29,8 @@ std::vector<Interval> Interval::unions(const std::vector<Interval> &ins) {
     return res;
 }
 
-std::vector<Interval> Interval::intersects(const std::vector<Interval> &ins) {
+std::vector<hrm::Interval> hrm::Interval::intersects(
+    const std::vector<Interval> &ins) {
     // Intersection of several intervals
     if (ins.empty()) {
         return std::vector<Interval>{};
@@ -53,7 +55,7 @@ std::vector<Interval> Interval::intersects(const std::vector<Interval> &ins) {
     return res;
 }
 
-std::vector<Interval> Interval::complements(
+std::vector<hrm::Interval> hrm::Interval::complements(
     const std::vector<Interval> &outer, const std::vector<Interval> &inner) {
     // Complement between one outer interval and several inner intervals
     if (outer.empty()) {

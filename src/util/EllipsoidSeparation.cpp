@@ -1,28 +1,31 @@
-#include "include/EllipsoidSeparation.h"
+#include "util/EllipsoidSeparation.h"
 
 #include <iostream>
 
-bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
+bool hrm::isEllipsoidSeparated(const SuperQuadrics& ellipsoidA,
+                               const SuperQuadrics& ellipsoidB) {
     // Semi-axis
     Eigen::DiagonalMatrix<double, 4> A;
-    A.diagonal() = {std::pow(Ea.getSemiAxis().at(0), -2.0),
-                    std::pow(Ea.getSemiAxis().at(1), -2.0),
-                    std::pow(Ea.getSemiAxis().at(2), -2.0), -1.0};
+    A.diagonal() = {std::pow(ellipsoidA.getSemiAxis().at(0), -2.0),
+                    std::pow(ellipsoidA.getSemiAxis().at(1), -2.0),
+                    std::pow(ellipsoidA.getSemiAxis().at(2), -2.0), -1.0};
     Eigen::DiagonalMatrix<double, 4> B;
-    B.diagonal() = {std::pow(Eb.getSemiAxis().at(0), -2.0),
-                    std::pow(Eb.getSemiAxis().at(1), -2.0),
-                    std::pow(Eb.getSemiAxis().at(2), -2.0), -1.0};
+    B.diagonal() = {std::pow(ellipsoidB.getSemiAxis().at(0), -2.0),
+                    std::pow(ellipsoidB.getSemiAxis().at(1), -2.0),
+                    std::pow(ellipsoidB.getSemiAxis().at(2), -2.0), -1.0};
 
     // Transformations
     Eigen::Matrix4d Ta;
-    Ta.topLeftCorner(3, 3) = Ea.getQuaternion().toRotationMatrix();
-    Ta.topRightCorner(3, 1) = Eigen::Vector3d(
-        Ea.getPosition().at(0), Ea.getPosition().at(1), Ea.getPosition().at(2));
+    Ta.topLeftCorner(3, 3) = ellipsoidA.getQuaternion().toRotationMatrix();
+    Ta.topRightCorner(3, 1) = Eigen::Vector3d(ellipsoidA.getPosition().at(0),
+                                              ellipsoidA.getPosition().at(1),
+                                              ellipsoidA.getPosition().at(2));
     Ta.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
     Eigen::Matrix4d Tb;
-    Tb.topLeftCorner(3, 3) = Eb.getQuaternion().toRotationMatrix();
-    Tb.topRightCorner(3, 1) = Eigen::Vector3d(
-        Eb.getPosition().at(0), Eb.getPosition().at(1), Eb.getPosition().at(2));
+    Tb.topLeftCorner(3, 3) = ellipsoidB.getQuaternion().toRotationMatrix();
+    Tb.topRightCorner(3, 1) = Eigen::Vector3d(ellipsoidB.getPosition().at(0),
+                                              ellipsoidB.getPosition().at(1),
+                                              ellipsoidB.getPosition().at(2));
     Tb.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
     // a_{ij} belongs to A in det(lambda*A - Ta'*(Tb^-1)'*B*(Tb^-1)*Ta)
@@ -114,31 +117,32 @@ bool isEllipsoidSeparated(const SuperQuadrics& Ea, const SuperQuadrics& Eb) {
     return isSeparated;
 }
 
-bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
-    if (Ea.getEpsilon() != 1.0 || Eb.getEpsilon() != 1.0) {
+bool hrm::isEllipseSeparated(const SuperEllipse& ellipsoidA,
+                             const SuperEllipse& ellipsoidB) {
+    if (ellipsoidA.getEpsilon() != 1.0 || ellipsoidB.getEpsilon() != 1.0) {
         std::cerr << "Object not an ellipse!" << std::endl;
     }
 
     // Semi-axis
     Eigen::DiagonalMatrix<double, 3> A;
-    A.diagonal() = {std::pow(Ea.getSemiAxis().at(0), -2.0),
-                    std::pow(Ea.getSemiAxis().at(1), -2.0), -1.0};
+    A.diagonal() = {std::pow(ellipsoidA.getSemiAxis().at(0), -2.0),
+                    std::pow(ellipsoidA.getSemiAxis().at(1), -2.0), -1.0};
     Eigen::DiagonalMatrix<double, 3> B;
-    B.diagonal() = {std::pow(Eb.getSemiAxis().at(0), -2.0),
-                    std::pow(Eb.getSemiAxis().at(1), -2.0), -1.0};
+    B.diagonal() = {std::pow(ellipsoidB.getSemiAxis().at(0), -2.0),
+                    std::pow(ellipsoidB.getSemiAxis().at(1), -2.0), -1.0};
 
     // Transformations
     Eigen::Matrix3d Ta = Eigen::Matrix3d::Identity();
     Ta.topLeftCorner(2, 2) =
-        Eigen::Rotation2Dd(Ea.getAngle()).toRotationMatrix();
-    Ta.topRightCorner(2, 1) =
-        Eigen::Vector2d(Ea.getPosition().at(0), Ea.getPosition().at(1));
+        Eigen::Rotation2Dd(ellipsoidA.getAngle()).toRotationMatrix();
+    Ta.topRightCorner(2, 1) = Eigen::Vector2d(ellipsoidA.getPosition().at(0),
+                                              ellipsoidA.getPosition().at(1));
 
     Eigen::Matrix3d Tb = Eigen::Matrix3d::Identity();
     Tb.topLeftCorner(2, 2) =
-        Eigen::Rotation2Dd(Eb.getAngle()).toRotationMatrix();
-    Tb.topRightCorner(2, 1) =
-        Eigen::Vector2d(Eb.getPosition().at(0), Eb.getPosition().at(1));
+        Eigen::Rotation2Dd(ellipsoidB.getAngle()).toRotationMatrix();
+    Tb.topRightCorner(2, 1) = Eigen::Vector2d(ellipsoidB.getPosition().at(0),
+                                              ellipsoidB.getPosition().at(1));
 
     // aij belongs to A in det(lambda*A - Ma'*(Mb^-1)'*B*(Mb^-1)*Ma)
     Eigen::Matrix3d a = A;
@@ -181,7 +185,7 @@ bool isEllipseSeparated(const SuperEllipse& Ea, const SuperEllipse& Eb) {
     return isSeparated;
 }
 
-std::vector<std::complex<double>> getRootsPolynomial(
+std::vector<std::complex<double>> hrm::getRootsPolynomial(
     const std::vector<double>& coeffs) {
     const auto matsz = static_cast<Eigen::Index>(coeffs.size() - 1);
     std::vector<std::complex<double>> vret(matsz);

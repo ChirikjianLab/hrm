@@ -1,12 +1,10 @@
 #include "config.h"
-#include "planners/include/HRM3DAblation.h"
-#include "util/include/DisplayPlanningData.h"
-#include "util/include/ParsePlanningSettings.h"
+#include "planners/HRM3DAblation.h"
+#include "test/util/DisplayPlanningData.h"
+#include "test/util/ParsePlanningSettings.h"
 
 #include <cstdlib>
 #include <ctime>
-
-using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
 
 int main(int argc, char** argv) {
     if (argc >= 7) {
@@ -27,90 +25,93 @@ int main(int argc, char** argv) {
 
     // Record planning time for N trials
     const auto N = size_t(atoi(argv[1]));
-    const int N_l = atoi(argv[2]);
-    const int N_x = atoi(argv[3]);
-    const int N_y = atoi(argv[4]);
+    const int numLayer = atoi(argv[2]);
+    const int numLineX = atoi(argv[3]);
+    const int numLineY = atoi(argv[4]);
     const auto MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = argv[6];
     const int NUM_SURF_PARAM = 10;
 
-    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
+    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
-    std::string quat_file = "0";
+    std::string quaternionFilename = "0";
     if (argc == 8 && strcmp(argv[7], "0") != 0) {
-        quat_file = std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
+        quaternionFilename =
+            std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
     }
-    auto robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, quat_file, NUM_SURF_PARAM);
+    auto robot = hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX,
+                                           quaternionFilename, NUM_SURF_PARAM);
 
     // Planning parameters
-    PlannerParameter param;
-    param.NUM_LAYER = size_t(N_l);
-    param.NUM_LINE_X = size_t(N_x);
-    param.NUM_LINE_Y = size_t(N_y);
+    hrm::PlannerParameter param;
+    param.numLayer = size_t(numLayer);
+    param.numLineX = size_t(numLineX);
+    param.numLineY = size_t(numLineY);
+    hrm::defineParameters(robot, env3D, param);
 
-    defineParameters(&robot, env3D, &param);
-
-    std::cout << "Initial number of C-layers: " << param.NUM_LAYER << std::endl;
-    std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
-              << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Initial number of sweep lines: {" << param.numLineX << ", "
+              << param.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
-    std::cout << "Start benchmark..." << std::endl;
-
-    PlanningRequest req;
-    req.is_robot_rigid = true;
-    req.planner_parameters = param;
-    req.start = env3D->getEndPoints().at(0);
-    req.goal = env3D->getEndPoints().at(1);
+    // Planning requests
+    hrm::PlanningRequest req;
+    req.parameters = param;
+    req.start = env3D.getEndPoints().at(0);
+    req.goal = env3D.getEndPoints().at(1);
 
     // Store results
-    std::ofstream file_time;
-    file_time.open(BENCHMARK_DATA_PATH "/time_high_3D_ablation.csv");
-    file_time << "SUCCESS" << ',' << "BUILD_TIME" << ',' << "SEARCH_TIME" << ','
-              << "PLAN_TIME" << ',' << "N_LAYERS" << ',' << "N_X" << ','
-              << "N_Y" << ',' << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
-              << "PATH_NODE"
-              << "\n";
+    std::ofstream fileTimeStatistics;
+    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_high_3D_ablation.csv");
+    fileTimeStatistics << "SUCCESS" << ',' << "BUILD_TIME" << ','
+                       << "SEARCH_TIME" << ',' << "PLAN_TIME" << ','
+                       << "N_LAYERS" << ',' << "N_X" << ',' << "N_Y" << ','
+                       << "GRAPH_NODE" << ',' << "GRAPH_EDGE" << ','
+                       << "PATH_NODE"
+                       << "\n";
 
+    // Benchmark
+    std::cout << "Start benchmark..." << std::endl;
     for (size_t i = 0; i < N; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
         // Path planning using ablated HRM3D with no bridge C-layer
-        HRM3DAblation<HRM3D> hrm_ablation(robot, env3D->getArena(),
-                                          env3D->getObstacle(), req);
+        hrm::planners::HRM3DAblation<hrm::planners::HRM3D> hrm_ablation(
+            robot, env3D.getArena(), env3D.getObstacle(), req);
         hrm_ablation.plan(MAX_PLAN_TIME);
 
-        PlanningResult res = hrm_ablation.getPlanningResult();
+        const auto res = hrm_ablation.getPlanningResult();
 
         // Display and store results
-        displayPlanningTimeInfo(&res.planning_time);
-        displayGraphInfo(&res.graph_structure);
-        displayPathInfo(&res.solution_path);
+        hrm::displayPlanningTimeInfo(res.planningTime);
+        hrm::displayGraphInfo(res.graphStructure);
+        hrm::displayPathInfo(res.solutionPath);
 
         std::cout << "Final number of C-layers: "
-                  << hrm_ablation.getPlannerParameters().NUM_LAYER << std::endl;
+                  << hrm_ablation.getPlannerParameters().numLayer << std::endl;
         std::cout << "Final number of sweep lines: {"
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ", "
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << '}'
+                  << hrm_ablation.getPlannerParameters().numLineX << ", "
+                  << hrm_ablation.getPlannerParameters().numLineY << '}'
                   << std::endl;
         std::cout << "==========" << std::endl;
 
-        file_time << res.solved << ',' << res.planning_time.buildTime << ','
-                  << res.planning_time.searchTime << ','
-                  << res.planning_time.totalTime << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LAYER << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_X << ','
-                  << hrm_ablation.getPlannerParameters().NUM_LINE_Y << ','
-                  << res.graph_structure.vertex.size() << ','
-                  << res.graph_structure.edge.size() << ','
-                  << res.solution_path.PathId.size() << "\n";
+        fileTimeStatistics << res.solved << ',' << res.planningTime.buildTime
+                           << ',' << res.planningTime.searchTime << ','
+                           << res.planningTime.totalTime << ','
+                           << hrm_ablation.getPlannerParameters().numLayer
+                           << ','
+                           << hrm_ablation.getPlannerParameters().numLineX
+                           << ','
+                           << hrm_ablation.getPlannerParameters().numLineY
+                           << ',' << res.graphStructure.vertex.size() << ','
+                           << res.graphStructure.edge.size() << ','
+                           << res.solutionPath.PathId.size() << "\n";
     }
-    file_time.close();
+    fileTimeStatistics.close();
 
     return 0;
 }
