@@ -37,7 +37,7 @@ file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
                     ${SOLUTION_DETAILS_PATH})
 message(STATUS "Results storage path created in: ${RESULT_PATH}")
 
-configure_file(${PROJECT_SOURCE_DIR}/include/hrm/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/src/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
 
 # Dependency packages
 find_package(OMPL REQUIRED)
@@ -92,3 +92,19 @@ add_subdirectory(src)
 set(BUILD_TESTING "" ON)
 enable_testing()
 add_subdirectory(test)
+
+# Install library headers
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm/
+        CONFIGURATIONS Release
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}")
+
+# Uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeUninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake)
+endif()

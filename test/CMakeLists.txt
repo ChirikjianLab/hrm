@@ -57,3 +57,11 @@ target_link_libraries(TestOMPL3DArticulated
 add_test(TestOMPL3DArticulated ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3DArticulated)
 
 add_subdirectory(benchmark)
+
+# Install test utils
+file(GLOB_RECURSE test_util CONFIGURE_DEPENDS "util/*.h")
+install(FILES ${test_util}
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}/test/util")
+
+install(TARGETS ${TestUtil}
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}/test/util")
