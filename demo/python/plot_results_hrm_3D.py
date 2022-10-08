@@ -2,13 +2,16 @@ from result_loader import load_results, load_planning_scene
 from robot_generator import generate_robot, plot_robot_pose
 from SuperQuadrics import SuperQuadrics
 import matplotlib.pyplot as plt
+import numpy as np
 from mpl_toolkits import mplot3d
+import os
 
 
-def main():
-    result_path = "../../result/details/"
-    config_path = "../../config/"
-    resource_path = "../../resources/3D/"
+def plot_results_hrm_3d(is_plot_graph=False):
+    curr_dir = os.getcwd()
+    result_path = curr_dir + "/../../result/details/"
+    config_path = curr_dir + "/../../config/"
+    resource_path = curr_dir + "/../../resources/3D/"
     dim = "3D"
 
     # Load planning scene and results
@@ -28,8 +31,8 @@ def main():
     robot, robot_urdf = generate_robot(robot_config, urdf_file)
 
     # Plot
-    print("Display the results...")
-    fig = plt.figure()
+    print("Figure: Display the results...")
+    plt.figure()
     ax = plt.axes(projection="3d")
 
     # Planning environment
@@ -56,11 +59,53 @@ def main():
 
         # Robot following the path
         for i in range(0, len(path), int(len(path)/5)):
-            plot_robot_pose(robot, path[i, 0:7], robot_urdf, ax)
+            plot_robot_pose(robot, path[i, :], robot_urdf, ax)
 
-    plt.show()
+    # Plot graph and sweep line in one layer
+    if is_plot_graph:
+        print("Figure: Show the graph...")
+        plt.figure()
+        ax = plt.axes(projection="3d")
+
+        for i in range(len(obstacle_config)):
+            obstacle[i] = SuperQuadrics(obstacle_config[i, 0:3], obstacle_config[i, 3:5],
+                                        obstacle_config[i, 5:8], obstacle_config[i, 8:12], 20)
+            obstacle[i].plot(ax, 'y')
+
+        # Graph vertex
+        ax.plot3D(vtx[:, 0], vtx[:, 1], vtx[:, 2], '.k')
+
+        # Graph edge
+        for i in range(edge.shape[0]):
+            idx_start = int(edge[i, 0])
+            idx_end = int(edge[i, 1])
+
+            ax.plot3D([vtx[idx_start, 0], vtx[idx_end, 0]], [vtx[idx_start, 1], vtx[idx_end, 1]],
+                      [vtx[idx_start, 2], vtx[idx_end, 2]], '-k')
+
+        # Plot sweep line at one layer
+        print("Figure: Show sweep lines at one layer...")
+        plt.figure()
+        ax = plt.axes(projection="3d")
+
+        # C-obstacle boundary
+        for i in range(0, x_mink.shape[0]-3*(robot.num_link+1), 3):
+            num = int(np.sqrt(x_mink.shape[1]))
+            xx = np.reshape(x_mink[i], (num, num))
+            yy = np.reshape(x_mink[i+1], (num, num))
+            zz = np.reshape(x_mink[i+2], (num, num))
+
+            ax.plot_surface(xx, yy, zz, color="b", alpha=0.5)
+
+        # Sweep lines
+        for i in range(cf_seg.shape[0]):
+            ax.plot3D([cf_seg[i, 0], cf_seg[i, 0]], [cf_seg[i, 1], cf_seg[i, 1]], [cf_seg[i, 2], cf_seg[i, 4]], '-m')
+            ax.plot3D(cf_seg[i, 0], cf_seg[i, 1], cf_seg[i, 2], '.m')
+            ax.plot3D(cf_seg[i, 0], cf_seg[i, 1], cf_seg[i, 4], '.m')
+
+            ax.plot3D(cf_seg[i, 0], cf_seg[i, 1], cf_seg[i, 3], '.k')
 
 
 if __name__ == "__main__":
-    main()
-    
+    plot_results_hrm_3d(True)
+    plt.show()

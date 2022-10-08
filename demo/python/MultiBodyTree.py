@@ -36,15 +36,18 @@ class MultiBodyTree:
 
         # Obtain pose of each link
         if self.robot_urdf is None:
-            for i in range(len(self.link)):
+            for i in range(self.num_link):
                 g_link = np.matmul(g_base.A, self.tf[i].A)
                 self.set_link_transform(i, g_link)
         else:
+            # Link transformation relative to BASE (NOT the "base" in this class).
+            # "MultiBodyTree.base" object is the 1st link using robotics toolbox definition.
+            # Therefore, g_links has size of "num_link+2".
             g_links = self.robot_urdf.fkine_all(joint_config)
 
-            for i in range(len(self.link)):
+            for i in range(self.num_link):
                 # Offset from body frame to ellipsoid center
-                g_link = g_base * g_links[i] * self.tf[i]
+                g_link = g_base * g_links[i+2] * self.tf[i]
                 self.set_link_transform(i, g_link)
 
     def plot(self, ax):

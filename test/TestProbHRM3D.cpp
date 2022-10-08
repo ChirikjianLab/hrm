@@ -3,7 +3,7 @@
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
-    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
+    hrm::parsePlanningConfig("superquadrics", "sparse", "snake", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 300.0;
 
