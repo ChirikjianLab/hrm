@@ -37,7 +37,7 @@ file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
                     ${SOLUTION_DETAILS_PATH})
 message(STATUS "Results storage path created in: ${RESULT_PATH}")
 
-configure_file(${PROJECT_SOURCE_DIR}/src/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/include/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
 
 # Dependency packages
 find_package(OMPL REQUIRED)
