@@ -3,52 +3,50 @@
 
 #include <iostream>
 
-#define pi 3.1415926
-
-SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
-                             std::vector<double> epsilon,
-                             std::vector<double> position,
-                             const Eigen::Quaterniond &quat, const Index num)
+hrm::SuperQuadrics::SuperQuadrics(std::vector<double> semiAxis,
+                                  std::vector<double> epsilon,
+                                  std::vector<double> position,
+                                  const Eigen::Quaterniond &quat,
+                                  const Index num)
     : semiAxis_(std::move(semiAxis)),
       epsilon_(std::move(epsilon)),
       position_(std::move(position)),
       quat_(quat),
       num_(num) {
     const auto numVtx = static_cast<Eigen::Index>(num_);
-    const double HALF_PI = pi / 2.0;
-    const double EPS = 1e-6;
 
-    eta_ = Eigen::RowVectorXd::LinSpaced(numVtx, -HALF_PI - EPS, HALF_PI + EPS)
+    eta_ = Eigen::RowVectorXd::LinSpaced(numVtx, -HALF_PI - EPSILON,
+                                         HALF_PI + EPSILON)
                .replicate(numVtx, 1);
-    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -pi - EPS, pi + EPS)
+    omega_ = Eigen::VectorXd::LinSpaced(numVtx, -PI - EPSILON, PI + EPSILON)
                  .replicate(1, numVtx);
     Num_ = num_ * num_;
 }
 
-void SuperQuadrics::setSemiAxis(const std::vector<double> &newSemiAxis) {
+void hrm::SuperQuadrics::setSemiAxis(const std::vector<double> &newSemiAxis) {
     semiAxis_ = newSemiAxis;
 }
-void SuperQuadrics::setEpsilon(const std::vector<double> &newEpsilon) {
+void hrm::SuperQuadrics::setEpsilon(const std::vector<double> &newEpsilon) {
     epsilon_ = newEpsilon;
 }
-void SuperQuadrics::setPosition(const std::vector<double> &newPosition) {
+void hrm::SuperQuadrics::setPosition(const std::vector<double> &newPosition) {
     position_ = newPosition;
 }
-void SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
+void hrm::SuperQuadrics::setQuaternion(const Eigen::Quaterniond &newQuat) {
     quat_ = newQuat;
 }
-void SuperQuadrics::setQuatSamples(
+void hrm::SuperQuadrics::setQuatSamples(
     const std::vector<Eigen::Quaterniond> &qSample) {
     qSample_ = qSample;
 }
 
 // Get the points on the boundary of original shape
-BoundaryPoints SuperQuadrics::getOriginShape() const {
+hrm::BoundaryPoints hrm::SuperQuadrics::getOriginShape() const {
     const auto numVtx = static_cast<Eigen::Index>(num_);
     const auto numSurfVtx = static_cast<Eigen::Index>(Num_);
 
-    BoundaryPoints X(3, numSurfVtx);
-    BoundaryPoints X_origin(3, numSurfVtx);
+    BoundaryPoints xCanonical(3, numSurfVtx);
+    BoundaryPoints xTransformed(3, numSurfVtx);
     Eigen::MatrixXd x;
     Eigen::MatrixXd y;
     Eigen::MatrixXd z;
@@ -57,40 +55,45 @@ BoundaryPoints SuperQuadrics::getOriginShape() const {
 
     // Parameterized surface
     x = semiAxis_.at(0) *
-        expFun_mat(eta_, epsilon_.at(0), false)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), false));
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), false)
+            .cwiseProduct(
+                exponentialFunctionMatrixForm(omega_, epsilon_.at(1), false));
     x.resize(1, numSurfVtx);
     y = semiAxis_.at(1) *
-        expFun_mat(eta_, epsilon_.at(0), false)
-            .cwiseProduct(expFun_mat(omega_, epsilon_.at(1), true));
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), false)
+            .cwiseProduct(
+                exponentialFunctionMatrixForm(omega_, epsilon_.at(1), true));
     y.resize(1, numSurfVtx);
     z = semiAxis_.at(2) *
-        expFun_mat(eta_, epsilon_.at(0), true)
+        exponentialFunctionMatrixForm(eta_, epsilon_.at(0), true)
             .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0));
     z.resize(1, numSurfVtx);
-    X.row(0) = x;
-    X.row(1) = y;
-    X.row(2) = z;
+    xCanonical.row(0) = x;
+    xCanonical.row(1) = y;
+    xCanonical.row(2) = z;
 
     // Transform the canonical surface
-    X_origin = (quat_.toRotationMatrix() * X).colwise() + C;
+    xTransformed = (quat_.toRotationMatrix() * xCanonical).colwise() + C;
 
-    return X_origin;
+    return xTransformed;
 }
 
 // Get the points on Minkowski boundary
-BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
-                                           const Indicator K) const {
+hrm::BoundaryPoints hrm::SuperQuadrics::getMinkSum3D(
+    const SuperQuadrics &shapeB, const Indicator K) const {
     if ((shapeB.getEpsilon().at(0) != 1.0) ||
         (shapeB.getEpsilon().at(1) != 1.0)) {
         std::cerr << "Second object is not an ellipsoid" << std::endl;
     }
 
-    BoundaryPoints X_eb(3, Num_);
-    Eigen::MatrixXd gradPhi(3, Num_);
-    Eigen::MatrixXd gradPhix(num_, num_);
-    Eigen::MatrixXd gradPhiy(num_, num_);
-    Eigen::MatrixXd gradPhiz(num_, num_);
+    const auto numVtx = static_cast<Eigen::Index>(num_);
+    const auto numSurfVtx = static_cast<Eigen::Index>(Num_);
+
+    BoundaryPoints xMinkowski(3, numSurfVtx);
+    Eigen::MatrixXd gradPhi(3, numSurfVtx);
+    Eigen::MatrixXd gradPhix(numVtx, numVtx);
+    Eigen::MatrixXd gradPhiy(numVtx, numVtx);
+    Eigen::MatrixXd gradPhiz(numVtx, numVtx);
 
     const double a1 = semiAxis_.at(0);
     const double b1 = semiAxis_.at(1);
@@ -110,19 +113,18 @@ BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
     Eigen::Matrix3d Tinv = R2 * diag * R2.transpose();
 
     // Gradient
-    auto numVtx = static_cast<Eigen::Index>(num_);
-    auto numSurfVtx = static_cast<Eigen::Index>(Num_);
-
-    gradPhix = expFun_mat(eta_, 2 - eps1, false)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, false)) /
+    gradPhix = exponentialFunctionMatrixForm(eta_, 2 - eps1, false)
+                   .cwiseProduct(
+                       exponentialFunctionMatrixForm(omega_, 2 - eps2, false)) /
                a1;
     gradPhix.resize(1, numSurfVtx);
-    gradPhiy = expFun_mat(eta_, 2 - eps1, false)
-                   .cwiseProduct(expFun_mat(omega_, 2 - eps2, true)) /
+    gradPhiy = exponentialFunctionMatrixForm(eta_, 2 - eps1, false)
+                   .cwiseProduct(
+                       exponentialFunctionMatrixForm(omega_, 2 - eps2, true)) /
                b1;
     gradPhiy.resize(1, numSurfVtx);
     gradPhiz =
-        expFun_mat(eta_, 2 - eps1, true)
+        exponentialFunctionMatrixForm(eta_, 2 - eps1, true)
             .cwiseProduct(Eigen::MatrixXd::Constant(numVtx, numVtx, 1.0)) /
         c1;
     gradPhiz.resize(1, numSurfVtx);
@@ -130,10 +132,10 @@ BoundaryPoints SuperQuadrics::getMinkSum3D(const SuperQuadrics &shapeB,
     gradPhi.row(1) = gradPhiy;
     gradPhi.row(2) = gradPhiz;
 
-    X_eb = getOriginShape() +
-           (K * Tinv * Tinv * R1 * gradPhi)
-               .cwiseQuotient(Eigen::MatrixXd::Constant(3, 1, 1) *
-                              (Tinv * R1 * gradPhi).colwise().norm());
+    xMinkowski = getOriginShape() +
+                 (K * Tinv * Tinv * R1 * gradPhi)
+                     .cwiseQuotient(Eigen::MatrixXd::Constant(3, 1, 1) *
+                                    (Tinv * R1 * gradPhi).colwise().norm());
 
-    return X_eb;
+    return xMinkowski;
 }

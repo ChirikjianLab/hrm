@@ -3,6 +3,8 @@
 #include "SuperEllipse.h"
 #include "SuperQuadrics.h"
 
+namespace hrm {
+
 /** \brief compute Minimum volume concentric ellipsoid */
 SuperEllipse getMVCE2D(const std::vector<double>& a,
                        const std::vector<double>& b, const double thetaA,
@@ -23,3 +25,5 @@ SuperQuadrics getTFE3D(const std::vector<double>& a,
                        const Eigen::Quaterniond& quatA,
                        const Eigen::Quaterniond& quatB, const Index numStep,
                        const Index num);
+
+}  // namespace hrm

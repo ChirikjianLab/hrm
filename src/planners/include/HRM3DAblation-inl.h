@@ -3,6 +3,9 @@
 #include "HRM3DAblation.h"
 #include "util/include/EllipsoidSQCollisionFCL.h"
 
+namespace hrm {
+namespace planners {
+
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
 template <class Planner>
@@ -32,7 +35,7 @@ bool HRM3DAblation<Planner>::isMultiLayerTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
     std::vector<std::vector<Coordinate>> vInterp =
-        interpolateCompoundSE3Rn(v1, v2, Planner::param_.NUM_POINT);
+        interpolateCompoundSE3Rn(v1, v2, Planner::param_.numPoint);
 
     for (auto vStep : vInterp) {
         // Transform the robot
@@ -67,8 +70,8 @@ void HRM3DAblation<Planner>::bridgeLayer() {
 template <class Planner>
 void HRM3DAblation<Planner>::computeTFE(const Eigen::Quaterniond& v1,
                                         const Eigen::Quaterniond& v2,
-                                        std::vector<SuperQuadrics>* tfe) {
-    tfe->clear();
+                                        std::vector<SuperQuadrics>& tfe) {
+    tfe.clear();
 }
 
 template <class Planner>
@@ -99,3 +102,6 @@ void HRM3DAblation<Planner>::setCollisionObject() {
         }
     }
 }
+
+}  // namespace planners
+}  // namespace hrm

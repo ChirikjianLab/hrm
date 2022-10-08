@@ -2,6 +2,8 @@
 
 #include "eigen3/Eigen/Dense"
 
+namespace hrm {
+
 using Coordinate = double;
 using BoundaryPoints = Eigen::MatrixXd;
 using Indicator = int;
@@ -21,3 +23,9 @@ struct BoundaryInfo {
     /** \brief Boundary points on obstacles */
     std::vector<BoundaryPoints> obstacle;
 };
+
+static const double PI = 3.1415926;
+static const double HALF_PI = PI / 2.0;
+static const double EPSILON = 1e-6;
+
+}  // namespace hrm

@@ -9,6 +9,9 @@
 #include <list>
 #include <random>
 
+namespace hrm {
+namespace planners {
+
 using Clock = std::chrono::high_resolution_clock;
 using Durationd = std::chrono::duration<double>;
 
@@ -50,10 +53,8 @@ HighwayRoadMap<RobotType, ObjectType>::HighwayRoadMap(
       obs_(obs),
       start_(req.start),
       goal_(req.goal),
-      param_(req.planner_parameters),
-      N_o(obs.size()),
-      N_s(arena.size()),
-      isRobotRigid_(req.is_robot_rigid) {}
+      param_(req.parameters),
+      isRobotRigid_(req.isRobotRigid) {}
 
 template <class RobotType, class ObjectType>
 HighwayRoadMap<RobotType, ObjectType>::~HighwayRoadMap() {}
@@ -63,25 +64,25 @@ void HighwayRoadMap<RobotType, ObjectType>::plan(const double timeLim) {
     // Plan and timing
     auto start = Clock::now();
     buildRoadmap();
-    res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+    res_.planningTime.buildTime += Durationd(Clock::now() - start).count();
 
     start = Clock::now();
     search();
-    res_.planning_time.searchTime += Durationd(Clock::now() - start).count();
+    res_.planningTime.searchTime += Durationd(Clock::now() - start).count();
 
-    res_.planning_time.totalTime =
-        res_.planning_time.buildTime + res_.planning_time.searchTime;
+    res_.planningTime.totalTime =
+        res_.planningTime.buildTime + res_.planningTime.searchTime;
 
     // Refine existing roadmap
-    while (!res_.solved && res_.planning_time.totalTime < timeLim) {
+    while (!res_.solved && res_.planningTime.totalTime < timeLim) {
         refineExistRoadmap(timeLim);
     }
 
     // Get solution path
     if (res_.solved) {
-        res_.solution_path.solvedPath = getSolutionPath();
-        res_.solution_path.interpolatedPath =
-            getInterpolatedSolutionPath(param_.NUM_POINT);
+        res_.solutionPath.solvedPath = getSolutionPath();
+        res_.solutionPath.interpolatedPath =
+            getInterpolatedSolutionPath(param_.numPoint);
     }
 }
 
@@ -90,13 +91,13 @@ void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
     sampleOrientations();
 
     // Construct roadmap
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+    for (size_t i = 0; i < param_.numLayer; ++i) {
         // construct one C-layer
         constructOneLayer(i);
 
         // Record vertex index at each C-layer
-        N_v.layer = res_.graph_structure.vertex.size();
-        vtxId_.push_back(N_v);
+        numVertex_.layer = res_.graphStructure.vertex.size();
+        vertexIdx_.push_back(numVertex_);
     }
 
     // Connect adjacent layers using bridge C-layer
@@ -106,20 +107,20 @@ void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::search() {
     // Construct the roadmap
-    const Index num_vtx = res_.graph_structure.vertex.size();
+    const Index num_vtx = res_.graphStructure.vertex.size();
     AdjGraph g(num_vtx);
 
-    for (Index i = 0; i < res_.graph_structure.edge.size(); ++i) {
-        boost::add_edge(Index(res_.graph_structure.edge[i].first),
-                        Index(res_.graph_structure.edge[i].second),
-                        Weight(res_.graph_structure.weight[i]), g);
+    for (Index i = 0; i < res_.graphStructure.edge.size(); ++i) {
+        boost::add_edge(Index(res_.graphStructure.edge[i].first),
+                        Index(res_.graphStructure.edge[i].second),
+                        Weight(res_.graphStructure.weight[i]), g);
     }
 
     // Locate the nearest vertex for start and goal in the roadmap
     const std::vector<Vertex> idx_s = getNearestNeighborsOnGraph(
-        start_, param_.NUM_SEARCH_NEIGHBOR, param_.SEARCH_RADIUS);
+        start_, param_.numSearchNeighbor, param_.searchRadius);
     const std::vector<Vertex> idx_g = getNearestNeighborsOnGraph(
-        goal_, param_.NUM_SEARCH_NEIGHBOR, param_.SEARCH_RADIUS);
+        goal_, param_.numSearchNeighbor, param_.searchRadius);
 
     // Search for shortest path in the searching regions
     Index num;
@@ -133,8 +134,8 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
                     g, idxS,
                     [this, idxG](Vertex v) {
                         return vectorEuclidean(
-                            res_.graph_structure.vertex[v],
-                            res_.graph_structure.vertex[idxG]);
+                            res_.graphStructure.vertex[v],
+                            res_.graphStructure.vertex[idxG]);
                     },
                     boost::predecessor_map(
                         boost::make_iterator_property_map(
@@ -145,23 +146,23 @@ void HighwayRoadMap<RobotType, ObjectType>::search() {
             } catch (AStarFoundGoal found) {
                 // Record path and cost
                 num = 0;
-                res_.solution_path.cost = 0.0;
-                res_.solution_path.PathId.push_back(int(idxG));
-                while (res_.solution_path.PathId[num] != int(idxS) &&
+                res_.solutionPath.cost = 0.0;
+                res_.solutionPath.PathId.push_back(int(idxG));
+                while (res_.solutionPath.PathId[num] != int(idxS) &&
                        num <= num_vtx) {
-                    res_.solution_path.PathId.push_back(
-                        int(p[size_t(res_.solution_path.PathId[num])]));
-                    res_.solution_path.cost +=
-                        res_.graph_structure
-                            .weight[size_t(res_.solution_path.PathId[num])];
+                    res_.solutionPath.PathId.push_back(
+                        int(p[size_t(res_.solutionPath.PathId[num])]));
+                    res_.solutionPath.cost +=
+                        res_.graphStructure
+                            .weight[size_t(res_.solutionPath.PathId[num])];
                     num++;
                 }
-                std::reverse(std::begin(res_.solution_path.PathId),
-                             std::end(res_.solution_path.PathId));
+                std::reverse(std::begin(res_.solutionPath.PathId),
+                             std::end(res_.solutionPath.PathId));
 
                 if (num == num_vtx + 1) {
-                    res_.solution_path.PathId.clear();
-                    res_.solution_path.cost = inf;
+                    res_.solutionPath.PathId.clear();
+                    res_.solutionPath.cost = INFINITY;
                 } else {
                     res_.solved = true;
                     return;
@@ -176,35 +177,34 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
     const double timeLim) {
     isRefine_ = true;
 
-    vtxIdAll_.push_back(vtxId_);
-    vtxId_.clear();
+    vertexIdxAll_.push_back(vertexIdx_);
+    vertexIdx_.clear();
 
-    param_.NUM_LINE_X *= 2;
-    param_.NUM_LINE_Y *= 2;
+    param_.numLineX *= 2;
+    param_.numLineY *= 2;
 
-    for (size_t i = 0; i < param_.NUM_LAYER; ++i) {
+    for (size_t i = 0; i < param_.numLayer; ++i) {
         auto start = Clock::now();
 
         // construct refined C-layer
         constructOneLayer(i);
-        N_v.layer = res_.graph_structure.vertex.size();
-        vtxId_.push_back(N_v);
+        numVertex_.layer = res_.graphStructure.vertex.size();
+        vertexIdx_.push_back(numVertex_);
 
         // Connect with existing layers
         connectExistLayer(i);
 
-        res_.planning_time.buildTime += Durationd(Clock::now() - start).count();
+        res_.planningTime.buildTime += Durationd(Clock::now() - start).count();
 
         // Search
         start = Clock::now();
         search();
-        res_.planning_time.searchTime +=
-            Durationd(Clock::now() - start).count();
+        res_.planningTime.searchTime += Durationd(Clock::now() - start).count();
 
-        res_.planning_time.totalTime =
-            res_.planning_time.buildTime + res_.planning_time.searchTime;
+        res_.planningTime.totalTime =
+            res_.planningTime.buildTime + res_.planningTime.searchTime;
 
-        if (res_.solved || res_.planning_time.totalTime > timeLim) {
+        if (res_.solved || res_.planningTime.totalTime > timeLim) {
             return;
         }
     }
@@ -214,41 +214,41 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
-    const FreeSegment2D* freeSeg) {
+    const FreeSegment2D& freeSeg) {
     // Add connections to edge list
     Index n1 = 0;
     Index n2 = 0;
 
-    for (size_t i = 0; i < freeSeg->ty.size(); ++i) {
-        n1 = N_v.plane.at(i);
+    for (size_t i = 0; i < freeSeg.ty.size(); ++i) {
+        n1 = numVertex_.plane.at(i);
 
-        for (size_t j1 = 0; j1 < freeSeg->xM[i].size(); ++j1) {
+        for (size_t j1 = 0; j1 < freeSeg.xM[i].size(); ++j1) {
             // Connect vertex within the same sweep line
-            if (j1 != freeSeg->xM[i].size() - 1) {
-                if (std::fabs(freeSeg->xU[i][j1] - freeSeg->xL[i][j1 + 1]) <
+            if (j1 != freeSeg.xM[i].size() - 1) {
+                if (std::fabs(freeSeg.xU[i][j1] - freeSeg.xL[i][j1 + 1]) <
                     1e-6) {
-                    res_.graph_structure.edge.push_back(
+                    res_.graphStructure.edge.push_back(
                         std::make_pair(n1 + j1, n1 + j1 + 1));
-                    res_.graph_structure.weight.push_back(vectorEuclidean(
-                        res_.graph_structure.vertex[n1 + j1],
-                        res_.graph_structure.vertex[n1 + j1 + 1]));
+                    res_.graphStructure.weight.push_back(vectorEuclidean(
+                        res_.graphStructure.vertex[n1 + j1],
+                        res_.graphStructure.vertex[n1 + j1 + 1]));
                 }
             }
 
             // Connect vertex btw adjacent sweep lines
-            if (i != freeSeg->ty.size() - 1) {
-                n2 = N_v.plane.at(i + 1);
+            if (i != freeSeg.ty.size() - 1) {
+                n2 = numVertex_.plane.at(i + 1);
 
-                for (Index j2 = 0; j2 < freeSeg->xM[i + 1].size(); ++j2) {
+                for (Index j2 = 0; j2 < freeSeg.xM[i + 1].size(); ++j2) {
                     if (isSameLayerTransitionFree(
-                            res_.graph_structure.vertex[n1 + j1],
-                            res_.graph_structure.vertex[n2 + j2])) {
+                            res_.graphStructure.vertex[n1 + j1],
+                            res_.graphStructure.vertex[n2 + j2])) {
                         // Direct success connection
-                        res_.graph_structure.edge.push_back(
+                        res_.graphStructure.edge.push_back(
                             std::make_pair(n1 + j1, n2 + j2));
-                        res_.graph_structure.weight.push_back(vectorEuclidean(
-                            res_.graph_structure.vertex[n1 + j1],
-                            res_.graph_structure.vertex[n2 + j2]));
+                        res_.graphStructure.weight.push_back(vectorEuclidean(
+                            res_.graphStructure.vertex[n1 + j1],
+                            res_.graphStructure.vertex[n2 + j2]));
                     } else {
                         bridgeVertex(n1 + j1, n2 + j2);
                     }
@@ -262,15 +262,15 @@ template <class RobotType, class ObjectType>
 std::vector<std::vector<Coordinate>>
 HighwayRoadMap<RobotType, ObjectType>::getSolutionPath() {
     std::vector<std::vector<Coordinate>> path;
-    auto poseSize = res_.graph_structure.vertex.at(0).size();
+    auto poseSize = res_.graphStructure.vertex.at(0).size();
 
     // Start pose
     start_.resize(poseSize);
     path.push_back(start_);
 
     // Iteratively store intermediate poses along the solved path
-    for (auto pathId : res_.solution_path.PathId) {
-        path.push_back(res_.graph_structure.vertex.at(size_t(pathId)));
+    for (auto pathId : res_.solutionPath.PathId) {
+        path.push_back(res_.graphStructure.vertex.at(size_t(pathId)));
     }
 
     // Goal pose
@@ -285,15 +285,15 @@ std::vector<std::vector<double>>
 HighwayRoadMap<RobotType, ObjectType>::getInterpolatedSolutionPath(
     const unsigned int num) {
     std::vector<std::vector<Coordinate>> interpPath =
-        res_.solution_path.solvedPath;
+        res_.solutionPath.solvedPath;
     return interpPath;
 }
 
 template <class RobotType, class ObjectType>
 void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
                                                          const Index idx2) {
-    const auto v1 = res_.graph_structure.vertex.at(idx1);
-    const auto v2 = res_.graph_structure.vertex.at(idx2);
+    const auto v1 = res_.graphStructure.vertex.at(idx1);
+    const auto v2 = res_.graphStructure.vertex.at(idx2);
 
     // Generate new bridge vertex
     auto vNew1 = v1;
@@ -315,10 +315,13 @@ void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
     }
 
     // Add new bridge vertex to graph is new connection is valid
-    int idxNew = res_.graph_structure.vertex.size();
-    res_.graph_structure.vertex.push_back(vNew);
-    res_.graph_structure.edge.push_back(std::make_pair(idx1, idxNew));
-    res_.graph_structure.weight.push_back(vectorEuclidean(v1, vNew));
-    res_.graph_structure.edge.push_back(std::make_pair(idxNew, idx2));
-    res_.graph_structure.weight.push_back(vectorEuclidean(vNew, v2));
+    int idxNew = res_.graphStructure.vertex.size();
+    res_.graphStructure.vertex.push_back(vNew);
+    res_.graphStructure.edge.push_back(std::make_pair(idx1, idxNew));
+    res_.graphStructure.weight.push_back(vectorEuclidean(v1, vNew));
+    res_.graphStructure.edge.push_back(std::make_pair(idxNew, idx2));
+    res_.graphStructure.weight.push_back(vectorEuclidean(vNew, v2));
 }
+
+}  // namespace planners
+}  // namespace hrm

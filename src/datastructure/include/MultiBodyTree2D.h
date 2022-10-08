@@ -1,59 +1,28 @@
 #pragma once
 
-#include "DataType.h"
+#include "MultiBodyTree.h"
 #include "geometry/include/SuperEllipse.h"
 
 #include "eigen3/Eigen/Geometry"
 
+namespace hrm {
+
 /** \class MultiBodyTree2D
  * \brief Data structure defining the multi-body tree in 2D */
-class MultiBodyTree2D {
+class MultiBodyTree2D : public MultiBodyTree<SuperEllipse, SE2Transform> {
   public:
     /** \brief Constructor
      * \param base Base as the class of SuperEllipse */
-    MultiBodyTree2D(SuperEllipse base);
+    MultiBodyTree2D(const SuperEllipse& base);
 
-    /** \brief Get base
-     * \return SuperEllipse class defining the base */
-    SuperEllipse getBase() const { return base_; }
+    ~MultiBodyTree2D();
 
-    /** \brief Get other links
-     * \return A list of SuperEllipse model */
-    std::vector<SuperEllipse> getLinks() const { return link_; }
+    void addBody(const SuperEllipse& link) override;
 
-    /** \brief Get the number of links
-     * \return Number of links */
-    Index getNumLinks() const { return numLinks_; }
+    void robotTF(const SE2Transform& g) override;
 
-    /** \brief Get transformation of the links in global frame
-     * \return List of transformations */
-    std::vector<SE2Transform> getTF() const { return tf_; }
-
-    /** \brief Add a new body to the tree
-     * \param link Link as SuperEllipse type */
-    void addBody(const SuperEllipse& link);
-
-    /** \brief Tranform robot
-     * \param g The transformation */
-    void robotTF(const SE2Transform& g);
-
-    /** \brief Closed-form Minkowski sums operation
-     * \param s1 Object to be summed
-     * \param k +1/-1 indicating sum/difference
-     * \return A union of sampled points on the Minkowski sums boundary */
     std::vector<BoundaryPoints> minkSum(const SuperEllipse& s1,
-                                        const Indicator k) const;
-
-  private:
-    /** \brief Base superellipse */
-    SuperEllipse base_;
-
-    /** \brief Number of links */
-    Index numLinks_ = 0;
-
-    /** \brief List of links geometry */
-    std::vector<SuperEllipse> link_;
-
-    /** \brief Local transformation of each link with the base */
-    std::vector<SE2Transform> tf_;
+                                        const Indicator k) const override;
 };
+
+}  // namespace hrm

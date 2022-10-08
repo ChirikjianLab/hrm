@@ -7,6 +7,9 @@
 #include "geometry/include/TightFitEllipsoid.h"
 #include "util/include/InterpolateSE3.h"
 
+namespace hrm {
+namespace planners {
+
 /** \class HRM3D
  * \brief Highway RoadMap planner for 3D rigid-body robot */
 class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
@@ -28,9 +31,10 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Get free line segment at one specific C-layer
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment3D type */
-    FreeSegment3D getFreeSegmentOneLayer(const BoundaryInfo* bd) {
+    const FreeSegment3D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
         layerBound_ = *bd;
-        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh(&layerBound_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(layerBound_);
+        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         sweepLineProcess();
         return freeSegOneLayer_;
     }
@@ -38,14 +42,14 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \brief Get Minkowski sums boundary mesh
      * \param idx Index of C-layer
      * \return Boundary mesh */
-    BoundaryMesh getLayerBoundaryMesh(const Index idx) {
+    const BoundaryMesh& getLayerBoundaryMesh(const Index idx) const {
         return layerBoundMeshAll_.at(idx);
     }
 
     /** \brief Get Minkowski sums boundary
      * \param idx Index of C-layer
      * \return Boundary */
-    BoundaryInfo getLayerBoundary(const Index idx) {
+    const BoundaryInfo& getLayerBoundary(const Index idx) const {
         return layerBoundAll_.at(idx);
     }
 
@@ -57,11 +61,11 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     void sweepLineProcess() override;
 
     virtual void generateVertices(const Coordinate tx,
-                                  const FreeSegment2D* freeSeg) override;
+                                  const FreeSegment2D& freeSeg) override;
 
     /** \brief Connect within one C-layer
      * \param freeSeg 3D collision-free line segments */
-    void connectOneLayer3D(const FreeSegment3D* freeSeg);
+    void connectOneLayer3D(const FreeSegment3D& freeSeg);
 
     virtual void connectMultiLayer() override;
 
@@ -77,7 +81,7 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
      * rotational motions */
     virtual void computeTFE(const Eigen::Quaterniond& q1,
                             const Eigen::Quaterniond& q2,
-                            std::vector<SuperQuadrics>* tfe);
+                            std::vector<SuperQuadrics>& tfe);
 
     bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;
@@ -116,3 +120,6 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     /** \param Pointer to class for constructing free space */
     std::shared_ptr<FreeSpace3D> freeSpacePtr_;
 };
+
+}  // namespace planners
+}  // namespace hrm

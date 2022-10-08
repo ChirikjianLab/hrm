@@ -4,13 +4,15 @@
 #include "MultiBodyTree3D.h"
 #include "geometry/include/SuperQuadrics.h"
 
+namespace hrm {
+
 /** \brief Collision-free line segments in 3D */
 struct FreeSegment3D {
     /** \brief x-coordinates of the 3D line segments */
     std::vector<Coordinate> tx;
 
     /** \brief Vector of line segments in yz-plane as FreeSegment2D type */
-    std::vector<FreeSegment2D> freeSegYZ;
+    std::vector<FreeSegment2D> freeSegmentYZ;
 };
 
 /** \brief Mesh representation of Minkowski operations */
@@ -33,23 +35,23 @@ class FreeSpace3D : public FreeSpaceComputator<MultiBodyTree3D, SuperQuadrics> {
     FreeSpace3D(const MultiBodyTree3D& robot,
                 const std::vector<SuperQuadrics>& arena,
                 const std::vector<SuperQuadrics>& obstacle);
-    ~FreeSpace3D() {}
+    ~FreeSpace3D();
 
     /** \brief Get C-free boundary as mesh
-     * \param bound C-arena/C-obstacle boundary points
      * \return The generated mesh as BoundMesh type */
-    BoundaryMesh getCSpaceBoundaryMesh(const BoundaryInfo* bound) {
-        computeCSpaceBoundaryMesh(bound);
+    const BoundaryMesh& getCSpaceBoundaryMesh() const {
         return cSpaceBoundaryMesh_;
     }
 
     void computeIntersectionInterval(
         const std::vector<std::vector<Coordinate>>& tLine) override;
 
-  private:
     /** \brief Compute C-free boundary as mesh
      * \param bound C-arena/C-obstacle boundary points*/
-    void computeCSpaceBoundaryMesh(const BoundaryInfo* bound);
+    void computeCSpaceBoundaryMesh(const BoundaryInfo& bound);
 
+  private:
     BoundaryMesh cSpaceBoundaryMesh_;
 };
+
+}  // namespace hrm

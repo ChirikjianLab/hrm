@@ -1,72 +1,19 @@
 #include "planners/include/ompl_interface/OMPL3D.h"
 
-OMPL3D::OMPL3D(const std::vector<Coordinate> &lowBound,
-               const std::vector<Coordinate> &highBound, MultiBodyTree3D robot,
-               const std::vector<SuperQuadrics> &arena,
-               const std::vector<SuperQuadrics> &obs,
-               const std::vector<Mesh> &obsMesh)
-    : robot_(std::move(robot)),
-      arena_(arena),
-      obstacles_(obs),
-      obsMesh_(obsMesh) {
-    // Setup state space
-    setStateSpace(lowBound, highBound);
-}
+using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;
 
-OMPL3D::~OMPL3D() = default;
+hrm::planners::ompl_interface::OMPL3D::OMPL3D(
+    const std::vector<Coordinate> &lowBound,
+    const std::vector<Coordinate> &highBound, const MultiBodyTree3D &robot,
+    const std::vector<SuperQuadrics> &arena,
+    const std::vector<SuperQuadrics> &obs, const std::vector<Mesh> &obsMesh)
+    : OMPLInterface<MultiBodyTree3D, SuperQuadrics>::OMPLInterface(
+          lowBound, highBound, robot, arena, obs),
+      obsMesh_(obsMesh) {}
 
-void OMPL3D::setup(const Index plannerId, const Index validStateSamplerId) {
-    // Set collision checker
-    ss_->setStateValidityChecker(
-        [this](const ob::State *state) { return isStateValid(state); });
-    setCollisionObject();
+hrm::planners::ompl_interface::OMPL3D::~OMPL3D() = default;
 
-    // Set planner and sampler
-    setPlanner(plannerId);
-    setValidStateSampler(validStateSamplerId);
-
-    ss_->setup();
-}
-
-bool OMPL3D::plan(const std::vector<Coordinate> &start,
-                  const std::vector<Coordinate> &goal,
-                  const double maxTimeInSec) {
-    isSolved_ = false;
-    if (!ss_) {
-        return isSolved_;
-    }
-
-    // Set start and goal states for planning
-    setStartAndGoalState(start, goal);
-
-    // Path planning
-    OMPL_INFORM("Planning...");
-
-    try {
-        ob::PlannerStatus solved = ss_->solve(maxTimeInSec);
-
-        // Get solution status
-        totalTime_ = ss_->getLastPlanComputationTime();
-
-        if (solved && totalTime_ < maxTimeInSec) {
-            // Number of nodes in solved path
-            lengthPath_ = ss_->getSolutionPath().getStates().size();
-            isSolved_ = true;
-        }
-
-    } catch (ompl::Exception &ex) {
-        std::stringstream es;
-        es << ex.what() << std::endl;
-        OMPL_WARN(es.str().c_str());
-    }
-
-    // Get planning results
-    getSolution();
-
-    return true;
-}
-
-void OMPL3D::getSolution() {
+void hrm::planners::ompl_interface::OMPL3D::getSolution() {
     if (isSolved_) {
         try {
             const unsigned int INTERPOLATION_NUMBER = 200;
@@ -118,8 +65,9 @@ void OMPL3D::getSolution() {
     validSpace_ = ss_->getSpaceInformation()->probabilityOfValidState(1000);
 }
 
-void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
-                           const std::vector<Coordinate> &highBound) {
+void hrm::planners::ompl_interface::OMPL3D::setStateSpace(
+    const std::vector<Coordinate> &lowBound,
+    const std::vector<Coordinate> &highBound) {
     auto space(std::make_shared<ob::SE3StateSpace>());
 
     ob::RealVectorBounds bounds(3);
@@ -131,104 +79,19 @@ void OMPL3D::setStateSpace(const std::vector<Coordinate> &lowBound,
     bounds.setHigh(2, highBound[2]);
     space->setBounds(bounds);
 
+    // Use SimpleSetup
     ss_ = std::make_shared<og::SimpleSetup>(space);
 }
 
-void OMPL3D::setPlanner(const Index plannerId) {
-    // Set planner
-    if (plannerId == 0) {
-        ss_->setPlanner(std::make_shared<og::PRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 1) {
-        ss_->setPlanner(
-            std::make_shared<og::LazyPRM>(ss_->getSpaceInformation()));
-    } else if (plannerId == 2) {
-        ss_->setPlanner(std::make_shared<og::RRT>(ss_->getSpaceInformation()));
-    } else if (plannerId == 3) {
-        ss_->setPlanner(
-            std::make_shared<og::RRTConnect>(ss_->getSpaceInformation()));
-    } else if (plannerId == 4) {
-        ss_->setPlanner(std::make_shared<og::EST>(ss_->getSpaceInformation()));
-    } else if (plannerId == 5) {
-        ss_->setPlanner(std::make_shared<og::SBL>(ss_->getSpaceInformation()));
-    } else if (plannerId == 6) {
-        ss_->setPlanner(
-            std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
-    }
-}
-
-void OMPL3D::setStateSampler(const Index stateSamplerId) {}
-
-// Set the valid state sampler
-void OMPL3D::setValidStateSampler(const Index validSamplerId) {
-    if (validSamplerId == 0) {
-        // Uniform sampler
-        OMPL_INFORM("Using Uniform valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::UniformValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 1) {
-        // Gaussian sampler
-        OMPL_INFORM("Using Gaussian valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::GaussianValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 2) {
-        // Obstacle-based sampler
-        OMPL_INFORM("Using Obstacle-based valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::ObstacleBasedValidStateSampler>(si);
-            });
-    } else if (validSamplerId == 3) {
-        // Maximum-clearance sampler
-        OMPL_INFORM("Using Max-clearance valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                auto vss =
-                    std::make_shared<ob::MaximizeClearanceValidStateSampler>(
-                        si);
-                vss->setNrImproveAttempts(5);
-                return vss;
-            });
-    } else if (validSamplerId == 4) {
-        // Bridge-test sampler
-        OMPL_INFORM("Using Bridge-test valid state sampler");
-
-        ss_->getSpaceInformation()->setValidStateSamplerAllocator(
-            [](const ob::SpaceInformation *si) -> ob::ValidStateSamplerPtr {
-                return std::make_shared<ob::BridgeTestValidStateSampler>(si);
-            });
-    }
-}
-
-void OMPL3D::setStartAndGoalState(const std::vector<Coordinate> &start,
-                                  const std::vector<Coordinate> &goal) {
-    ob::ScopedState<ob::CompoundStateSpace> startState(ss_->getStateSpace());
-    setStateFromVector(&start, &startState);
-    startState.enforceBounds();
-
-    ob::ScopedState<ob::CompoundStateSpace> goalState(ss_->getStateSpace());
-    setStateFromVector(&goal, &goalState);
-    goalState.enforceBounds();
-
-    ss_->setStartAndGoalStates(startState, goalState);
-}
-
-void OMPL3D::setCollisionObject() {
+void hrm::planners::ompl_interface::OMPL3D::setCollisionObject() {
     // Setup collision object for ellipsoidal robot parts
-    GeometryPtr_t ellip(
+    GeometryPtr ellip(
         new fcl::Ellipsoidd(robot_.getBase().getSemiAxis().at(0),
                             robot_.getBase().getSemiAxis().at(1),
                             robot_.getBase().getSemiAxis().at(2)));
     objRobot_.emplace_back(fcl::CollisionObjectd(ellip));
     for (size_t i = 0; i < robot_.getNumLinks(); ++i) {
-        GeometryPtr_t ellip(
+        GeometryPtr ellip(
             new fcl::Ellipsoidd(robot_.getLinks().at(i).getSemiAxis().at(0),
                                 robot_.getLinks().at(i).getSemiAxis().at(1),
                                 robot_.getLinks().at(i).getSemiAxis().at(2)));
@@ -236,10 +99,10 @@ void OMPL3D::setCollisionObject() {
     }
 
     // Setup collision object for superquadric obstacles
-    for (const auto &obstacle : obstacles_) {
+    for (const auto &obstacle : obstacle_) {
         if (std::fabs(obstacle.getEpsilon().at(0) - 1.0) < 1e-6 &&
             std::fabs(obstacle.getEpsilon().at(1) - 1.0) < 1e-6) {
-            GeometryPtr_t ellip(new fcl::Ellipsoidd(
+            GeometryPtr ellip(new fcl::Ellipsoidd(
                 obstacle.getSemiAxis().at(0), obstacle.getSemiAxis().at(1),
                 obstacle.getSemiAxis().at(2)));
             objObs_.emplace_back(fcl::CollisionObjectd(ellip));
@@ -249,12 +112,9 @@ void OMPL3D::setCollisionObject() {
     }
 }
 
-bool OMPL3D::isStateValid(const ob::State *state) const {
-    return isSeparated(transformRobot(state));
-}
-
 // Get pose info and transform the robot
-MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
+hrm::MultiBodyTree3D hrm::planners::ompl_interface::OMPL3D::transformRobot(
+    const ob::State *state) const {
     std::vector<Coordinate> stateVar = setVectorFromState(state);
 
     SE3Transform tf;
@@ -272,17 +132,18 @@ MultiBodyTree3D OMPL3D::transformRobot(const ob::State *state) const {
 }
 
 // Checking collision with obstacles
-bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
-    for (size_t i = 0; i < obstacles_.size(); ++i) {
+bool hrm::planners::ompl_interface::OMPL3D::isSeparated(
+    const MultiBodyTree3D &robotAux) const {
+    for (size_t i = 0; i < obstacle_.size(); ++i) {
         // For an ellipsoid and superquadrics, use FCL
-        if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacles_.at(i),
+        if (isCollision(robotAux.getBase(), objRobot_.at(0), obstacle_.at(i),
                         objObs_.at(i))) {
             return false;
         }
 
         for (size_t j = 0; j < robotAux.getNumLinks(); ++j) {
             if (isCollision(robotAux.getLinks().at(j), objRobot_.at(j + 1),
-                            obstacles_.at(i), objObs_.at(i))) {
+                            obstacle_.at(i), objObs_.at(i))) {
                 return false;
             }
         }
@@ -291,94 +152,85 @@ bool OMPL3D::isSeparated(const MultiBodyTree3D &robotAux) const {
     return true;
 }
 
-bool OMPL3D::compareStates(const std::vector<Coordinate> &goalConfig,
-                           const std::vector<Coordinate> &lastConfig) {
-    bool res = true;
-    for (size_t i = 0; i < 7; i++) {
-        if (std::fabs(lastConfig[i] - goalConfig[i]) > 0.1) {
-            res = false;
-        }
-    }
-    return res;
-}
-
-void OMPL3D::saveVertexEdgeInfo(const std::string &filename_prefix) {
+void hrm::planners::ompl_interface::OMPL3D::saveVertexEdgeInfo(
+    const std::string &filenamePrefix) {
     ob::PlannerData pd(ss_->getSpaceInformation());
 
     // Write the output to .csv files
-    std::ofstream file_state;
+    std::ofstream fileState;
     std::vector<Coordinate> state;
 
-    file_state.open(filename_prefix + "_state_3D.csv");
+    fileState.open(filenamePrefix + "_state_3D.csv");
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         state = setVectorFromState(pd.getVertex(i).getState()->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_state << state[j];
+            fileState << state[j];
             if (j == state.size() - 1) {
-                file_state << '\n';
+                fileState << '\n';
             } else {
-                file_state << ',';
+                fileState << ',';
             }
         }
     }
-    file_state.close();
+    fileState.close();
 
-    std::ofstream file_edge;
-    file_edge.open(filename_prefix + "_edge_3D.csv");
+    std::ofstream fileEdge;
+    fileEdge.open(filenamePrefix + "_edge_3D.csv");
     std::vector<std::vector<unsigned int>> edge(pd.numVertices());
     for (unsigned int i = 0; i < pd.numVertices(); i++) {
         pd.getEdges(i, edge[i]);
         for (unsigned int j = 0; j < edge[i].size(); j++) {
-            file_edge << int(i) << " " << int(edge[i][j]) << "\n";
+            fileEdge << int(i) << " " << int(edge[i][j]) << "\n";
         }
     }
-    file_edge.close();
+    fileEdge.close();
 }
 
-void OMPL3D::savePathInfo(const std::string &filename_prefix) {
+void hrm::planners::ompl_interface::OMPL3D::savePathInfo(
+    const std::string &filenamePrefix) {
     const std::vector<ob::State *> &states = ss_->getSolutionPath().getStates();
     std::vector<Coordinate> state;
 
-    std::ofstream file_traj;
-    file_traj.open(filename_prefix + "_path_3D.csv");
+    std::ofstream fileTrajectory;
+    fileTrajectory.open(filenamePrefix + "_path_3D.csv");
     for (auto *omplState : states) {
         state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_traj << state[j];
+            fileTrajectory << state[j];
             if (j == state.size() - 1) {
-                file_traj << '\n';
+                fileTrajectory << '\n';
             } else {
-                file_traj << ',';
+                fileTrajectory << ',';
             }
         }
     }
-    file_traj.close();
+    fileTrajectory.close();
 
     // Smooth path
     ss_->getSolutionPath().interpolate(50);
     const std::vector<ob::State *> &solutionStates =
         ss_->getSolutionPath().getStates();
 
-    std::ofstream file_smooth_traj;
-    file_smooth_traj.open(filename_prefix + "_smooth_path_3D.csv");
+    std::ofstream fileSmoothTrajectory;
+    fileSmoothTrajectory.open(filenamePrefix + "_smooth_path_3D.csv");
     for (auto *omplState : solutionStates) {
         state = setVectorFromState(omplState->as<ob::State>());
 
         for (size_t j = 0; j < state.size(); ++j) {
-            file_smooth_traj << state[j];
+            fileSmoothTrajectory << state[j];
             if (j == state.size() - 1) {
-                file_smooth_traj << '\n';
+                fileSmoothTrajectory << '\n';
             } else {
-                file_smooth_traj << ',';
+                fileSmoothTrajectory << ',';
             }
         }
     }
-    file_smooth_traj.close();
+    fileSmoothTrajectory.close();
 }
 
-void OMPL3D::setStateFromVector(
+void hrm::planners::ompl_interface::OMPL3D::setStateFromVector(
     const std::vector<Coordinate> *stateVariables,
     ob::ScopedState<ob::CompoundStateSpace> *state) const {
     ob::ScopedState<ob::SE3StateSpace> stateTemp(ss_->getStateSpace());
@@ -394,7 +246,8 @@ void OMPL3D::setStateFromVector(
     stateTemp >> *state;
 }
 
-std::vector<Coordinate> OMPL3D::setVectorFromState(
+std::vector<hrm::Coordinate>
+hrm::planners::ompl_interface::OMPL3D::setVectorFromState(
     const ob::State *state) const {
     std::vector<Coordinate> stateVariables(7, 0.0);
 

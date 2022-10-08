@@ -1,8 +1,8 @@
 #include "include/LineIntersection.h"
 #include <iostream>
 
-std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
-                                                 const MeshMatrix& shape) {
+std::vector<Eigen::Vector3d> hrm::intersectLineMesh3D(const Line3D& line,
+                                                      const MeshMatrix& shape) {
     std::vector<Point3D> points;
 
     /** \brief filter out-of-range case: line direction parallel to
@@ -36,7 +36,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
         v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
         // keep only interesting points
-        bool hasIntersect = intersectLineTriangle3D(&line, &t0, &u, &v, &pt);
+        bool hasIntersect = intersectLineTriangle3D(line, t0, u, v, pt);
 
         if (hasIntersect) {
             points.push_back(pt);
@@ -50,7 +50,7 @@ std::vector<Eigen::Vector3d> intersectLineMesh3D(const Line3D& line,
     return points;
 }
 
-std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
+std::vector<Eigen::Vector3d> hrm::intersectVerticalLineMesh3D(
     const Line3D& line, const MeshMatrix& shape) {
     std::vector<Point3D> points;
 
@@ -106,7 +106,7 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
         v = shape.vertices.col(int(shape.faces(i, 2))) - t0;
 
         // keep only interesting points
-        bool hasIntersect = intersectLineTriangle3D(&line, &t0, &u, &v, &pt);
+        bool hasIntersect = intersectLineTriangle3D(line, t0, u, v, pt);
 
         if (hasIntersect) {
             points.push_back(pt);
@@ -120,29 +120,19 @@ std::vector<Eigen::Vector3d> intersectVerticalLineMesh3D(
     return points;
 }
 
-bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
-                             const Eigen::Vector3d* u, const Eigen::Vector3d* v,
-                             Point3D* pt) {
+bool hrm::intersectLineTriangle3D(const Line3D& line, const Eigen::Vector3d& t0,
+                                  const Eigen::Vector3d& u,
+                                  const Eigen::Vector3d& v, Point3D& pt) {
     const double tol = 1e-12;
-    Eigen::Vector3d n;
-    double a;
-    double b;
-    double uu;
-    double uv;
-    double vv;
-    double wu;
-    double wv;
-    double D;
-    double s;
-    double t;
 
     // triangle normal
-    n = u->cross(*v);
+    Eigen::Vector3d n;
+    n = u.cross(v);
     n.normalize();
 
     // vector between triangle origin and line origin
-    a = -n.dot(line->head(3) - *t0);
-    b = n.dot(line->tail(3));
+    const double a = -n.dot(line.head(3) - t0);
+    const double b = n.dot(line.tail(3));
     if (!((std::fabs(b) > tol) && (n.norm() > tol))) {
         return false;
     }
@@ -151,33 +141,33 @@ bool intersectLineTriangle3D(const Line3D* line, const Eigen::Vector3d* t0,
                   If pos = a/b < 0: point before ray
                   IF pos = a/b > |dir|: point after edge*/
     // coordinates of intersection point
-    *pt = line->head(3) + a / b * line->tail(3);
+    pt = line.head(3) + a / b * line.tail(3);
 
     // Test if intersection point is inside triangle
     // normalize direction vectors of triangle edges
-    uu = u->dot(*u);
-    uv = u->dot(*v);
-    vv = v->dot(*v);
+    const double uu = u.dot(u);
+    const double uv = u.dot(v);
+    const double vv = v.dot(v);
 
     // coordinates of vector v in triangle basis
-    wu = u->dot(*pt - *t0);
-    wv = v->dot(*pt - *t0);
+    const double wu = u.dot(pt - t0);
+    const double wv = v.dot(pt - t0);
 
     // normalization constant
-    D = pow(uv, 2) - uu * vv;
+    const double D = pow(uv, 2) - uu * vv;
 
     // test first coordinate
-    s = (uv * wv - vv * wu) / D;
+    const double s = (uv * wv - vv * wu) / D;
     if ((s < -tol) || (s > 1.0 + tol)) {
         return false;
     }
 
     // test second coordinate and third triangle edge
-    t = (uv * wu - uu * wv) / D;
+    const double t = (uv * wu - uu * wv) / D;
     return !((t < -tol) || (s + t > 1.0 + tol));
 }
 
-bool isIntersectSegPolygon2D(
+bool hrm::isIntersectSegPolygon2D(
     const std::pair<std::vector<double>, std::vector<double>>& seg,
     const Eigen::Matrix2Xd& shape) {
     double px1 = seg.first.at(0);
@@ -219,7 +209,7 @@ bool isIntersectSegPolygon2D(
     return false;
 }
 
-std::vector<double> intersectHorizontalLinePolygon2D(
+std::vector<double> hrm::intersectHorizontalLinePolygon2D(
     const double ty, const Eigen::Matrix2Xd& shape) {
     std::vector<double> points;
 

@@ -1,7 +1,6 @@
-add_library(TEST_UTIL
+add_library(TestUtil
             DisplayPlanningData.cpp
             GTestUtils.cpp
             ParsePlanningSettings.cpp)
-target_link_libraries(TEST_UTIL
-                      GEOM
-                      UTIL)
+target_link_libraries(TestUtil
+                      Geometry)

@@ -1,8 +1,11 @@
 #include "include/MultiBodyTree3D.h"
 
-MultiBodyTree3D::MultiBodyTree3D(SuperQuadrics base) : base_(std::move(base)) {}
+hrm::MultiBodyTree3D::MultiBodyTree3D(const SuperQuadrics& base)
+    : MultiBodyTree<SuperQuadrics, SE3Transform>::MultiBodyTree(base) {}
 
-std::vector<SuperQuadrics> MultiBodyTree3D::getBodyShapes() {
+hrm::MultiBodyTree3D::~MultiBodyTree3D() = default;
+
+std::vector<hrm::SuperQuadrics> hrm::MultiBodyTree3D::getBodyShapes() {
     std::vector<SuperQuadrics> body;
 
     body.push_back(base_);
@@ -13,7 +16,7 @@ std::vector<SuperQuadrics> MultiBodyTree3D::getBodyShapes() {
     return body;
 }
 
-void MultiBodyTree3D::addBody(const SuperQuadrics& link) {
+void hrm::MultiBodyTree3D::addBody(const SuperQuadrics& link) {
     // Add link
     link_.push_back(link);
     numLinks_++;
@@ -26,8 +29,7 @@ void MultiBodyTree3D::addBody(const SuperQuadrics& link) {
     tf_.push_back(g);
 }
 
-// Transform rigid body
-void MultiBodyTree3D::robotTF(const Eigen::Matrix4d& g) {
+void hrm::MultiBodyTree3D::robotTF(const Eigen::Matrix4d& g) {
     // Set transform of base
     base_.setPosition({g(0, 3), g(1, 3), g(2, 3)});
 
@@ -48,29 +50,33 @@ void MultiBodyTree3D::robotTF(const Eigen::Matrix4d& g) {
     }
 }
 
-// Tranform articulated body
-void MultiBodyTree3D::robotTF(const std::string& urdfFile,
-                              const Eigen::Matrix4d* gBase,
-                              const Eigen::VectorXd* jointConfig) {
+void hrm::MultiBodyTree3D::robotTF(const std::string& urdfFile,
+                                   const Eigen::Matrix4d& gBase,
+                                   const Eigen::VectorXd& jointConfig) {
     ParseURDF kdl(urdfFile);
 
+    robotTF(kdl, gBase, jointConfig);
+}
+
+void hrm::MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d& gBase,
+                                   const Eigen::VectorXd& jointConfig) {
     // Set transform of base
     base_.setPosition(
-        {gBase->coeff(0, 3), gBase->coeff(1, 3), gBase->coeff(2, 3)});
+        {gBase.coeff(0, 3), gBase.coeff(1, 3), gBase.coeff(2, 3)});
 
-    Eigen::Matrix3d rotBase = gBase->topLeftCorner(3, 3);
+    Eigen::Matrix3d rotBase = gBase.topLeftCorner(3, 3);
     Eigen::Quaterniond quatBase(rotBase);
     base_.setQuaternion(quatBase);
 
     // Set transform for each link
     SE3Transform gLink;
     KDL::JntArray jointArray;
-    jointArray.data = *jointConfig;
+    jointArray.data = jointConfig;
 
     for (size_t i = 0; i < numLinks_; i++) {
-        gLink = kdl.getTransform(&jointArray, "body" + std::to_string(i + 1));
-
-        gLink = *gBase * gLink * tf_.at(i);
+        gLink = gBase *
+                kdl.getTransform(jointArray, "body" + std::to_string(i + 1)) *
+                tf_.at(i);
 
         link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
 
@@ -80,38 +86,8 @@ void MultiBodyTree3D::robotTF(const std::string& urdfFile,
     }
 }
 
-// Tranform articulated body
-void MultiBodyTree3D::robotTF(ParseURDF kdl, const Eigen::Matrix4d* gBase,
-                              const Eigen::VectorXd* jointConfig) {
-    // Set transform of base
-    base_.setPosition(
-        {gBase->coeff(0, 3), gBase->coeff(1, 3), gBase->coeff(2, 3)});
-
-    Eigen::Matrix3d rotMat = gBase->topLeftCorner(3, 3);
-    Eigen::Quaterniond quat(rotMat);
-    base_.setQuaternion(quat);
-
-    // Set transform for each link
-    SE3Transform gLink;
-    KDL::JntArray jointArray;
-    jointArray.data = *jointConfig;
-
-    for (size_t i = 0; i < numLinks_; i++) {
-        gLink = *gBase *
-                kdl.getTransform(&jointArray, "body" + std::to_string(i + 1)) *
-                tf_.at(i);
-
-        link_.at(i).setPosition({gLink(0, 3), gLink(1, 3), gLink(2, 3)});
-
-        rotMat = gLink.topLeftCorner(3, 3);
-        quat = Eigen::Quaterniond(rotMat);
-        link_.at(i).setQuaternion(quat);
-    }
-}
-
-// Minkowski sums and difference for multi-link robot
-std::vector<Eigen::MatrixXd> MultiBodyTree3D::minkSum(const SuperQuadrics& s1,
-                                                      const Indicator k) const {
+std::vector<hrm::BoundaryPoints> hrm::MultiBodyTree3D::minkSum(
+    const SuperQuadrics& s1, const Indicator k) const {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base
