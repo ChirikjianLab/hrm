@@ -249,10 +249,10 @@ void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
         }
 
         // Write converted configuration
-        for (size_t i = 0; i < numParam - 1; ++i) {
+        for (size_t i = 0; i < numParam; ++i) {
             fileConfig << config.at(i) << ',';
         }
-        fileConfig << config.at(numParam - 1) << "\n";
+        fileConfig << config.at(numParam) << "\n";
     }
     fileConfig.close();
 }

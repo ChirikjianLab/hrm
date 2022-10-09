@@ -1,24 +1,14 @@
 #include "test/util/GTestUtils.h"
-#include "test/util/DisplayPlanningData.h"
 
-void hrm::showResult(const PlanningResult& res, const bool isStore,
-                     const std::string& dimension) {
-    displayPlanningTimeInfo(res.planningTime);
-
-    if (isStore) {
-        displayGraphInfo(res.graphStructure, dimension);
-        displayPathInfo(res.solutionPath, dimension);
-    } else {
-        displayGraphInfo(res.graphStructure);
-        displayPathInfo(res.solutionPath);
-    }
-
-    // GTest planning result
+void hrm::evaluateResult(const PlanningResult& res) {
+    // The planning problem is solved
     EXPECT_TRUE(res.solved);
 
+    // Vertex and edge lists are not empty
     ASSERT_GE(res.graphStructure.vertex.size(), 0);
     ASSERT_GE(res.graphStructure.edge.size(), 0);
 
+    // Solution path is not empty and cost is greater or equal to zero
     ASSERT_GE(res.solutionPath.PathId.size(), 0);
     ASSERT_GE(res.solutionPath.cost, 0.0);
 }

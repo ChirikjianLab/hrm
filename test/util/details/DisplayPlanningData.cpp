@@ -16,11 +16,8 @@ void hrm::displayGraphInfo(const Graph& graph) {
     std::cout << "Number of valid edges: " << graph.edge.size() << std::endl;
 }
 
-void hrm::displayGraphInfo(const Graph& graph, const std::string& dimension) {
-    displayGraphInfo(graph);
-
+void hrm::storeGraphInfo(const Graph& graph, const std::string& dimension) {
     // Write the output to .csv files
-
     std::ofstream fileVtx;
     fileVtx.open(SOLUTION_DETAILS_PATH "/vertex_" + dimension + ".csv");
     std::vector<std::vector<double>> vertexList = graph.vertex;
@@ -45,10 +42,8 @@ void hrm::displayPathInfo(const SolutionPathInfo& path) {
     std::cout << "Path cost: " << path.cost << std::endl;
 }
 
-void hrm::displayPathInfo(const SolutionPathInfo& path,
-                          const std::string& dimension) {
-    displayPathInfo(path);
-
+void hrm::storePathInfo(const SolutionPathInfo& path,
+                        const std::string& dimension) {
     // Write the output to .csv files
     std::ofstream filePathId;
     filePathId.open(SOLUTION_DETAILS_PATH "/path_id_" + dimension + ".csv");

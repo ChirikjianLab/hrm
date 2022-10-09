@@ -1,5 +1,7 @@
+#include "config.h"
 #include "planners/ProbHRM3D.h"
 #include "test/util/GTestUtils.h"
+#include "test/util/ParsePlanningSettings.h"
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
@@ -9,19 +11,18 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
     env3D.loadEnvironment(CONFIG_PATH "/");
-    const std::string quat_file = "0";
 
     // Setup URDF file for the robot
-    std::string urdf_file;
+    std::string urdfFile;
     if (env3D.getEndPoints().at(0).size() == 10) {
-        urdf_file = RESOURCES_PATH "/3D/urdf/snake.urdf";
+        urdfFile = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdf_file = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
+        urdfFile = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
     }
 
     // Setup robot
     const auto robot =
-        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", "0", NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;
@@ -40,13 +41,11 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     std::cout << "Start planning..." << std::endl;
 
-    hrm::planners::ProbHRM3D probHRM(robot, urdf_file, env3D.getArena(),
+    hrm::planners::ProbHRM3D probHRM(robot, urdfFile, env3D.getArena(),
                                      env3D.getObstacle(), req);
     probHRM.plan(MAX_PLAN_TIME);
     hrm::PlanningResult res = probHRM.getPlanningResult();
     const auto param = probHRM.getPlannerParameters();
-
-    hrm::storeRoutines<hrm::planners::ProbHRM3D>(&probHRM);
 
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
@@ -54,7 +53,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
     std::cout << "Final number of sweep lines {X,Y}: {" << param.numLineX << ','
               << param.numLineY << '}' << std::endl;
 
-    hrm::showResult(res, true, "3D");
+    hrm::evaluateResult(res);
 }
 
 int main(int ac, char* av[]) {

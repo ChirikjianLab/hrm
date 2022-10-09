@@ -1,5 +1,6 @@
 #include "planners/ompl_interface/OMPL3DArticulated.h"
 #include "test/util/GTestUtils.h"
+#include "test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 
@@ -64,7 +65,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
     res.planningTime.totalTime = omplPlanner.getPlanningTime();
 
-    hrm::showResult(res, true, "3D");
+    hrm::evaluateResult(res);
 }
 
 TEST(OMPLPlanningArticulated, PRMUniform) { TestOMPLPlanner(0, 0); }

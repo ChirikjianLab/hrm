@@ -93,6 +93,8 @@ set(BUILD_TESTING "" ON)
 enable_testing()
 add_subdirectory(test)
 
+add_subdirectory(demo)
+
 # Install library headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm/
         CONFIGURATIONS Release

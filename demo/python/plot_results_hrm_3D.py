@@ -58,7 +58,7 @@ def plot_results_hrm_3d(is_plot_graph=False):
                   'gray', linewidth=2)
 
         # Robot following the path
-        for i in range(0, len(path), int(len(path)/5)):
+        for i in range(0, len(path)):
             plot_robot_pose(robot, path[i, :], robot_urdf, ax)
 
     # Plot graph and sweep line in one layer
@@ -95,7 +95,7 @@ def plot_results_hrm_3d(is_plot_graph=False):
             yy = np.reshape(x_mink[i+1], (num, num))
             zz = np.reshape(x_mink[i+2], (num, num))
 
-            ax.plot_surface(xx, yy, zz, color="b", alpha=0.5)
+            ax.plot_surface(xx, yy, zz, color="b", alpha=0.3)
 
         # Sweep lines
         for i in range(cf_seg.shape[0]):

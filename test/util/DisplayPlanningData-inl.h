@@ -1,19 +1,18 @@
 #pragma once
 
-#include "GTestUtils.h"
 #include "config.h"
 #include "planners/HRM3D.h"
 
 namespace hrm {
 
 template <class Planner>
-void storeRoutines(Planner* hrmPlannerPtr) {
+void storeRoutines(Planner& planner) {
     // Original boundary points
     BoundaryInfo boundaryOriginal;
-    for (const auto& arena : hrmPlannerPtr->getArena()) {
+    for (const auto& arena : planner.getArena()) {
         boundaryOriginal.arena.push_back(arena.getOriginShape());
     }
-    for (const auto& obstacle : hrmPlannerPtr->getObstacle()) {
+    for (const auto& obstacle : planner.getObstacle()) {
         boundaryOriginal.obstacle.push_back(obstacle.getOriginShape());
     }
 
@@ -28,7 +27,7 @@ void storeRoutines(Planner* hrmPlannerPtr) {
     fileBoundaryOriginal.close();
 
     // Minkowski boundary
-    const auto boundaryMinkowski = hrmPlannerPtr->getLayerBoundary(0);
+    const auto boundaryMinkowski = planner.getLayerBoundary(0);
 
     std::ofstream fileBoundaryMinkowski;
     fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_3D.csv");
@@ -41,8 +40,7 @@ void storeRoutines(Planner* hrmPlannerPtr) {
     fileBoundaryMinkowski.close();
 
     // Sweep line
-    const auto freeSegment =
-        hrmPlannerPtr->getFreeSegmentOneLayer(&boundaryMinkowski);
+    const auto freeSegment = planner.getFreeSegmentOneLayer(&boundaryMinkowski);
 
     std::ofstream fileFreeSegment;
     fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_3D.csv");
