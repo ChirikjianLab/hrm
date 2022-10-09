@@ -7,7 +7,7 @@
 void demo() {
     // Setup environment config
     hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
-    const int NUM_SURF_PARAM = 10;
+    const int NUM_SURF_PARAM = 20;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);

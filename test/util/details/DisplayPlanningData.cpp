@@ -56,7 +56,7 @@ void hrm::storePathInfo(const SolutionPathInfo& path,
 
     // Retrieve solution path
     std::ofstream filePath;
-    filePath.open(SOLUTION_DETAILS_PATH "/solutionPath_" + dimension + ".csv");
+    filePath.open(SOLUTION_DETAILS_PATH "/solution_path_" + dimension + ".csv");
     for (const auto& solvedPath : path.solvedPath) {
         for (const auto& solvedPathVal : solvedPath) {
             filePath << solvedPathVal << ',';
