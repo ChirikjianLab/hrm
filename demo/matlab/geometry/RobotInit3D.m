@@ -2,7 +2,7 @@ function [robot, robotURDF, jointLimits] = RobotInit3D(robot_type, robot_name)
 % Construct object of robot using union of SuperQuadrics objects
 % C-space: SE(3) x (S^1)^n
 
-path_prefix = '../../../resources/3D/';
+path_prefix = '../../resources/3D/';
 
 robot_config = csvread([path_prefix, 'robot_', robot_name, '_3D.csv']);
 for i = 1:size(robot_config,1)
