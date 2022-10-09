@@ -223,12 +223,15 @@ void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
     std::ofstream fileConfig;
     fileConfig.open(outputFilename);
     for (auto config : configs) {
-        size_t numParam = 3;
+        if (dim == "2D") {
+            // For 2D case
+            fileConfig << config.at(0) << ',' << config.at(1) << ','
+                       << config.at(2) << "\n";
 
-        // For 3D case
-        if (dim == "3D") {
+        } else if (dim == "3D") {
+            // For 3D case
             // For rigid-body robot
-            numParam = 6;
+            size_t numDOF = 6;
 
             // Convert angle-axis to Quaternion representation
             Eigen::Vector3d axis{config.at(3), config.at(4), config.at(5)};
@@ -242,17 +245,17 @@ void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
 
             // For different articulated robot types
             if (robotType == "snake") {
-                numParam = 10;
+                numDOF = 9;
             } else if (robotType == "tri-snake") {
-                numParam = 13;
+                numDOF = 12;
             }
-        }
 
-        // Write converted configuration
-        for (size_t i = 0; i < numParam; ++i) {
-            fileConfig << config.at(i) << ',';
+            // Write converted configuration
+            for (size_t i = 0; i < numDOF; ++i) {
+                fileConfig << config.at(i) << ',';
+            }
+            fileConfig << config.at(numDOF) << "\n";
         }
-        fileConfig << config.at(numParam) << "\n";
     }
     fileConfig.close();
 }
