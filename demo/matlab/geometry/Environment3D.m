@@ -1,6 +1,6 @@
 function [arena, obs, end_points] = Environment3D(obs_shape, env_type)
 %% Retrieve arena, obstacle and end points info
-path_prefix = '../../../resources/3D/';
+path_prefix = '../../resources/3D/';
 
 % Identify existing obstacle shape and environment type
 if strcmp(obs_shape, 'ellipsoid')

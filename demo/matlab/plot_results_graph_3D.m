@@ -63,7 +63,7 @@ end
 
 % Minkowski sums
 if ~isempty(X_mink)
-    for i = 1:3:size(X_mink,1)-3*4
+    for i = 1:3:size(X_mink,1)-3*(robot.numLink+1)
         pts = X_mink(i:i+2,:);
         x_surf = reshape(pts(1,:), 10, 10);
         y_surf = reshape(pts(2,:), 10, 10);
