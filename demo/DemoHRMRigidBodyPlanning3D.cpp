@@ -14,12 +14,12 @@ void demo() {
     env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Using fixed orientations from Icosahedral symmetry group
-    const std::string quat_file =
+    const std::string quatFile =
         RESOURCES_PATH "/SO3_sequence/q_icosahedron_60.csv";
 
     // Setup robot
     const auto robot =
-        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quatFile, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;

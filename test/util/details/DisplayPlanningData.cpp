@@ -5,8 +5,16 @@
 #include <iostream>
 
 void hrm::displayPlanningTimeInfo(const Time& time) {
-    std::cout << "Roadmap build time: " << time.buildTime << "s" << std::endl;
-    std::cout << "Path search time: " << time.searchTime << "s" << std::endl;
+    if (time.buildTime > 0) {
+        std::cout << "Roadmap build time: " << time.buildTime << "s"
+                  << std::endl;
+    }
+
+    if (time.searchTime > 0) {
+        std::cout << "Path search time: " << time.searchTime << "s"
+                  << std::endl;
+    }
+
     std::cout << "Total Planning Time: " << time.totalTime << 's' << std::endl;
 }
 
@@ -38,7 +46,7 @@ void hrm::storeGraphInfo(const Graph& graph, const std::string& dimension) {
 }
 
 void hrm::displayPathInfo(const SolutionPathInfo& path) {
-    std::cout << "Path length: " << path.PathId.size() << std::endl;
+    std::cout << "Path length: " << path.solvedPath.size() << std::endl;
     std::cout << "Path cost: " << path.cost << std::endl;
 }
 

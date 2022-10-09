@@ -1,3 +1,4 @@
+#include "config.h"
 #include "planners/ompl_interface/OMPL3D.h"
 #include "test/util/GTestUtils.h"
 #include "test/util/ParsePlanningSettings.h"
@@ -6,12 +7,12 @@ namespace ho = hrm::planners::ompl_interface;
 
 void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     // Read and setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D.loadEnvironment(CONFIG_PATH "/");
 
     const auto& arena = env3D.getArena();
     const auto& obs = env3D.getObstacle();
@@ -24,7 +25,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
 
     // Setup robot config
     hrm::MultiBodyTree3D robot =
-        hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", "0", NUM_SURF_PARAM);
 
     // Boundary
     const double f = 1.2;

@@ -108,11 +108,6 @@ int main(int argc, char** argv) {
                         << omplPlanner.getValidStatePercent() << ','
                         << omplPlanner.getNumCollisionChecks() << ','
                         << omplPlanner.getNumValidStates() << std::endl;
-
-                if (omplPlanner.isSolved()) {
-                    omplPlanner.saveVertexEdgeInfo(filenamePrefix);
-                    omplPlanner.savePathInfo(filenamePrefix);
-                }
             }
         }
     }

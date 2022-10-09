@@ -1,26 +1,17 @@
-#include "config.h"
-#include "planners/ompl_interface/OMPL3DArticulated.h"
-#include "test/util/GTestUtils.h"
+#include "planners/ompl_interface/OMPL3D.h"
+#include "test/util/DisplayPlanningData.h"
 #include "test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 
-void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
+void demo() {
     // Read and setup environment config
-    hrm::parsePlanningConfig("superquadrics", "sparse", "snake", "3D");
-    const int NUM_SURF_PARAM = 10;
+    hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
+    const int NUM_SURF_PARAM = 20;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
     env3D.loadEnvironment(CONFIG_PATH "/");
-
-    // Setup URDF file for the robot
-    std::string urdfFile;
-    if (env3D.getEndPoints().at(0).size() == 10) {
-        urdfFile = RESOURCES_PATH "/3D/urdf/snake.urdf";
-    } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdfFile = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
-    }
 
     const auto& arena = env3D.getArena();
     const auto& obs = env3D.getObstacle();
@@ -50,10 +41,10 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     std::cout << "OMPL planner for 3D rigid-body planning" << std::endl;
     std::cout << "----------" << std::endl;
 
-    ho::OMPL3DArticulated omplPlanner(b1, b2, robot, urdfFile, arena, obs,
-                                      obsMesh);
-    omplPlanner.setup(plannerIdx, samplerIdx);
+    ho::OMPL3D omplPlanner(b1, b2, robot, arena, obs, obsMesh);
 
+    // Planner: RRT-Connect
+    omplPlanner.setup(3, 0);
     omplPlanner.plan(env3D.getEndPoints().at(0), env3D.getEndPoints().at(1),
                      MAX_PLAN_TIME);
 
@@ -64,30 +55,21 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     res.graphStructure.vertex = omplPlanner.getVertices();
     res.solutionPath.cost = omplPlanner.getPathLength();
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
+    res.solutionPath.interpolatedPath =
+        omplPlanner.getInterpolatedSolutionPath();
     res.planningTime.totalTime = omplPlanner.getPlanningTime();
 
-    hrm::evaluateResult(res);
+    // Display and store results
+    // Display and store results
+    hrm::displayPlanningTimeInfo(res.planningTime);
+    hrm::displayGraphInfo(res.graphStructure);
+    hrm::displayPathInfo(res.solutionPath);
+
+    hrm::storeGraphInfo(res.graphStructure, "ompl_3D");
+    hrm::storePathInfo(res.solutionPath, "ompl_3D");
 }
 
-TEST(OMPLPlanningArticulated, PRMUniform) { TestOMPLPlanner(0, 0); }
-
-TEST(OMPLPlanningArticulated, PRMGaussian) { TestOMPLPlanner(0, 1); }
-
-TEST(OMPLPlanningArticulated, PRMObstacleBased) { TestOMPLPlanner(0, 2); }
-
-TEST(OMPLPlanningArticulated, PRMMaxClearance) { TestOMPLPlanner(0, 3); }
-
-TEST(OMPLPlanningArticulated, PRMBridgeTest) { TestOMPLPlanner(0, 4); }
-
-TEST(OMPLPlanningArticulated, LazyPRM) { TestOMPLPlanner(1, 0); }
-
-TEST(OMPLPlanningArticulated, RRT) { TestOMPLPlanner(2, 0); }
-
-TEST(OMPLPlanningArticulated, RRTConnect) { TestOMPLPlanner(3, 0); }
-
-TEST(OMPLPlanningArticulated, EST) { TestOMPLPlanner(4, 0); }
-
 int main(int ac, char* av[]) {
-    testing::InitGoogleTest(&ac, av);
-    return RUN_ALL_TESTS();
+    demo();
+    return 0;
 }
