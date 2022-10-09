@@ -5,6 +5,10 @@
 
 #include "ompl/base/spaces/RealVectorStateSpace.h"
 
+namespace hrm {
+namespace planners {
+namespace ompl_interface {
+
 /** \class OMPL3DArticulated
  * \brief Class for 3D articulated-body robot planning using OMPL */
 class OMPL3DArticulated : public OMPL3D {
@@ -19,7 +23,7 @@ class OMPL3DArticulated : public OMPL3D {
      * \param obsMesh Mesh model for obstacles */
     OMPL3DArticulated(const std::vector<Coordinate>& lowBound,
                       const std::vector<Coordinate>& highBound,
-                      const MultiBodyTree3D& robot, std::string urdfFile,
+                      const MultiBodyTree3D& robot, const std::string& urdfFile,
                       const std::vector<SuperQuadrics>& arena,
                       const std::vector<SuperQuadrics>& obs,
                       const std::vector<Mesh>& obsMesh);
@@ -48,5 +52,9 @@ class OMPL3DArticulated : public OMPL3D {
     Index numJoint_;
 
     /** \brief Maximum of joint angle */
-    const double maxJointAngle_ = pi / 2;
+    const double maxJointAngle_ = HALF_PI;
 };
+
+}  // namespace ompl_interface
+}  // namespace planners
+}  // namespace hrm

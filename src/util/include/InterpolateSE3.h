@@ -5,6 +5,8 @@
 #include <Eigen/Geometry>
 #include <vector>
 
+namespace hrm {
+
 /** \brief interpolateSE3 SE(3) interpolation. Separately interpolate
  * translation and rotational parts */
 std::vector<std::vector<Coordinate>> interpolateSE3(
@@ -33,3 +35,5 @@ std::vector<Eigen::Quaterniond> interpolateSlerp(
 std::vector<std::vector<Coordinate>> interpolateRn(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,
     const Index numStep);
+
+}  // namespace hrm

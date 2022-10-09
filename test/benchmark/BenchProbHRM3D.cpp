@@ -6,8 +6,6 @@
 #include <cstdlib>
 #include <ctime>
 
-using PlannerSetting3D = PlannerSetting<SuperQuadrics>;
-
 int main(int argc, char** argv) {
     if (argc == 8) {
         std::cout
@@ -25,87 +23,87 @@ int main(int argc, char** argv) {
     }
 
     // Record planning time for N trials
-    const auto N = size_t(atoi(argv[1]));
+    const auto numTrial = size_t(atoi(argv[1]));
     const std::string ROBOT_NAME = argv[2];
-    const int N_x = atoi(argv[3]);
-    const int N_y = atoi(argv[4]);
+    const int numLineX = atoi(argv[3]);
+    const int numLineY = atoi(argv[4]);
     const auto MAX_PLAN_TIME = double(atoi(argv[5]));
 
     // Setup environment config
     const std::string CONFIG_FILE_PREFIX = argv[6];
     const int NUM_SURF_PARAM = 10;
 
-    auto* env3D = new PlannerSetting3D(NUM_SURF_PARAM);
-    env3D->loadEnvironment(CONFIG_FILE_PREFIX);
+    hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
+    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
 
     // Setup robot
     const std::string URDF_FILE_PREFIX = argv[7];
 
-    MultiBodyTree3D robot =
-        loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+    hrm::MultiBodyTree3D robot =
+        hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
     std::string urdfFile =
         URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
 
     // Options
-    PlannerParameter param;
-    param.NUM_LAYER = 0;
-    param.NUM_LINE_X = size_t(N_x);
-    param.NUM_LINE_Y = size_t(N_y);
+    hrm::PlannerParameter param;
+    param.numLayer = 0;
+    param.numLineX = size_t(numLineX);
+    param.numLineY = size_t(numLineY);
+    hrm::defineParameters(robot, env3D, param);
 
-    defineParameters(&robot, env3D, &param);
-
-    std::cout << "Initial number of sweep lines: {" << param.NUM_LINE_X << ", "
-              << param.NUM_LINE_Y << '}' << std::endl;
+    std::cout << "Initial number of sweep lines: {" << param.numLineX << ", "
+              << param.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
 
-    std::cout << "Start benchmark..." << std::endl;
-
-    PlanningRequest req;
-    req.is_robot_rigid = false;
-    req.planner_parameters = param;
-    req.start = env3D->getEndPoints().at(0);
-    req.goal = env3D->getEndPoints().at(1);
+    hrm::PlanningRequest req;
+    req.isRobotRigid = false;
+    req.parameters = param;
+    req.start = env3D.getEndPoints().at(0);
+    req.goal = env3D.getEndPoints().at(1);
 
     // Store results
-    std::ofstream file_time;
-    file_time.open(BENCHMARK_DATA_PATH "/time_prob_high_3D.csv");
-    file_time << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS" << ','
-              << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE" << ','
-              << "GRAPH_EDGE" << ',' << "PATH_NODE"
-              << "\n";
+    std::ofstream fileTimeStatistics;
+    fileTimeStatistics.open(BENCHMARK_DATA_PATH "/time_prob_high_3D.csv");
+    fileTimeStatistics << "SUCCESS" << ',' << "PLAN_TIME" << ',' << "N_LAYERS"
+                       << ',' << "N_X" << ',' << "N_Y" << ',' << "GRAPH_NODE"
+                       << ',' << "GRAPH_EDGE" << ',' << "PATH_NODE"
+                       << "\n";
 
-    for (size_t i = 0; i < N; i++) {
+    // Benchmark
+    std::cout << "Start benchmark..." << std::endl;
+    for (size_t i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
         // Path planning using ProbHRM3D
-        ProbHRM3D probHRM(robot, urdfFile, env3D->getArena(),
-                          env3D->getObstacle(), req);
+        hrm::planners::ProbHRM3D probHRM(robot, urdfFile, env3D.getArena(),
+                                         env3D.getObstacle(), req);
         probHRM.plan(MAX_PLAN_TIME);
 
-        PlanningResult res = probHRM.getPlanningResult();
-        PlannerParameter param = probHRM.getPlannerParameters();
+        const auto res = probHRM.getPlanningResult();
+        const auto param = probHRM.getPlannerParameters();
 
         // Store results
-        displayPlanningTimeInfo(&res.planning_time);
-        displayGraphInfo(&res.graph_structure);
-        displayPathInfo(&res.solution_path);
+        hrm::displayPlanningTimeInfo(res.planningTime);
+        hrm::displayGraphInfo(res.graphStructure);
+        hrm::displayPathInfo(res.solutionPath);
 
         std::cout << "Final number of C-layers: "
-                  << probHRM.getPlannerParameters().NUM_LAYER << std::endl;
+                  << probHRM.getPlannerParameters().numLayer << std::endl;
         std::cout << "Final number of sweep lines: {"
-                  << probHRM.getPlannerParameters().NUM_LINE_X << ", "
-                  << probHRM.getPlannerParameters().NUM_LINE_Y << '}'
+                  << probHRM.getPlannerParameters().numLineX << ", "
+                  << probHRM.getPlannerParameters().numLineY << '}'
                   << std::endl;
         std::cout << "==========" << std::endl;
 
-        file_time << static_cast<int>(res.solved) << ','
-                  << res.planning_time.totalTime << ',' << param.NUM_LAYER
-                  << ',' << param.NUM_LINE_X << ',' << param.NUM_LINE_Y << ','
-                  << res.graph_structure.vertex.size() << ','
-                  << res.graph_structure.edge.size() << ','
-                  << res.solution_path.PathId.size() << "\n";
+        fileTimeStatistics << static_cast<int>(res.solved) << ','
+                           << res.planningTime.totalTime << ','
+                           << param.numLayer << ',' << param.numLineX << ','
+                           << param.numLineY << ','
+                           << res.graphStructure.vertex.size() << ','
+                           << res.graphStructure.edge.size() << ','
+                           << res.solutionPath.PathId.size() << "\n";
     }
-    file_time.close();
+    fileTimeStatistics.close();
 
     return 0;
 }

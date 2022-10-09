@@ -6,6 +6,8 @@
 #include <limits>
 #include <vector>
 
+namespace hrm {
+
 /** \class Interval
  * \brief Operations for invervals on a line */
 class Interval {
@@ -53,8 +55,10 @@ class Interval {
 
   private:
     /** \brief Starting point of the interval */
-    Coordinate start_ = std::numeric_limits<double>::quiet_NaN();
+    Coordinate start_ = NAN;
 
     /** \brief End point of the interval */
-    Coordinate end_ = std::numeric_limits<double>::quiet_NaN();
+    Coordinate end_ = NAN;
 };
+
+}  // namespace hrm

@@ -6,6 +6,8 @@
 #include <limits>
 #include <vector>
 
+namespace hrm {
+
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
@@ -48,13 +50,14 @@ class FreeSpaceComputator {
     FreeSpaceComputator(const RobotType& robot,
                         const std::vector<ObjectType>& arena,
                         const std::vector<ObjectType>& obstacle);
-    ~FreeSpaceComputator() {}
+    ~FreeSpaceComputator();
 
     /** \brief Setup C-free segment structure
      * \param numLine Number of sweep lines
      * \param lowBound Lower bound of the sweep line segment
      * \param upBound Upper bound of the sweep line segment */
-    void setup(const int numLine, const double lowBound, const double upBound);
+    void setup(const unsigned int numLine, const double lowBound,
+               const double upBound);
 
     /** \brief Set new robot in the same planning scene
      * \param robot A new robot */
@@ -62,15 +65,17 @@ class FreeSpaceComputator {
 
     /** \brief Get C-space obstacles boundary
      * \return BoundaryInfo */
-    BoundaryInfo getCSpaceBoundary() const { return cSpaceBoundary_; }
+    const BoundaryInfo& getCSpaceBoundary() const { return cSpaceBoundary_; }
 
     /** \brief Get intervals for line-obstacle/arena intersections
      * \return IntersectionInterval */
-    IntersectionInterval getIntersectionInterval() const { return intersect_; }
+    const IntersectionInterval& getIntersectionInterval() const {
+        return intersect_;
+    }
 
     /** \brief Get C-free line segments
      * \return Collision-free line segment as FreeSegment2D type */
-    FreeSegment2D getFreeSegment() const { return segment_; }
+    const FreeSegment2D& getFreeSegment() const { return segment_; }
 
     /** \brief Compute C-space boundary */
     void computeCSpaceBoundary();
@@ -119,5 +124,7 @@ class FreeSpaceComputator {
     /** \brief Upper bound of arena */
     double upBound_;
 };
+
+}  // namespace hrm
 
 #include "FreeSpace-inl.h"

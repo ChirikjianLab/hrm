@@ -1,8 +1,11 @@
 #include "include/MultiBodyTree2D.h"
 
-MultiBodyTree2D::MultiBodyTree2D(SuperEllipse base) : base_(std::move(base)) {}
+hrm::MultiBodyTree2D::MultiBodyTree2D(const SuperEllipse& base)
+    : MultiBodyTree<SuperEllipse, SE2Transform>::MultiBodyTree(base) {}
 
-void MultiBodyTree2D::addBody(const SuperEllipse& link) {
+hrm::MultiBodyTree2D::~MultiBodyTree2D() = default;
+
+void hrm::MultiBodyTree2D::addBody(const SuperEllipse& link) {
     // Add link
     link_.push_back(link);
     numLinks_++;
@@ -16,7 +19,7 @@ void MultiBodyTree2D::addBody(const SuperEllipse& link) {
     tf_.push_back(g);
 }
 
-void MultiBodyTree2D::robotTF(const Eigen::Matrix3d& g) {
+void hrm::MultiBodyTree2D::robotTF(const Eigen::Matrix3d& g) {
     // Set transform of base
     base_.setPosition({g(0, 2), g(1, 2)});
 
@@ -35,8 +38,8 @@ void MultiBodyTree2D::robotTF(const Eigen::Matrix3d& g) {
     }
 }
 
-std::vector<Eigen::MatrixXd> MultiBodyTree2D::minkSum(const SuperEllipse& s1,
-                                                      const Indicator k) const {
+std::vector<hrm::BoundaryPoints> hrm::MultiBodyTree2D::minkSum(
+    const SuperEllipse& s1, const Indicator k) const {
     std::vector<BoundaryPoints> mink;
 
     // Minkowski sums for Base

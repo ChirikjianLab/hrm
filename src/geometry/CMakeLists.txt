@@ -1,9 +1,9 @@
-add_library(GEOM
+add_library(Geometry
             LineIntersection.cpp
             MeshGenerator.cpp
             PointInPoly.cpp
             SuperEllipse.cpp
             SuperQuadrics.cpp
             TightFitEllipsoid.cpp)
-target_link_libraries(GEOM
-                      UTIL)
+target_link_libraries(Geometry
+                      Util)

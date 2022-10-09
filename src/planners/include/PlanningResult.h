@@ -5,6 +5,8 @@
 #include <limits>
 #include <vector>
 
+namespace hrm {
+
 using Edge = std::vector<std::pair<Index, Index>>;
 
 /** \brief Graph structure storing the roadmap information */
@@ -52,11 +54,13 @@ struct PlanningResult {
     bool solved = false;
 
     /** \brief Information of planning time */
-    Time planning_time;
+    Time planningTime;
 
     /** \brief Roadmap graph structure */
-    Graph graph_structure;
+    Graph graphStructure;
 
     /** \brief Information of solved path */
-    SolutionPathInfo solution_path;
+    SolutionPathInfo solutionPath;
 };
+
+}  // namespace hrm

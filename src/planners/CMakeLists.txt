@@ -1,8 +1,7 @@
 add_library(HighwayRoadMap HighwayRoadMap.cpp)
 target_link_libraries(HighwayRoadMap
-                      DATA_STRUCTURE
-                      GEOM
-                      UTIL
+                      DataStructure
+                      Geometry
                       ${OMPL_LIBRARIES})
 
 add_library(HRM2D
