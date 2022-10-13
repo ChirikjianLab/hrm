@@ -1,5 +1,5 @@
 #include "FreeSpace.h"
-#include "geometry/LineIntersection.h"
+#include "hrm/geometry/LineIntersection.h"
 
 namespace hrm {
 

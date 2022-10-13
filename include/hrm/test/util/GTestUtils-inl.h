@@ -1,8 +1,8 @@
 #pragma once
 
 #include "GTestUtils.h"
-#include "config.h"
-#include "planners/HRM3D.h"
+#include "hrm/config.h"
+#include "hrm/planners/HRM3D.h"
 
 namespace hrm {
 

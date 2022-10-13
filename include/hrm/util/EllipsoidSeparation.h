@@ -1,7 +1,7 @@
 #pragma once
 
-#include "geometry/SuperEllipse.h"
-#include "geometry/SuperQuadrics.h"
+#include "hrm/geometry/SuperEllipse.h"
+#include "hrm/geometry/SuperQuadrics.h"
 
 #include <Eigen/Dense>
 

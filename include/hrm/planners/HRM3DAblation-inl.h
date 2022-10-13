@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HRM3DAblation.h"
-#include "util/EllipsoidSQCollisionFCL.h"
+#include "hrm/util/EllipsoidSQCollisionFCL.h"
 
 namespace hrm {
 namespace planners {

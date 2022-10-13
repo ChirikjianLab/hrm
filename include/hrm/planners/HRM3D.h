@@ -1,11 +1,11 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "datastructure/FreeSpace3D.h"
-#include "geometry/LineIntersection.h"
-#include "geometry/MeshGenerator.h"
-#include "geometry/TightFitEllipsoid.h"
-#include "util/InterpolateSE3.h"
+#include "hrm/datastructure/FreeSpace3D.h"
+#include "hrm/geometry/LineIntersection.h"
+#include "hrm/geometry/MeshGenerator.h"
+#include "hrm/geometry/TightFitEllipsoid.h"
+#include "hrm/util/InterpolateSE3.h"
 
 namespace hrm {
 namespace planners {

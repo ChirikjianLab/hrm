@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/sanitizers)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/include/hrm)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 find_package(static_analysis)
@@ -93,10 +93,27 @@ set(BUILD_TESTING "" ON)
 enable_testing()
 add_subdirectory(test)
 
+
+# Installation
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(HighwayRoadMapConfigVersion.cmake
+                                 VERSION ${PACKAGE_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+
+install(EXPORT HighwayRoadMapTargets
+        FILE HighwayRoadMapTargets.cmake
+        NAMESPACE HighwayRoadMap::
+        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+
+configure_file(HighwayRoadMapConfig.cmake.in HighwayRoadMapConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/HighwayRoadMapConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/HighwayRoadMapConfigVersion.cmake"
+        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+
 # Install library headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm/
         CONFIGURATIONS Release
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}")
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}")
 
 # Uninstall target
 if(NOT TARGET uninstall)

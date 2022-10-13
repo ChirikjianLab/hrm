@@ -1,7 +1,7 @@
 #pragma once
 
-#include "geometry/MeshGenerator.h"
-#include "geometry/SuperEllipse.h"
+#include "hrm/geometry/MeshGenerator.h"
+#include "hrm/geometry/SuperEllipse.h"
 
 namespace hrm {
 

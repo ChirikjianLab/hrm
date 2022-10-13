@@ -1,4 +1,4 @@
-#include "datastructure/MultiBodyTree2D.h"
+#include "hrm/datastructure/MultiBodyTree2D.h"
 
 hrm::MultiBodyTree2D::MultiBodyTree2D(const SuperEllipse& base)
     : MultiBodyTree<SuperEllipse, SE2Transform>::MultiBodyTree(base) {}

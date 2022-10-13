@@ -2,7 +2,7 @@
 
 #include "FreeSpace.h"
 #include "MultiBodyTree2D.h"
-#include "geometry/SuperEllipse.h"
+#include "hrm/geometry/SuperEllipse.h"
 
 namespace hrm {
 

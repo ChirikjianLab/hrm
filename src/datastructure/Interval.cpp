@@ -1,4 +1,4 @@
-#include "datastructure/Interval.h"
+#include "hrm/datastructure/Interval.h"
 
 hrm::Interval::Interval(const Coordinate start, const Coordinate end)
     : start_(start), end_(end) {}

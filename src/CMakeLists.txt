@@ -2,6 +2,7 @@ add_subdirectory(datastructure)
 add_subdirectory(geometry)
 add_subdirectory(planners)
 add_subdirectory(util)
+add_subdirectory(test/util)
 
 # Install main library
 install(TARGETS DataStructure
@@ -11,4 +12,6 @@ install(TARGETS DataStructure
                 HRM3D
                 OMPLPlanner
                 Util
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}")
+                TestUtil
+        EXPORT HighwayRoadMapTargets
+        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_PROJECT_NAME}")

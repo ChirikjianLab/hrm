@@ -1,6 +1,6 @@
 #pragma once
 
-#include "planners/PlanningResult.h"
+#include "hrm/planners/PlanningResult.h"
 
 #include <string>
 

@@ -1,5 +1,5 @@
-#include "test/util/ParsePlanningSettings.h"
-#include "config.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
+#include "hrm/config.h"
 
 namespace hrm {
 

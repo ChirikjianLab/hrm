@@ -2,7 +2,7 @@
 
 #include "FreeSpace.h"
 #include "MultiBodyTree3D.h"
-#include "geometry/SuperQuadrics.h"
+#include "hrm/geometry/SuperQuadrics.h"
 
 namespace hrm {
 

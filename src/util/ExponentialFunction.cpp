@@ -1,4 +1,4 @@
-#include "util/ExponentialFunction.h"
+#include "hrm/util/ExponentialFunction.h"
 
 double hrm::exponentialFunction(const double theta, const double power,
                                 const bool isSine) {

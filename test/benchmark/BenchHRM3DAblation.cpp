@@ -1,7 +1,7 @@
-#include "config.h"
-#include "planners/HRM3DAblation.h"
-#include "test/util/DisplayPlanningData.h"
-#include "test/util/ParsePlanningSettings.h"
+#include "hrm/config.h"
+#include "hrm/planners/HRM3DAblation.h"
+#include "hrm/test/util/DisplayPlanningData.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 #include <cstdlib>
 #include <ctime>

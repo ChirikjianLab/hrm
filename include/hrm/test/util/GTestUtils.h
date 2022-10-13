@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ParsePlanningSettings.h"
-#include "planners/PlanningResult.h"
+#include "hrm/planners/PlanningResult.h"
 
 #include "gtest/gtest.h"
 

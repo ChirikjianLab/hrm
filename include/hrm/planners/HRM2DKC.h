@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HRM2D.h"
-#include "geometry/PointInPoly.h"
+#include "hrm/geometry/PointInPoly.h"
 
 namespace hrm {
 namespace planners {

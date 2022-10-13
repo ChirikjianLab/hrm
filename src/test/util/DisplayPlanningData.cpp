@@ -1,5 +1,5 @@
-#include "test/util/DisplayPlanningData.h"
-#include "config.h"
+#include "hrm/test/util/DisplayPlanningData.h"
+#include "hrm/config.h"
 
 #include <fstream>
 #include <iostream>

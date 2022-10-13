@@ -1,5 +1,5 @@
-#include "test/util/GTestUtils.h"
-#include "test/util/DisplayPlanningData.h"
+#include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/DisplayPlanningData.h"
 
 void hrm::showResult(const PlanningResult& res, const bool isStore,
                      const std::string& dimension) {

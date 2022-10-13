@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MeshGenerator.h"
-#include "datastructure/DataType.h"
+#include "hrm/datastructure/DataType.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
