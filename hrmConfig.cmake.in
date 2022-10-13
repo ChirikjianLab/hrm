@@ -9,10 +9,5 @@ find_dependency(orocos_kdl)
 find_dependency(Eigen3 3.3 REQUIRED)
 find_dependency(Boost 1.71.0 REQUIRED)
 
-set(HighwayRoadMap_INCLUDE_DIRS "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}")
-
 # Add the targets file
-include("${CMAKE_CURRENT_LIST_DIR}/HighwayRoadMapTargets.cmake")
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(HighwayRoadMap DEFAULT_MSG HighwayRoadMap_INCLUDE_DIRS)
+include("${CMAKE_CURRENT_LIST_DIR}/hrmTargets.cmake")

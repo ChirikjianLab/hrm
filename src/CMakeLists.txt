@@ -13,5 +13,5 @@ install(TARGETS DataStructure
                 OMPLPlanner
                 Util
                 TestUtil
-        EXPORT HighwayRoadMapTargets
-        LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/${CMAKE_PROJECT_NAME}")
+        EXPORT hrmTargets
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/hrm")

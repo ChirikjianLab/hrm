@@ -96,24 +96,24 @@ add_subdirectory(test)
 
 # Installation
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file(HighwayRoadMapConfigVersion.cmake
+write_basic_package_version_file(hrmConfigVersion.cmake
                                  VERSION ${PACKAGE_VERSION}
                                  COMPATIBILITY AnyNewerVersion)
 
-install(EXPORT HighwayRoadMapTargets
-        FILE HighwayRoadMapTargets.cmake
-        NAMESPACE HighwayRoadMap::
-        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+install(EXPORT hrmTargets
+        FILE hrmTargets.cmake
+        NAMESPACE hrm::
+        DESTINATION lib/cmake/hrm)
 
-configure_file(HighwayRoadMapConfig.cmake.in HighwayRoadMapConfig.cmake @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/HighwayRoadMapConfig.cmake"
-              "${CMAKE_CURRENT_BINARY_DIR}/HighwayRoadMapConfigVersion.cmake"
-        DESTINATION lib/cmake/${CMAKE_PROJECT_NAME})
+configure_file(hrmConfig.cmake.in hrmConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/hrmConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/hrmConfigVersion.cmake"
+        DESTINATION lib/cmake/hrm)
 
 # Install library headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm/
         CONFIGURATIONS Release
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}")
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/hrm")
 
 # Uninstall target
 if(NOT TARGET uninstall)
