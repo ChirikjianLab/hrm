@@ -28,33 +28,33 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     std::vector<std::vector<Coordinate>> getInterpolatedSolutionPath(
         const Index num);
 
-    /** \brief Get free line segment at one specific C-layer
+    /** \brief Get free line segment at one specific C-slice
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment3D type */
-    const FreeSegment3D& getFreeSegmentOneLayer(const BoundaryInfo* bd) {
-        layerBound_ = *bd;
-        freeSpacePtr_->computeCSpaceBoundaryMesh(layerBound_);
-        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
+    const FreeSegment3D& getFreeSegmentOneSlice(const BoundaryInfo* bd) {
+        sliceBound_ = *bd;
+        freeSpacePtr_->computeCSpaceBoundaryMesh(sliceBound_);
+        sliceBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
         sweepLineProcess();
-        return freeSegOneLayer_;
+        return freeSegOneSlice_;
     }
 
     /** \brief Get Minkowski sums boundary mesh
-     * \param idx Index of C-layer
+     * \param idx Index of C-slice
      * \return Boundary mesh */
-    const BoundaryMesh& getLayerBoundaryMesh(const Index idx) const {
-        return layerBoundMeshAll_.at(idx);
+    const BoundaryMesh& getSliceBoundaryMesh(const Index idx) const {
+        return sliceBoundMeshAll_.at(idx);
     }
 
     /** \brief Get Minkowski sums boundary
-     * \param idx Index of C-layer
+     * \param idx Index of C-slice
      * \return Boundary */
-    const BoundaryInfo& getLayerBoundary(const Index idx) const {
-        return layerBoundAll_.at(idx);
+    const BoundaryInfo& getSliceBoundary(const Index idx) const {
+        return sliceBoundAll_.at(idx);
     }
 
   protected:
-    void constructOneLayer(const Index layerIdx) override;
+    void constructOneSlice(const Index sliceIdx) override;
 
     virtual void sampleOrientations() override;
 
@@ -63,15 +63,15 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     virtual void generateVertices(const Coordinate tx,
                                   const FreeSegment2D& freeSeg) override;
 
-    /** \brief Connect within one C-layer
+    /** \brief Connect within one C-slice
      * \param freeSeg 3D collision-free line segments */
-    void connectOneLayer3D(const FreeSegment3D& freeSeg);
+    void connectOneSlice3D(const FreeSegment3D& freeSeg);
 
-    virtual void connectMultiLayer() override;
+    virtual void connectMultiSlice() override;
 
-    void connectExistLayer(const Index layerId) override;
+    void connectExistSlice(const Index sliceId) override;
 
-    void bridgeLayer() override;
+    void bridgeSlice() override;
 
     /** \brief Compute Tightly-Fitted Ellipsoid (TFE) to enclose robot parts
      * when rotating around its center
@@ -83,10 +83,10 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
                             const Eigen::Quaterniond& q2,
                             std::vector<SuperQuadrics>& tfe);
 
-    bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
+    bool isSameSliceTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;
 
-    virtual bool isMultiLayerTransitionFree(
+    virtual bool isMultiSliceTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) override;
 
@@ -106,16 +106,16 @@ class HRM3D : public HighwayRoadMap<MultiBodyTree3D, SuperQuadrics> {
     std::vector<Eigen::Quaterniond> q_;
 
     /** \param Boundary surface as mesh */
-    BoundaryMesh layerBoundMesh_;
+    BoundaryMesh sliceBoundMesh_;
 
     /** \param Storage of boundary surface mesh */
-    std::vector<BoundaryMesh> layerBoundMeshAll_;
+    std::vector<BoundaryMesh> sliceBoundMeshAll_;
 
     /** \param Collision-free line segments in one C-slice */
-    FreeSegment3D freeSegOneLayer_;
+    FreeSegment3D freeSegOneSlice_;
 
-    /** \param Minkowski boundaries mesh at bridge C-layer */
-    std::vector<std::vector<MeshMatrix>> bridgeLayerBound_;
+    /** \param Minkowski boundaries mesh at bridge C-slice */
+    std::vector<std::vector<MeshMatrix>> bridgeSliceBound_;
 
     /** \param Pointer to class for constructing free space */
     std::shared_ptr<FreeSpace3D> freeSpacePtr_;

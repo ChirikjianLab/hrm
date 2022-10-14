@@ -9,12 +9,12 @@
 int main(int argc, char** argv) {
     if (argc >= 7) {
         std::cout
-            << "Highway RoadMap (No bridge C-layer) for 3D rigid-body planning"
+            << "Highway RoadMap (No bridge C-slice) for 3D rigid-body planning"
             << std::endl;
         std::cout << "----------" << std::endl;
     } else {
         std::cerr
-            << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
+            << "Usage: Please add 1) Num of trials 2) Num of slices 3) Num of "
                "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
                "5) Max planning time 6) Configuration file prefix 7) "
                "Pre-defined quaternions file prefix (if no, enter 0 or leave "
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     // Record planning time for N trials
     const auto N = size_t(atoi(argv[1]));
-    const int numLayer = atoi(argv[2]);
+    const int numSlice = atoi(argv[2]);
     const int numLineX = atoi(argv[3]);
     const int numLineY = atoi(argv[4]);
     const auto MAX_PLAN_TIME = double(atoi(argv[5]));
@@ -48,12 +48,12 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.numLayer = size_t(numLayer);
+    param.numSlice = size_t(numSlice);
     param.numLineX = size_t(numLineX);
     param.numLineY = size_t(numLineY);
     hrm::defineParameters(robot, env3D, param);
 
-    std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Initial number of C-slices: " << param.numSlice << std::endl;
     std::cout << "Initial number of sweep lines: {" << param.numLineX << ", "
               << param.numLineY << '}' << std::endl;
     std::cout << "----------" << std::endl;
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < N; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
-        // Path planning using ablated HRM3D with no bridge C-layer
+        // Path planning using ablated HRM3D with no bridge C-slice
         hrm::planners::HRM3DAblation<hrm::planners::HRM3D> hrm_ablation(
             robot, env3D.getArena(), env3D.getObstacle(), req);
         hrm_ablation.plan(MAX_PLAN_TIME);
@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
         hrm::displayGraphInfo(res.graphStructure);
         hrm::displayPathInfo(res.solutionPath);
 
-        std::cout << "Final number of C-layers: "
-                  << hrm_ablation.getPlannerParameters().numLayer << std::endl;
+        std::cout << "Final number of C-slices: "
+                  << hrm_ablation.getPlannerParameters().numSlice << std::endl;
         std::cout << "Final number of sweep lines: {"
                   << hrm_ablation.getPlannerParameters().numLineX << ", "
                   << hrm_ablation.getPlannerParameters().numLineY << '}'
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
         fileTimeStatistics << res.solved << ',' << res.planningTime.buildTime
                            << ',' << res.planningTime.searchTime << ','
                            << res.planningTime.totalTime << ','
-                           << hrm_ablation.getPlannerParameters().numLayer
+                           << hrm_ablation.getPlannerParameters().numSlice
                            << ','
                            << hrm_ablation.getPlannerParameters().numLineX
                            << ','

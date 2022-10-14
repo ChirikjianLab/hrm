@@ -15,35 +15,35 @@ hrm::planners::HRM2D::HRM2D(const MultiBodyTree2D& robot,
 
 hrm::planners::HRM2D::~HRM2D() = default;
 
-void hrm::planners::HRM2D::constructOneLayer(const Index layerIdx) {
+void hrm::planners::HRM2D::constructOneSlice(const Index sliceIdx) {
     // Set rotation matrix to robot
-    setTransform({0.0, 0.0, headings_.at(layerIdx)});
+    setTransform({0.0, 0.0, headings_.at(sliceIdx)});
 
-    // Generate new C-layer
+    // Generate new C-slice
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
         freeSpacePtr_->computeCSpaceBoundary();
-        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
-        layerBoundAll_.push_back(layerBound_);
+        sliceBound_ = freeSpacePtr_->getCSpaceBoundary();
+        sliceBoundAll_.push_back(sliceBound_);
     } else {
-        layerBound_ = layerBoundAll_.at(layerIdx);
+        sliceBound_ = sliceBoundAll_.at(sliceIdx);
     }
 
     // Sweep-line process to generate collision free line segments
     sweepLineProcess();
 
     // Generate collision-free vertices
-    generateVertices(0.0, freeSegOneLayer_);
+    generateVertices(0.0, freeSegOneSlice_);
 
-    // Connect vertices within one C-layer
-    connectOneLayer2D(freeSegOneLayer_);
+    // Connect vertices within one C-slice
+    connectOneSlice2D(freeSegOneSlice_);
 }
 
 /** \brief Setup rotation angles: angle range [-PI, PI]. If the heading
  * exists, no addition and record the index */
 void hrm::planners::HRM2D::sampleOrientations() {
-    const double dr = 2 * PI / (static_cast<double>(param_.numLayer) - 1);
-    for (size_t i = 0; i < param_.numLayer; ++i) {
+    const double dr = 2 * PI / (static_cast<double>(param_.numSlice) - 1);
+    for (size_t i = 0; i < param_.numSlice; ++i) {
         headings_.push_back(-PI + dr * static_cast<double>(i));
     }
 }
@@ -64,7 +64,7 @@ void hrm::planners::HRM2D::sweepLineProcess() {
 
     // Compute collision-free intervals at each sweep line
     freeSpacePtr_->computeFreeSegment(ty);
-    freeSegOneLayer_ = freeSpacePtr_->getFreeSegment();
+    freeSegOneSlice_ = freeSpacePtr_->getFreeSegment();
 }
 
 void hrm::planners::HRM2D::generateVertices(const Coordinate tx,
@@ -86,7 +86,7 @@ void hrm::planners::HRM2D::generateVertices(const Coordinate tx,
     numVertex_.line.push_back(numVertex_.plane);
 }
 
-void hrm::planners::HRM2D::connectMultiLayer() {
+void hrm::planners::HRM2D::connectMultiSlice() {
     // No connection needed if robot only has one orientation
     if (vertexIdx_.size() == 1) {
         return;
@@ -107,23 +107,23 @@ void hrm::planners::HRM2D::connectMultiLayer() {
 
     for (size_t i = 0; i < vertexIdx_.size(); ++i) {
         startIdCur = vertexIdx_.at(i).startId;
-        endIdCur = vertexIdx_.at(i).layer;
+        endIdCur = vertexIdx_.at(i).slice;
 
-        // Find the nearest C-layer
-        if (i == param_.numLayer - 1 && param_.numLayer != 2) {
+        // Find the nearest C-slice
+        if (i == param_.numSlice - 1 && param_.numSlice != 2) {
             j = 0;
         } else {
             j = i + 1;
         }
 
         startIdAdj = vertexIdx_.at(j).startId;
-        endIdAdj = vertexIdx_.at(j).layer;
+        endIdAdj = vertexIdx_.at(j).slice;
 
-        // Compute TFE and construct bridge C-layer
+        // Compute TFE and construct bridge C-slice
         computeTFE(headings_[i], headings_[j], tfe_);
-        bridgeLayer();
+        bridgeSlice();
 
-        // Connect close vertices btw layers
+        // Connect close vertices btw slices
         for (size_t m0 = startIdCur; m0 < endIdCur; ++m0) {
             v1 = res_.graphStructure.vertex[m0];
             for (size_t m1 = startIdAdj; m1 < endIdAdj; ++m1) {
@@ -138,7 +138,7 @@ void hrm::planners::HRM2D::connectMultiLayer() {
                     continue;
                 }
 
-                if (isMultiLayerTransitionFree(v1, v2)) {
+                if (isMultiSliceTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                     res_.graphStructure.weight.push_back(
@@ -153,15 +153,15 @@ void hrm::planners::HRM2D::connectMultiLayer() {
     }
 }
 
-void hrm::planners::HRM2D::connectExistLayer(const Index layerId) {
+void hrm::planners::HRM2D::connectExistSlice(const Index sliceId) {
     // Attempt to connect the most recent subgraph to previous existing graph
-    // Traverse C-layers through the current subgraph
-    Index startIdCur = vertexIdx_.at(layerId).startId;
-    Index endIdCur = vertexIdx_.at(layerId).layer;
+    // Traverse C-slices through the current subgraph
+    Index startIdCur = vertexIdx_.at(sliceId).startId;
+    Index endIdCur = vertexIdx_.at(sliceId).slice;
 
-    // Connect within same C-layer, same index with previous round of search
-    Index startIdExist = vertexIdxAll_.back().at(layerId).startId;
-    Index endIdExist = vertexIdxAll_.back().at(layerId).layer;
+    // Connect within same C-slice, same index with previous round of search
+    Index startIdExist = vertexIdxAll_.back().at(sliceId).startId;
+    Index endIdExist = vertexIdxAll_.back().at(sliceId).slice;
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
@@ -181,7 +181,7 @@ void hrm::planners::HRM2D::connectExistLayer(const Index layerId) {
                 continue;
             }
 
-            if (isSameLayerTransitionFree(v1, v2)) {
+            if (isSameSliceTransitionFree(v1, v2)) {
                 // Add new connections
                 res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                 res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));
@@ -194,8 +194,8 @@ void hrm::planners::HRM2D::connectExistLayer(const Index layerId) {
     }
 }
 
-void hrm::planners::HRM2D::bridgeLayer() {
-    bridgeLayerBound_.resize(tfe_.size());
+void hrm::planners::HRM2D::bridgeSlice() {
+    bridgeSliceBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
         // Reference point to be the center of TFE
         tfe_.at(i).setPosition({0.0, 0.0});
@@ -206,11 +206,11 @@ void hrm::planners::HRM2D::bridgeLayer() {
             bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
         }
 
-        bridgeLayerBound_.at(i) = bd;
+        bridgeSliceBound_.at(i) = bd;
     }
 }
 
-bool hrm::planners::HRM2D::isSameLayerTransitionFree(
+bool hrm::planners::HRM2D::isSameSliceTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Intersection between line segment and polygons
     struct intersect {
@@ -225,12 +225,12 @@ bool hrm::planners::HRM2D::isSameLayerTransitionFree(
         std::vector<Coordinate> v2_;
     };
 
-    return !std::any_of(layerBound_.obstacle.cbegin(),
-                        layerBound_.obstacle.cend(), intersect(v1, v2));
+    return !std::any_of(sliceBound_.obstacle.cbegin(),
+                        sliceBound_.obstacle.cend(), intersect(v1, v2));
 }
 
-// Connect vertices among different layers
-bool hrm::planners::HRM2D::isMultiLayerTransitionFree(
+// Connect vertices among different slices
+bool hrm::planners::HRM2D::isMultiSliceTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     const double dt = 1.0 / (static_cast<double>(param_.numPoint) - 1);
     for (size_t i = 0; i < param_.numPoint; ++i) {
@@ -245,13 +245,13 @@ bool hrm::planners::HRM2D::isMultiLayerTransitionFree(
         setTransform(vStep);
 
         // For base, check whether the TFE is in free space of bridge
-        // C-layer
+        // C-slice
         if (!isPtInCFree(0, robot_.getBase().getPosition())) {
             return false;
         }
 
         // For each link, check whether the TFE is in free space of bridge
-        // C-layer
+        // C-slice
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
             if (!isPtInCFree(j + 1, robot_.getLinks()[j].getPosition())) {
                 return false;
@@ -265,7 +265,7 @@ bool hrm::planners::HRM2D::isMultiLayerTransitionFree(
 bool hrm::planners::HRM2D::isPtInCFree(const Index bdIdx,
                                        const std::vector<Coordinate>& v) {
     // Ray-casting to check point containment within all C-obstacles
-    for (const auto& bound : bridgeLayerBound_.at(bdIdx).obstacle) {
+    for (const auto& bound : bridgeSliceBound_.at(bdIdx).obstacle) {
         auto intersectObs = intersectHorizontalLinePolygon2D(v[1], bound);
 
         if (!intersectObs.empty()) {
@@ -290,7 +290,7 @@ hrm::planners::HRM2D::getNearestNeighborsOnGraph(
     double euclideanDist = 0.0;
     std::vector<Vertex> idx;
 
-    // Find the closest C-layer
+    // Find the closest C-slice
     minAngleDist = std::fabs(vertex[2] - minAngle);
     for (auto vtx : res_.graphStructure.vertex) {
         angleDist = std::fabs(vertex[2] - vtx[2]);
@@ -300,7 +300,7 @@ hrm::planners::HRM2D::getNearestNeighborsOnGraph(
         }
     }
 
-    // Search for k-nn C-layers
+    // Search for k-nn C-slices
     std::vector<double> angList;
     for (auto heading : headings_) {
         if (std::fabs(minAngle - heading) < radius) {
@@ -313,9 +313,9 @@ hrm::planners::HRM2D::getNearestNeighborsOnGraph(
     }
 
     // Find the close vertex within a range (relative to the size of sweep
-    // line gaps) at each C-layer
+    // line gaps) at each C-slice
     for (double angCur : angList) {
-        Vertex idxLayer = 0;
+        Vertex idxSlice = 0;
         minEuclideanDist =
             vectorEuclidean(vertex, res_.graphStructure.vertex[0]);
         for (size_t i = 0; i < res_.graphStructure.vertex.size(); ++i) {
@@ -325,14 +325,14 @@ hrm::planners::HRM2D::getNearestNeighborsOnGraph(
                 std::fabs(res_.graphStructure.vertex[i][2] - angCur) <
                     EPSILON) {
                 minEuclideanDist = euclideanDist;
-                idxLayer = i;
+                idxSlice = i;
             }
         }
 
-        if (std::abs(vertex[1] - res_.graphStructure.vertex[idxLayer][1]) <
+        if (std::abs(vertex[1] - res_.graphStructure.vertex[idxSlice][1]) <
             radius * (param_.boundaryLimits[1] - param_.boundaryLimits[0]) /
                 static_cast<double>(param_.numLineY)) {
-            idx.push_back(idxLayer);
+            idx.push_back(idxSlice);
         }
     }
 

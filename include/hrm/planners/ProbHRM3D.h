@@ -29,7 +29,7 @@ class ProbHRM3D : public HRM3D {
   protected:
     void sampleOrientations() override;
 
-    void connectMultiLayer() override;
+    void connectMultiSlice() override;
 
     void generateVertices(const Coordinate tx,
                           const FreeSegment2D& freeSeg) override;

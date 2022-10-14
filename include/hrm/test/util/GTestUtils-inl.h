@@ -33,7 +33,7 @@ void storeRoutines(Planner& planner) {
     fileBoundaryOriginal.close();
 
     // Minkowski boundary
-    const auto boundaryMinkowski = planner.getLayerBoundary(0);
+    const auto boundaryMinkowski = planner.getSliceBoundary(0);
 
     std::ofstream fileBoundaryMinkowski;
     fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_3D.csv");
@@ -46,7 +46,7 @@ void storeRoutines(Planner& planner) {
     fileBoundaryMinkowski.close();
 
     // Sweep line
-    const auto freeSegment = planner.getFreeSegmentOneLayer(&boundaryMinkowski);
+    const auto freeSegment = planner.getFreeSegmentOneSlice(&boundaryMinkowski);
 
     std::ofstream fileFreeSegment;
     fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_3D.csv");

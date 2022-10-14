@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     // Parameters
     hrm::PlannerParameter param;
-    param.numLayer = 0;
+    param.numSlice = 0;
     param.numLineX = size_t(numLineX);
     param.numLineY = size_t(numLineY);
     hrm::defineParameters(robot, env3D, param);
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     for (size_t i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
-        // Path planning using ablated ProbHRM3D with no bridge C-layer
+        // Path planning using ablated ProbHRM3D with no bridge C-slice
         hrm::planners::HRM3DAblation<hrm::planners::ProbHRM3D>
             prob_hrm_ablation(robot, urdfFile, env3D.getArena(),
                               env3D.getObstacle(), req);
@@ -89,8 +89,8 @@ int main(int argc, char** argv) {
         hrm::displayGraphInfo(res.graphStructure);
         hrm::displayPathInfo(res.solutionPath);
 
-        std::cout << "Final number of C-layers: "
-                  << prob_hrm_ablation.getPlannerParameters().numLayer
+        std::cout << "Final number of C-slices: "
+                  << prob_hrm_ablation.getPlannerParameters().numSlice
                   << std::endl;
         std::cout << "Final number of sweep lines: {"
                   << prob_hrm_ablation.getPlannerParameters().numLineX << ", "
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 
         fileTimeStatistics << res.solved << ',' << res.planningTime.totalTime
                            << ','
-                           << prob_hrm_ablation.getPlannerParameters().numLayer
+                           << prob_hrm_ablation.getPlannerParameters().numSlice
                            << ','
                            << prob_hrm_ablation.getPlannerParameters().numLineX
                            << ','

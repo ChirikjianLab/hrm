@@ -13,7 +13,7 @@ algorithm planTest(const robotType& robot,
                    const std::vector<hrm::SuperEllipse>& obs,
                    const hrm::PlanningRequest& req, const bool isStore) {
     // Main algorithm
-    std::cout << "Input number of C-layers: " << req.parameters.numLayer
+    std::cout << "Input number of C-slices: " << req.parameters.numSlice
               << std::endl;
     std::cout << "Input number of sweep lines: " << req.parameters.numLineY
               << std::endl;
@@ -26,8 +26,8 @@ algorithm planTest(const robotType& robot,
 
     std::cout << "Finished planning!" << std::endl;
 
-    std::cout << "Final number of C-layers: "
-              << hrm.getPlannerParameters().numLayer << std::endl;
+    std::cout << "Final number of C-slices: "
+              << hrm.getPlannerParameters().numSlice << std::endl;
     std::cout << "Final number of sweep lines: "
               << hrm.getPlannerParameters().numLineY << std::endl;
 
@@ -70,7 +70,7 @@ algorithm planTest(const robotType& robot,
 
         // TEST: Sweep line process
         const auto freeSegment =
-            hrm.getFreeSegmentOneLayer(boundaryMinkowski.at(0));
+            hrm.getFreeSegmentOneSlice(boundaryMinkowski.at(0));
 
         std::ofstream fileFreeSegment;
         fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_2D.csv");
@@ -91,7 +91,7 @@ algorithm planTest(const robotType& robot,
 TEST(TestHRMPlanning2D, MultiBody) {
     std::cout << "Highway RoadMap for 2D planning" << std::endl;
     std::cout << "Robot type: Multi-link rigid body" << std::endl;
-    std::cout << "Layer connection method: Bridge C-layer" << std::endl;
+    std::cout << "Slice connection method: Bridge C-slice" << std::endl;
     std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
@@ -108,7 +108,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
     req.start = env2D.getEndPoints().at(0);
     req.goal = env2D.getEndPoints().at(1);
 
-    req.parameters.numLayer = 10;
+    req.parameters.numSlice = 10;
     req.parameters.numPoint = 5;
     hrm::defineParameters(robot, env2D, req.parameters);
 
@@ -124,7 +124,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
 TEST(TestHRMPlanning2D, KinematicsOfContainment) {
     std::cout << "Highway RoadMap for 2D planning" << std::endl;
     std::cout << "Robot type: Multi-link rigid body" << std::endl;
-    std::cout << "Layer connection method: Local C-space using Kinematics of "
+    std::cout << "Slice connection method: Local C-space using Kinematics of "
                  "Containment (KC)"
               << std::endl;
     std::cout << "----------" << std::endl;
@@ -140,7 +140,7 @@ TEST(TestHRMPlanning2D, KinematicsOfContainment) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.numLayer = 10;
+    param.numSlice = 10;
     param.numPoint = 5;
     hrm::defineParameters(robot, env2D, param);
 

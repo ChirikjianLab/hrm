@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
         std::cout << "----------" << std::endl;
     } else {
         std::cerr
-            << "Usage: Please add 1) Num of trials 2) Num of layers 3) Num of "
+            << "Usage: Please add 1) Num of trials 2) Num of slices 3) Num of "
                "sweep lines 4) Configuration file prefix"
             << std::endl;
         return 1;
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     // Record planning time for N trials
     const int numTrial = atoi(argv[1]);
-    const int numLayer = atoi(argv[2]);
+    const int numSlice = atoi(argv[2]);
     const int numLineY = atoi(argv[3]);
     std::vector<std::vector<double>> timeStatistics;
 
@@ -41,12 +41,12 @@ int main(int argc, char** argv) {
 
     // Planning parameters
     hrm::PlannerParameter param;
-    param.numLayer = static_cast<size_t>(numLayer);
+    param.numSlice = static_cast<size_t>(numSlice);
     param.numLineY = static_cast<size_t>(numLineY);
     param.numPoint = 5;
     hrm::defineParameters(robot, env2D, param);
 
-    std::cout << "Initial number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Initial number of C-slices: " << param.numSlice << std::endl;
     std::cout << "Initial number of sweep lines: " << param.numLineY
               << std::endl;
     std::cout << "----------" << std::endl;

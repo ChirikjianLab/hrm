@@ -91,17 +91,17 @@ void HighwayRoadMap<RobotType, ObjectType>::buildRoadmap() {
     sampleOrientations();
 
     // Construct roadmap
-    for (size_t i = 0; i < param_.numLayer; ++i) {
-        // construct one C-layer
-        constructOneLayer(i);
+    for (size_t i = 0; i < param_.numSlice; ++i) {
+        // construct one C-slice
+        constructOneSlice(i);
 
-        // Record vertex index at each C-layer
-        numVertex_.layer = res_.graphStructure.vertex.size();
+        // Record vertex index at each C-slice
+        numVertex_.slice = res_.graphStructure.vertex.size();
         vertexIdx_.push_back(numVertex_);
     }
 
-    // Connect adjacent layers using bridge C-layer
-    connectMultiLayer();
+    // Connect adjacent slices using bridge C-slice
+    connectMultiSlice();
 }
 
 template <class RobotType, class ObjectType>
@@ -183,16 +183,16 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
     param_.numLineX *= 2;
     param_.numLineY *= 2;
 
-    for (size_t i = 0; i < param_.numLayer; ++i) {
+    for (size_t i = 0; i < param_.numSlice; ++i) {
         auto start = Clock::now();
 
-        // construct refined C-layer
-        constructOneLayer(i);
-        numVertex_.layer = res_.graphStructure.vertex.size();
+        // construct refined C-slice
+        constructOneSlice(i);
+        numVertex_.slice = res_.graphStructure.vertex.size();
         vertexIdx_.push_back(numVertex_);
 
-        // Connect with existing layers
-        connectExistLayer(i);
+        // Connect with existing slices
+        connectExistSlice(i);
 
         res_.planningTime.buildTime += Durationd(Clock::now() - start).count();
 
@@ -213,7 +213,7 @@ void HighwayRoadMap<RobotType, ObjectType>::refineExistRoadmap(
 }
 
 template <class RobotType, class ObjectType>
-void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
+void HighwayRoadMap<RobotType, ObjectType>::connectOneSlice2D(
     const FreeSegment2D& freeSeg) {
     // Add connections to edge list
     Index n1 = 0;
@@ -240,7 +240,7 @@ void HighwayRoadMap<RobotType, ObjectType>::connectOneLayer2D(
                 n2 = numVertex_.plane.at(i + 1);
 
                 for (Index j2 = 0; j2 < freeSeg.xM[i + 1].size(); ++j2) {
-                    if (isSameLayerTransitionFree(
+                    if (isSameSliceTransitionFree(
                             res_.graphStructure.vertex[n1 + j1],
                             res_.graphStructure.vertex[n2 + j2])) {
                         // Direct success connection
@@ -304,11 +304,11 @@ void HighwayRoadMap<RobotType, ObjectType>::bridgeVertex(const Index idx1,
     auto vNew = v1;
 
     // Check validity of potential connections
-    if (isSameLayerTransitionFree(v1, vNew1) &&
-        isSameLayerTransitionFree(vNew1, v2)) {
+    if (isSameSliceTransitionFree(v1, vNew1) &&
+        isSameSliceTransitionFree(vNew1, v2)) {
         vNew = vNew1;
-    } else if (isSameLayerTransitionFree(v1, vNew2) &&
-               isSameLayerTransitionFree(vNew2, v2)) {
+    } else if (isSameSliceTransitionFree(v1, vNew2) &&
+               isSameSliceTransitionFree(vNew2, v2)) {
         vNew = vNew2;
     } else {
         return;

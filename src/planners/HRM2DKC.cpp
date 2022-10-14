@@ -20,7 +20,7 @@ hrm::planners::HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,
 
 hrm::planners::HRM2DKC::~HRM2DKC() = default;
 
-void hrm::planners::HRM2DKC::connectMultiLayer() {
+void hrm::planners::HRM2DKC::connectMultiSlice() {
     Index n = res_.graphStructure.vertex.size();
     Index n11;
     Index n12;
@@ -31,18 +31,18 @@ void hrm::planners::HRM2DKC::connectMultiLayer() {
     std::vector<Coordinate> v2;
     std::vector<Coordinate> midVtx;
 
-    for (size_t i = 0; i < param_.numLayer; ++i) {
-        // Find vertex only in adjecent layers
-        n11 = vertexIdx_.at(i).layer;
-        if (i != param_.numLayer - 1) {
-            n2 = vertexIdx_.at(i + 1).layer;
+    for (size_t i = 0; i < param_.numSlice; ++i) {
+        // Find vertex only in adjecent slices
+        n11 = vertexIdx_.at(i).slice;
+        if (i != param_.numSlice - 1) {
+            n2 = vertexIdx_.at(i + 1).slice;
             n12 = n11;
         } else {
-            n2 = vertexIdx_.at(0).layer;
+            n2 = vertexIdx_.at(0).slice;
             n12 = 0;
         }
 
-        // Nearest vertex btw layers
+        // Nearest vertex btw slices
         for (size_t m = start; m < n11; ++m) {
             v1 = res_.graphStructure.vertex[m];
 
@@ -72,7 +72,7 @@ void hrm::planners::HRM2DKC::connectMultiLayer() {
 
 std::vector<hrm::Coordinate> hrm::planners::HRM2DKC::addMiddleVertex(
     std::vector<Coordinate> vtx1, std::vector<Coordinate> vtx2) {
-    // Connect vertexes among different layers, and add a bridge vertex to the
+    // Connect vertexes among different slices, and add a bridge vertex to the
     // roadmap
     std::vector<Coordinate> midVtx;
     std::vector<Coordinate> pt;

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="tri-snake">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="snake">
   <xacro:property name="baselen" value="7.5"/>
   <xacro:property name="baseheight" value="2.8"/>
   <xacro:property name="bodylen" value="4.6"/>

@@ -41,11 +41,11 @@ class HRM3DAblation : public Planner {
      * \param v1 The starting vertex
      * \param v2 The goal vertex
      * \return true if transition is valid, false otherwise */
-    bool isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+    bool isMultiSliceTransitionFree(const std::vector<Coordinate>& v1,
                                     const std::vector<Coordinate>& v2) override;
 
     /** \brief Clear any stored bridge C-slice information */
-    void bridgeLayer() override;
+    void bridgeSlice() override;
 
     /** \brief Clear any computed TFE
      * \param v1 Start orientation of the robot

@@ -27,7 +27,7 @@ def plot_results_ompl_3d(is_plot_graph=False):
     if size_config[1] == 10:
         urdf_file = resource_path + "urdf/snake.urdf"
     elif size_config[1] == 16:
-        urdf_file = resource_path + "urdf/tri-snake.urdf"
+        urdf_file = resource_path + "urdf/tree.urdf"
 
     robot, robot_urdf = generate_robot(robot_config, urdf_file)
 

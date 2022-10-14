@@ -31,7 +31,7 @@ template <class Planner>
 HRM3DAblation<Planner>::~HRM3DAblation() {}
 
 template <class Planner>
-bool HRM3DAblation<Planner>::isMultiLayerTransitionFree(
+bool HRM3DAblation<Planner>::isMultiSliceTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
     std::vector<std::vector<Coordinate>> vInterp =
@@ -63,8 +63,8 @@ bool HRM3DAblation<Planner>::isMultiLayerTransitionFree(
 }
 
 template <class Planner>
-void HRM3DAblation<Planner>::bridgeLayer() {
-    Planner::bridgeLayerBound_.clear();
+void HRM3DAblation<Planner>::bridgeSlice() {
+    Planner::bridgeSliceBound_.clear();
 }
 
 template <class Planner>

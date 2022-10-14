@@ -24,14 +24,14 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     /** \brief Get free line segment at one specific C-slice
      * \param bd Pointer to Minkowski boundaries
      * \return Collision-free line segment as FreeSegment2D type */
-    const FreeSegment2D& getFreeSegmentOneLayer(const BoundaryInfo& bd) {
-        layerBound_ = bd;
+    const FreeSegment2D& getFreeSegmentOneSlice(const BoundaryInfo& bd) {
+        sliceBound_ = bd;
         sweepLineProcess();
-        return freeSegOneLayer_;
+        return freeSegOneSlice_;
     }
 
   protected:
-    void constructOneLayer(const Index layerIdx) override;
+    void constructOneSlice(const Index sliceIdx) override;
 
     virtual void sampleOrientations() override;
 
@@ -40,16 +40,16 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
 
     void sweepLineProcess() override;
 
-    virtual void connectMultiLayer() override;
+    virtual void connectMultiSlice() override;
 
-    void connectExistLayer(const Index layerId) override;
+    void connectExistSlice(const Index sliceId) override;
 
-    void bridgeLayer() override;
+    void bridgeSlice() override;
 
-    bool isSameLayerTransitionFree(const std::vector<Coordinate>& v1,
+    bool isSameSliceTransitionFree(const std::vector<Coordinate>& v1,
                                    const std::vector<Coordinate>& v2) override;
 
-    bool isMultiLayerTransitionFree(const std::vector<Coordinate>& v1,
+    bool isMultiSliceTransitionFree(const std::vector<Coordinate>& v1,
                                     const std::vector<Coordinate>& v2) override;
 
     bool isPtInCFree(const Index bdIdx,
@@ -74,10 +74,10 @@ class HRM2D : public HighwayRoadMap<MultiBodyTree2D, SuperEllipse> {
     std::vector<double> headings_;
 
     /** \param Collision-free line segment */
-    FreeSegment2D freeSegOneLayer_;
+    FreeSegment2D freeSegOneSlice_;
 
-    /** \param Minkowski boundaries at bridge C-layer */
-    std::vector<BoundaryInfo> bridgeLayerBound_;
+    /** \param Minkowski boundaries at bridge C-slice */
+    std::vector<BoundaryInfo> bridgeSliceBound_;
 
     /** \param Pointer to class for constructing free space */
     std::shared_ptr<FreeSpace2D> freeSpacePtr_;
