@@ -33,8 +33,7 @@ class OMPL2D : public OMPLInterface<MultiBodyTree2D, SuperEllipse> {
 
     void setCollisionObject() override;
 
-    MultiBodyTree2D transformRobot(
-        const ompl::base::State* state) const override;
+    MultiBodyTree2D transformRobot(const ob::State* state) const override;
 
     bool isSeparated(const MultiBodyTree2D& robotAux) const override;
 

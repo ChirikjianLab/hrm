@@ -113,7 +113,7 @@ class PlannerSetting {
     void setObstacle(std::vector<ObjectType> obstacle) { obstacle_ = obstacle; }
 
     /** \brief Set start/goal configurations
-     * \param end_points List of configurations for start and goal */
+     * \param endPoints List of configurations for start and goal */
     void setEndPoints(std::vector<std::vector<double>> endPoints) {
         endPoints_ = endPoints;
     }
