@@ -7,7 +7,7 @@ function robot = RobotInit2D(opt, infla)
 % C-space: SE(2)
 
 %% Read configuration files and set body colors
-path_prefix = '../../resources/2D/';
+path_prefix = '../../../resources/2D/';
 
 % Single body robot
 if opt == 1

@@ -174,17 +174,17 @@ void parsePlanningConfig(const std::string& objectType,
                                           "/setting_" + objectType + "_" +
                                           envType + "_" + dim + ".csv";
 
-    parsePlanningConfig(arenaFilename,
+    parseGeometricModel(arenaFilename,
                         CONFIG_PATH "/arena_config_" + dim + ".csv");
-    parsePlanningConfig(obstacleFilename,
+    parseGeometricModel(obstacleFilename,
                         CONFIG_PATH "/obstacle_config_" + dim + ".csv");
-    parsePlanningConfig(robotFilename,
+    parseGeometricModel(robotFilename,
                         CONFIG_PATH "/robot_config_" + dim + ".csv");
-    parsePlanningConfig(endPointsFilename,
-                        CONFIG_PATH "/end_points_" + dim + ".csv");
+    parseStartGoalConfig(robotType, dim, endPointsFilename,
+                         CONFIG_PATH "/end_points_" + dim + ".csv");
 }
 
-void parsePlanningConfig(const std::string& inputFilename,
+void parseGeometricModel(const std::string& inputFilename,
                          const std::string& outputFilename) {
     const auto objects = parse2DCsvFile(inputFilename);
 
@@ -210,6 +210,51 @@ void parsePlanningConfig(const std::string& inputFilename,
                 fileConfig << object.at(i) << ',';
             }
             fileConfig << object.back() << "\n";
+        }
+    }
+    fileConfig.close();
+}
+
+void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
+                          const std::string& inputFilename,
+                          const std::string& outputFilename) {
+    const auto configs = parse2DCsvFile(inputFilename);
+
+    std::ofstream fileConfig;
+    fileConfig.open(outputFilename);
+    for (auto config : configs) {
+        if (dim == "2D") {
+            // For 2D case
+            fileConfig << config.at(0) << ',' << config.at(1) << ','
+                       << config.at(2) << "\n";
+
+        } else if (dim == "3D") {
+            // For 3D case
+            // For rigid-body robot
+            size_t numDOF = 6;
+
+            // Convert angle-axis to Quaternion representation
+            Eigen::Vector3d axis{config.at(3), config.at(4), config.at(5)};
+            axis.normalize();
+            Eigen::Quaterniond quat(Eigen::AngleAxisd(config.at(6), axis));
+
+            config.at(3) = quat.w();
+            config.at(4) = quat.x();
+            config.at(5) = quat.y();
+            config.at(6) = quat.z();
+
+            // For different articulated robot types
+            if (robotType == "snake") {
+                numDOF = 9;
+            } else if (robotType == "tri-snake") {
+                numDOF = 12;
+            }
+
+            // Write converted configuration
+            for (size_t i = 0; i < numDOF; ++i) {
+                fileConfig << config.at(i) << ',';
+            }
+            fileConfig << config.at(numDOF) << "\n";
         }
     }
     fileConfig.close();

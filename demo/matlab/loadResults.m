@@ -1,7 +1,7 @@
 function [X_ori, X_mink, cf_seg, vtx, edge, path, robot, endPts] = loadResults(dim)
 
 % Planning results
-resultPath = '../../bin/';
+resultPath = '../../result/details/';
 
 try
     X_ori = load([resultPath, 'origin_bound_', dim, '.csv']);

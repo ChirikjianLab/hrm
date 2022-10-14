@@ -5,8 +5,16 @@
 #include <iostream>
 
 void hrm::displayPlanningTimeInfo(const Time& time) {
-    std::cout << "Roadmap build time: " << time.buildTime << "s" << std::endl;
-    std::cout << "Path search time: " << time.searchTime << "s" << std::endl;
+    if (time.buildTime > 0) {
+        std::cout << "Roadmap build time: " << time.buildTime << "s"
+                  << std::endl;
+    }
+
+    if (time.searchTime > 0) {
+        std::cout << "Path search time: " << time.searchTime << "s"
+                  << std::endl;
+    }
+
     std::cout << "Total Planning Time: " << time.totalTime << 's' << std::endl;
 }
 
@@ -16,11 +24,8 @@ void hrm::displayGraphInfo(const Graph& graph) {
     std::cout << "Number of valid edges: " << graph.edge.size() << std::endl;
 }
 
-void hrm::displayGraphInfo(const Graph& graph, const std::string& dimension) {
-    displayGraphInfo(graph);
-
+void hrm::storeGraphInfo(const Graph& graph, const std::string& dimension) {
     // Write the output to .csv files
-
     std::ofstream fileVtx;
     fileVtx.open(SOLUTION_DETAILS_PATH "/vertex_" + dimension + ".csv");
     std::vector<std::vector<double>> vertexList = graph.vertex;
@@ -41,14 +46,12 @@ void hrm::displayGraphInfo(const Graph& graph, const std::string& dimension) {
 }
 
 void hrm::displayPathInfo(const SolutionPathInfo& path) {
-    std::cout << "Path length: " << path.PathId.size() << std::endl;
+    std::cout << "Path length: " << path.solvedPath.size() << std::endl;
     std::cout << "Path cost: " << path.cost << std::endl;
 }
 
-void hrm::displayPathInfo(const SolutionPathInfo& path,
-                          const std::string& dimension) {
-    displayPathInfo(path);
-
+void hrm::storePathInfo(const SolutionPathInfo& path,
+                        const std::string& dimension) {
     // Write the output to .csv files
     std::ofstream filePathId;
     filePathId.open(SOLUTION_DETAILS_PATH "/path_id_" + dimension + ".csv");
@@ -61,7 +64,7 @@ void hrm::displayPathInfo(const SolutionPathInfo& path,
 
     // Retrieve solution path
     std::ofstream filePath;
-    filePath.open(SOLUTION_DETAILS_PATH "/solutionPath_" + dimension + ".csv");
+    filePath.open(SOLUTION_DETAILS_PATH "/solution_path_" + dimension + ".csv");
     for (const auto& solvedPath : path.solvedPath) {
         for (const auto& solvedPathVal : solvedPath) {
             filePath << solvedPathVal << ',';

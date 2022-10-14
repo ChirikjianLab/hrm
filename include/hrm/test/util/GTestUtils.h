@@ -7,12 +7,6 @@
 
 namespace hrm {
 
-template <class Planner>
-void storeRoutines(Planner* hrmPlanner);
-
-void showResult(const PlanningResult& res, const bool isStore,
-                const std::string& dimension);
+void evaluateResult(const PlanningResult& res);
 
 }  // namespace hrm
-
-#include "GTestUtils-inl.h"

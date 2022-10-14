@@ -68,7 +68,7 @@ for i = 1:size(edge,1)
     if abs( abs( vtx(edge(i,1),3)-vtx(edge(i,2),3) ) - 2*pi ) < 1e-5
         continue;
     end
-    
+
     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'b')
@@ -89,22 +89,22 @@ num_layer_vtx = [num_layer_vtx, layer_end_angle(end), size(vtx,1)];
 idx_start = 1;
 for i = 1:length(num_layer_vtx)
     figure; hold on; axis equal; axis off;
-    
+
     % environment
     X_ori = [X_ori, X_ori(:,1)];
     for j = size(X_ori,1)-1
         plot(X_ori(j,:),X_ori(j+1,:),'k');
     end
-    
+
     for j = 1:2:size(X_ori,1)-3
         patch(X_ori(j,:),X_ori(j+1,:),'k','FaceAlpha',0.5);
     end
-    
+
     % vertices at each subgraph
     idx_end = num_layer_vtx(i);
     plot3(vtx(idx_start:idx_end,1), vtx(idx_start:idx_end,2),...
         sc*vtx(idx_start:idx_end,3), 'k.', 'LineWidth', 0.5);
-    
+
     idx_start = idx_end + 1;
 end
 
@@ -113,29 +113,35 @@ disp('Displaying one C-layer..');
 figure; hold on; axis equal; axis off;
 
 % original
-X_ori = [X_ori, X_ori(:,1)];
-for i = size(X_ori,1)-1
-    plot(X_ori(i,:),X_ori(i+1,:),'k');
-end
+if ~isempty(X_ori)
+    X_ori = [X_ori, X_ori(:,1)];
+    for i = size(X_ori,1)-1
+        plot(X_ori(i,:),X_ori(i+1,:),'k');
+    end
 
-for i = 1:2:size(X_ori,1)-3
-    patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
+    for i = 1:2:size(X_ori,1)-3
+        patch(X_ori(i,:),X_ori(i+1,:),'k','FaceAlpha',0.5);
+    end
 end
 
 % Mink
-X_mink = [X_mink, X_mink(:,1)];
-for i = 1:2:size(X_mink,1)-2*3
-    plot(X_mink(i,:),X_mink(i+1,:),'r--');
-end
+if ~isempty(X_mink)
+    X_mink = [X_mink, X_mink(:,1)];
+    for i = 1:2:size(X_mink,1)-2*3
+        plot(X_mink(i,:),X_mink(i+1,:),'r--');
+    end
 
-for i = size(X_mink,1)-2*3+1:2:size(X_mink,1)-1
-    plot(X_mink(i,:),X_mink(i+1,:),'b--');
+    for i = size(X_mink,1)-2*3+1:2:size(X_mink,1)-1
+        plot(X_mink(i,:),X_mink(i+1,:),'b--');
+    end
 end
 
 % collision-free line segments
-for i = 1:size(cf_seg,1)
-    plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'k');
-    plot(cf_seg(i,3), cf_seg(i,1), 'k*', 'LineWidth', 2)
+if ~isempty(cf_seg)
+    for i = 1:size(cf_seg,1)
+        plot([cf_seg(i,2),cf_seg(i,4)], [cf_seg(i,1), cf_seg(i,1)], 'k');
+        plot(cf_seg(i,3), cf_seg(i,1), 'k*', 'LineWidth', 2)
+    end
 end
 
 % vertex and connections
@@ -143,9 +149,9 @@ for i = 1:size(edge,1)
     plot3([vtx(edge(i,1),1) vtx(edge(i,2),1)],...
         [vtx(edge(i,1),2) vtx(edge(i,2),2)],...
         sc*[vtx(edge(i,1),3) vtx(edge(i,2),3)], 'k', 'LineWidth', 2)
-    
+
     if (abs( vtx(edge(i,1),3)-vtx(edge(i,1)+1,3) ) > 1e-5 ||...
-        abs( vtx(edge(i,2),3)-vtx(edge(i,2)+1,3) ) > 1e-5)
+            abs( vtx(edge(i,2),3)-vtx(edge(i,2)+1,3) ) > 1e-5)
         break;
     end
 end

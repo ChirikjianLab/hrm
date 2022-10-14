@@ -112,15 +112,13 @@ TEST(TestHRMPlanning2D, MultiBody) {
     req.parameters.numPoint = 5;
     hrm::defineParameters(robot, env2D, req.parameters);
 
-    bool isStoreRes = true;
-
     // Plan
     auto hrm = planTest<hrm::planners::HRM2D, hrm::MultiBodyTree2D>(
-        robot, env2D.getArena(), env2D.getObstacle(), req, isStoreRes);
+        robot, env2D.getArena(), env2D.getObstacle(), req, false);
     hrm::PlanningResult res = hrm.getPlanningResult();
 
-    // Planning Time and Path Cost
-    hrm::showResult(res, isStoreRes, "2D");
+    // Test result
+    hrm::evaluateResult(res);
 }
 
 TEST(TestHRMPlanning2D, KinematicsOfContainment) {
@@ -153,13 +151,12 @@ TEST(TestHRMPlanning2D, KinematicsOfContainment) {
     req.goal = env2D.getEndPoints().at(1);
 
     // Plan
-    const bool isStoreRes = false;
     auto hrm = planTest<hrm::planners::HRM2DKC, hrm::MultiBodyTree2D>(
-        robot, env2D.getArena(), env2D.getObstacle(), req, isStoreRes);
+        robot, env2D.getArena(), env2D.getObstacle(), req, false);
     hrm::PlanningResult res = hrm.getPlanningResult();
 
-    // Planning Time and Path Cost
-    hrm::showResult(res, isStoreRes, "2D");
+    // Test result
+    hrm::evaluateResult(res);
 }
 
 int main(int ac, char* av[]) {

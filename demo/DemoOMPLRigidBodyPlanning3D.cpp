@@ -1,14 +1,13 @@
-#include "hrm/config.h"
 #include "hrm/planners/ompl_interface/OMPL3D.h"
-#include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/DisplayPlanningData.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 
-void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
+void demo() {
     // Read and setup environment config
-    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
-    const int NUM_SURF_PARAM = 10;
+    hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
+    const int NUM_SURF_PARAM = 20;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
@@ -43,8 +42,9 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     std::cout << "----------" << std::endl;
 
     ho::OMPL3D omplPlanner(b1, b2, robot, arena, obs, obsMesh);
-    omplPlanner.setup(plannerIdx, samplerIdx);
 
+    // Planner: RRT-Connect
+    omplPlanner.setup(3, 0);
     omplPlanner.plan(env3D.getEndPoints().at(0), env3D.getEndPoints().at(1),
                      MAX_PLAN_TIME);
 
@@ -55,34 +55,21 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     res.graphStructure.vertex = omplPlanner.getVertices();
     res.solutionPath.cost = omplPlanner.getPathLength();
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
+    res.solutionPath.interpolatedPath =
+        omplPlanner.getInterpolatedSolutionPath();
     res.planningTime.totalTime = omplPlanner.getPlanningTime();
 
-    hrm::evaluateResult(res);
+    // Display and store results
+    // Display and store results
+    hrm::displayPlanningTimeInfo(res.planningTime);
+    hrm::displayGraphInfo(res.graphStructure);
+    hrm::displayPathInfo(res.solutionPath);
+
+    hrm::storeGraphInfo(res.graphStructure, "ompl_3D");
+    hrm::storePathInfo(res.solutionPath, "ompl_3D");
 }
 
-TEST(OMPLPlanning, PRMUniform) { TestOMPLPlanner(0, 0); }
-
-TEST(OMPLPlanning, PRMGaussian) { TestOMPLPlanner(0, 1); }
-
-TEST(OMPLPlanning, PRMObstacleBased) { TestOMPLPlanner(0, 2); }
-
-TEST(OMPLPlanning, PRMMaxClearance) { TestOMPLPlanner(0, 3); }
-
-TEST(OMPLPlanning, PRMBridgeTest) { TestOMPLPlanner(0, 4); }
-
-TEST(OMPLPlanning, LazyPRM) { TestOMPLPlanner(1, 0); }
-
-TEST(OMPLPlanning, RRT) { TestOMPLPlanner(2, 0); }
-
-TEST(OMPLPlanning, RRTConnect) { TestOMPLPlanner(3, 0); }
-
-TEST(OMPLPlanning, EST) { TestOMPLPlanner(4, 0); }
-
-TEST(OMPLPlanning, SBL) { TestOMPLPlanner(5, 0); }
-
-TEST(OMPLPlanning, KPIECE) { TestOMPLPlanner(6, 0); }
-
 int main(int ac, char* av[]) {
-    testing::InitGoogleTest(&ac, av);
-    return RUN_ALL_TESTS();
+    demo();
+    return 0;
 }

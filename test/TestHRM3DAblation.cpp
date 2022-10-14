@@ -1,5 +1,7 @@
+#include "hrm/config.h"
 #include "hrm/planners/HRM3DAblation.h"
 #include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 TEST(TestHRMPlanning3D, HRMAblation) {
     // Setup environment config
@@ -11,12 +13,12 @@ TEST(TestHRMPlanning3D, HRMAblation) {
     env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Using fixed orientations from Icosahedral symmetry group
-    const std::string quat_file =
+    const std::string quatFile =
         RESOURCES_PATH "/SO3_sequence/q_icosahedron_60.csv";
 
     // Setup robot
     const auto robot =
-        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quatFile, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;
@@ -41,15 +43,13 @@ TEST(TestHRMPlanning3D, HRMAblation) {
     hrmAblated.plan(MAX_PLAN_TIME);
     hrm::PlanningResult res = hrmAblated.getPlanningResult();
 
-    hrm::storeRoutines<hrm::planners::HRM3D>(&hrmAblated);
-
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
     std::cout << "Final number of sweep lines {X,Y}: {"
               << hrmAblated.getPlannerParameters().numLineX << ','
               << hrmAblated.getPlannerParameters().numLineY << '}' << std::endl;
 
-    hrm::showResult(res, true, "3D");
+    hrm::evaluateResult(res);
 }
 
 int main(int ac, char* av[]) {

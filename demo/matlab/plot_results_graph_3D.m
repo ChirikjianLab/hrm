@@ -1,7 +1,7 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../bin/';
+loadPath = '../../result/details/';
 path_prefix = '../../resources/3D/';
 
 %% Results
@@ -18,7 +18,7 @@ end
 
 [robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file);
 
-%% Environment
+%% Plot intermediate process results
 figure; hold on; axis equal;
 light('Position',[-1 0 1])
 
@@ -50,29 +50,36 @@ for i = 1:size(ob,1)
     obs(i).PlotShape;
 end
 
-axis off
-
-%% Results from C++
-disp("Plotting results from HighwayRoadMap planner...")
-
-if ~isempty(path_highway)
-    plot3(path_highway(:,1), path_highway(:,2), path_highway(:,3),...
-        'm-', 'LineWidth', 2)
+% Environment: scattered points
+if ~isempty(X_ori)
+    for i = size(X_ori,1)-2
+        plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'k.');
+    end
     
-    for i = 1:ceil(size(path,1)/50):size(path,1)
-        PlotRobotPose(robot, path(i,:), robotURDF);
+    for i = 1:3:size(X_ori,1)-3
+        plot3(X_ori(i,:), X_ori(i+1,:), X_ori(i+2,:), 'b.');
     end
 end
 
-%% Validation
-is_validation = true;
+% Minkowski sums
+if ~isempty(X_mink)
+    for i = 1:3:size(X_mink,1)-3*(robot.numLink+1)
+        pts = X_mink(i:i+2,:);
+        x_surf = reshape(pts(1,:), 10, 10);
+        y_surf = reshape(pts(2,:), 10, 10);
+        z_surf = reshape(pts(3,:), 10, 10);
+        
+        plot3(X_mink(i,:), X_mink(i+1,:), X_mink(i+2,:), 'r.');
+        surf(x_surf, y_surf, z_surf, 'FaceAlpha', 0.3, 'EdgeColor', 'none')
+    end
+end
 
-if is_validation
-    disp('Validating path...')
-    
-    high3D = PathValidation3D(robot, arena, obs, path);
-    high3D.validation();
-    high3D.show();
-    
-    light('Position',[-1 0 1])
+disp('Plotting HRM sweep lines...')
+% Sweep lines
+if ~isempty(cf_seg)
+    for i = 1:size(cf_seg,1)
+        plot3([cf_seg(i,1), cf_seg(i,1)],...
+            [cf_seg(i,2), cf_seg(i,2)],...
+            [cf_seg(i,3), cf_seg(i,5)], 'm-');
+    end
 end

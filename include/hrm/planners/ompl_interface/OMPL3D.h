@@ -30,14 +30,6 @@ class OMPL3D : public OMPLInterface<MultiBodyTree3D, SuperQuadrics> {
            const std::vector<Mesh>& obsMesh);
     virtual ~OMPL3D();
 
-    /** \brief Save the graph information
-     * \param filenamePrefix Path prefix for the saved file */
-    void saveVertexEdgeInfo(const std::string& filenamePrefix);
-
-    /** \brief Save the solution path information
-     * \param filenamePrefix Path prefix for the saved file */
-    void savePathInfo(const std::string& filenamePrefix);
-
   protected:
     void getSolution() override;
 

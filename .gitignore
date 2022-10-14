@@ -36,6 +36,7 @@
 
 # Intermediate configuration files
 /config
+/result
 /include/hrm/config.h
 
 ### Qt ignores ###
@@ -72,13 +73,14 @@ target_wrapper.*
 # QtCreator CMake
 CMakeLists.txt.user*
 
-### Eclipse ignores ###
+# Eclipse
 *.cproject
 *.project
 /.settings
 
-# Clion
-/.idea/*
-
 # Doxygen ignores
 /doc/doxygen/
+
+# Python
+*.idea/
+*.pyc

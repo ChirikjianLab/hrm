@@ -1,7 +1,7 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../bin/';
+loadPath = '../../result/details/';
 path_prefix = '../../resources/3D/';
 
 [X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, endPts] = loadResults('3D');

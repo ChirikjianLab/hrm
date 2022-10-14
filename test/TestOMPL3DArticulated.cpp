@@ -1,23 +1,25 @@
+#include "hrm/config.h"
 #include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
 #include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 
 void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     // Read and setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superquadrics", "sparse", "snake", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Setup URDF file for the robot
     std::string urdfFile;
     if (env3D.getEndPoints().at(0).size() == 10) {
-        urdfFile = "config/snake.urdf";
+        urdfFile = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdfFile = "config/tri-snake.urdf";
+        urdfFile = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
     }
 
     const auto& arena = env3D.getArena();
@@ -31,7 +33,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
 
     // Setup robot config
     hrm::MultiBodyTree3D robot =
-        hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", "0", NUM_SURF_PARAM);
 
     // Boundary
     const double f = 1.2;
@@ -64,7 +66,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
     res.planningTime.totalTime = omplPlanner.getPlanningTime();
 
-    hrm::showResult(res, true, "3D");
+    hrm::evaluateResult(res);
 }
 
 TEST(OMPLPlanningArticulated, PRMUniform) { TestOMPLPlanner(0, 0); }

@@ -37,6 +37,12 @@ class OMPLInterface {
         return path_;
     }
 
+    /** \brief Getter function for interpolated solution path */
+    const std::vector<std::vector<Coordinate>>& getInterpolatedSolutionPath()
+        const {
+        return path_interp_;
+    }
+
     /** \brief Indicator of solution */
     bool isSolved() const { return isSolved_; }
 
@@ -197,6 +203,9 @@ class OMPLInterface {
 
     /** \brief States in solved path */
     std::vector<std::vector<Coordinate>> path_;
+
+    /** \brief States in interpolated solution path */
+    std::vector<std::vector<Coordinate>> path_interp_;
 };
 
 }  // namespace ompl_interface

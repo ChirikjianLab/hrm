@@ -1,12 +1,13 @@
 #include "hrm/config.h"
 #include "hrm/planners/HRM3D.h"
+#include "hrm/test/util/DisplayPlanningData.h"
 #include "hrm/test/util/GTestUtils.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
-TEST(TestHRMPlanning3D, HRM) {
+void demo() {
     // Setup environment config
-    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
-    const int NUM_SURF_PARAM = 10;
+    hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
+    const int NUM_SURF_PARAM = 20;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
@@ -48,10 +49,17 @@ TEST(TestHRMPlanning3D, HRM) {
               << hrm.getPlannerParameters().numLineX << ','
               << hrm.getPlannerParameters().numLineY << '}' << std::endl;
 
-    hrm::evaluateResult(res);
+    // Display and store results
+    hrm::displayPlanningTimeInfo(res.planningTime);
+    hrm::displayGraphInfo(res.graphStructure);
+    hrm::displayPathInfo(res.solutionPath);
+
+    hrm::storeGraphInfo(res.graphStructure, "3D");
+    hrm::storePathInfo(res.solutionPath, "3D");
+    hrm::storeRoutines<hrm::planners::HRM3D>(hrm);
 }
 
 int main(int ac, char* av[]) {
-    testing::InitGoogleTest(&ac, av);
-    return RUN_ALL_TESTS();
+    demo();
+    return 0;
 }

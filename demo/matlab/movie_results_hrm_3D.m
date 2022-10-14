@@ -1,7 +1,7 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../bin/';
+loadPath = '../../result/details/';
 path_prefix = '../../resources/3D/';
 
 %% Results
@@ -74,7 +74,7 @@ hold on;
 currFrame(id) = getframe(gcf);
 
 %% Write video
-vidObj = VideoWriter('../../bin/movie_highway.avi');
+vidObj = VideoWriter('../../result/details/movie_hrm_3d.avi');
 vidObj.FrameRate = 20;
 vidObj.Quality = 100;
 open(vidObj);
