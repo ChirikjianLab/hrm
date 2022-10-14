@@ -1,4 +1,4 @@
-#include "include/EllipsoidSeparation.h"
+#include "hrm/util/EllipsoidSeparation.h"
 
 #include <iostream>
 
@@ -17,13 +17,15 @@ bool hrm::isEllipsoidSeparated(const SuperQuadrics& ellipsoidA,
     // Transformations
     Eigen::Matrix4d Ta;
     Ta.topLeftCorner(3, 3) = ellipsoidA.getQuaternion().toRotationMatrix();
-    Ta.topRightCorner(3, 1) = Eigen::Vector3d(
-        ellipsoidA.getPosition().at(0), ellipsoidA.getPosition().at(1), ellipsoidA.getPosition().at(2));
+    Ta.topRightCorner(3, 1) = Eigen::Vector3d(ellipsoidA.getPosition().at(0),
+                                              ellipsoidA.getPosition().at(1),
+                                              ellipsoidA.getPosition().at(2));
     Ta.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
     Eigen::Matrix4d Tb;
     Tb.topLeftCorner(3, 3) = ellipsoidB.getQuaternion().toRotationMatrix();
-    Tb.topRightCorner(3, 1) = Eigen::Vector3d(
-        ellipsoidB.getPosition().at(0), ellipsoidB.getPosition().at(1), ellipsoidB.getPosition().at(2));
+    Tb.topRightCorner(3, 1) = Eigen::Vector3d(ellipsoidB.getPosition().at(0),
+                                              ellipsoidB.getPosition().at(1),
+                                              ellipsoidB.getPosition().at(2));
     Tb.bottomLeftCorner(1, 4) << 0, 0, 0, 1;
 
     // a_{ij} belongs to A in det(lambda*A - Ta'*(Tb^-1)'*B*(Tb^-1)*Ta)
@@ -115,7 +117,8 @@ bool hrm::isEllipsoidSeparated(const SuperQuadrics& ellipsoidA,
     return isSeparated;
 }
 
-bool hrm::isEllipseSeparated(const SuperEllipse& ellipsoidA, const SuperEllipse& ellipsoidB) {
+bool hrm::isEllipseSeparated(const SuperEllipse& ellipsoidA,
+                             const SuperEllipse& ellipsoidB) {
     if (ellipsoidA.getEpsilon() != 1.0 || ellipsoidB.getEpsilon() != 1.0) {
         std::cerr << "Object not an ellipse!" << std::endl;
     }
@@ -132,14 +135,14 @@ bool hrm::isEllipseSeparated(const SuperEllipse& ellipsoidA, const SuperEllipse&
     Eigen::Matrix3d Ta = Eigen::Matrix3d::Identity();
     Ta.topLeftCorner(2, 2) =
         Eigen::Rotation2Dd(ellipsoidA.getAngle()).toRotationMatrix();
-    Ta.topRightCorner(2, 1) =
-        Eigen::Vector2d(ellipsoidA.getPosition().at(0), ellipsoidA.getPosition().at(1));
+    Ta.topRightCorner(2, 1) = Eigen::Vector2d(ellipsoidA.getPosition().at(0),
+                                              ellipsoidA.getPosition().at(1));
 
     Eigen::Matrix3d Tb = Eigen::Matrix3d::Identity();
     Tb.topLeftCorner(2, 2) =
         Eigen::Rotation2Dd(ellipsoidB.getAngle()).toRotationMatrix();
-    Tb.topRightCorner(2, 1) =
-        Eigen::Vector2d(ellipsoidB.getPosition().at(0), ellipsoidB.getPosition().at(1));
+    Tb.topRightCorner(2, 1) = Eigen::Vector2d(ellipsoidB.getPosition().at(0),
+                                              ellipsoidB.getPosition().at(1));
 
     // aij belongs to A in det(lambda*A - Ma'*(Mb^-1)'*B*(Mb^-1)*Ma)
     Eigen::Matrix3d a = A;

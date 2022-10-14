@@ -33,10 +33,10 @@
 *.app
 /.metadata/
 /bin/
-/result/
 
 # Intermediate configuration files
-/config/*.csv
+/config
+/include/hrm/config.h
 
 ### Qt ignores ###
 # Qt-es

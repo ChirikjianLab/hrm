@@ -18,22 +18,26 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/sanitizers)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/test)
 
 find_package(static_analysis)
 find_package(sanitizers)
 
-# Setup directory for storing result data files
-set(RESULT_PATH ${PROJECT_SOURCE_DIR}/result)
+# Setup directory for loading resources and storing result data files
+set(RESOURCES_PATH ${PROJECT_SOURCE_DIR}/resources)
+set(CONFIG_PATH ${PROJECT_SOURCE_DIR}/config)
+file(MAKE_DIRECTORY ${CONFIG_PATH})
+message(STATUS "Configuration file path created in: ${CONFIG_PATH}")
+
+set(RESULT_PATH ${PROJECT_BINARY_DIR}/result)
 set(BENCHMARK_DATA_PATH ${RESULT_PATH}/benchmark)
 set(SOLUTION_DETAILS_PATH ${RESULT_PATH}/details)
 file(MAKE_DIRECTORY ${BENCHMARK_DATA_PATH}
                     ${SOLUTION_DETAILS_PATH})
-
-configure_file(${PROJECT_SOURCE_DIR}/test/config.h.in ${RESULT_PATH}/config.h)
-include_directories(${RESULT_PATH})
 message(STATUS "Results storage path created in: ${RESULT_PATH}")
+
+configure_file(${PROJECT_SOURCE_DIR}/include/hrm/config.h.in ${PROJECT_SOURCE_DIR}/include/hrm/config.h)
 
 # Dependency packages
 find_package(OMPL REQUIRED)
@@ -85,12 +89,39 @@ link_libraries(${GTEST_LIBRARIES})
 # Subdirectories
 add_subdirectory(src)
 
-# Copy planning config files to build dir
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config/demo/
-          ${CMAKE_CURRENT_SOURCE_DIR}/resources/SO3_sequence/q_icosahedron_60.csv
-          ${CMAKE_CURRENT_SOURCE_DIR}/resources/3D/urdf/snake.urdf
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/test/config/)
-
 set(BUILD_TESTING "" ON)
 enable_testing()
 add_subdirectory(test)
+
+
+# Installation
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(hrmConfigVersion.cmake
+                                 VERSION ${PACKAGE_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+
+install(EXPORT hrmTargets
+        FILE hrmTargets.cmake
+        NAMESPACE hrm::
+        DESTINATION lib/cmake/hrm)
+
+configure_file(hrmConfig.cmake.in hrmConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/hrmConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/hrmConfigVersion.cmake"
+        DESTINATION lib/cmake/hrm)
+
+# Install library headers
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm
+        CONFIGURATIONS Release
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
+
+# Uninstall target
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CMakeUninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake"
+        IMMEDIATE @ONLY)
+
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/CMakeUninstall.cmake)
+endif()

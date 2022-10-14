@@ -1,5 +1,5 @@
-#include "include/SuperQuadrics.h"
-#include "util/include/ExponentialFunction.h"
+#include "hrm/geometry/SuperQuadrics.h"
+#include "hrm/util/ExponentialFunction.h"
 
 #include <iostream>
 

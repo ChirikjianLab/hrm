@@ -1,4 +1,4 @@
-#include "include/InterpolateSE3.h"
+#include "hrm/util/InterpolateSE3.h"
 
 std::vector<std::vector<hrm::Coordinate>> hrm::interpolateSE3(
     const std::vector<Coordinate>& vStart, const std::vector<Coordinate>& vEnd,

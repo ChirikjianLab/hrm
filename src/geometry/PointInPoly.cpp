@@ -1,7 +1,5 @@
-#include "include/PointInPoly.h"
-#include "datastructure/include/DataType.h"
-
-#include "Eigen/Dense"
+#include "hrm/geometry/PointInPoly.h"
+#include "hrm/datastructure/DataType.h"
 
 bool hrm::isPtInPoly(PolyCSpace polyhedronVertex,
                      const std::vector<double>& pt) {

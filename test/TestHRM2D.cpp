@@ -1,9 +1,9 @@
-#include "config.h"
-#include "planners/include/HRM2D.h"
-#include "planners/include/HRM2DKC.h"
-#include "util/include/DisplayPlanningData.h"
-#include "util/include/GTestUtils.h"
-#include "util/include/ParsePlanningSettings.h"
+#include "hrm/config.h"
+#include "hrm/planners/HRM2D.h"
+#include "hrm/planners/HRM2DKC.h"
+#include "hrm/test/util/DisplayPlanningData.h"
+#include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 #include "gtest/gtest.h"
 
@@ -95,13 +95,13 @@ TEST(TestHRMPlanning2D, MultiBody) {
     std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superellipse", "sparse", "rabbit", "2D");
     const int NUM_CURVE_PARAM = 50;
 
-    hrm::MultiBodyTree2D robot =
-        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    const auto robot =
+        hrm::loadRobotMultiBody2D(CONFIG_PATH "/", NUM_CURVE_PARAM);
     hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
-    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env2D.loadEnvironment(CONFIG_PATH "/");
 
     // Planning requests
     hrm::PlanningRequest req;
@@ -132,13 +132,13 @@ TEST(TestHRMPlanning2D, KinematicsOfContainment) {
     std::cout << "----------" << std::endl;
 
     // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superellipse", "sparse", "rabbit", "2D");
     const int NUM_CURVE_PARAM = 50;
 
-    hrm::MultiBodyTree2D robot =
-        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+    const auto robot =
+        hrm::loadRobotMultiBody2D(CONFIG_PATH "/", NUM_CURVE_PARAM);
     hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
-    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env2D.loadEnvironment(CONFIG_PATH "/");
 
     // Planning parameters
     hrm::PlannerParameter param;

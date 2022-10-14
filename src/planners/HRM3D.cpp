@@ -1,4 +1,4 @@
-#include "include/HRM3D.h"
+#include "hrm/planners/HRM3D.h"
 
 #include <fstream>
 #include <iostream>

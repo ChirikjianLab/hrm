@@ -1,5 +1,5 @@
-#include "include/SuperEllipse.h"
-#include "util/include/ExponentialFunction.h"
+#include "hrm/geometry/SuperEllipse.h"
+#include "hrm/util/ExponentialFunction.h"
 
 #include <cmath>
 #include <iostream>

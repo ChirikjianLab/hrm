@@ -1,5 +1,5 @@
-#include "include/FreeSpace2D.h"
-#include "geometry/include/LineIntersection.h"
+#include "hrm/datastructure/FreeSpace2D.h"
+#include "hrm/geometry/LineIntersection.h"
 
 hrm::FreeSpace2D::FreeSpace2D(const MultiBodyTree2D& robot,
                               const std::vector<SuperEllipse>& arena,

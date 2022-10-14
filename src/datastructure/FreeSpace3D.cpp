@@ -1,5 +1,5 @@
-#include "include/FreeSpace3D.h"
-#include "geometry/include/LineIntersection.h"
+#include "hrm/datastructure/FreeSpace3D.h"
+#include "hrm/geometry/LineIntersection.h"
 
 hrm::FreeSpace3D::FreeSpace3D(const MultiBodyTree3D& robot,
                               const std::vector<SuperQuadrics>& arena,

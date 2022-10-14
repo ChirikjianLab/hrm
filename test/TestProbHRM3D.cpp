@@ -1,27 +1,27 @@
-#include "planners/include/ProbHRM3D.h"
-#include "util/include/GTestUtils.h"
+#include "hrm/planners/ProbHRM3D.h"
+#include "hrm/test/util/GTestUtils.h"
 
 TEST(TestHRMPlanning3D, ProbHRM) {
     // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 300.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
-    const std::string quaternionFilename = "0";
+    env3D.loadEnvironment(CONFIG_PATH "/");
+    const std::string quat_file = "0";
 
     // Setup URDF file for the robot
-    std::string urdfFile;
+    std::string urdf_file;
     if (env3D.getEndPoints().at(0).size() == 10) {
-        urdfFile = "config/snake.urdf";
+        urdf_file = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdfFile = "config/tri-snake.urdf";
+        urdf_file = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
     }
 
     // Setup robot
-    hrm::MultiBodyTree3D robot = hrm::loadRobotMultiBody3D(
-        CONFIG_FILE_PREFIX, quaternionFilename, NUM_SURF_PARAM);
+    const auto robot =
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;
@@ -40,7 +40,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     std::cout << "Start planning..." << std::endl;
 
-    hrm::planners::ProbHRM3D probHRM(robot, urdfFile, env3D.getArena(),
+    hrm::planners::ProbHRM3D probHRM(robot, urdf_file, env3D.getArena(),
                                      env3D.getObstacle(), req);
     probHRM.plan(MAX_PLAN_TIME);
     hrm::PlanningResult res = probHRM.getPlanningResult();

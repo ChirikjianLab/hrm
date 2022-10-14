@@ -1,6 +1,6 @@
-#include "config.h"
-#include "planners/include/HRM2D.h"
-#include "util/include/ParsePlanningSettings.h"
+#include "hrm/config.h"
+#include "hrm/planners/HRM2D.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>

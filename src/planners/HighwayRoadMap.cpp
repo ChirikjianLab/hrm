@@ -1,6 +1,6 @@
-#include "datastructure/include/MultiBodyTree2D.h"
-#include "datastructure/include/MultiBodyTree3D.h"
-#include "include/HighwayRoadMap-inl.h"
+#include "hrm/datastructure/MultiBodyTree2D.h"
+#include "hrm/datastructure/MultiBodyTree3D.h"
+#include "hrm/planners/HighwayRoadMap-inl.h"
 
 template class hrm::planners::HighwayRoadMap<hrm::MultiBodyTree2D,
                                              hrm::SuperEllipse>;

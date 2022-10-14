@@ -1,4 +1,4 @@
-#include "planners/include/ompl_interface/OMPL2D.h"
+#include "hrm/planners/ompl_interface/OMPL2D.h"
 
 #include <ompl/base/spaces/SE2StateSpace.h>
 

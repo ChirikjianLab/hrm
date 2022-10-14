@@ -1,21 +1,22 @@
-#include "planners/include/HRM3DAblation.h"
-#include "util/include/GTestUtils.h"
+#include "hrm/planners/HRM3DAblation.h"
+#include "hrm/test/util/GTestUtils.h"
 
 TEST(TestHRMPlanning3D, HRMAblation) {
     // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = "config/";
+    hrm::parsePlanningConfig("superquadrics", "sparse", "rabbit", "3D");
     const int NUM_SURF_PARAM = 10;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Using fixed orientations from Icosahedral symmetry group
-    const std::string quaternionFilename = "config/q_icosahedron_60.csv";
+    const std::string quat_file =
+        RESOURCES_PATH "/SO3_sequence/q_icosahedron_60.csv";
 
     // Setup robot
-    hrm::MultiBodyTree3D robot = hrm::loadRobotMultiBody3D(
-        CONFIG_FILE_PREFIX, quaternionFilename, NUM_SURF_PARAM);
+    const auto robot =
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quat_file, NUM_SURF_PARAM);
 
     // Planning requests
     hrm::PlanningRequest req;

@@ -1,4 +1,5 @@
-#include "include/LineIntersection.h"
+#include "hrm/geometry/LineIntersection.h"
+
 #include <iostream>
 
 std::vector<Eigen::Vector3d> hrm::intersectLineMesh3D(const Line3D& line,
