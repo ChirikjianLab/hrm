@@ -19,7 +19,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     if (env3D.getEndPoints().at(0).size() == 10) {
         urdfFile = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
-        urdfFile = RESOURCES_PATH "/3D/urdf/tri-snake.urdf";
+        urdfFile = RESOURCES_PATH "/3D/urdf/tree.urdf";
     }
 
     const auto& arena = env3D.getArena();

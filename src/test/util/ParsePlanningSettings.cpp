@@ -246,7 +246,7 @@ void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
             // For different articulated robot types
             if (robotType == "snake") {
                 numDOF = 9;
-            } else if (robotType == "tri-snake") {
+            } else if (robotType == "tree") {
                 numDOF = 12;
             }
 
