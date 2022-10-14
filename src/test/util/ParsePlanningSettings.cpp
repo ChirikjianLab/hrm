@@ -120,7 +120,7 @@ void defineParameters(const MultiBodyTree2D& robot,
         env2D.getArena().at(0).getPosition().at(1) - bound.at(1),
         env2D.getArena().at(0).getPosition().at(1) + bound.at(1)};
 
-    // Determine the base number of sweep lines at each C-layer
+    // Determine the base number of sweep lines at each C-slice
     if (param.numLineY == 0) {
         const double minSizeObstacle =
             computeObstacleMinSize<SuperEllipse>(env2D.getObstacle());
@@ -147,9 +147,9 @@ void defineParameters(const MultiBodyTree3D& robot,
         env3D.getArena().at(0).getPosition().at(2) - bound.at(2),
         env3D.getArena().at(0).getPosition().at(2) + bound.at(2)};
 
-    param.numLayer = robot.getBase().getQuatSamples().size();
+    param.numSlice = robot.getBase().getQuatSamples().size();
 
-    // Determine the base number of sweep lines at each C-layer
+    // Determine the base number of sweep lines at each C-slice
     if (param.numLineX == 0 || param.numLineY == 0) {
         const double minSizeObstacle =
             computeObstacleMinSize<SuperQuadrics>(env3D.getObstacle());

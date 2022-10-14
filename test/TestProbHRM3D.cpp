@@ -49,7 +49,7 @@ TEST(TestHRMPlanning3D, ProbHRM) {
 
     // Planning results: Time and Path Cost
     std::cout << "----------" << std::endl;
-    std::cout << "Number of C-layers: " << param.numLayer << std::endl;
+    std::cout << "Number of C-slices: " << param.numSlice << std::endl;
     std::cout << "Final number of sweep lines {X,Y}: {" << param.numLineX << ','
               << param.numLineY << '}' << std::endl;
 

@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     // Options
     hrm::PlannerParameter param;
-    param.numLayer = 0;
+    param.numSlice = 0;
     param.numLineX = size_t(numLineX);
     param.numLineY = size_t(numLineY);
     hrm::defineParameters(robot, env3D, param);
@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
         hrm::displayGraphInfo(res.graphStructure);
         hrm::displayPathInfo(res.solutionPath);
 
-        std::cout << "Final number of C-layers: "
-                  << probHRM.getPlannerParameters().numLayer << std::endl;
+        std::cout << "Final number of C-slices: "
+                  << probHRM.getPlannerParameters().numSlice << std::endl;
         std::cout << "Final number of sweep lines: {"
                   << probHRM.getPlannerParameters().numLineX << ", "
                   << probHRM.getPlannerParameters().numLineY << '}'
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
         fileTimeStatistics << static_cast<int>(res.solved) << ','
                            << res.planningTime.totalTime << ','
-                           << param.numLayer << ',' << param.numLineX << ','
+                           << param.numSlice << ',' << param.numLineX << ','
                            << param.numLineY << ','
                            << res.graphStructure.vertex.size() << ','
                            << res.graphStructure.edge.size() << ','

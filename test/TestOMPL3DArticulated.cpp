@@ -47,7 +47,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     std::vector<hrm::Coordinate> b2 = {-b1[0], -b1[1], -b1[2]};
 
     // Main algorithm
-    std::cout << "OMPL planner for 3D rigid-body planning" << std::endl;
+    std::cout << "OMPL planner for 3D articulated-body planning" << std::endl;
     std::cout << "----------" << std::endl;
 
     ho::OMPL3DArticulated omplPlanner(b1, b2, robot, urdfFile, arena, obs,

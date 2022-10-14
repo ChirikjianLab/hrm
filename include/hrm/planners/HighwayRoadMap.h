@@ -30,7 +30,7 @@ struct VertexIdx {
     Index startId;
 
     /** \brief Index of the last vertex in the slice */
-    Index layer;
+    Index slice;
 
     /** \brief Index of the last vertices in the sweep planes */
     std::vector<Index> plane;
@@ -82,7 +82,7 @@ class HighwayRoadMap {
     /** \brief Retrieve C-space boundary information
      * \return Vector of BoundaryInfo */
     const std::vector<BoundaryInfo>& getCSpaceBoundary() const {
-        return layerBoundAll_;
+        return sliceBoundAll_;
     }
 
     /** \brief Retrieve start configuration
@@ -112,7 +112,7 @@ class HighwayRoadMap {
     void refineExistRoadmap(const double timeLim);
 
     /** \brief Construct one C-slice */
-    virtual void constructOneLayer(const Index layerIdx) = 0;
+    virtual void constructOneSlice(const Index sliceIdx) = 0;
 
     /** \brief Generate orientation samples */
     virtual void sampleOrientations() = 0;
@@ -129,30 +129,30 @@ class HighwayRoadMap {
 
     /** \brief Subroutine for connecting vertices within one C-slice
      * \param freeSeg Pointer to the collision-free line segment */
-    void connectOneLayer2D(const FreeSegment2D& freeSeg);
+    void connectOneSlice2D(const FreeSegment2D& freeSeg);
 
     /** \brief Subroutine for connecting vertices among adjacent C-slices */
-    virtual void connectMultiLayer() = 0;
+    virtual void connectMultiSlice() = 0;
 
     /** \brief Subroutine for connecting vertices with previously existing
-     * layers */
-    virtual void connectExistLayer(const Index layerId) = 0;
+     * slices */
+    virtual void connectExistSlice(const Index sliceId) = 0;
 
     /** \brief Generate bridge C-slice to connect adjacent C-slices */
-    virtual void bridgeLayer() = 0;
+    virtual void bridgeSlice() = 0;
 
     /** \brief Generate bridge vertices for failed connections within one
      * C-slice
      * \param idx1, idx2 Indices of two vertices to be connected */
     void bridgeVertex(const Index idx1, const Index idx2);
 
-    /** \brief Check whether connection between v1 and v2 within one C-layer is
+    /** \brief Check whether connection between v1 and v2 within one C-slice is
      * valid through line segment V1-V2 and C-obstacle mesh intersection
      * checking
      * \param v1 The starting vertex
      * \param v2 The goal vertex
      * \return true if transition is valid, false otherwise */
-    virtual bool isSameLayerTransitionFree(
+    virtual bool isSameSliceTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
 
@@ -161,7 +161,7 @@ class HighwayRoadMap {
      * \param v1 The starting vertex
      * \param v2 The goal vertex
      * \return true if transition is valid, false otherwise */
-    virtual bool isMultiLayerTransitionFree(
+    virtual bool isMultiSliceTransitionFree(
         const std::vector<Coordinate>& v1,
         const std::vector<Coordinate>& v2) = 0;
 
@@ -210,10 +210,10 @@ class HighwayRoadMap {
     bool isRefine_ = false;
 
     /** \param Boundary info for each C-slice */
-    BoundaryInfo layerBound_;
+    BoundaryInfo sliceBound_;
 
     /** \param Record boundary info for all C-slices */
-    std::vector<BoundaryInfo> layerBoundAll_;
+    std::vector<BoundaryInfo> sliceBoundAll_;
 
     /** \param Store configuration for each robot shape (at each C-slice) */
     std::vector<std::vector<double>> v_;

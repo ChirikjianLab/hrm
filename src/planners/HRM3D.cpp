@@ -19,36 +19,36 @@ hrm::planners::HRM3D::HRM3D(const MultiBodyTree3D& robot,
 
 hrm::planners::HRM3D::~HRM3D() = default;
 
-void hrm::planners::HRM3D::constructOneLayer(const Index layerIdx) {
+void hrm::planners::HRM3D::constructOneSlice(const Index sliceIdx) {
     // Set rotation matrix to robot (rigid)
     if (isRobotRigid_) {
-        setTransform({0.0, 0.0, 0.0, q_.at(layerIdx).w(), q_.at(layerIdx).x(),
-                      q_.at(layerIdx).y(), q_.at(layerIdx).z()});
+        setTransform({0.0, 0.0, 0.0, q_.at(sliceIdx).w(), q_.at(sliceIdx).x(),
+                      q_.at(sliceIdx).y(), q_.at(sliceIdx).z()});
     } else {
-        setTransform(v_.at(layerIdx));
+        setTransform(v_.at(sliceIdx));
     }
 
-    // Add new C-layer
+    // Add new C-slice
     if (!isRefine_) {
         // Generate Minkowski operation boundaries
         freeSpacePtr_->computeCSpaceBoundary();
-        layerBound_ = freeSpacePtr_->getCSpaceBoundary();
-        layerBoundAll_.push_back(layerBound_);
+        sliceBound_ = freeSpacePtr_->getCSpaceBoundary();
+        sliceBoundAll_.push_back(sliceBound_);
 
         // Generate mesh for the boundaries
-        freeSpacePtr_->computeCSpaceBoundaryMesh(layerBound_);
-        layerBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
-        layerBoundMeshAll_.push_back(layerBoundMesh_);
+        freeSpacePtr_->computeCSpaceBoundaryMesh(sliceBound_);
+        sliceBoundMesh_ = freeSpacePtr_->getCSpaceBoundaryMesh();
+        sliceBoundMeshAll_.push_back(sliceBoundMesh_);
     } else {
-        layerBound_ = layerBoundAll_.at(layerIdx);
-        layerBoundMesh_ = layerBoundMeshAll_.at(layerIdx);
+        sliceBound_ = sliceBoundAll_.at(sliceIdx);
+        sliceBoundMesh_ = sliceBoundMeshAll_.at(sliceIdx);
     }
 
     // Sweep-line process to generate collision free line segments
     sweepLineProcess();
 
-    // Connect vertices within one C-layer
-    connectOneLayer3D(freeSegOneLayer_);
+    // Connect vertices within one C-slice
+    connectOneSlice3D(freeSegOneSlice_);
 }
 
 /** \brief Sample from SO(3). If the orientation exists, no addition and record
@@ -71,19 +71,19 @@ void hrm::planners::HRM3D::sweepLineProcess() {
     }
 
     // Find intersections along each sweep line
-    freeSegOneLayer_.tx.clear();
-    freeSegOneLayer_.freeSegmentYZ.clear();
+    freeSegOneSlice_.tx.clear();
+    freeSegOneSlice_.freeSegmentYZ.clear();
     for (size_t i = 0; i < param_.numLineX; ++i) {
         // x-coordinates of sweep lines
-        freeSegOneLayer_.tx.push_back(param_.boundaryLimits[0] +
+        freeSegOneSlice_.tx.push_back(param_.boundaryLimits[0] +
                                       static_cast<double>(i) * dx);
 
-        std::vector<std::vector<Coordinate>> tLine{freeSegOneLayer_.tx, ty};
+        std::vector<std::vector<Coordinate>> tLine{freeSegOneSlice_.tx, ty};
         freeSpacePtr_->computeIntersectionInterval(tLine);
 
         // Store freeSeg info
         freeSpacePtr_->computeFreeSegment(ty);
-        freeSegOneLayer_.freeSegmentYZ.push_back(
+        freeSegOneSlice_.freeSegmentYZ.push_back(
             freeSpacePtr_->getFreeSegment());
     }
 }
@@ -110,8 +110,8 @@ void hrm::planners::HRM3D::generateVertices(const Coordinate tx,
     numVertex_.line.push_back(numVertex_.plane);
 }
 
-// Connect vertices within one C-layer
-void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D& freeSeg) {
+// Connect vertices within one C-slice
+void hrm::planners::HRM3D::connectOneSlice3D(const FreeSegment3D& freeSeg) {
     Index n1 = 0;
     Index n2 = 0;
 
@@ -122,9 +122,9 @@ void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D& freeSeg) {
         generateVertices(freeSeg.tx.at(i), freeSeg.freeSegmentYZ.at(i));
 
         // Connect within one plane
-        connectOneLayer2D(freeSeg.freeSegmentYZ.at(i));
+        connectOneSlice2D(freeSeg.freeSegmentYZ.at(i));
     }
-    numVertex_.layer = res_.graphStructure.vertex.size();
+    numVertex_.slice = res_.graphStructure.vertex.size();
 
     for (size_t i = 0; i < freeSeg.tx.size() - 1; ++i) {
         for (size_t j = 0; j < freeSeg.freeSegmentYZ.at(i).ty.size(); ++j) {
@@ -136,7 +136,7 @@ void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D& freeSeg) {
                  ++k1) {
                 for (size_t k2 = 0;
                      k2 < freeSeg.freeSegmentYZ.at(i + 1).xM[j].size(); ++k2) {
-                    if (isSameLayerTransitionFree(
+                    if (isSameSliceTransitionFree(
                             res_.graphStructure.vertex[n1 + k1],
                             res_.graphStructure.vertex[n2 + k2])) {
                         res_.graphStructure.edge.push_back(
@@ -153,16 +153,16 @@ void hrm::planners::HRM3D::connectOneLayer3D(const FreeSegment3D& freeSeg) {
     }
 }
 
-void hrm::planners::HRM3D::connectMultiLayer() {
+void hrm::planners::HRM3D::connectMultiSlice() {
     if (vertexIdx_.size() == 1) {
         return;
     }
 
     for (size_t i = 0; i < vertexIdx_.size(); ++i) {
-        // Find the nearest C-layers
+        // Find the nearest C-slices
         double minDist = INFINITY;
         int minIdx = 0;
-        for (size_t j = 0; j != i && j < param_.numLayer; ++j) {
+        for (size_t j = 0; j != i && j < param_.numSlice; ++j) {
             double dist = q_.at(i).angularDistance(q_.at(j));
             if (dist < minDist) {
                 minDist = dist;
@@ -170,20 +170,20 @@ void hrm::planners::HRM3D::connectMultiLayer() {
             }
         }
 
-        // Find vertex only in adjacent layers
-        // Start and end vertics in the current layer
+        // Find vertex only in adjacent slices
+        // Start and end vertics in the current slice
         Index n22 = vertexIdx_.at(i).startId;
-        Index n_2 = vertexIdx_.at(i).layer;
+        Index n_2 = vertexIdx_.at(i).slice;
 
-        // Start and end vertics in the nearest layer
+        // Start and end vertics in the nearest slice
         Index start = vertexIdx_.at(minIdx).startId;
-        Index n2 = vertexIdx_.at(minIdx).layer;
+        Index n2 = vertexIdx_.at(minIdx).slice;
 
-        // Construct the middle layer
+        // Construct the middle slice
         computeTFE(q_.at(i), q_.at(minIdx), tfe_);
-        bridgeLayer();
+        bridgeSlice();
 
-        // Nearest vertex btw layers
+        // Nearest vertex btw slices
         for (size_t m0 = start; m0 < n2; ++m0) {
             auto v1 = res_.graphStructure.vertex.at(m0);
             for (size_t m1 = n22; m1 < n_2; ++m1) {
@@ -205,7 +205,7 @@ void hrm::planners::HRM3D::connectMultiLayer() {
 
                 //                n_check++;
 
-                if (isMultiLayerTransitionFree(v1, v2)) {
+                if (isMultiSliceTransitionFree(v1, v2)) {
                     // Add new connections
                     res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                     res_.graphStructure.weight.push_back(
@@ -221,15 +221,15 @@ void hrm::planners::HRM3D::connectMultiLayer() {
     }
 }
 
-void hrm::planners::HRM3D::connectExistLayer(const Index layerId) {
+void hrm::planners::HRM3D::connectExistSlice(const Index sliceId) {
     // Attempt to connect the most recent subgraph to previous existing graph
-    // Traverse C-layers through the current subgraph
-    Index startIdCur = vertexIdx_.at(layerId).startId;
-    Index endIdCur = vertexIdx_.at(layerId).layer;
+    // Traverse C-slices through the current subgraph
+    Index startIdCur = vertexIdx_.at(sliceId).startId;
+    Index endIdCur = vertexIdx_.at(sliceId).slice;
 
-    // Connect within same C-layer, same index with previous round of search
-    Index startIdExist = vertexIdxAll_.back().at(layerId).startId;
-    Index endIdExist = vertexIdxAll_.back().at(layerId).layer;
+    // Connect within same C-slice, same index with previous round of search
+    Index startIdExist = vertexIdxAll_.back().at(sliceId).startId;
+    Index endIdExist = vertexIdxAll_.back().at(sliceId).slice;
 
     // Locate the neighbor vertices in the adjacent
     // sweep line, check for validity
@@ -254,7 +254,7 @@ void hrm::planners::HRM3D::connectExistLayer(const Index layerId) {
                 continue;
             }
 
-            if (isSameLayerTransitionFree(v1, v2)) {
+            if (isSameSliceTransitionFree(v1, v2)) {
                 // Add new connections
                 res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                 res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));
@@ -296,8 +296,8 @@ hrm::planners::HRM3D::getInterpolatedSolutionPath(const Index num) {
     return pathInterp;
 }
 
-void hrm::planners::HRM3D::bridgeLayer() {
-    bridgeLayerBound_.resize(tfe_.size());
+void hrm::planners::HRM3D::bridgeSlice() {
+    bridgeSliceBound_.resize(tfe_.size());
     for (size_t i = 0; i < tfe_.size(); ++i) {
         // Reference point to be the center of Ec
         tfe_.at(i).setPosition({0.0, 0.0, 0.0});
@@ -310,11 +310,11 @@ void hrm::planners::HRM3D::bridgeLayer() {
                 getMeshFromParamSurface(bd, obstacle.getNumParam()));
         }
 
-        bridgeLayerBound_.at(i) = bdMesh;
+        bridgeSliceBound_.at(i) = bdMesh;
     }
 }
 
-bool hrm::planners::HRM3D::isSameLayerTransitionFree(
+bool hrm::planners::HRM3D::isSameSliceTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Define the line connecting v1 and v2
     Point3D t1{v1[0], v1[1], v1[2]};
@@ -357,12 +357,12 @@ bool hrm::planners::HRM3D::isSameLayerTransitionFree(
         Point3D t2_;
     };
 
-    return !std::any_of(layerBoundMesh_.obstacle.cbegin(),
-                        layerBoundMesh_.obstacle.cend(),
+    return !std::any_of(sliceBoundMesh_.obstacle.cbegin(),
+                        sliceBoundMesh_.obstacle.cend(),
                         intersect(line, t1, t2));
 }
 
-bool hrm::planners::HRM3D::isMultiLayerTransitionFree(
+bool hrm::planners::HRM3D::isMultiSliceTransitionFree(
     const std::vector<Coordinate>& v1, const std::vector<Coordinate>& v2) {
     // Interpolated robot motion from v1 to v2
     const std::vector<std::vector<Coordinate>> vInterp =
@@ -372,13 +372,13 @@ bool hrm::planners::HRM3D::isMultiLayerTransitionFree(
         // Transform the robot
         setTransform(vStep);
 
-        // Base: determine whether each step is within CF-Line of bridgeLayer
+        // Base: determine whether each step is within CF-Line of bridgeSlice
         if (!isPtInCFree(0, robot_.getBase().getPosition())) {
             return false;
         }
 
         // For each link, check whether its center is within the simple convex
-        // region between 4 CF-Lines in bridgeLayer
+        // region between 4 CF-Lines in bridgeSlice
         for (size_t j = 0; j < robot_.getNumLinks(); ++j) {
             if (!isPtInCFree(j + 1, robot_.getLinks()[j].getPosition())) {
                 return false;
@@ -417,23 +417,23 @@ bool hrm::planners::HRM3D::isPtInCFree(const Index bdIdx,
         std::vector<double> v_;
     };
 
-    return !std::any_of(bridgeLayerBound_.at(bdIdx).cbegin(),
-                        bridgeLayerBound_.at(bdIdx).cend(),
+    return !std::any_of(bridgeSliceBound_.at(bdIdx).cbegin(),
+                        bridgeSliceBound_.at(bdIdx).cend(),
                         intersect(lineZ, v));
 }
 
 void hrm::planners::HRM3D::sampleSO3() {
     srand(unsigned(std::time(nullptr)));
 
-    q_.resize(param_.numLayer);
+    q_.resize(param_.numSlice);
     if (robot_.getBase().getQuatSamples().empty()) {
         // Uniform random samples for Quaternions
-        for (size_t i = 0; i < param_.numLayer; ++i) {
+        for (size_t i = 0; i < param_.numSlice; ++i) {
             q_.at(i) = Eigen::Quaterniond::UnitRandom();
         }
     } else {
         // Pre-defined samples of Quaternions
-        param_.numLayer = robot_.getBase().getQuatSamples().size();
+        param_.numSlice = robot_.getBase().getQuatSamples().size();
         q_ = robot_.getBase().getQuatSamples();
     }
 }
@@ -450,7 +450,7 @@ hrm::planners::HRM3D::getNearestNeighborsOnGraph(
     Eigen::Quaterniond queryQuat(vertex[3], vertex[4], vertex[5], vertex[6]);
     Eigen::Quaterniond minQuat;
 
-    // Find the closest C-layer
+    // Find the closest C-slice
     minQuatDist = queryQuat.angularDistance(q_[0]);
     for (const auto& q : q_) {
         quatDist = queryQuat.angularDistance(q);
@@ -460,7 +460,7 @@ hrm::planners::HRM3D::getNearestNeighborsOnGraph(
         }
     }
 
-    // Search for k-nn C-layers
+    // Search for k-nn C-slices
     std::vector<Eigen::Quaterniond> quatList;
     for (const auto& q : q_) {
         if (minQuat.angularDistance(q) < radius) {
@@ -473,9 +473,9 @@ hrm::planners::HRM3D::getNearestNeighborsOnGraph(
     }
 
     // Find the close vertex within a range (relative to the size of sweep line
-    // gaps) at each C-layer
+    // gaps) at each C-slice
     for (const auto& quatCur : quatList) {
-        Vertex idxLayer = 0;
+        Vertex idxSlice = 0;
         minEuclideanDist = INFINITY;
         for (size_t i = 0; i < res_.graphStructure.vertex.size(); ++i) {
             euclideanDist =
@@ -488,17 +488,17 @@ hrm::planners::HRM3D::getNearestNeighborsOnGraph(
                     res_.graphStructure.vertex[i][5],
                     res_.graphStructure.vertex[i][6])) < 1e-6) {
                 minEuclideanDist = euclideanDist;
-                idxLayer = i;
+                idxSlice = i;
             }
         }
 
-        if (std::abs(vertex[0] - res_.graphStructure.vertex[idxLayer][0]) <
+        if (std::abs(vertex[0] - res_.graphStructure.vertex[idxSlice][0]) <
                 radius * (param_.boundaryLimits[1] - param_.boundaryLimits[0]) /
                     static_cast<double>(param_.numLineX) &&
-            std::abs(vertex[1] - res_.graphStructure.vertex[idxLayer][1]) <
+            std::abs(vertex[1] - res_.graphStructure.vertex[idxSlice][1]) <
                 radius * (param_.boundaryLimits[3] - param_.boundaryLimits[2]) /
                     static_cast<double>(param_.numLineY)) {
-            idx.push_back(idxLayer);
+            idx.push_back(idxSlice);
         }
     }
 

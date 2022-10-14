@@ -15,26 +15,26 @@ hrm::planners::ProbHRM3D::~ProbHRM3D() = default;
 
 void hrm::planners::ProbHRM3D::plan(const double timeLim) {
     auto start = Clock::now();
-    param_.numLayer = 0;
+    param_.numSlice = 0;
 
     do {
         // Randomly generate rotations and joint angles
         sampleOrientations();
 
-        // Construct one C-layer
-        constructOneLayer(param_.numLayer);
+        // Construct one C-slice
+        constructOneSlice(param_.numSlice);
 
-        // Update number of C-layers and vertex index
+        // Update number of C-slices and vertex index
         if (!isRefine_) {
-            param_.numLayer++;
+            param_.numSlice++;
         }
 
-        numVertex_.layer = res_.graphStructure.vertex.size();
+        numVertex_.slice = res_.graphStructure.vertex.size();
         vertexIdx_.push_back(numVertex_);
 
-        // Connect among adjacent C-layers
-        if (param_.numLayer >= 2) {
-            connectMultiLayer();
+        // Connect among adjacent C-slices
+        if (param_.numSlice >= 2) {
+            connectMultiSlice();
         }
 
         res_.planningTime.buildTime += Durationd(Clock::now() - start).count();
@@ -48,7 +48,7 @@ void hrm::planners::ProbHRM3D::plan(const double timeLim) {
             res_.planningTime.buildTime + res_.planningTime.searchTime;
 
         // Double the number of sweep lines for every 10 iterations
-        if (param_.numLayer % 60 == 0 &&
+        if (param_.numSlice % 60 == 0 &&
             vertexIdxAll_.size() < param_.numPoint) {
             refineExistRoadmap(timeLim);
         }
@@ -63,14 +63,14 @@ void hrm::planners::ProbHRM3D::plan(const double timeLim) {
 }
 
 void hrm::planners::ProbHRM3D::sampleOrientations() {
-    // Iteratively add layers with random orientations
+    // Iteratively add slices with random orientations
     srand(unsigned(std::time(nullptr)));
     ompl::RNG rng;
 
     // Randomly sample rotation of base
-    if (param_.numLayer == 0) {
+    if (param_.numSlice == 0) {
         q_.emplace_back(start_.at(3), start_.at(4), start_.at(5), start_.at(6));
-    } else if (param_.numLayer == 1) {
+    } else if (param_.numSlice == 1) {
         q_.emplace_back(goal_.at(3), goal_.at(4), goal_.at(5), goal_.at(6));
     } else {
         q_.emplace_back(Eigen::Quaterniond::UnitRandom());
@@ -81,11 +81,11 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
                                q_.back().z()};
 
     // Randomly sample joint angles
-    if (param_.numLayer == 0) {
+    if (param_.numSlice == 0) {
         for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
             config.push_back(start_.at(7 + i));
         }
-    } else if (param_.numLayer == 1) {
+    } else if (param_.numSlice == 1) {
         for (size_t i = 0; i < kdl_->getKDLTree().getNrOfJoints(); ++i) {
             config.push_back(goal_.at(7 + i));
         }
@@ -99,16 +99,16 @@ void hrm::planners::ProbHRM3D::sampleOrientations() {
     v_.push_back(config);
 }
 
-// Connect adjacent C-layers
-void hrm::planners::ProbHRM3D::connectMultiLayer() {
-    if (param_.numLayer == 1) {
+// Connect adjacent C-slices
+void hrm::planners::ProbHRM3D::connectMultiSlice() {
+    if (param_.numSlice == 1) {
         return;
     }
 
-    // Find the nearest C-layers
+    // Find the nearest C-slices
     double minDist = INFINITY;
     Index minIdx = 0;
-    for (size_t i = 0; i < param_.numLayer - 1; ++i) {
+    for (size_t i = 0; i < param_.numSlice - 1; ++i) {
         double dist = vectorEuclidean(v_.back(), v_.at(i));
         if (dist < minDist) {
             minDist = dist;
@@ -116,20 +116,20 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
         }
     }
 
-    // Find vertex only in adjacent layers
-    // Start and end vertics in the recent added layer
-    Index n12 = vertexIdx_.at(param_.numLayer - 1).startId;
-    const Index n2 = vertexIdx_.at(param_.numLayer - 1).layer;
+    // Find vertex only in adjacent slices
+    // Start and end vertics in the recent added slice
+    Index n12 = vertexIdx_.at(param_.numSlice - 1).startId;
+    const Index n2 = vertexIdx_.at(param_.numSlice - 1).slice;
 
-    // Start and end vertics in the nearest layer
+    // Start and end vertics in the nearest slice
     Index start = vertexIdx_.at(minIdx).startId;
-    const Index n1 = vertexIdx_.at(minIdx).layer;
+    const Index n1 = vertexIdx_.at(minIdx).slice;
 
-    // Construct bridge C-layer
+    // Construct bridge C-slice
     computeTFE(v_.back(), v_.at(minIdx), tfe_);
-    bridgeLayer();
+    bridgeSlice();
 
-    // Nearest vertex btw layers
+    // Nearest vertex btw slices
     for (size_t m0 = start; m0 < n1; ++m0) {
         auto v1 = res_.graphStructure.vertex.at(m0);
         for (size_t m1 = n12; m1 < n2; ++m1) {
@@ -147,7 +147,7 @@ void hrm::planners::ProbHRM3D::connectMultiLayer() {
                 continue;
             }
 
-            if (isMultiLayerTransitionFree(v1, v2)) {
+            if (isMultiSliceTransitionFree(v1, v2)) {
                 // Add new connections
                 res_.graphStructure.edge.push_back(std::make_pair(m0, m1));
                 res_.graphStructure.weight.push_back(vectorEuclidean(v1, v2));

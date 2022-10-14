@@ -30,7 +30,7 @@ void demo() {
     // Main algorithm
     std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
     std::cout << "----------" << std::endl;
-    std::cout << "Input number of C-layers: " << req.parameters.numLayer
+    std::cout << "Input number of C-slices: " << req.parameters.numSlice
               << std::endl;
     std::cout << "Input number of sweep lines {X,Y}: {"
               << req.parameters.numLineX << ',' << req.parameters.numLineY

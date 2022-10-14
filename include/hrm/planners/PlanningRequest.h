@@ -14,7 +14,7 @@ struct PlannerParameter {
     std::vector<Coordinate> boundaryLimits;
 
     /** \brief Number of C-slices */
-    Index numLayer = 0;
+    Index numSlice = 0;
 
     /** \brief Number of sweep lines in x-direction in each C-slice */
     Index numLineX = 0;
