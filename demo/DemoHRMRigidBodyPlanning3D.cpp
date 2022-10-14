@@ -1,8 +1,8 @@
-#include "config.h"
-#include "planners/HRM3D.h"
-#include "test/util/DisplayPlanningData.h"
-#include "test/util/GTestUtils.h"
-#include "test/util/ParsePlanningSettings.h"
+#include "hrm/config.h"
+#include "hrm/planners/HRM3D.h"
+#include "hrm/test/util/DisplayPlanningData.h"
+#include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 void demo() {
     // Setup environment config

@@ -2,8 +2,8 @@
 
 #include "PlanningRequest.h"
 #include "PlanningResult.h"
-#include "datastructure/DataType.h"
-#include "datastructure/FreeSpace.h"
+#include "hrm/datastructure/DataType.h"
+#include "hrm/datastructure/FreeSpace.h"
 
 #include "Eigen/Dense"
 

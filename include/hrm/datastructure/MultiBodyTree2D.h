@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MultiBodyTree.h"
-#include "geometry/SuperEllipse.h"
+#include "hrm/geometry/SuperEllipse.h"
 
 #include "eigen3/Eigen/Geometry"
 

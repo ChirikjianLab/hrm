@@ -1,0 +1,13 @@
+include(CMakeFindDependencyMacro)
+
+find_dependency(OMPL REQUIRED)
+find_dependency(FCL 0.6 REQUIRED)
+find_dependency(CCD REQUIRED)
+find_dependency(CGAL 5.0 REQUIRED)
+find_dependency(GMP REQUIRED)
+find_dependency(orocos_kdl)
+find_dependency(Eigen3 3.3 REQUIRED)
+find_dependency(Boost 1.71.0 REQUIRED)
+
+# Add the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/hrmTargets.cmake")

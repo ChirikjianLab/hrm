@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "datastructure/FreeSpace2D.h"
-#include "geometry/TightFitEllipsoid.h"
+#include "hrm/datastructure/FreeSpace2D.h"
+#include "hrm/geometry/TightFitEllipsoid.h"
 
 namespace hrm {
 namespace planners {

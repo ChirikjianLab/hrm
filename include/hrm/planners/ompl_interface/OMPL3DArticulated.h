@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OMPL3D.h"
-#include "util/ParseURDF.h"
+#include "hrm/util/ParseURDF.h"
 
 #include "ompl/base/spaces/RealVectorStateSpace.h"
 

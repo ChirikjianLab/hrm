@@ -1,5 +1,5 @@
-#include "geometry/TightFitEllipsoid.h"
-#include "util/InterpolateSE3.h"
+#include "hrm/geometry/TightFitEllipsoid.h"
+#include "hrm/util/InterpolateSE3.h"
 
 hrm::SuperEllipse hrm::getMVCE2D(const std::vector<double>& a,
                                  const std::vector<double>& b,

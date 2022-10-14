@@ -1,10 +1,10 @@
 #pragma once
 
 #include "OMPLInterface.h"
-#include "datastructure/FreeSpace3D.h"
-#include "datastructure/MultiBodyTree3D.h"
-#include "planners/PlanningRequest.h"
-#include "util/Parse2dCsvFile.h"
+#include "hrm/datastructure/FreeSpace3D.h"
+#include "hrm/datastructure/MultiBodyTree3D.h"
+#include "hrm/planners/PlanningRequest.h"
+#include "hrm/util/Parse2dCsvFile.h"
 
 #include <ompl/base/spaces/SE3StateSpace.h>
 

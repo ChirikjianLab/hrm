@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HRM3D.h"
-#include "util/ParseURDF.h"
+#include "hrm/util/ParseURDF.h"
 
 namespace hrm {
 namespace planners {

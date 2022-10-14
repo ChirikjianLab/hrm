@@ -1,8 +1,8 @@
 #pragma once
 
 #include "MultiBodyTree.h"
-#include "geometry/SuperQuadrics.h"
-#include "util/ParseURDF.h"
+#include "hrm/geometry/SuperQuadrics.h"
+#include "hrm/util/ParseURDF.h"
 
 #include <eigen3/Eigen/Geometry>
 

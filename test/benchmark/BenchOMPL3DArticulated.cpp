@@ -1,6 +1,6 @@
-#include "config.h"
-#include "planners/ompl_interface/OMPL3DArticulated.h"
-#include "test/util/ParsePlanningSettings.h"
+#include "hrm/config.h"
+#include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
+#include "hrm/test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 

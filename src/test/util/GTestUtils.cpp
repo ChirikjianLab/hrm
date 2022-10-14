@@ -1,4 +1,5 @@
-#include "test/util/GTestUtils.h"
+#include "hrm/test/util/GTestUtils.h"
+#include "hrm/test/util/DisplayPlanningData.h"
 
 void hrm::evaluateResult(const PlanningResult& res) {
     // The planning problem is solved

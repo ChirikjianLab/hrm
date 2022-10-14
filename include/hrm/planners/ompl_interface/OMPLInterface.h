@@ -1,8 +1,8 @@
 #pragma once
 
-#include "datastructure/DataType.h"
-#include "util/EllipsoidSQCollisionFCL.h"
-#include "util/EllipsoidSeparation.h"
+#include "hrm/datastructure/DataType.h"
+#include "hrm/util/EllipsoidSQCollisionFCL.h"
+#include "hrm/util/EllipsoidSeparation.h"
 
 #include <ompl/base/StateSpace.h>
 #include <ompl/geometric/SimpleSetup.h>

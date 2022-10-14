@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HighwayRoadMap.h"
-#include "datastructure/Interval.h"
-#include "util/DistanceMetric.h"
+#include "hrm/datastructure/Interval.h"
+#include "hrm/util/DistanceMetric.h"
 
 #include <algorithm>
 #include <chrono>

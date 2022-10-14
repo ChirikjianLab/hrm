@@ -1,6 +1,6 @@
 #pragma once
 
-#include <datastructure/DataType.h>
+#include <hrm/datastructure/DataType.h>
 
 #include <kdl/tree.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>

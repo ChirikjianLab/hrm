@@ -63,6 +63,34 @@ ninja -j 9
 **Note**: 
 - If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e. `cmake ../ -DOMPL_PREFIX=/your/ompl/include/dir`.
 
+## Installation and linking the library in another project
+### Installation
+After building:
+```sh
+[sudo] make install
+```
+By default, the library will be install in `/usr/local/`
+
+To uninstall:
+```sh
+[sudo] make uninstall
+```
+
+### Linking in another package
+In the `CMakeLists.txt`, add a line:
+```
+find_package(hrm REQUIRED)
+```
+
+To link the library to an executable (e.g., a demonstration for HRM planner in the 3D case):
+```
+add_executable(demo_hrm_3d demo_hrm_3d.cpp)
+target_link_libraries(demo_hrm_3d
+                      hrm::HRM3D
+                      hrm::TestUtil)
+```
+Other linking library choices: `hrm::Geometry`, `hrm::DataStructure`, `hrm::HighwayRoadMap`, `hrm::HRM2D`, `hrm::OMPLPlanner`, `hrm::Util`
+
 ## Testing Instructions
 ### Generate configuration files
 Configuration files for environment and robot when testing the C++ scripts are all stored in `/config` folder, including (3D cases as an example) `arena_config_3D.csv`, `obs_config_3D.csv`. `robot_config_3D.csv` and `end_points_3D.csv`. Configuration files for demostrations are provided in `/config/demo/` folder. In the repository, there are pre-defined configurations in these files, stored in `/resources/` folder. To customize different robot or environment configurations, simply run the Matlab scripts `/matlab/tests/planning_config_3D.m`, and change different parameters that defines the geometric shapes of the obstacles and robots.

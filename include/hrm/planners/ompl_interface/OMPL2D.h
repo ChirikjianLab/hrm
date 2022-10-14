@@ -1,8 +1,8 @@
 #pragma once
 
 #include "OMPLInterface.h"
-#include "datastructure/FreeSpace2D.h"
-#include "datastructure/MultiBodyTree2D.h"
+#include "hrm/datastructure/FreeSpace2D.h"
+#include "hrm/datastructure/MultiBodyTree2D.h"
 
 namespace hrm {
 namespace planners {

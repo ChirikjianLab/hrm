@@ -1,11 +1,11 @@
 #pragma once
 
-#include "datastructure/MultiBodyTree2D.h"
-#include "datastructure/MultiBodyTree3D.h"
-#include "geometry/SuperEllipse.h"
-#include "geometry/SuperQuadrics.h"
-#include "planners/PlanningRequest.h"
-#include "util/Parse2dCsvFile.h"
+#include "hrm/datastructure/MultiBodyTree2D.h"
+#include "hrm/datastructure/MultiBodyTree3D.h"
+#include "hrm/geometry/SuperEllipse.h"
+#include "hrm/geometry/SuperQuadrics.h"
+#include "hrm/planners/PlanningRequest.h"
+#include "hrm/util/Parse2dCsvFile.h"
 
 namespace hrm {
 

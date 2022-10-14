@@ -1,8 +1,8 @@
 #pragma once
 
 #include "SuperQuadrics.h"
-#include "datastructure/DataType.h"
-#include "util/Parse2dCsvFile.h"
+#include "hrm/datastructure/DataType.h"
+#include "hrm/util/Parse2dCsvFile.h"
 
 #include <fcl/fcl.h>
 

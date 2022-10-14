@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/sanitizers)
 
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/include/hrm)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 find_package(static_analysis)
@@ -95,10 +95,26 @@ add_subdirectory(test)
 
 add_subdirectory(demo)
 
+# Installation
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(hrmConfigVersion.cmake
+                                 VERSION ${PACKAGE_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+
+install(EXPORT hrmTargets
+        FILE hrmTargets.cmake
+        NAMESPACE hrm::
+        DESTINATION lib/cmake/hrm)
+
+configure_file(hrmConfig.cmake.in hrmConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/hrmConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/hrmConfigVersion.cmake"
+        DESTINATION lib/cmake/hrm)
+
 # Install library headers
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm/
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm
         CONFIGURATIONS Release
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${CMAKE_PROJECT_NAME}${INSTALL_SUFFIX}")
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
 
 # Uninstall target
 if(NOT TARGET uninstall)

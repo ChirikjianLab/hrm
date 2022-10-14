@@ -1,4 +1,4 @@
-#include "planners/ompl_interface/OMPL3DArticulated.h"
+#include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
 
 hrm::planners::ompl_interface::OMPL3DArticulated::OMPL3DArticulated(
     const std::vector<Coordinate>& lowBound,
