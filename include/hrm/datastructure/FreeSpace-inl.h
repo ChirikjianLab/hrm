@@ -1,6 +1,8 @@
 #include "FreeSpace.h"
 #include "hrm/geometry/LineIntersection.h"
 
+#include <iostream>
+
 namespace hrm {
 
 template <typename RobotType, typename ObjectType>
@@ -24,13 +26,14 @@ void FreeSpaceComputator<RobotType, ObjectType>::setup(
         (1 + robot_.getNumLinks()) * obstacle_.size());
 
     // Initialize sweep lines
-    intersect_.arenaLow =
-        Eigen::MatrixXd::Constant(numLine, numArena, lowBound);
-    intersect_.arenaUpp = Eigen::MatrixXd::Constant(numLine, numArena, upBound);
-    intersect_.obstacleLow =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
-    intersect_.obstacleUpp =
-        Eigen::MatrixXd::Constant(numLine, numObstacle, NAN);
+    intersect_.arenaLow.resize(numLine,
+                               std::vector<Coordinate>(numArena, lowBound));
+    intersect_.arenaUpp.resize(numLine,
+                               std::vector<Coordinate>(numArena, upBound));
+    intersect_.obstacleLow.resize(numLine,
+                                  std::vector<Coordinate>(numObstacle, NAN));
+    intersect_.obstacleUpp.resize(numLine,
+                                  std::vector<Coordinate>(numObstacle, NAN));
 }
 
 template <typename RobotType, typename ObjectType>
@@ -100,18 +103,18 @@ FreeSpaceComputator<RobotType, ObjectType>::computeSweepLineFreeSegment(
     std::vector<Interval> arenaSegment;
 
     // Remove NaN terms
-    for (auto j = 0; j < intersect_.arenaLow.cols(); ++j) {
-        if (!std::isnan(intersect_.arenaLow(lineIdx, j)) &&
-            !std::isnan(intersect_.arenaUpp(lineIdx, j))) {
-            arenaSegment.push_back({intersect_.arenaLow(lineIdx, j),
-                                    intersect_.arenaUpp(lineIdx, j)});
+    for (auto j = 0; j < intersect_.arenaLow.at(lineIdx).size(); ++j) {
+        if (!std::isnan(intersect_.arenaLow.at(lineIdx).at(j)) &&
+            !std::isnan(intersect_.arenaUpp.at(lineIdx).at(j))) {
+            arenaSegment.push_back({intersect_.arenaLow.at(lineIdx).at(j),
+                                    intersect_.arenaUpp.at(lineIdx).at(j)});
         }
     }
-    for (auto j = 0; j < intersect_.obstacleLow.cols(); ++j) {
-        if (!std::isnan(intersect_.obstacleLow(lineIdx, j)) &&
-            !std::isnan(intersect_.obstacleUpp(lineIdx, j))) {
-            obsSegment.push_back({intersect_.obstacleLow(lineIdx, j),
-                                  intersect_.obstacleUpp(lineIdx, j)});
+    for (auto j = 0; j < intersect_.obstacleLow.at(lineIdx).size(); ++j) {
+        if (!std::isnan(intersect_.obstacleLow.at(lineIdx).at(j)) &&
+            !std::isnan(intersect_.obstacleUpp.at(lineIdx).at(j))) {
+            obsSegment.push_back({intersect_.obstacleLow.at(lineIdx).at(j),
+                                  intersect_.obstacleUpp.at(lineIdx).at(j)});
         }
     }
 

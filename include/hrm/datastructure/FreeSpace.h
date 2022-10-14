@@ -11,16 +11,16 @@ namespace hrm {
 /** \brief Intervals for intersection between sweep line and arenas/obstacles */
 struct IntersectionInterval {
     /** \brief Lower bounds of line segment within arena */
-    Eigen::MatrixXd arenaLow;
+    std::vector<std::vector<Coordinate>> arenaLow;
 
     /** \brief Upper bounds of line segment within arena */
-    Eigen::MatrixXd arenaUpp;
+    std::vector<std::vector<Coordinate>> arenaUpp;
 
     /** \brief Lower bounds of line segment within obstacle */
-    Eigen::MatrixXd obstacleLow;
+    std::vector<std::vector<Coordinate>> obstacleLow;
 
     /** \brief Upper bounds of line segment within obstacle */
-    Eigen::MatrixXd obstacleUpp;
+    std::vector<std::vector<Coordinate>> obstacleUpp;
 };
 
 /** \brief Collision-free line segments in 2D */

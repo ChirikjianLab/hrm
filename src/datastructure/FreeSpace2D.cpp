@@ -17,13 +17,13 @@ void hrm::FreeSpace2D::computeIntersectionInterval(
             const auto intersectPointArena = intersectHorizontalLinePolygon2D(
                 tLine.at(0).at(i), cSpaceBoundary_.arena.at(j));
             if (intersectPointArena.empty()) {
-                intersect_.arenaLow(i, j) = lowBound_;
-                intersect_.arenaUpp(i, j) = upBound_;
+                intersect_.arenaLow.at(i).at(j) = lowBound_;
+                intersect_.arenaUpp.at(i).at(j) = upBound_;
             } else {
-                intersect_.arenaLow(i, j) = std::fmin(
+                intersect_.arenaLow.at(i).at(j) = std::fmin(
                     lowBound_,
                     std::fmin(intersectPointArena[0], intersectPointArena[1]));
-                intersect_.arenaUpp(i, j) = std::fmax(
+                intersect_.arenaUpp.at(i).at(j) = std::fmax(
                     upBound_,
                     std::fmax(intersectPointArena[0], intersectPointArena[1]));
             }
@@ -35,12 +35,12 @@ void hrm::FreeSpace2D::computeIntersectionInterval(
                 intersectHorizontalLinePolygon2D(
                     tLine.at(0).at(i), cSpaceBoundary_.obstacle.at(j));
             if (intersectPointObstacle.empty()) {
-                intersect_.obstacleLow(i, j) = NAN;
-                intersect_.obstacleUpp(i, j) = NAN;
+                intersect_.obstacleLow.at(i).at(j) = NAN;
+                intersect_.obstacleUpp.at(i).at(j) = NAN;
             } else {
-                intersect_.obstacleLow(i, j) = std::fmin(
+                intersect_.obstacleLow.at(i).at(j) = std::fmin(
                     intersectPointObstacle[0], intersectPointObstacle[1]);
-                intersect_.obstacleUpp(i, j) = std::fmax(
+                intersect_.obstacleUpp.at(i).at(j) = std::fmax(
                     intersectPointObstacle[0], intersectPointObstacle[1]);
             }
         }
