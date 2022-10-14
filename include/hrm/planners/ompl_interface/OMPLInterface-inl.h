@@ -114,6 +114,8 @@ void OMPLInterface<RobotType, ObjectType>::setPlanner(const Index plannerId) {
     } else if (plannerId == 6) {
         ss_->setPlanner(
             std::make_shared<og::KPIECE1>(ss_->getSpaceInformation()));
+    } else {
+        OMPL_ERROR("Planner not identified.");
     }
 }
 

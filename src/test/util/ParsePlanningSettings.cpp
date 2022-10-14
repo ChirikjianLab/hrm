@@ -255,6 +255,8 @@ void parseStartGoalConfig(const std::string& robotType, const std::string& dim,
                 fileConfig << config.at(i) << ',';
             }
             fileConfig << config.at(numDOF) << "\n";
+        } else {
+            std::cerr << "Only '2D' and '3D' are supported." << std::endl;
         }
     }
     fileConfig.close();

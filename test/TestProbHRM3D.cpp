@@ -18,6 +18,9 @@ TEST(TestHRMPlanning3D, ProbHRM) {
         urdfFile = RESOURCES_PATH "/3D/urdf/snake.urdf";
     } else if (env3D.getEndPoints().at(0).size() == 16) {
         urdfFile = RESOURCES_PATH "/3D/urdf/tree.urdf";
+    } else {
+        std::cout << "No URDF file specified, will treat robot as a rigid body."
+                  << std::endl;
     }
 
     // Setup robot
