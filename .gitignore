@@ -82,5 +82,5 @@ CMakeLists.txt.user*
 /doc/doxygen/
 
 # Python
-*.idea/
+
 *.pyc
