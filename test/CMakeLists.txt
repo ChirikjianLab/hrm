@@ -40,12 +40,12 @@ add_executable(TestOMPL3D TestOMPL3D.cpp)
 target_link_libraries(TestOMPL3D
                       OMPLPlanner
                       TestUtil)
-add_test(TestOMPL3D ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3D)
+# add_test(TestOMPL3D ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3D)
 
 add_executable(TestOMPL3DArticulated TestOMPL3DArticulated.cpp)
 target_link_libraries(TestOMPL3DArticulated
                       OMPLPlanner
                       TestUtil)
-add_test(TestOMPL3DArticulated ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3DArticulated)
+# add_test(TestOMPL3DArticulated ${EXECUTABLE_OUTPUT_PATH}/TestOMPL3DArticulated)
 
 add_subdirectory(benchmark)

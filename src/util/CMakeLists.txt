@@ -12,7 +12,8 @@ if(kdl_parser_FOUND)
 else()
     target_link_libraries(Util
                           KDL_Parser)
-    target_include_directories(Util PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/external/kdl_parser/include>)
+    target_include_directories(Util PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/util/external/kdl_parser/include>
+                                           $<INSTALL_INTERFACE:external/kdl_parser/include>)
     
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/util/external/kdl_parser/include/kdl_parser
             CONFIGURATIONS Release
