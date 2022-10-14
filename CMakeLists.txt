@@ -114,7 +114,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/hrmConfig.cmake"
 # Install library headers
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/hrm
         CONFIGURATIONS Release
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/")
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
 
 # Uninstall target
 if(NOT TARGET uninstall)
