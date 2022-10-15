@@ -1,14 +1,24 @@
+# HighwayRoadMap
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-basic.yml/badge.svg)
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
 
-# HighwayRoadMap
-A paradigm for robot motion planning based on parameterizations of the free space
+A paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__
+
+### Authors
+[Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, Qianli Ma and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
+
+- Repository maintainers: Sipu Ruan, Qianli Ma
+
+### Useful links:
+- Paper: [Link to T-RO](https://ieeexplore.ieee.org/document/9841604)
+- Project page: [https://chirikjianlab.github.io/hrm-planning-page/](https://chirikjianlab.github.io/hrm-planning-page/)
+- API documentation: 
 
 ## Description
-We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). This repository is the C++ implementation of algorithms and benchmarks. The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems, Hybrid Probabilistic Highway RoadMap (HP-HRM) for articulated body planning problems and Closed-Form Collision-Free ConFiguration (CF3) sampler for sampling-based planners. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
+We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems and a hybrid Probabilistic Highway RoadMap (Prob-HRM) for articulated body planning problems. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
 
 ## Dependencies
-We provide an installation script for dependencies: `/script/install-dependencies.sh`. Exectuting it will automatically install all the following required dependencies:
+We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies:
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sample-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
@@ -17,18 +27,9 @@ We provide an installation script for dependencies: `/script/install-dependencie
 - [Boost](https://www.boost.org/) (version = 1.71.0)
 - [google-test](https://github.com/google/googletest) (version >= 1.10.x)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
-- [cmake-format] (version >= 0.4.5)
-    ```sh
-    sudo pip3 install cmake-format==0.4.5
-    ```
-- [clang-format]
-    ```sh
-    sudo apt install clang
-    ```
-- [Cppcheck]
-    ```sh
-    sudo apt install cppcheck
-    ```
+- [cmake-format] (version >= 0.4.5) `[sudo] pip3 install cmake-format==0.4.5`
+- [clang-format] `[sudo] apt install clang`
+- [Cppcheck] `[sudo] apt install cppcheck`
 
 ## Compiling Instructions
 ### On Local Host
@@ -59,7 +60,10 @@ ninja -j 9
 ```
 
 **Note**: 
-- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e. `cmake ../ -DOMPL_PREFIX=/your/ompl/include/dir`.
+- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e. 
+```sh
+cmake ../ -DOMPL_PREFIX=/your/ompl/include/dir
+```
 
 ## Installation and linking the library in another project
 ### Installation
@@ -75,7 +79,7 @@ To uninstall:
 ```
 
 ### Linking in another package
-In the `CMakeLists.txt`, add a line:
+In your `CMakeLists.txt`, add a line:
 ```
 find_package(hrm REQUIRED)
 ```
@@ -93,9 +97,9 @@ Other linking library choices: `hrm::Geometry`, `hrm::DataStructure`, `hrm::High
 ### Generate configuration files
 Configuration files for environment and robot when testing the C++ scripts are all stored in `/config` folder, including (3D cases as an example) `arena_config_3D.csv`, `obs_config_3D.csv`. `robot_config_3D.csv` and `end_points_3D.csv`.
 
-In the repository, there are pre-defined configurations in these files, stored in `/resources/` folder. There are 2 ways to customize different robot or environment configurations:
-- Run MATLAB scripts (`/demo/matlab/tests/planning_config_3D.m`)[/demo/matlab/tests/planning_config_3D.m], and change different parameters that defines the geometric shapes of the obstacles and robots.
-- Use C++ planning scene parser function, i.e.,
+In the repository, there are pre-defined configurations in these files, stored in [`/resources/`](/resources) folder. There are 2 ways to customize different robot or environment configurations:
+- Run MATLAB scripts [`planning_config_3D.m`](/demo/matlab/planning_config_3D.m), and change different parameters that defines the geometric shapes of the obstacles and robots.
+- Use C++ planning scene parser function defined [here](/include/hrm/test/util/ParsePlanningSettings.h#L197), i.e.,
 ```
 hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
 ```
