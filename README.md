@@ -2,17 +2,30 @@
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-basic.yml/badge.svg)
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
 
-A paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__
+A paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
 
 ### Authors
 [Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, Qianli Ma and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
 
 - Repository maintainers: Sipu Ruan, Qianli Ma
 
-### Useful links:
+### Useful links
 - Paper: [Link to T-RO](https://ieeexplore.ieee.org/document/9841604)
 - Project page: [https://chirikjianlab.github.io/hrm-planning-page/](https://chirikjianlab.github.io/hrm-planning-page/)
-- API documentation: 
+- API documentation:
+
+### Associate paper
+- Ruan, S., Poblete, K.L., Wu, H., Ma, Q. and Chirikjian, G.S., 2022. Efficient Path Planning in Narrow Passages for Robots With Ellipsoidal Components. IEEE Transactions on Robotics. doi: 10.1109/TRO.2022.3187818
+- BibTex
+```
+@article{ruan2022efficient,
+  title={Efficient Path Planning in Narrow Passages for Robots With Ellipsoidal Components},
+  author={Ruan, Sipu and Poblete, Karen L and Wu, Hongtao and Ma, Qianli and Chirikjian, Gregory S},
+  journal={IEEE Transactions on Robotics},
+  year={2022},
+  publisher={IEEE}
+}
+```
 
 ## Description
 We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems and a hybrid Probabilistic Highway RoadMap (Prob-HRM) for articulated body planning problems. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
@@ -105,58 +118,59 @@ hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
 ```
 
 ### Running unit tests
-Testing files are located in `/test` folder:
-- 2D HRM planner for single-body: `TestHRM2D.cpp`
-- 3D HRM planner for multi-rigid-body: `TestHRM3D.cpp`
-- 3D Prob-HRM planner for articulated-body: `TestProbHRM3D.cpp`
-- 3D OMPL planners for multi-rigid-body: `TestOMPL3D.cpp`
-- 3D OMPL planners for articulated-body: `TestOMPL3DArticulated.cpp`
-- Geometric subroutines: `TestGeometry.cpp`
-
-**Command line arguments**:
 ```sh
 cd build/
 ctest
 ```
 
+Testing files are located in [`/test`](/test) folder:
+- Geometric subroutines: [`TestGeometry.cpp`](/test/TestGeometry.cpp)
+- 2D HRM planner for a single elliptical body: [`TestHRM2D.cpp`](/test/TestHRM2D.cpp)
+- 3D HRM planner for rigid body: [`TestHRM3D.cpp`](/test/TestHRM3D.cpp)
+- 3D HRM planner for rigid body with ablated C-slice connections: [`TestHRM3DAblation.cpp`](/test/TestHRM3DAblation.cpp)
+- 3D Prob-HRM planner for articulated body: [`TestProbHRM3D.cpp`](/test/TestProbHRM3D.cpp)
+- 3D OMPL planners for rigid body: [`TestOMPL3D.cpp`](/test/TestOMPL3D.cpp)
+- 3D OMPL planners for articulated body: [`TestOMPL3DArticulated.cpp`](/test/TestOMPL3DArticulated.cpp)
+
 ### Benchmarks
-Benchmark files are stored in `/test/benchmark/` folder:
-- 2D HRM planner for single-body: `BenchHRM2D.cpp`
+Benchmark files are stored in [`/test/benchmark/`](/test/benchmark) folder:
+- 2D HRM planner for a single body: [`BenchHRM2D.cpp`](/test/benchmark/BenchHRM2D.cpp)
 ```sh
 # Parameters: --Num of trials --Num of layers --Num of sweep lines --Configuration file prefix
 ./BenchHRM2D 1 20 30 ${SOURCE_DIR}/config/
 ```
 
-- 3D HRM planner for multi-body: `BenchHRM3D.cpp`
+- 3D HRM planner for rigid body: [`BenchHRM3D.cpp`](/test/benchmark/BenchHRM3D.cpp)
 ```sh
 # Parameters: --Num of trials --Num of layers --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time --Configuration file prefix --Pre-defined quaternions file prefix (if no, enter 0 or leave blank)
-./BenchHRM3D 1 60 6 3 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
+./BenchHRM3D 1 60 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
 ```
 
-- 3D HRM planner for multi-body (ablated version, without "bridge C-slice" process): `BenchHRM3DAblation.cpp`
+- 3D HRM planner for rigid body (ablated version, without "bridge C-slice" process): [`BenchHRM3DAblation.cpp`](/test/benchmark/BenchHRM3DAblation.cpp)
 ```sh
 # Parameters: --Num of trials --Num of layers --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time --Configuration file prefix --Pre-defined quaternions file prefix (if no, enter 0 or leave blank)
-./BenchHRM3DAblation 1 60 6 3 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
+./BenchHRM3DAblation 1 60 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
 ```
 
-- 3D Prob-HRM planner for articulated-body: `BenchProbHRM3D.cpp`
+- 3D Prob-HRM planner for articulated body: [`BenchProbHRM3D.cpp`](/test/benchmark/BenchProbHRM3D.cpp)
 ```sh
 # Parameters: --Num of trials --Num of trials --robot name --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time (in seconds, default: 60.0s) --Configuration file prefix --URDF file prefix
-./BenchHRM3D 1 snake 6 3 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/
+./BenchHRM3D 1 snake 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/
 ```
 
-- 3D Prob-HRM planner for articulated-body (ablated version, without "bridge C-slice" process): `BenchProbHRM3DAblation.cpp`
+- 3D Prob-HRM planner for articulated body (ablated version, without "bridge C-slice" process): [`BenchProbHRM3DAblation.cpp`](/test/benchmark/BenchProbHRM3DAblation.cpp)
 ```sh
 # Parameters: --Num of trials --Num of trials --robot name --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time (in seconds, default: 60.0s) --Configuration file prefix --URDF file prefix
-./BenchHRM3DAblation 1 snake 6 3 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/
+./BenchHRM3DAblation 1 snake 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/
 ```
 
-- 3D OMPL planner for rigid-body: `BenchOMPL3D.cpp`
+- 3D OMPL planner for rigid body: [`BenchOMPL3D.cpp`](/test/benchmark/BenchOMPL3D.cpp)
 ```sh
 # Parameters: --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds, default: 60.0s) --Configuration file prefix
-./BenchOMPL3D 1 0 5 0 4 60.0 ${SOURCE_DIR}/config/demo/
+./BenchOMPL3D 1 0 5 0 4 60.0 ${SOURCE_DIR}/config/
 ```
-- 3D OMPL planner for articulated-body: `BenchOMPL3DArticulated.cpp`
+
+- 3D OMPL planner for articulated body: [`BenchOMPL3DArticulated.cpp`](/test/benchmark/BenchOMPL3DArticulated.cpp)
 ```sh
 # Parameters: --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds, default: 60.0s) --Configuration file prefix
 ./BenchOMPL3D 1 0 5 0 4 snake 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/
@@ -168,7 +182,7 @@ Benchmark files are stored in `/test/benchmark/` folder:
 - The URDF file prefix is set by default as the source directory. The script will search under relative path: "${SOURCE_DIR}/resources/3D/urdf/${robot_name}.urdf". If you have your own robot URDF file, please put into the correct folder or setup correct relative path.
 
 ### Visualizations
-After running demo or benchmark scripts, results for visualization will be generated in the "/result" folder. Visualization scripts are in both MATLAB and Python:
+After running demo or benchmark scripts, results for visualization will be generated in the `/result` folder. Visualization scripts are in both MATLAB and Python:
 
 For MATLAB:
 - Plot 2D HRM results: `/demo/matlab/tests/plot_results_hrm_2D.m`
