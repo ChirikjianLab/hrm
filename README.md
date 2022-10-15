@@ -1,8 +1,8 @@
-# HighwayRoadMap
+# hrm
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-basic.yml/badge.svg)
 ![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
 
-A paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
+The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
 
 ### Authors
 [Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, Qianli Ma and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
@@ -185,53 +185,40 @@ Benchmark files are stored in [`/test/benchmark/`](/test/benchmark) folder:
 After running demo or benchmark scripts, results for visualization will be generated in the `/result` folder. Visualization scripts are in both MATLAB and Python:
 
 For MATLAB:
-- Plot 2D HRM results: `/demo/matlab/tests/plot_results_hrm_2D.m`
-- Plot 2D Highway RoadMap graph: `/demo/matlab/tests/plot_results_graph_2D.m`
-- Plot 3D HRM/Prob-HRM results: `/demo/matlab/tests/plot_results_hrm_3D.m`
-- Plot 3D Highway RoadMap graph: `/demo/matlab/tests/plot_results_graph_3D.m`
-- Plot 3D OMPL planners results: `/demo/matlab/tests/plot_results_ompl_3D.m`
+- Plot results from HRM planner (2D case): [`plot_results_hrm_2D.m`](/demo/matlab/plot_results_hrm_2D.m)
+- Plot graph from HRM (2D case): [`plot_results_graph_2D.m`](/demo/matlab/plot_results_graph_2D.m)
+- Plot results from HRM/Prob-HRM planners (3D case): [`plot_results_hrm_3D.m`](/demo/matlab/plot_results_hrm_3D.m)
+- Plot graph from HRM (3D case): [`plot_results_graph_3D.m`](/demo/matlab/plot_results_graph_3D.m)
+- Plot results from OMPL planners (3D case): [`plot_results_ompl_3D.m`](/demo/matlab/plot_results_ompl_3D.m)
+- Generate movie for results from HRM planner (3D case): [`movie_results_hrm_3D.m`](/demo/matlab/movie_results_hrm_3D.m)
 
-For Python (Please follow `/demo/python/requirements.txt` for dependencies):
-- Plot 3D HRM/Prob-HRM results and graph: `/demo/python/plot_results_hrm_3D.py`
-- Plot 3D OMPL planners results and data structure: `/demo/python/plot_results_ompl_3D.py`
+For Python (Please follow [`/demo/python/requirements.txt`](/demo/python/requirements.txt) for dependencies installation):
+- Plot 3D HRM/Prob-HRM results and graph: [`plot_results_hrm_3D.py`](/demo/python/plot_results_hrm_3D.py)
+- Plot 3D OMPL planners results and data structure: [`plot_results_ompl_3D.py`](/demo/python/plot_results_ompl_3D.py)
 
-## Status
+## Features
 ### Highway RoadMap planner
-1. SE(2) single rigid body:
-- Slice connections using KC (`HRM2DKC`)[/include/hrm/planners/HRM2DKC.h] and TFE (`HRM2D`)[/include/hrm/planners/HRM2D.h].
+- SE(2) single rigid body:
+  - C-slice connections using Tightly-Fitted Ellipsoid (TFE) [`HRM2D`](/include/hrm/planners/HRM2D.h) and Kinematics of Containment (KC) [`HRM2DKC`](/include/hrm/planners/HRM2DKC.h).
 
-2. SE(3) rigid body:
-- Slice connections using TFE (`HRM3D`)[/include/hrm/planners/HRM3D.h]
-- Ablated version for slice connections (`HRM3DAblication`)[/include/hrm/planners/HRM3DAblation.h]
+- SE(3) rigid body:
+  - C-slice connections using TFE [`HRM3D`](/include/hrm/planners/HRM3D.h)
+  - Ablated version for C-slice connections [`HRM3DAblication`](/include/hrm/planners/HRM3DAblation.h)
 
-3. 3D articulated body:
-- Probabilistic HighwayRoadMap (`ProbHRM3D`)[/include/hrm/planners/ProbHRM3D.h]
+- 3D articulated body:
+  - Probabilistic HighwayRoadMap [`ProbHRM3D`](/include/hrm/planners/ProbHRM3D.h)
 
 ### OMPL sampled-based planners
-1. SE(2) rigid body:
-- (`OMPL2D`)[/include/hrm/planners/ompl_interface/OMPL2D.h]
-
-2. SE(3) rigid body:
-- (`OMPL3D`)[/include/hrm/planners/ompl_interface/OMPL3D.h]
-
-3. 3D articulated body:
-- (`OMPL3DArticulated`)[/include/hrm/planners/ompl_interface/OMPL3DArticulated.h]
+- SE(2) rigid body: [`OMPL2D`](/include/hrm/planners/ompl_interface/OMPL2D.h)
+- SE(3) rigid body: [`OMPL3D`](/include/hrm/planners/ompl_interface/OMPL3D.h)
+- 3D articulated body: [`OMPL3DArticulated`](/include/hrm/planners/ompl_interface/OMPL3DArticulated.h)
 
 ### Available robot types
-1. Rigid body:
-- Rabbit
-- Chair
-
-2. Articulated body:
-- Snake
-- Tree
+- Rigid body: Rabbit, Chair
+- Articulated body: Snake, Tree
 
 ### Available planning scene environments
-- Sparse
-- Cluttered
-- Maze
-- Home
-- Narrow
+Sparse, Cluttered, Maze, Home, Narrow
 
 ### Demonstration using real robot in a lab environment
 1. Verified the algorithm in real robot, i.e. project the NAO humanoid robot to the plane, and plan a trajectory.
