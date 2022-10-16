@@ -8,41 +8,45 @@
 
 int main(int argc, char** argv) {
     if (argc >= 7) {
-        std::cout << "Highway RoadMap for 3D rigid-body planning" << std::endl;
+        std::cout << "Benchmark: Highway RoadMap for 3D rigid-body planning"
+                  << std::endl;
         std::cout << "----------" << std::endl;
     } else {
         std::cerr
-            << "Usage: Please add 1) Num of trials 2) Num of slices 3) Num of "
-               "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
-               "5) Max planning time 6) Configuration file prefix 7) "
-               "Pre-defined quaternions file prefix (if no, enter 0 or leave "
-               "blank)"
+            << "Usage: Please add 1) Map type 2) Robot type 3) Num of trials "
+               "4) Max planning time 5) Num of slices 6) Method for "
+               "pre-defined SO(3) samples 7) [optional] Num of sweep lines "
+               "(x-direction) 8) [optional] Num of sweep lines (y-direction)"
             << std::endl;
         return 1;
     }
 
     // Record planning time for N trials
-    const auto numTrial = size_t(atoi(argv[1]));
-    const int numSlice = atoi(argv[2]);
-    const int numLineX = atoi(argv[3]);
-    const int numLineY = atoi(argv[4]);
-    const auto MAX_PLAN_TIME = double(atoi(argv[5]));
+    const std::string mapType = argv[1];
+    const std::string robotType = argv[2];
+    const auto numTrial = size_t(atoi(argv[3]));
+    const auto MAX_PLAN_TIME = double(atoi(argv[4]));
+    const int numSlice = atoi(argv[5]);
+    const std::string methodSO3 = argv[6];
 
-    // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = argv[6];
+    const int numLineX = argc > 7 ? atoi(argv[7]) : 0;
+    const int numLineY = argc > 7 ? atoi(argv[8]) : 0;
+
     const int NUM_SURF_PARAM = 10;
 
+    // Setup environment config
+    hrm::parsePlanningConfig("superquadrics", mapType, robotType, "3D");
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Setup robot
     std::string quaternionFilename = "0";
-    if (argc == 8 && strcmp(argv[7], "0") != 0) {
-        quaternionFilename =
-            std::string(argv[7]) + '_' + std::string(argv[2]) + ".csv";
+    if (strcmp(argv[6], "0") != 0) {
+        quaternionFilename = RESOURCES_PATH "/SO3_sequence/q_" + methodSO3 +
+                             "_" + std::to_string(numSlice) + ".csv";
     }
-    auto robot = hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX,
-                                           quaternionFilename, NUM_SURF_PARAM);
+    auto robot = hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quaternionFilename,
+                                           NUM_SURF_PARAM);
 
     // Planning parameters
     hrm::PlannerParameter param;
@@ -74,6 +78,9 @@ int main(int argc, char** argv) {
 
     // Benchmark
     std::cout << "Start benchmark..." << std::endl;
+    std::cout << " Map type: [" << mapType << "]; Robot type: [" << robotType
+              << "]" << std::endl;
+
     for (size_t i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
