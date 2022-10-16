@@ -1,25 +1,24 @@
 #include "hrm/config.h"
-#include "hrm/planners/HRM3D.h"
+#include "hrm/planners/ProbHRM3D.h"
 #include "hrm/test/util/DisplayPlanningData.h"
 #include "hrm/test/util/GTestUtils.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
 void demo() {
     // Setup environment config
-    hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
+    const std::string robotType = "snake";
+    hrm::parsePlanningConfig("superquadrics", "cluttered", robotType, "3D");
     const int NUM_SURF_PARAM = 20;
     const double MAX_PLAN_TIME = 5.0;
 
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
     env3D.loadEnvironment(CONFIG_PATH "/");
 
-    // Using fixed orientations from Icosahedral symmetry group
-    const std::string quatFile =
-        RESOURCES_PATH "/SO3_sequence/q_icosahedron_60.csv";
-
     // Setup robot
     const auto robot =
-        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", quatFile, NUM_SURF_PARAM);
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", "0", NUM_SURF_PARAM);
+    const std::string urdfFile =
+        RESOURCES_PATH "/3D/urdf/" + robotType + ".urdf";
 
     // Planning requests
     hrm::PlanningRequest req;
@@ -39,7 +38,8 @@ void demo() {
 
     std::cout << "Start planning..." << std::endl;
 
-    hrm::planners::HRM3D hrm(robot, env3D.getArena(), env3D.getObstacle(), req);
+    hrm::planners::ProbHRM3D hrm(robot, urdfFile, env3D.getArena(),
+                                 env3D.getObstacle(), req);
     hrm.plan(MAX_PLAN_TIME);
     hrm::PlanningResult res = hrm.getPlanningResult();
 
@@ -54,8 +54,8 @@ void demo() {
     hrm::displayGraphInfo(res.graphStructure);
     hrm::displayPathInfo(res.solutionPath);
 
-    hrm::storeGraphInfo(res.graphStructure, "hrm_3D");
-    hrm::storePathInfo(res.solutionPath, "hrm_3D");
+    hrm::storeGraphInfo(res.graphStructure, "prob_hrm_3D");
+    hrm::storePathInfo(res.solutionPath, "prob_hrm_3D");
     hrm::storeRoutines<hrm::planners::HRM3D>(hrm);
 }
 
