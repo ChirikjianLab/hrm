@@ -106,15 +106,6 @@ target_link_libraries(demo_hrm_3d
 ```
 Other linking library choices: `hrm::Geometry`, `hrm::DataStructure`, `hrm::HighwayRoadMap`, `hrm::HRM2D`, `hrm::OMPLPlanner`, `hrm::Util`
 
-## Demonstration scripts
-Demonstrations scripts are located in [`/demo`](/demo) folder:
-- [`DemoHRMRigidBodyPlanning3D.cpp`](/demo/DemoHRMRigidBodyPlanning3D.cpp)
-- [`DemoProbHRMArticulatedBodyPlanning3D.cpp`](/demo/DemoProbHRMArticulatedBodyPlanning3D.cpp)
-- [`DemoOMPLRigidBodyPlanning3D.cpp`](/demo/DemoOMPLRigidBodyPlanning3D.cpp)
-- [`DemoOMPLArticulatedBodyPlanning3D.cpp`](/demo/DemoOMPLArticulatedBodyPlanning3D.cpp)
-
-Detailed results will be stored in `/result/details` folder and can be visualized using either MATLAB or Python scripts (See [here](README.md#visualizations) for running instructions).
-
 ## Testing Instructions
 ### Generate configuration files
 Configuration files for environment and robot when testing the C++ scripts are all stored in `/config` folder, including (3D cases as an example) `arena_config_3D.csv`, `obs_config_3D.csv`. `robot_config_3D.csv` and `end_points_3D.csv`.
@@ -125,6 +116,15 @@ In the repository, there are pre-defined configurations in these files, stored i
 ```
 hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
 ```
+
+### Demonstration scripts
+Demonstrations scripts are located in [`/demo`](/demo) folder:
+- [`DemoHRMRigidBodyPlanning3D.cpp`](/demo/DemoHRMRigidBodyPlanning3D.cpp)
+- [`DemoProbHRMArticulatedBodyPlanning3D.cpp`](/demo/DemoProbHRMArticulatedBodyPlanning3D.cpp)
+- [`DemoOMPLRigidBodyPlanning3D.cpp`](/demo/DemoOMPLRigidBodyPlanning3D.cpp)
+- [`DemoOMPLArticulatedBodyPlanning3D.cpp`](/demo/DemoOMPLArticulatedBodyPlanning3D.cpp)
+
+Detailed results will be stored in `/result/details` folder and can be visualized using either MATLAB or Python scripts (See [here](README.md#visualizations) for running instructions).
 
 ### Running unit tests
 ```sh
