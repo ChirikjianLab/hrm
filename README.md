@@ -106,6 +106,15 @@ target_link_libraries(demo_hrm_3d
 ```
 Other linking library choices: `hrm::Geometry`, `hrm::DataStructure`, `hrm::HighwayRoadMap`, `hrm::HRM2D`, `hrm::OMPLPlanner`, `hrm::Util`
 
+## Demonstration scripts
+Demonstrations scripts are located in [`/demo`](/demo) folder:
+- [`DemoHRMRigidBodyPlanning3D.cpp`](/demo/DemoHRMRigidBodyPlanning3D.cpp)
+- [`DemoProbHRMArticulatedBodyPlanning3D.cpp`](/demo/DemoProbHRMArticulatedBodyPlanning3D.cpp)
+- [`DemoOMPLRigidBodyPlanning3D.cpp`](/demo/DemoOMPLRigidBodyPlanning3D.cpp)
+- [`DemoOMPLArticulatedBodyPlanning3D.cpp`](/demo/DemoOMPLArticulatedBodyPlanning3D.cpp)
+
+Detailed results will be stored in `/result/details` folder and can be visualized using either MATLAB or Python scripts (See [here](README.md#visualizations) for running instructions).
+
 ## Testing Instructions
 ### Generate configuration files
 Configuration files for environment and robot when testing the C++ scripts are all stored in `/config` folder, including (3D cases as an example) `arena_config_3D.csv`, `obs_config_3D.csv`. `robot_config_3D.csv` and `end_points_3D.csv`.
@@ -136,50 +145,49 @@ Testing files are located in [`/test`](/test) folder:
 Benchmark files are stored in [`/test/benchmark/`](/test/benchmark) folder:
 - 2D HRM planner for a single body: [`BenchHRM2D.cpp`](/test/benchmark/BenchHRM2D.cpp)
 ```sh
-# Parameters: --Num of trials --Num of layers --Num of sweep lines --Configuration file prefix
-./BenchHRM2D 1 20 30 ${SOURCE_DIR}/config/
+# Parameters: --Map type -- Robot type --Num of trials --Num of slices --[optional] Num of sweep lines
+./BenchHRM2D sparse rabbit 50 20 30
 ```
 
 - 3D HRM planner for rigid body: [`BenchHRM3D.cpp`](/test/benchmark/BenchHRM3D.cpp)
 ```sh
-# Parameters: --Num of trials --Num of layers --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time --Configuration file prefix --Pre-defined quaternions file prefix (if no, enter 0 or leave blank)
-./BenchHRM3D 1 60 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
+# Parameters: --Map type --Robot type --Num of trials --Max planning time --Num of slices --Method for pre-defined SO(3) samples --[optional] Num of sweep lines (x-direction) --[optional] Num of sweep lines (y-direction)
+./BenchHRM3D sparse rabbit 50 60.0 60 icosahedron 6 3
 ```
 
 - 3D HRM planner for rigid body (ablated version, without "bridge C-slice" process): [`BenchHRM3DAblation.cpp`](/test/benchmark/BenchHRM3DAblation.cpp)
 ```sh
-# Parameters: --Num of trials --Num of layers --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time --Configuration file prefix --Pre-defined quaternions file prefix (if no, enter 0 or leave blank)
-./BenchHRM3DAblation 1 60 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/resources/SO3_sequence/q_icosahedron
+# Parameters: --Map type --Robot type --Num of trials --Max planning time --Num of slices --Method for pre-defined SO(3) samples --[optional] Num of sweep lines (x-direction) --[optional] Num of sweep lines (y-direction)
+./BenchHRM3DAblation sparse rabbit 50 60.0 60 icosahedron 6 3
 ```
 
 - 3D Prob-HRM planner for articulated body: [`BenchProbHRM3D.cpp`](/test/benchmark/BenchProbHRM3D.cpp)
 ```sh
-# Parameters: --Num of trials --Num of trials --robot name --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time (in seconds, default: 60.0s) --Configuration file prefix --URDF file prefix
-./BenchHRM3D 1 snake 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/
+# Parameters: --Map type --Robot type --Num of trials --Max planning time (in seconds) --[optional] Num of sweep lines (x-direction) --[optional] Num of weep lines (y-direction)"
+./BenchProbHRM3D sparse snake 50 60.0 6 3
 ```
 
 - 3D Prob-HRM planner for articulated body (ablated version, without "bridge C-slice" process): [`BenchProbHRM3DAblation.cpp`](/test/benchmark/BenchProbHRM3DAblation.cpp)
 ```sh
-# Parameters: --Num of trials --Num of trials --robot name --Num of sweep lines (x-direction) --Num of sweep lines (y-direction) --Max planning time (in seconds, default: 60.0s) --Configuration file prefix --URDF file prefix
-./BenchHRM3DAblation 1 snake 6 3 60.0 ${SOURCE_DIR}/config/ ${SOURCE_DIR}/
+# Parameters: --Map type --Robot type --Num of trials --Max planning time (in seconds) --[optional] Num of sweep lines (x-direction) --[optional] Num of weep lines (y-direction)"
+./BenchProbHRM3DAblation sparse snake 50 60.0 6 3
 ```
 
 - 3D OMPL planner for rigid body: [`BenchOMPL3D.cpp`](/test/benchmark/BenchOMPL3D.cpp)
 ```sh
-# Parameters: --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds, default: 60.0s) --Configuration file prefix
-./BenchOMPL3D 1 0 5 0 4 60.0 ${SOURCE_DIR}/config/
+# Parameters: --Map type --Robot type --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds)
+./BenchOMPL3D sparse rabbit 50 0 5 0 4 60.0
 ```
 
 - 3D OMPL planner for articulated body: [`BenchOMPL3DArticulated.cpp`](/test/benchmark/BenchOMPL3DArticulated.cpp)
 ```sh
-# Parameters: --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds, default: 60.0s) --Configuration file prefix
-./BenchOMPL3D 1 0 5 0 4 snake 60.0 ${SOURCE_DIR}/config/demo/ ${SOURCE_DIR}/
+# Parameters: --Map type --Robot type --Num of trials --Planner start ID --Planner end ID --Sampler start ID --Sampler end ID --Max planning time (in seconds)
+./BenchOMPL3DArticulated sparse snake 50 0 5 0 4 60.0
 ```
 
 **Note**:
-- The configuration file path prefix in the examples is for demonstration, and you could specify the folder path that stores the configuration files as your preference.
-- The SO(3) samples can be specified based on the generating methods. In the resources folder, we provide two methods: (1) "q_icosahedron_60": 60 samples from icosahedral symmetry group (as described in paper); (2) "q_hopf_": different numbers of samples using Hopf fibration.
-- The URDF file prefix is set by default as the source directory. The script will search under relative path: "${SOURCE_DIR}/resources/3D/urdf/${robot_name}.urdf". If you have your own robot URDF file, please put into the correct folder or setup correct relative path.
+- The SO(3) samples can be specified based on the generating methods. In the resources folder, we provide two methods: (1) "icosahedron": samples from icosahedral symmetry group (as described in paper); (2) "hopf": samples using Hopf fibration.
+- The URDF file is only available for articulated-body planning problems, with the robot type being "snake" or "tree".
 
 ### Visualizations
 After running demo or benchmark scripts, results for visualization will be generated in the `/result` folder. Visualization scripts are in both MATLAB and Python:
