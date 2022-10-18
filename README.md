@@ -61,17 +61,17 @@ cmake ../ -DOMPL_INCLUDE_DIRS=/your/ompl/include/dir
 ```sh
 # Pull directory onto your localhost
 cd $HOME && mkdir HighwayRoadMap_WS
-cd HighwayRoadMap_WS && git clone git@github.com:ruansp/HighwayRoadMap.git
+cd HighwayRoadMap_WS && git clone git@github.com:ruansp/hrm.git
 
 # Fetch docker image from remote and launch it locally (No need to build the image locally)
-./HighwayRoadMap/script/start-docker.sh
+./hrm/script/start-docker.sh
 
 # Build the project inside the docker container
 cd HighwayRoadMap_WS
 mkdir build
 cd build
-cmake -G Ninja ../HighwayRoadMap
-ninja -j 9
+cmake -G Ninja ../hrm
+ninja
 ```
 
 ## Installation and linking the library in another project
