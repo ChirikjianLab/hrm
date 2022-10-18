@@ -4,7 +4,7 @@
 #include "hrm/test/util/GTestUtils.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
-void demo() {
+int main() {
     // Setup environment config
     const std::string robotType = "snake";
     hrm::parsePlanningConfig("superquadrics", "cluttered", robotType, "3D");
@@ -57,9 +57,6 @@ void demo() {
     hrm::storeGraphInfo(res.graphStructure, "prob_hrm_3D");
     hrm::storePathInfo(res.solutionPath, "prob_hrm_3D");
     hrm::storeRoutines<hrm::planners::HRM3D>(hrm);
-}
 
-int main(int ac, char* av[]) {
-    demo();
     return 0;
 }

@@ -65,7 +65,7 @@ void TestOMPLPlanner(const int plannerIdx, const int samplerIdx) {
     res.solved = omplPlanner.isSolved();
     res.graphStructure.edge = omplPlanner.getEdges();
     res.graphStructure.vertex = omplPlanner.getVertices();
-    res.solutionPath.cost = omplPlanner.getPathLength();
+    res.solutionPath.cost = static_cast<double>(omplPlanner.getPathLength());
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
     res.planningTime.totalTime = omplPlanner.getPlanningTime();
 

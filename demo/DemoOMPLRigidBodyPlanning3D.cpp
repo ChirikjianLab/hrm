@@ -4,7 +4,7 @@
 
 namespace ho = hrm::planners::ompl_interface;
 
-void demo() {
+int main() {
     // Read and setup environment config
     hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
     const int NUM_SURF_PARAM = 20;
@@ -53,7 +53,7 @@ void demo() {
     res.solved = omplPlanner.isSolved();
     res.graphStructure.edge = omplPlanner.getEdges();
     res.graphStructure.vertex = omplPlanner.getVertices();
-    res.solutionPath.cost = omplPlanner.getPathLength();
+    res.solutionPath.cost = static_cast<double>(omplPlanner.getPathLength());
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
     res.solutionPath.interpolatedPath =
         omplPlanner.getInterpolatedSolutionPath();
@@ -67,9 +67,6 @@ void demo() {
 
     hrm::storeGraphInfo(res.graphStructure, "ompl_3D");
     hrm::storePathInfo(res.solutionPath, "ompl_3D");
-}
 
-int main(int ac, char* av[]) {
-    demo();
     return 0;
 }

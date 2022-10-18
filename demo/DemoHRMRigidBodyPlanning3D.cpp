@@ -4,7 +4,7 @@
 #include "hrm/test/util/GTestUtils.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
-void demo() {
+int main() {
     // Setup environment config
     hrm::parsePlanningConfig("superquadrics", "cluttered", "rabbit", "3D");
     const int NUM_SURF_PARAM = 20;
@@ -57,9 +57,6 @@ void demo() {
     hrm::storeGraphInfo(res.graphStructure, "hrm_3D");
     hrm::storePathInfo(res.solutionPath, "hrm_3D");
     hrm::storeRoutines<hrm::planners::HRM3D>(hrm);
-}
 
-int main(int ac, char* av[]) {
-    demo();
     return 0;
 }
