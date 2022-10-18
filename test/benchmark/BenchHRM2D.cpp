@@ -12,32 +12,35 @@
 #include <vector>
 
 int main(int argc, char** argv) {
-    if (argc == 5) {
-        std::cout << "Highway RoadMap for 2D rigid-body planning" << std::endl;
+    if (argc >= 5) {
+        std::cout << "Benchmark: Highway RoadMap for 2D rigid-body planning"
+                  << std::endl;
         std::cout << "----------" << std::endl;
     } else {
-        std::cerr
-            << "Usage: Please add 1) Num of trials 2) Num of slices 3) Num of "
-               "sweep lines 4) Configuration file prefix"
-            << std::endl;
+        std::cerr << "Usage: Please add 1) Map type 2) Robot type 3) Num of "
+                     "trials 4) Num of slices 5) [optional] Num of sweep lines"
+                  << std::endl;
         return 1;
     }
 
     // Record planning time for N trials
-    const int numTrial = atoi(argv[1]);
-    const int numSlice = atoi(argv[2]);
-    const int numLineY = atoi(argv[3]);
-    std::vector<std::vector<double>> timeStatistics;
+    const std::string mapType = argv[1];
+    const std::string robotType = argv[2];
+    const int numTrial = atoi(argv[3]);
+    const int numSlice = atoi(argv[4]);
 
-    // Load Robot and Environment settings
-    const std::string CONFIG_FILE_PREFIX = argv[4];
+    const int numLineY = argc > 5 ? atoi(argv[5]) : 0;
+
     const int NUM_CURVE_PARAM = 50;
     const double MAX_PLAN_TIME = 10.0;
 
+    // Load Robot and Environment settings
+
+    hrm::parsePlanningConfig("superellipse", mapType, robotType, "2D");
     hrm::MultiBodyTree2D robot =
-        hrm::loadRobotMultiBody2D(CONFIG_FILE_PREFIX, NUM_CURVE_PARAM);
+        hrm::loadRobotMultiBody2D(CONFIG_PATH "/", NUM_CURVE_PARAM);
     hrm::PlannerSetting2D env2D(NUM_CURVE_PARAM);
-    env2D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env2D.loadEnvironment(CONFIG_PATH "/");
 
     // Planning parameters
     hrm::PlannerParameter param;
@@ -59,6 +62,10 @@ int main(int argc, char** argv) {
 
     // Multiple planning trials
     std::cout << "Start benchmark..." << std::endl;
+    std::cout << " Map type: [" << mapType << "]; Robot type: [" << robotType
+              << "]" << std::endl;
+
+    std::vector<std::vector<double>> timeStatistics;
     for (int i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 

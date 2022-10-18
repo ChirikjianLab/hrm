@@ -38,7 +38,7 @@ struct FreeSegment2D {
     std::vector<std::vector<Coordinate>> xM;
 };
 
-/** \class FreeSpace
+/** \class FreeSpaceComputator
  * \brief Class for constructing free space */
 template <typename RobotType, typename ObjectType>
 class FreeSpaceComputator {

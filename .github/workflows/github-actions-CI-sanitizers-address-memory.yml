@@ -2,9 +2,9 @@ name: C++ CI Sanitizers Address and Memory
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 jobs:
   Build-and-Test-Sanitizers-Address-Memory:
     runs-on: ubuntu-20.04
@@ -17,7 +17,7 @@ jobs:
       - name: Sanitize Address
         run: |
           cd .. && mkdir tmpBuild && cd tmpBuild
-          cmake -G Ninja -DSANITIZE_ADDRESS=ON ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja -DSANITIZE_ADDRESS=ON ../hrm && ninja -j 9
       - name: Sanitize Memory
         run: |
-          cmake -G Ninja -DSANITIZE_MEMORY=ON ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja -DSANITIZE_MEMORY=ON ../hrm && ninja -j 9

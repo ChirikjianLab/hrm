@@ -2,9 +2,9 @@ name: C++ CI Sanitizers
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 jobs:
   Build-and-Test-Sanitizers:
     runs-on: ubuntu-20.04
@@ -17,7 +17,7 @@ jobs:
       - name: Sanitize Thread
         run: |
           cd .. && mkdir tmpBuild && cd tmpBuild
-          cmake -G Ninja -DSANITIZE_THREAD=ON ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja -DSANITIZE_THREAD=ON ../hrm && ninja -j 9
       - name: Sanitize Undefined Behavior
         run: |
-          cmake -G Ninja -DSANITIZE_UNDEFINED=ON ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja -DSANITIZE_UNDEFINED=ON ../hrm && ninja -j 9

@@ -7,42 +7,41 @@
 #include <ctime>
 
 int main(int argc, char** argv) {
-    if (argc == 8) {
-        std::cout
-            << "Probabilistic Highway RoadMap for 3D articulated-body planning"
-            << std::endl;
+    if (argc >= 5) {
+        std::cout << "Benchmark: Probabilistic Highway RoadMap for 3D "
+                     "articulated-body planning"
+                  << std::endl;
         std::cout << "----------" << std::endl;
     } else {
-        std::cerr
-            << "Usage: Please add 1) Num of trials 2) robot name 3) Num of "
-               "sweep lines (x-direction) 4) Num of sweep lines (y-direction) "
-               "5) Max planning time (in seconds, default: 60.0s) 6) "
-               "Configuration file prefix 7) URDF file prefix"
-            << std::endl;
+        std::cerr << "Usage: Please add 1) Map type 2) Robot type 3) Num of "
+                     "trials 4) Max planning time (in seconds) 5) [optional] "
+                     "Num of sweep lines (x-direction) 6) [optional] Num of "
+                     "sweep lines (y-direction)"
+                  << std::endl;
         return 1;
     }
 
     // Record planning time for N trials
-    const auto numTrial = size_t(atoi(argv[1]));
-    const std::string ROBOT_NAME = argv[2];
-    const int numLineX = atoi(argv[3]);
-    const int numLineY = atoi(argv[4]);
-    const auto MAX_PLAN_TIME = double(atoi(argv[5]));
+    const std::string mapType = argv[1];
+    const std::string robotType = argv[2];
+    const auto numTrial = size_t(atoi(argv[3]));
+    const auto MAX_PLAN_TIME = double(atoi(argv[4]));
 
-    // Setup environment config
-    const std::string CONFIG_FILE_PREFIX = argv[6];
+    const int numLineX = argc > 5 ? atoi(argv[5]) : 0;
+    const int numLineY = argc > 5 ? atoi(argv[6]) : 0;
+
     const int NUM_SURF_PARAM = 10;
 
+    // Setup environment config
+    hrm::parsePlanningConfig("superquadrics", mapType, robotType, "3D");
     hrm::PlannerSetting3D env3D(NUM_SURF_PARAM);
-    env3D.loadEnvironment(CONFIG_FILE_PREFIX);
+    env3D.loadEnvironment(CONFIG_PATH "/");
 
     // Setup robot
-    const std::string URDF_FILE_PREFIX = argv[7];
-
     hrm::MultiBodyTree3D robot =
-        hrm::loadRobotMultiBody3D(CONFIG_FILE_PREFIX, "0", NUM_SURF_PARAM);
-    std::string urdfFile =
-        URDF_FILE_PREFIX + "resources/3D/urdf/" + ROBOT_NAME + ".urdf";
+        hrm::loadRobotMultiBody3D(CONFIG_PATH "/", "0", NUM_SURF_PARAM);
+    const std::string urdfFile =
+        RESOURCES_PATH "/3D/urdf/" + robotType + ".urdf";
 
     // Options
     hrm::PlannerParameter param;
@@ -71,6 +70,9 @@ int main(int argc, char** argv) {
 
     // Benchmark
     std::cout << "Start benchmark..." << std::endl;
+    std::cout << " Map type: [" << mapType << "]; Robot type: [" << robotType
+              << "]" << std::endl;
+
     for (size_t i = 0; i < numTrial; i++) {
         std::cout << "Number of trials: " << i + 1 << std::endl;
 
