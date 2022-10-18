@@ -1,8 +1,7 @@
-# TODO : the versions included here should be explicitly tested out,preferably in CI
-cmake_minimum_required(VERSION 3.16...3.18)
+cmake_minimum_required(VERSION 3.10)
 
 # Project's name
-project(HighwayRoadMap VERSION 0.5.0 LANGUAGES CXX)
+project(hrm VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -pthread")
 

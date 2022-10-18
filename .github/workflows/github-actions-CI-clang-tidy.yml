@@ -2,9 +2,9 @@ name: C++ Clang-Tidy
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 jobs:
   Build-with-Clang-Tidy:
     # Build with clang tidy enabled is very resource consuming
@@ -18,4 +18,4 @@ jobs:
       - name: Compile
         run: |
           cd .. && mkdir tmpBuild && cd tmpBuild
-          cmake -G Ninja -DUSE_CLANG_TIDY=ON ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja -DUSE_CLANG_TIDY=ON ../hrm && ninja -j 9
