@@ -7,7 +7,6 @@ if [[ -d "$HOME"/tmpHRM ]]; then
 else
   echo "creating tmpHRM folder"
   mkdir "$HOME"/tmpHRM
-  cd "$HOME"/tmpHRM || exit
 fi
 
 buildAndInstall() {
@@ -25,18 +24,10 @@ sudo apt -y install g++ cmake pkg-config libeigen3-dev libboost-dev libgtest-dev
 export CXX=g++
 
 # Install dependency from deb packages manager
-sudo apt -y install libccd-dev libgmp-dev libmpfr-dev libompl-dev iburdfdom-dev libtinyxml2-dev
+sudo apt -y install libccd-dev libgmp-dev libmpfr-dev libcgal-dev libompl-dev libfcl-dev liburdfdom-dev libtinyxml2-dev
 
 # Install dependencies from source
-# fcl 0.6
-git clone https://github.com/flexible-collision-library/fcl.git
-srcDir="fcl"
-buildAndInstall "$srcDir"
-
-# cgal 5.2
-git clone https://github.com/CGAL/cgal.git
-srcDir="cgal"
-buildAndInstall "$srcDir"
+cd "$HOME"/tmpHRM || exit
 
 # kdl build and install
 git clone https://github.com/orocos/orocos_kinematics_dynamics.git

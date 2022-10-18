@@ -32,7 +32,7 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 
 ## Dependencies
 We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies:
-- [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sample-based planners
+- [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sampling-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
@@ -40,9 +40,6 @@ We provide an installation script for dependencies: [`install-dependencies-on-lo
 - [Boost](https://www.boost.org/) (version = 1.71.0)
 - [google-test](https://github.com/google/googletest) (version >= 1.10.x)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
-- [cmake-format] (version >= 0.4.5) `[sudo] pip3 install cmake-format==0.4.5`
-- [clang-format] `[sudo] apt install clang`
-- [Cppcheck] `[sudo] apt install cppcheck`
 
 ## Compiling Instructions
 ### On Local Host
@@ -53,7 +50,12 @@ cd build
 cmake ../
 make
 ```
-The compilation is tested on Ubuntu 20.04 system using CMake (>= 3.10).
+**Note**:
+- The compilation is tested on Ubuntu 20.04/22.04 systems using CMake (>= 3.10)
+- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e. 
+```sh
+cmake ../ -DOMPL_INCLUDE_DIRS=/your/ompl/include/dir
+```
 
 ### On Docker (Recommended)
 ```sh
@@ -62,7 +64,7 @@ cd $HOME && mkdir HighwayRoadMap_WS
 cd HighwayRoadMap_WS && git clone git@github.com:ruansp/HighwayRoadMap.git
 
 # Fetch docker image from remote and launch it locally (No need to build the image locally)
-./HighwayRoadMap/script/start-doker.sh
+./HighwayRoadMap/script/start-docker.sh
 
 # Build the project inside the docker container
 cd HighwayRoadMap_WS
@@ -70,12 +72,6 @@ mkdir build
 cd build
 cmake -G Ninja ../HighwayRoadMap
 ninja -j 9
-```
-
-**Note**: 
-- If you have installed OMPL from ROS, please make sure that its version is higher than 1.5.0, otherwise some features used in benchmark files might not be available. To link correct OMPL, you might need to add prefix when compiling, i.e. 
-```sh
-cmake ../ -DOMPL_PREFIX=/your/ompl/include/dir
 ```
 
 ## Installation and linking the library in another project
