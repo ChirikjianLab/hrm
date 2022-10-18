@@ -2,9 +2,9 @@ name: C++ CI Basic
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 jobs:
   Build-and-Test-Basic:
     runs-on: ubuntu-20.04
@@ -17,6 +17,6 @@ jobs:
       - name: Compile
         run: |
           cd .. && mkdir tmpBuild && cd tmpBuild
-          cmake -G Ninja ../HighwayRoadMap && ninja -j 9
+          cmake -G Ninja ../hrm && ninja -j 9
       - name: Test
         run: cd ../tmpBuild && ctest

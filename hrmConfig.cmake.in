@@ -1,6 +1,6 @@
 include(CMakeFindDependencyMacro)
 
-find_dependency(OMPL REQUIRED)
+find_dependency(OMPL 1.5 REQUIRED)
 find_dependency(FCL 0.6 REQUIRED)
 find_dependency(CCD REQUIRED)
 find_dependency(CGAL 5.0 REQUIRED)

@@ -33,12 +33,12 @@ We develop a motion planning paradigm based on the closed-form Minkowski sum and
 ## Dependencies
 We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies:
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sampling-based planners
-- [FCL](https://github.com/flexible-collision-library/fcl) (version = 0.6.0): Flexible Collision Library for collision detection
+- [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
 - [KDL](https://orocos.org/wiki/orocos/kdl-wiki.html): Kinematics and Dynamics Library for operations on kinematic chains
 - [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (version >= 3.3.0)
-- [Boost](https://www.boost.org/) (version = 1.71.0)
-- [google-test](https://github.com/google/googletest) (version >= 1.10.x)
+- [Boost](https://www.boost.org/) (version >= 1.71.0)
+- [google-test](https://github.com/google/googletest) (version >= 1.10)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 
 ## Compiling Instructions
