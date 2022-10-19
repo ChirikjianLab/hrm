@@ -1,5 +1,4 @@
-#include "hrm/ge\
-ometry/MeshGenerator.h"
+#include "hrm/geometry/MeshGenerator.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Triangulation_3.h>
