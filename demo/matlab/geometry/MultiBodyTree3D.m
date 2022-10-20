@@ -3,7 +3,7 @@
 % Dependencies:
 %    SuperQuadrics.m: class of SuperQuadrics
 %
-% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2021
+% Author: Sipu Ruan, 2021
 
 classdef MultiBodyTree3D < handle
     properties

@@ -1,4 +1,8 @@
 function [robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file)
+% Generate robot from configuration list
+%
+% Author: Sipu Ruan
+
 N_r = 20;
 
 robotURDF = [];

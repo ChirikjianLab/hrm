@@ -1,3 +1,7 @@
+"""
+@author: Sipu Ruan
+"""
+
 import matplotlib.pyplot as plt
 
 from MultiBodyTree import MultiBodyTree

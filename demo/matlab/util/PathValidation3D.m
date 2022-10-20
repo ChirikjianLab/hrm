@@ -1,3 +1,7 @@
+% PathValidation3D Validate planned path
+%
+% Author: Sipu Ruan
+
 classdef PathValidation3D < handle
     properties
         RobotM

@@ -1,5 +1,7 @@
 function val = sc_eps(angle, eps, name)
-%SuperEllipse.sc_eps: a sin/cos exponentiation function
+% sc_eps a sin/cos exponentiation function
+%
+% Author: Sipu Ruan
 
 if strcmp(name, 'sin')
     val = sign(sin(angle)).*abs(sin(angle)).^eps;

@@ -1,3 +1,7 @@
+% Plot OMPL planning results for 3D case
+%
+% Author: Sipu Ruan
+
 close all; clear; clc;
 initAddpath;
 

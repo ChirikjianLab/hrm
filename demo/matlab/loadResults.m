@@ -1,4 +1,7 @@
 function [X_ori, X_mink, cf_seg, vtx, edge, path, robot, endPts] = loadResults(dim)
+% Load planning results from files
+%
+% Author: Sipu Ruan
 
 % Planning results
 resultPath = '../../result/details/';
