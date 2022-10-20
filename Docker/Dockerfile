@@ -32,7 +32,7 @@ RUN apt update && \
 USER $USERNAME
 WORKDIR /home/robot
 
-COPY script/install-dependencies-for-docker-image.sh /
+COPY ./install-dependencies-for-docker-image.sh /
 RUN /install-dependencies-for-docker-image.sh
 
 # According to the github action documentation, one should run all actions in containers as the root user
