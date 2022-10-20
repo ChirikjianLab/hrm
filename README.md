@@ -31,6 +31,7 @@ The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parame
 We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems and a hybrid Probabilistic Highway RoadMap (Prob-HRM) for articulated body planning problems. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
 
 ## Dependencies
+### Core C++ library
 We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies on your localhose:
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sampling-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
@@ -40,6 +41,16 @@ We provide an installation script for dependencies: [`install-dependencies-on-lo
 - [Boost](https://www.boost.org/) (version >= 1.71.0)
 - [google-test](https://github.com/google/googletest) (version >= 1.10)
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
+
+### Visualization using Python
+Install Python Dependencies through Python Virtual Environment on localhost:
+```
+# Activate Virtual Environment Using the Pipfile
+pipenv shell
+
+# Install all the required dependencies
+pipenv install -r demo/python/requirements.txt
+```
 
 ## Compiling Instructions
 ### On Local Host
@@ -72,14 +83,6 @@ mkdir build
 cd build
 cmake -G Ninja ../hrm
 ninja
-```
-### Install Python Dependencies through Python Virtual Environment on Localhost
-```
-# Activate Virtual Environment Using the Pipfile
-pipenv shell
-
-# Install all the required dependencies
-pipenv install -r demo/python/requirements.txt
 ```
 
 ## Installation and linking the library in another project
@@ -204,7 +207,7 @@ For MATLAB:
 - Plot results from OMPL planners (3D case): [`plot_results_ompl_3D.m`](/demo/matlab/plot_results_ompl_3D.m)
 - Generate movie for results from HRM planner (3D case): [`movie_results_hrm_3D.m`](/demo/matlab/movie_results_hrm_3D.m)
 
-For Python (Please follow [`/demo/python/requirements.txt`](/demo/python/requirements.txt) for dependencies installation):
+For Python (Please follow the [instructions](README.md#visualization-using-python) above or [`/demo/python/requirements.txt`](/demo/python/requirements.txt) for dependencies installation):
 - Plot 3D HRM/Prob-HRM results and graph: [`plot_results_hrm_3D.py`](/demo/python/plot_results_hrm_3D.py)
 - Plot 3D OMPL planners results and data structure: [`plot_results_ompl_3D.py`](/demo/python/plot_results_ompl_3D.py)
 
