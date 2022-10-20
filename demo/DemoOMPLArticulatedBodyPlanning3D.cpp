@@ -71,8 +71,8 @@ int main() {
     hrm::displayGraphInfo(res.graphStructure);
     hrm::displayPathInfo(res.solutionPath);
 
-    hrm::storeGraphInfo(res.graphStructure, "ompl_articuated_3D");
-    hrm::storePathInfo(res.solutionPath, "ompl_articuated_3D");
+    hrm::storeGraphInfo(res.graphStructure, "ompl_articulated_3D");
+    hrm::storePathInfo(res.solutionPath, "ompl_articulated_3D");
 
     return 0;
 }

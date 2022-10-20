@@ -58,7 +58,7 @@ int main() {
 
     hrm::storeGraphInfo(res.graphStructure, "prob_hrm_3D");
     hrm::storePathInfo(res.solutionPath, "prob_hrm_3D");
-    hrm::storeRoutines<hrm::planners::HRM3D>(hrm);
+    hrm::storeRoutines<hrm::planners::HRM3D>(hrm, "prob_hrm_3D");
 
     return 0;
 }

@@ -67,8 +67,8 @@ int main() {
     hrm::displayGraphInfo(res.graphStructure);
     hrm::displayPathInfo(res.solutionPath);
 
-    hrm::storeGraphInfo(res.graphStructure, "ompl_3D");
-    hrm::storePathInfo(res.solutionPath, "ompl_3D");
+    hrm::storeGraphInfo(res.graphStructure, "ompl_rigid_3D");
+    hrm::storePathInfo(res.solutionPath, "ompl_rigid_3D");
 
     return 0;
 }

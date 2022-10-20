@@ -18,13 +18,13 @@ def load_planning_scene(dim, config_path):
     return robot_config, arena_config, obstacle_config, end_pts
 
 
-def load_results(dim, result_path):
+def load_results(suffix, result_path):
     try:
-        x_origin = pd.read_csv(result_path + "origin_bound_" + dim + ".csv",
+        x_origin = pd.read_csv(result_path + "origin_bound_" + suffix + ".csv",
                                delimiter='\s+', header=None, dtype=np.float).values
-        x_mink = pd.read_csv(result_path + "mink_bound_" + dim + ".csv",
+        x_mink = pd.read_csv(result_path + "mink_bound_" + suffix + ".csv",
                              delimiter='\s+', header=None, dtype=np.float).values
-        cf_seg = pd.read_csv(result_path + "segment_" + dim + ".csv", header=None, dtype=np.float).values
+        cf_seg = pd.read_csv(result_path + "segment_" + suffix + ".csv", header=None, dtype=np.float).values
     except:
         x_origin = None
         x_mink = None
@@ -32,12 +32,12 @@ def load_results(dim, result_path):
 
         print('No discrete points on obstacles will be shown.')
 
-    vtx = pd.read_csv(result_path + "vertex_" + dim + ".csv", header=None, dtype=np.float).values
-    edge = pd.read_csv(result_path + "edge_" + dim + ".csv", header=None, dtype=np.float).values
+    vtx = pd.read_csv(result_path + "vertex_" + suffix + ".csv", header=None, dtype=np.float).values
+    edge = pd.read_csv(result_path + "edge_" + suffix + ".csv", header=None, dtype=np.float).values
 
     try:
-        path = pd.read_csv(result_path + "interpolated_path_" + dim + ".csv", header=None, dtype=np.float).values
+        path = pd.read_csv(result_path + "interpolated_path_" + suffix + ".csv", header=None, dtype=np.float).values
     except:
-        path = pd.read_csv(result_path + "solution_path_" + dim + ".csv", header=None, dtype=np.float).values
+        path = pd.read_csv(result_path + "solution_path_" + suffix + ".csv", header=None, dtype=np.float).values
 
     return x_origin, x_mink, cf_seg, vtx, edge, path

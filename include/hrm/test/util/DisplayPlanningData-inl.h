@@ -9,7 +9,7 @@
 namespace hrm {
 
 template <class Planner>
-void storeRoutines(Planner& planner) {
+void storeRoutines(Planner& planner, const std::string& suffix) {
     // Original boundary points
     BoundaryInfo boundaryOriginal;
     for (const auto& arena : planner.getArena()) {
@@ -20,7 +20,8 @@ void storeRoutines(Planner& planner) {
     }
 
     std::ofstream fileBoundaryOriginal;
-    fileBoundaryOriginal.open(SOLUTION_DETAILS_PATH "/origin_bound_3D.csv");
+    fileBoundaryOriginal.open(SOLUTION_DETAILS_PATH "/origin_bound_" + suffix +
+                              ".csv");
     for (const auto& obstacleBoundary : boundaryOriginal.obstacle) {
         fileBoundaryOriginal << obstacleBoundary << "\n";
     }
@@ -33,7 +34,8 @@ void storeRoutines(Planner& planner) {
     const auto boundaryMinkowski = planner.getSliceBoundary(0);
 
     std::ofstream fileBoundaryMinkowski;
-    fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_3D.csv");
+    fileBoundaryMinkowski.open(SOLUTION_DETAILS_PATH "/mink_bound_" + suffix +
+                               ".csv");
     for (const auto& cObstacleBoundary : boundaryMinkowski.obstacle) {
         fileBoundaryMinkowski << cObstacleBoundary << "\n";
     }
@@ -46,7 +48,7 @@ void storeRoutines(Planner& planner) {
     const auto freeSegment = planner.getFreeSegmentOneSlice(&boundaryMinkowski);
 
     std::ofstream fileFreeSegment;
-    fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_3D.csv");
+    fileFreeSegment.open(SOLUTION_DETAILS_PATH "/segment_" + suffix + ".csv");
     for (size_t i = 0; i < freeSegment.tx.size(); i++) {
         for (size_t j = 0; j < freeSegment.freeSegmentYZ[i].ty.size(); j++) {
             for (size_t k = 0; k < freeSegment.freeSegmentYZ[i].xM[j].size();

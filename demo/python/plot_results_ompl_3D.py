@@ -16,24 +16,30 @@ def plot_results_ompl_3d(is_plot_graph=False):
     result_path = curr_dir + "/../../result/details/"
     config_path = curr_dir + "/../../config/"
     resource_path = curr_dir + "/../../resources/3D/"
+    method = "ompl_rigid"
     dim = "3D"
-    result_surfix = "ompl_3D"
 
-    # Load planning scene and results
+    # Load planning scene
     print("Loading planning scene and results...")
     robot_config, arena_config, obstacle_config, end_pts = load_planning_scene(dim, config_path)
-    x_origin, x_mink, cf_seg, vtx, edge, path = load_results(result_surfix, result_path)
 
     # Generate robot object
     print("Loading robot...")
     size_config = end_pts.shape
     urdf_file = None
     if size_config[1] == 10:
+        method = "ompl_articulated"
         urdf_file = resource_path + "urdf/snake.urdf"
     elif size_config[1] == 16:
+        method = "ompl_articulated"
         urdf_file = resource_path + "urdf/tree.urdf"
 
     robot, robot_urdf = generate_robot(robot_config, urdf_file)
+
+    # Load planning results
+    x_origin, x_mink, cf_seg, vtx, edge, path = load_results(method + "_" + dim, result_path)
+
+
 
     # Plot
     print("Figure: Display the results...")
