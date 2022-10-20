@@ -5,25 +5,30 @@
 close all; clear; clc;
 initAddpath;
 
-loadPath = '../../result/details/';
-path_prefix = '../../resources/3D/';
+resultPath = '../../result/details/';
+configPath = '../../config/';
+resourcePath = '../../resources/3D/';
+urdfFile = [];
 
-[X_ori, X_mink, cf_seg, vtx, edge, path, robot_config, endPts] = loadResults('3D');
+method = 'ompl_rigid';
+dim = '3D';
 
-path_ompl = load([loadPath, 'ompl_smooth_path_3D.csv']);
-state_ompl = load([loadPath, 'ompl_state_3D.csv']);
-edge_ompl = load([loadPath, 'ompl_edge_3D.csv']);
+%% Planning scene
+[robotConfig, arenaConfig, obsConfig, endPts] = loadPlanningScene(dim, configPath);
 
-% Robot
-if size(path_ompl, 2) == 7
-    urdf_file = [];
-elseif size(path_ompl, 2) == 10
-    urdf_file = [path_prefix, 'urdf/snake.urdf'];
-elseif size(path_ompl, 2) == 16
-    urdf_file = [path_prefix, 'urdf/tri-snake.urdf'];
+%% Robot
+if size(endPts, 2) == 10
+    method = 'ompl_articulated';
+    urdfFile = [resourcePath, 'urdf/snake.urdf'];
+elseif size(endPts, 2) == 16
+    method = 'ompl_articulated';
+    urdfFile = [resourcePath, 'urdf/tree.urdf'];
 end
 
-[robot, robotURDF, jointLimits] = generateRobot(robot_config, urdf_file);
+[robot, robotURDF, jointLimits] = generateRobot(robotConfig, urdfFile);
+
+%% Results
+[X_ori, X_mink, cf_seg, vtx, edge, path] = loadResults([method, '_', dim], resultPath);
 
 %% Environment
 figure; hold on; axis equal;
@@ -71,29 +76,29 @@ axis off
 %% Path from OMPL
 disp("Plotting results from OMPL planner...")
 
-plot3([start(1) path_ompl(1,1)],...
-    [start(2) path_ompl(1,2)],...
-    [start(3) path_ompl(1,3)], 'r', 'LineWidth', 2)
-plot3([goal(1) path_ompl(end,1)],...
-    [goal(2) path_ompl(end,2)],...
-    [goal(3) path_ompl(end,3)], 'g', 'LineWidth', 2)
+plot3([start(1) path(1,1)],...
+    [start(2) path(1,2)],...
+    [start(3) path(1,3)], 'r', 'LineWidth', 2)
+plot3([goal(1) path(end,1)],...
+    [goal(2) path(end,2)],...
+    [goal(3) path(end,3)], 'g', 'LineWidth', 2)
 
-plot3(path_ompl(:,1), path_ompl(:,2), path_ompl(:,3),...
+plot3(path(:,1), path(:,2), path(:,3),...
         'm-', 'LineWidth', 2)
 
-for i = 1:floor(size(path_ompl,1)/50):size(path_ompl,1)
-    PlotRobotPose(robot, path_ompl(i,:), robotURDF);
+for i = 1:floor(size(path,1)/50):size(path,1)
+    PlotRobotPose(robot, path(i,:), robotURDF);
 end
 
-for i = 1:size(state_ompl,1)
-    plot3(state_ompl(i,1),state_ompl(i,2),state_ompl(i,3),...
+for i = 1:size(vtx,1)
+    plot3(vtx(i,1), vtx(i,2), vtx(i,3),...
         'b+', 'LineWidth', 2)
 end
 
-for i = 1:size(edge_ompl,1)-1
-    plot3([state_ompl(edge_ompl(i,1)+1,1) state_ompl(edge_ompl(i+1,2)+1,1)],...
-        [state_ompl(edge_ompl(i,1)+1,2) state_ompl(edge_ompl(i+1,2)+1,2)],...
-        [state_ompl(edge_ompl(i,1)+1,3) state_ompl(edge_ompl(i+1,2)+1,3)],...
+for i = 1:size(edge,1)-1
+    plot3([vtx(edge(i,1)+1,1) vtx(edge(i+1,2)+1,1)],...
+        [vtx(edge(i,1)+1,2) vtx(edge(i+1,2)+1,2)],...
+        [vtx(edge(i,1)+1,3) vtx(edge(i+1,2)+1,3)],...
         'm--', 'LineWidth', 2)
 end
 
@@ -105,7 +110,7 @@ is_validation = false;
 
 if is_validation
     disp('Validating path...')
-    high3D = PathValidation3D(robot, arena, obs, path_ompl);
+    high3D = PathValidation3D(robot, arena, obs, path);
     high3D.validation();
     high3D.show();
     
