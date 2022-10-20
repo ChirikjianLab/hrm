@@ -2,14 +2,14 @@
 The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
 
 ### Authors
-[Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, Qianli Ma and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
+[Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, [Qianli Ma](https://github.com/RobotMa) and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
 
 - Repository maintainers: Sipu Ruan, Qianli Ma
 
 ### Useful links
 - Paper: [Link to T-RO](https://ieeexplore.ieee.org/document/9841604)
 - Project page: [https://chirikjianlab.github.io/hrm-planning-page/](https://chirikjianlab.github.io/hrm-planning-page/)
-- API documentation:
+- API documentation: [v1.0.0 (latest)](https://chirikjianlab.github.io/hrm-planning-page/resources/doc/v1.0.0)
 
 ### Associate paper
 - Ruan, S., Poblete, K.L., Wu, H., Ma, Q. and Chirikjian, G.S., 2022. Efficient Path Planning in Narrow Passages for Robots With Ellipsoidal Components. IEEE Transactions on Robotics. doi: 10.1109/TRO.2022.3187818
@@ -28,7 +28,7 @@ The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parame
 We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems and a hybrid Probabilistic Highway RoadMap (Prob-HRM) for articulated body planning problems. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
 
 ## Dependencies
-We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies:
+We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies on your localhose:
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sampling-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
@@ -69,6 +69,14 @@ mkdir build
 cd build
 cmake -G Ninja ../hrm
 ninja
+```
+### Install Python Dependencies through Python Virtual Environment on Localhost
+```
+# Activate Virtual Environment Using the Pipfile
+pipenv shell
+
+# Install all the required dependencies
+pipenv install -r demo/python/requirements.txt
 ```
 
 ## Installation and linking the library in another project
@@ -239,4 +247,3 @@ Sparse, Cluttered, Maze, Home, Narrow
   - "Ruan, S., Ding, J. and Chirikjian, G.S., 2018. Lower Bounds of the Allowable Motions of One N-Dimensional Ellipsoid Contained in Another. ASME IDETC 2018."
   - "Ma, Q. and Chirikjian, G.S., 2015, August. A Closed-Form Lower Bound on the Allowable Motion for an Ellipsoidal Body and Environment. ASME IDETC 2015."
   - "Chirikjian, G.S. and Yan, Y., 2014. The Kinematics of Containment. In Advances in Robot Kinematics (pp. 355-364). Springer International Publishing."
-
