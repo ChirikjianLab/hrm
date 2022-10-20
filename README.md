@@ -72,7 +72,7 @@ cmake ../ -DOMPL_INCLUDE_DIRS=/your/ompl/include/dir
 ```sh
 # Pull directory onto your localhost
 cd $HOME && mkdir HighwayRoadMap_WS
-cd HighwayRoadMap_WS && git clone git@github.com:ruansp/hrm.git
+cd HighwayRoadMap_WS && git clone https://github.com/ChirikjianLab/hrm.git
 
 # Fetch docker image from remote and launch it locally (No need to build the image locally)
 ./hrm/script/start-docker.sh
@@ -196,10 +196,10 @@ Benchmark files are stored in [`/test/benchmark/`](/test/benchmark) folder:
 - The SO(3) samples can be specified based on the generating methods. In the resources folder, we provide two methods: (1) "icosahedron": samples from icosahedral symmetry group (as described in paper); (2) "hopf": samples using Hopf fibration.
 - The URDF file is only available for articulated-body planning problems, with the robot type being "snake" or "tree".
 
-### Visualizations
-After running demo or benchmark scripts, results for visualization will be generated in the `/result` folder. Visualization scripts are in both MATLAB and Python:
+## Visualizations
+After running demo or benchmark scripts, results for visualization will be generated in the `/result` folder. Visualization scripts are available in both MATLAB and Python.
 
-For MATLAB:
+### MATLAB scripts
 - Plot results from HRM planner (2D case): [`plot_results_hrm_2D.m`](/demo/matlab/plot_results_hrm_2D.m)
 - Plot graph from HRM (2D case): [`plot_results_graph_2D.m`](/demo/matlab/plot_results_graph_2D.m)
 - Plot results from HRM/Prob-HRM planners (3D case): [`plot_results_hrm_3D.m`](/demo/matlab/plot_results_hrm_3D.m)
@@ -207,7 +207,8 @@ For MATLAB:
 - Plot results from OMPL planners (3D case): [`plot_results_ompl_3D.m`](/demo/matlab/plot_results_ompl_3D.m)
 - Generate movie for results from HRM planner (3D case): [`movie_results_hrm_3D.m`](/demo/matlab/movie_results_hrm_3D.m)
 
-For Python (Please follow the [instructions](README.md#visualization-using-python) above or [`/demo/python/requirements.txt`](/demo/python/requirements.txt) for dependencies installation):
+### Python scripts
+Please follow the [instructions](README.md#visualization-using-python) above or [`/demo/python/requirements.txt`](/demo/python/requirements.txt) for dependencies installation.
 - Plot 3D HRM/Prob-HRM results and graph: [`plot_results_hrm_3D.py`](/demo/python/plot_results_hrm_3D.py)
 - Plot 3D OMPL planners results and data structure: [`plot_results_ompl_3D.py`](/demo/python/plot_results_ompl_3D.py)
 
