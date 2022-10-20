@@ -12,7 +12,7 @@ The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parame
 ### Useful links
 - Paper: [Link to T-RO](https://ieeexplore.ieee.org/document/9841604)
 - Project page: [https://chirikjianlab.github.io/hrm-planning-page/](https://chirikjianlab.github.io/hrm-planning-page/)
-- API documentation: [v1.0.0 (latest)](https://chirikjianlab.github.io/hrm-planning-page/resources/doc/v1.0.0)
+- API documentation: [v1.0.0 (latest)](https://chirikjianlab.github.io/hrm-planning-page/resources/doc/v1.0.0/index.html)
 
 ### Associate paper
 - Ruan, S., Poblete, K.L., Wu, H., Ma, Q. and Chirikjian, G.S., 2022. Efficient Path Planning in Narrow Passages for Robots With Ellipsoidal Components. IEEE Transactions on Robotics. doi: 10.1109/TRO.2022.3187818
