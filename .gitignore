@@ -84,3 +84,4 @@ CMakeLists.txt.user*
 # Python
 *.idea/
 *.pyc
+Pipfile.lock

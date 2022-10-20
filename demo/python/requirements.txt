@@ -3,3 +3,4 @@ matplotlib
 roboticstoolbox-python
 numpy-stl
 pandas
+pyqt5

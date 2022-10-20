@@ -73,6 +73,19 @@ cd build
 cmake -G Ninja ../hrm
 ninja
 ```
+### Install Python Dependencies through Python Virtual Environment on Localhost
+```
+# Activate Virtual Environment Using the Pipfile
+pipenv shell
+
+# Install all the required dependencies
+pipenv install -r demo/python/requirements.txt
+```
+
+### Enable Code Coverage Report
+```
+sudo apt -y install lcov
+```
 
 ## Installation and linking the library in another project
 ### Installation
@@ -223,6 +236,7 @@ For Python (Please follow [`/demo/python/requirements.txt`](/demo/python/require
 
 ### Available planning scene environments
 Sparse, Cluttered, Maze, Home, Narrow
+
 
 ### Demonstration using real robot in a lab environment
 - Verified the algorithm in real robot, i.e. project the NAO humanoid robot to the plane, and plan a trajectory.
