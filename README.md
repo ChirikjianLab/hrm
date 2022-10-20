@@ -1,6 +1,6 @@
 # hrm
-![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-basic.yml/badge.svg)
-![example workflow](https://github.com/ruansp/HighwayRoadMap/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
+![example workflow](https://github.com/ChirikjianLab/hrm/actions/workflows/github-actions-CI-basic.yml/badge.svg)
+![example workflow](https://github.com/ChirikjianLab/hrm/actions/workflows/github-actions-CI-clang-tidy.yml/badge.svg)
 
 The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
 
