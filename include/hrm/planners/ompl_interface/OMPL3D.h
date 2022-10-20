@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #pragma once
 
 #include "OMPLInterface.h"

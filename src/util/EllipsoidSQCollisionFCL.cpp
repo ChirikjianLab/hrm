@@ -1,3 +1,5 @@
+/** \author Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/util/EllipsoidSQCollisionFCL.h"
 
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;

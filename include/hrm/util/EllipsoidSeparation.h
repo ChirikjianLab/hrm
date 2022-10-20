@@ -1,3 +1,5 @@
+/** \author Karen L. Poblete */
+
 #pragma once
 
 #include "hrm/geometry/SuperEllipse.h"

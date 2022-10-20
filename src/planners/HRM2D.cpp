@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/HRM2D.h"
 #include "hrm/geometry/LineIntersection.h"
 

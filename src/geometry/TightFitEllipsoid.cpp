@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/geometry/TightFitEllipsoid.h"
 #include "hrm/util/InterpolateSE3.h"
 

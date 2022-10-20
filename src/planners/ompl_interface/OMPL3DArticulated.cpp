@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
 
 hrm::planners::ompl_interface::OMPL3DArticulated::OMPL3DArticulated(

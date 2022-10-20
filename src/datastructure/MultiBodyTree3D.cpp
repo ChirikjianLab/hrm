@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/datastructure/MultiBodyTree3D.h"
 
 hrm::MultiBodyTree3D::MultiBodyTree3D(const SuperQuadrics& base)

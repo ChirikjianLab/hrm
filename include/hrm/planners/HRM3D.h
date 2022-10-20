@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #pragma once
 
 #include "HighwayRoadMap.h"

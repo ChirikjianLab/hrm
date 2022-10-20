@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/ProbHRM3D.h"
 
 #include "ompl/util/RandomNumbers.h"

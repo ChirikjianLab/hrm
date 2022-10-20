@@ -1,7 +1,9 @@
+/** \author Sipu Ruan */
+
 #pragma once
 
-#include "hrm/config.h"
 #include "GTestUtils.h"
+#include "hrm/config.h"
 #include "hrm/planners/HRM3D.h"
 
 namespace hrm {

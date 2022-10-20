@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Qianli Ma */
+
 #include "hrm/util/ParseURDF.h"
 #include "kdl_parser/kdl_parser.hpp"
 

@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/datastructure/MultiBodyTree2D.h"
 
 hrm::MultiBodyTree2D::MultiBodyTree2D(const SuperEllipse& base)

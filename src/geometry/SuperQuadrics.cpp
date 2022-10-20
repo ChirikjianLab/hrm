@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Qianli Ma */
+
 #include "hrm/geometry/SuperQuadrics.h"
 #include "hrm/util/ExponentialFunction.h"
 

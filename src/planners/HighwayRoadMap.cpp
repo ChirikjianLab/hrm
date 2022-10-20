@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Qianli Ma */
+
 #include "hrm/datastructure/MultiBodyTree2D.h"
 #include "hrm/datastructure/MultiBodyTree3D.h"
 #include "hrm/planners/HighwayRoadMap-inl.h"

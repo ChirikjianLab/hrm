@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/config.h"
 #include "hrm/planners/ompl_interface/OMPL3D.h"
 #include "hrm/test/util/GTestUtils.h"

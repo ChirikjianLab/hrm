@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/geometry/LineIntersection.h"
 
 #include <iostream>

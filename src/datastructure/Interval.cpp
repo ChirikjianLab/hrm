@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/datastructure/Interval.h"
 
 hrm::Interval::Interval(const Coordinate start, const Coordinate end)

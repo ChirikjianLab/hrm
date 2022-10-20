@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Qianli Ma */
+
 #pragma once
 
 #include "HighwayRoadMap.h"

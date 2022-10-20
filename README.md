@@ -5,7 +5,7 @@
 The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parameterizations of the free space. This repository contains C++ implementation of algorithms and benchmarks for our paper in __IEEE Transactions on Robotics (T-RO)__.
 
 ### Authors
-[Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, Qianli Ma and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
+[Sipu Ruan](https://ruansp.github.io/), Karen L. Poblete, Hongtao Wu, [Qianli Ma](https://github.com/RobotMa) and [Gregory S. Chirikjian](https://cde.nus.edu.sg/me/staff/chirikjian-gregory-s/)
 
 - Repository maintainers: Sipu Ruan, Qianli Ma
 
@@ -31,7 +31,7 @@ The __Highway RoadMap (HRM)__ paradigm for robot motion planning based on parame
 We develop a motion planning paradigm based on the closed-form Minkowski sum and difference between ellipsoid and general obstacle (bounded as a convex differentiable surface, i.e. superquadrics). The algorithms includes: Highway RoadMap (HRM) for both SE(2) and SE(3) rigid body planning problems and a hybrid Probabilistic Highway RoadMap (Prob-HRM) for articulated body planning problems. The algorithms have been compared with sampled-based planners from OMPL. The benchmark results show that our proposed methods outperform the sample-based planners (i.e. PRM, RRT, RRT-Connect, etc) especially in the narrow-passage problems.
 
 ## Dependencies
-We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies:
+We provide an installation script for dependencies: [`install-dependencies-on-localhost.sh`](/script/install-dependencies-on-localhost.sh). Exectuting it will automatically install all the following required dependencies on your localhose:
 - [OMPL](https://ompl.kavrakilab.org/installation.html) (version >= 1.5.0): Open Motion Planning Library for sampling-based planners
 - [FCL](https://github.com/flexible-collision-library/fcl) (version >= 0.6.0): Flexible Collision Library for collision detection
 - [CGAL](https://www.cgal.org/) (version >= 5.2.1): Mesh generation as a pre-process
@@ -80,11 +80,6 @@ pipenv shell
 
 # Install all the required dependencies
 pipenv install -r demo/python/requirements.txt
-```
-
-### Enable Code Coverage Report
-```
-sudo apt -y install lcov
 ```
 
 ## Installation and linking the library in another project
@@ -236,7 +231,6 @@ For Python (Please follow [`/demo/python/requirements.txt`](/demo/python/require
 
 ### Available planning scene environments
 Sparse, Cluttered, Maze, Home, Narrow
-
 
 ### Demonstration using real robot in a lab environment
 - Verified the algorithm in real robot, i.e. project the NAO humanoid robot to the plane, and plan a trajectory.

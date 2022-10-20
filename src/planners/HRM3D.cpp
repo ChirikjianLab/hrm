@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/HRM3D.h"
 
 #include <fstream>

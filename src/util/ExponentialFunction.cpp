@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/util/ExponentialFunction.h"
 
 double hrm::exponentialFunction(const double theta, const double power,

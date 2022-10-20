@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/ompl_interface/OMPL3D.h"
 #include "hrm/test/util/DisplayPlanningData.h"
 #include "hrm/test/util/ParsePlanningSettings.h"

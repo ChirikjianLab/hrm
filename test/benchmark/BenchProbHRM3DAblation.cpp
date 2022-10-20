@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/config.h"
 #include "hrm/planners/HRM3DAblation.h"
 #include "hrm/test/util/DisplayPlanningData.h"
