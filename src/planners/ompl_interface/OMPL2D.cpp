@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/planners/ompl_interface/OMPL2D.h"
 
 #include <ompl/base/spaces/SE2StateSpace.h>

@@ -1,5 +1,8 @@
 function q_rand = generateRandomJointAngles(jointLimits)
 % Generate random poses from link configuration ranges
+%
+% Author: Sipu Ruan
+
 N_l = size(jointLimits,2);
 q_rand = nan(1, N_l);
 

@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/HRM2DKC.h"
 
 hrm::planners::HRM2DKC::HRM2DKC(const MultiBodyTree2D& robot,

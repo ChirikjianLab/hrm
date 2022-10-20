@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #pragma once
 
 #define RESOURCES_PATH "${RESOURCES_PATH}"

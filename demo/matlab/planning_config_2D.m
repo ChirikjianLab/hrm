@@ -1,3 +1,7 @@
+% Define planning configurations in 2D
+%
+% Author: Sipu Ruan
+
 clear; close all; clc;
 
 %% Initialization

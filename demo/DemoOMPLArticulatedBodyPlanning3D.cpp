@@ -1,10 +1,12 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
 #include "hrm/test/util/DisplayPlanningData.h"
 #include "hrm/test/util/ParsePlanningSettings.h"
 
 namespace ho = hrm::planners::ompl_interface;
 
-void demo() {
+int main() {
     // Read and setup environment config
     const std::string robotType = "snake";
     hrm::parsePlanningConfig("superquadrics", "cluttered", robotType, "3D");
@@ -57,7 +59,7 @@ void demo() {
     res.solved = omplPlanner.isSolved();
     res.graphStructure.edge = omplPlanner.getEdges();
     res.graphStructure.vertex = omplPlanner.getVertices();
-    res.solutionPath.cost = omplPlanner.getPathLength();
+    res.solutionPath.cost = static_cast<double>(omplPlanner.getPathLength());
     res.solutionPath.solvedPath = omplPlanner.getSolutionPath();
     res.solutionPath.interpolatedPath =
         omplPlanner.getInterpolatedSolutionPath();
@@ -71,9 +73,6 @@ void demo() {
 
     hrm::storeGraphInfo(res.graphStructure, "ompl_articuated_3D");
     hrm::storePathInfo(res.solutionPath, "ompl_articuated_3D");
-}
 
-int main(int ac, char* av[]) {
-    demo();
     return 0;
 }

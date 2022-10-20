@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/util/InterpolateSE3.h"
 
 std::vector<std::vector<hrm::Coordinate>> hrm::interpolateSE3(

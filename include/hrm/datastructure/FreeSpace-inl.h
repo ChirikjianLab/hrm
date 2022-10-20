@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "FreeSpace.h"
 #include "hrm/geometry/LineIntersection.h"
 

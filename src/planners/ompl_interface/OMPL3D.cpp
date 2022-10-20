@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/planners/ompl_interface/OMPL3D.h"
 
 using GeometryPtr = std::shared_ptr<fcl::CollisionGeometry<double>>;

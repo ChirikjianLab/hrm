@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/util/DistanceMetric.h"
 
 hrm::Distance hrm::vectorEuclidean(const std::vector<Coordinate>& v1,

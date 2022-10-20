@@ -1,4 +1,7 @@
 function PlotRobotPose(robot, xi, RobotURDF)
+% Plot robot at a specified configuration
+%
+% Author: Sipu Ruan
 
 g = [par2rotm(xi(1,4:7)), xi(1,1:3)'; 0,0,0,1];
 

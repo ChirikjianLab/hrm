@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Karen L. Poblete */
+
 #include "hrm/config.h"
 #include "hrm/planners/ompl_interface/OMPL3DArticulated.h"
 #include "hrm/test/util/ParsePlanningSettings.h"

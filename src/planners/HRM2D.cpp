@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/planners/HRM2D.h"
 #include "hrm/geometry/LineIntersection.h"
 
@@ -202,8 +204,8 @@ void hrm::planners::HRM2D::bridgeSlice() {
 
         // calculate Minkowski boundary points
         BoundaryInfo bd;
-        for (size_t j = 0; j < size_t(obs_.size()); ++j) {
-            bd.obstacle.push_back(obs_.at(j).getMinkSum2D(tfe_.at(i), +1));
+        for (const auto& ob : obs_) {
+            bd.obstacle.push_back(ob.getMinkSum2D(tfe_.at(i), +1));
         }
 
         bridgeSliceBound_.at(i) = bd;

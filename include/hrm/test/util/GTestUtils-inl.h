@@ -1,14 +1,10 @@
+/** \author Sipu Ruan */
+
 #pragma once
 
-<<<<<<< HEAD:test/util/DisplayPlanningData-inl.h
-#include "config.h"
-#include "planners/HRM3D.h"
-=======
 #include "GTestUtils.h"
 #include "hrm/config.h"
 #include "hrm/planners/HRM3D.h"
->>>>>>> 72-add-installation-in-cmakelists:include/hrm/test/util/GTestUtils-inl.h
-
 namespace hrm {
 
 template <class Planner>

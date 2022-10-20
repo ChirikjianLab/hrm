@@ -5,6 +5,8 @@ function robot = RobotInit2D(opt, infla)
 % links attached to the base that can rotate
 % 
 % C-space: SE(2)
+%
+% Author: Sipu Ruan
 
 %% Read configuration files and set body colors
 path_prefix = '../../../resources/2D/';

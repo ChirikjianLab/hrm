@@ -4,6 +4,8 @@ function vtxInterp = vertexInterpolation(V1, V2, N_step)
 %
 %   translation part: linear interpolation
 %   rotation part   : angle-axis parameters, interpolate angles
+%
+% Author: Sipu Ruan
 
 vtxInterp = V1 * ones(1,N_step);
 

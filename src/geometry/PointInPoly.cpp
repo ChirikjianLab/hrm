@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/geometry/PointInPoly.h"
 #include "hrm/datastructure/DataType.h"
 

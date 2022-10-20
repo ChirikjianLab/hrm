@@ -1,4 +1,8 @@
 function [arena, obs, end_points] = Environment2D(obs_shape, opt)
+% Initialize planning environment in 2D
+%
+% Author: Sipu Ruan
+
 %% Retrieve arena, obstacle and end points info
 path_prefix = '../../../resources/2D/';
 

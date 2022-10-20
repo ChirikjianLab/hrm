@@ -1,3 +1,7 @@
+% Make movie for planned path
+%
+% Author: Sipu Ruan
+
 close all; clear; clc;
 initAddpath;
 

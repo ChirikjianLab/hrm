@@ -1,10 +1,9 @@
 % Class of Superellipse operations
 %
-% Author: Qianli Ma, qianli.ma622@gmail.com
-% Maintainer: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2018
-%
-
 % DEPENDENCIES: rvctools/robot by Peter Corkes
+%
+% Authors: Qianli Ma, Sipu Ruan
+
 classdef SuperEllipse
     % SuperEllipse is a SuperQuadrics in 2D
     

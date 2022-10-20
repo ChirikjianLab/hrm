@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/config.h"
 #include "hrm/planners/HRM2D.h"
 #include "hrm/planners/HRM2DKC.h"
@@ -115,7 +117,7 @@ TEST(TestHRMPlanning2D, MultiBody) {
     // Plan
     auto hrm = planTest<hrm::planners::HRM2D, hrm::MultiBodyTree2D>(
         robot, env2D.getArena(), env2D.getObstacle(), req, false);
-    hrm::PlanningResult res = hrm.getPlanningResult();
+    const hrm::PlanningResult& res = hrm.getPlanningResult();
 
     // Test result
     hrm::evaluateResult(res);
@@ -153,7 +155,7 @@ TEST(TestHRMPlanning2D, KinematicsOfContainment) {
     // Plan
     auto hrm = planTest<hrm::planners::HRM2DKC, hrm::MultiBodyTree2D>(
         robot, env2D.getArena(), env2D.getObstacle(), req, false);
-    hrm::PlanningResult res = hrm.getPlanningResult();
+    const hrm::PlanningResult& res = hrm.getPlanningResult();
 
     // Test result
     hrm::evaluateResult(res);

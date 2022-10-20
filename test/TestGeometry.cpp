@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/geometry/SuperEllipse.h"
 #include "hrm/geometry/SuperQuadrics.h"
 #include "hrm/geometry/TightFitEllipsoid.h"

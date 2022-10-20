@@ -1,5 +1,7 @@
 function PlotBox(center, lwh)
 % PlotBox plot axes-aligned box given the center and widths
+%
+% Author: Sipu Ruan
 
 %% Define 8 corner points and 6 faces
 points = [center(1)+0.5*lwh(1), center(2)+0.5*lwh(2), center(3)+0.5*lwh(3);

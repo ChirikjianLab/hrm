@@ -1,3 +1,7 @@
+% Plot HRM-based planning results for 2D case
+%
+% Author: Sipu Ruan
+
 close all; clear; clc;
 initAddpath;
 

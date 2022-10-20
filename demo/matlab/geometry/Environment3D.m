@@ -1,4 +1,8 @@
 function [arena, obs, end_points] = Environment3D(obs_shape, env_type)
+% Initialize planning environment in 3D
+%
+% Author: Sipu Ruan
+
 %% Retrieve arena, obstacle and end points info
 path_prefix = '../../resources/3D/';
 

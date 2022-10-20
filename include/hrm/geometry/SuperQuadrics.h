@@ -1,3 +1,5 @@
+/** \authors Sipu Ruan, Qianli Ma */
+
 #pragma once
 
 #include "hrm/datastructure/DataType.h"

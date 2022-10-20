@@ -1,3 +1,5 @@
+/** \author Karen L. Poblete */
+
 #include "hrm/util/EllipsoidSeparation.h"
 
 #include <iostream>

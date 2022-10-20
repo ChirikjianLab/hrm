@@ -1,3 +1,7 @@
+% Plot HRM graph structure for 2D case
+%
+% Author: Sipu Ruan
+
 close all; clear; clc;
 initAddpath();
 

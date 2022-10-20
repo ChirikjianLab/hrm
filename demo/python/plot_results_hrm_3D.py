@@ -1,3 +1,7 @@
+"""
+@author: Sipu Ruan
+"""
+
 from result_loader import load_results, load_planning_scene
 from robot_generator import generate_robot, plot_robot_pose
 from SuperQuadrics import SuperQuadrics

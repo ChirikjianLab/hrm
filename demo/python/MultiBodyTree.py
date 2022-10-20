@@ -1,3 +1,7 @@
+"""
+@author: Sipu Ruan
+"""
+
 from SuperQuadrics import *
 import roboticstoolbox as rtb
 from spatialmath import SE3

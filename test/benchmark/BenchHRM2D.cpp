@@ -1,3 +1,5 @@
+/** \author Sipu Ruan */
+
 #include "hrm/config.h"
 #include "hrm/planners/HRM2D.h"
 #include "hrm/test/util/ParsePlanningSettings.h"

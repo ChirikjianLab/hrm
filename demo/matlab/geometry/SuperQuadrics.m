@@ -1,9 +1,10 @@
 % SuperQuadrics class, with different methods of operations
 %
-% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University
 % Originated from 'SuperEllipse' class by Qianli Ma
-
+%
 % DEPENDENCIES: rvctools/robot by Peter Corkes
+%
+% Author: Sipu Ruan
 
 classdef SuperQuadrics
     %% class of 3D SuperQuadrics

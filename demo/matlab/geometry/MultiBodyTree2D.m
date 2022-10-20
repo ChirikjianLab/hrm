@@ -3,7 +3,7 @@
 % Dependencies:
 %    SuperEllipse.m: class of SuperEllipse
 %
-% Author: Sipu Ruan, ruansp@jhu.edu, Johns Hopkins University, 2019
+% Author: Sipu Ruan, 2019
 
 classdef MultiBodyTree2D < handle
     properties
