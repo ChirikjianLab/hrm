@@ -40,13 +40,24 @@ We provide an installation script for dependencies: "/script/install-dependencie
 - (Optional) [KDL-parser](http://wiki.ros.org/kdl_parser): Parser from URDF to KDL
 
 ### Visualization using Python
-Install Python Dependencies through Python Virtual Environment on localhost:
+Install Python dependencies. Go to `/demo/python` folder, then:
+
+- Install using `conda` (recommended)
+```
+# Install all the required dependencies
+conda create --name hrm --file requirements.txt
+
+# Activate virtual environment
+conda activate hrm
+```
+
+- Install using `pipenv`
 ```
 # Activate Virtual Environment Using the Pipfile
 pipenv shell
 
 # Install all the required dependencies
-pipenv install -r demo/python/requirements.txt
+pipenv install -r requirements.txt
 ```
 
 ## Compiling Instructions
