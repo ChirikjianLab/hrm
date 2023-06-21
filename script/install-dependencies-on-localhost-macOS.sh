@@ -30,7 +30,7 @@ brew update
 brew upgrade
 
 # Install build essentials
-brew install gcc cmake pkg-config eigen boost gtest ninja wget git
+brew install gcc cmake pkg-config eigen boost ninja wget git
 
 # Set the C++ compiler to use
 export CXX=g++
