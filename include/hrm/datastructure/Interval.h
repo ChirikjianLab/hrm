@@ -4,7 +4,11 @@
 
 #include "DataType.h"
 
-#include <bits/stdc++.h>
+/** #include <bits/stdc++.h> - this is not standard practice in production code,
+since it is not supported on all platforms */
+
+#include <vector>
+#include <cmath>
 #include <limits>
 #include <vector>
 
