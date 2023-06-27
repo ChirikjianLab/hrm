@@ -85,3 +85,5 @@ CMakeLists.txt.user*
 *.idea/
 *.pyc
 *Pipfile*
+
+**/.DS_Store
