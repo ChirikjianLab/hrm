@@ -111,7 +111,7 @@ bool hrm::isEllipsoidSeparated(const SuperQuadrics& ellipsoidA,
     // Separation conditions
     bool isSeparated = false;
     if (negRootsId.size() == 2 &&
-        std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
+        std::abs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
             1e-6) {
         isSeparated = true;
     }
@@ -179,7 +179,7 @@ bool hrm::isEllipseSeparated(const SuperEllipse& ellipsoidA,
     // Separation conditions
     bool isSeparated = false;
     if (negRootsId.size() == 2 &&
-        std::fabs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
+        std::abs(roots.at(negRootsId.at(0)) - roots.at(negRootsId.at(1))) >
             1e-6) {
         isSeparated = true;
     }
